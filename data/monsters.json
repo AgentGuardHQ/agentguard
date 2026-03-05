@@ -7,7 +7,9 @@
     "defense": 4,
     "speed": 6,
     "moves": ["segfault", "hotfix"],
-    "color": "#e74c3c"
+    "color": "#e74c3c",
+    "sprite": "nullpointer",
+    "description": "A ghostly red phantom shaped like a broken arrow. Its body is translucent crimson with hollow white eyes that stare into the void. Where its feet should be, the creature tapers into a jagged pointer arrow that points downward into nothingness. Small glitch artifacts flicker around its edges. It looks lost and confused, perpetually searching for something that doesn't exist."
   },
   {
     "id": 2,
@@ -17,7 +19,9 @@
     "defense": 3,
     "speed": 10,
     "moves": ["threadlock", "hotfix"],
-    "color": "#f39c12"
+    "color": "#f39c12",
+    "sprite": "racecondition",
+    "description": "A frantic orange creature split down the middle into two halves, each trying to run in a different direction. The left half faces left with a panicked expression, the right half faces right looking equally stressed. Lightning-bolt speed lines trail behind it. Its body is angular and sleek like a racing animal. The split down its center glows bright yellow with electrical energy. Small duplicated afterimages blur around it."
   },
   {
     "id": 3,
@@ -27,6 +31,8 @@
     "defense": 6,
     "speed": 3,
     "moves": ["garbagecollect", "memorydump"],
-    "color": "#2ecc71"
+    "color": "#2ecc71",
+    "sprite": "memoryleak",
+    "description": "A bloated green blob creature that looks like it is slowly inflating and cannot stop growing. Its body is a round squishy mass of green slime with half-closed sleepy eyes, exhausted from carrying so much. Bright teal droplets drip constantly from its body and pool beneath it. Small floating 0s and 1s orbit around it like debris. A tiny faucet or pipe sticks out of its head, slowly dripping. It looks heavy, tired, and perpetually expanding."
   }
 ]

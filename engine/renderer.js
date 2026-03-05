@@ -1,4 +1,6 @@
 // Canvas rendering
+import { drawSprite } from '../sprites/sprites.js';
+
 const TILE = 32;
 const COLORS = {
   ground: '#c2b280',
@@ -51,10 +53,14 @@ export function drawPlayer(player) {
   const px = player.x * TILE;
   const py = player.y * TILE;
 
+  // Try sprite first
+  const spriteName = `player_${player.dir}`;
+  if (drawSprite(ctx, spriteName, px, py, TILE, TILE)) return;
+
+  // Fallback: colored square with direction triangle
   ctx.fillStyle = COLORS.player;
   ctx.fillRect(px + 4, py + 4, TILE - 8, TILE - 8);
 
-  // Direction indicator
   ctx.fillStyle = '#2980b9';
   const cx = px + TILE / 2;
   const cy = py + TILE / 2;
@@ -85,8 +91,10 @@ export function drawBattle(battle, movesData) {
   ctx.fillRect(0, 0, 480, 320);
 
   // Enemy BugMon (top right)
-  ctx.fillStyle = battle.enemy.color;
-  ctx.fillRect(320, 40, 64, 64);
+  if (!battle.enemy.sprite || !drawSprite(ctx, battle.enemy.sprite, 320, 40, 64, 64)) {
+    ctx.fillStyle = battle.enemy.color;
+    ctx.fillRect(320, 40, 64, 64);
+  }
   ctx.fillStyle = '#fff';
   ctx.font = '14px monospace';
   ctx.fillText(battle.enemy.name, 300, 30);
@@ -94,8 +102,10 @@ export function drawBattle(battle, movesData) {
 
   // Player BugMon (bottom left)
   const playerMon = battle.playerMon;
-  ctx.fillStyle = playerMon.color;
-  ctx.fillRect(80, 140, 64, 64);
+  if (!playerMon.sprite || !drawSprite(ctx, playerMon.sprite, 80, 140, 64, 64)) {
+    ctx.fillStyle = playerMon.color;
+    ctx.fillRect(80, 140, 64, 64);
+  }
   ctx.fillStyle = '#fff';
   ctx.fillText(playerMon.name, 60, 130);
   drawHPBar(60, 210, 100, playerMon.currentHP, playerMon.hp);

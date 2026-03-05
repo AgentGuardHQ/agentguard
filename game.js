@@ -6,6 +6,7 @@ import { loadMap, getMap, getTile } from './world/map.js';
 import { getPlayer, updatePlayer } from './world/player.js';
 import { setMonstersData, checkEncounter } from './world/encounters.js';
 import { setMovesData, startBattle, getBattle, updateBattle, movesData } from './battle/battleEngine.js';
+import { preloadAll } from './sprites/sprites.js';
 
 let lastTime = 0;
 
@@ -23,6 +24,9 @@ async function init() {
 
   setMonstersData(monsters);
   setMovesData(moves);
+
+  // Preload sprite images (gracefully falls back if PNGs don't exist yet)
+  await preloadAll(monsters);
 
   await loadMap();
 
