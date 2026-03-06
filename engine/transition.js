@@ -29,8 +29,6 @@ export function updateTransition(dt) {
   return null;
 }
 
-export function getTransition() { return transition; }
-
 export function drawTransitionOverlay(ctx, w, h, mapDrawFn) {
   if (!transition) return;
   mapDrawFn();

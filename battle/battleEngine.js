@@ -4,7 +4,6 @@ import { wasPressed } from '../engine/input.js';
 import { setState, STATES } from '../engine/state.js';
 import { getPlayer } from '../world/player.js';
 import { eventBus, Events } from '../engine/events.js';
-import { triggerScreenShake, updateScreenShake } from '../engine/renderer.js';
 import {
   playMenuNav, playMenuConfirm, playMenuCancel,
   playAttack, playFaint, playCaptureSuccess,
@@ -20,13 +19,8 @@ let typeData = null;
 let messageTimer = 0;
 const MESSAGE_DURATION = 1500;
 
-export function setMovesData(data) {
-  movesData = data;
-}
-
-export function setTypeData(data) {
-  typeData = data;
-}
+export function setMovesData(data) { movesData = data; }
+export function setTypeData(data) { typeData = data; }
 
 export function startBattle(wildMon) {
   const player = getPlayer();
@@ -34,7 +28,7 @@ export function startBattle(wildMon) {
   battle = {
     enemy: { ...wildMon },
     playerMon: { ...mon, currentHP: mon.currentHP },
-    state: 'menu',    // menu | fight | message
+    state: 'menu',
     menuIndex: 0,
     moveIndex: 0,
     message: '',
@@ -47,23 +41,17 @@ export function startBattle(wildMon) {
   return battle;
 }
 
-export function getBattle() {
-  return battle;
-}
+export function getBattle() { return battle; }
 
 export function updateBattle(dt) {
   if (!battle) return;
 
-  updateScreenShake(dt);
-
   if (battle.state === 'message') {
     messageTimer -= dt;
-    if (messageTimer <= 0) {
-      if (battle.nextAction) {
-        const action = battle.nextAction;
-        battle.nextAction = null;  // clear BEFORE calling, so action can set a new one
-        action();
-      }
+    if (messageTimer <= 0 && battle.nextAction) {
+      const action = battle.nextAction;
+      battle.nextAction = null;
+      action();
     }
     return;
   }
@@ -75,14 +63,11 @@ export function updateBattle(dt) {
     if (wasPressed('Enter') || wasPressed(' ')) {
       playMenuConfirm();
       if (battle.menuIndex === 0) {
-        // Fight
         battle.state = 'fight';
         battle.moveIndex = 0;
       } else if (battle.menuIndex === 1) {
-        // Cache
         attemptCache();
       } else {
-        // Run
         showMessage('Got away safely!', () => endBattle());
       }
     }
@@ -101,20 +86,27 @@ export function updateBattle(dt) {
   }
 }
 
+function handleFaint(name, side, callback) {
+  playFaint();
+  eventBus.emit(Events.BUGMON_FAINTED, { name, side });
+  if (side === 'player') {
+    showMessage(`${name} fainted!`, () => {
+      const player = getPlayer();
+      player.party[0].currentHP = player.party[0].hp;
+      callback();
+    });
+  } else {
+    showMessage(`Wild ${name} fainted!`, callback);
+  }
+}
+
 function executeTurn(playerMove) {
   const playerFirst = battle.playerMon.speed >= battle.enemy.speed;
-
-  eventBus.emit(Events.TURN_STARTED, {
-    turn: (battle.turn || 0) + 1,
-    firstMover: playerFirst ? battle.playerMon.name : battle.enemy.name,
-  });
 
   if (playerFirst) {
     doAttack(battle.playerMon, playerMove, battle.enemy, () => {
       if (battle.enemy.currentHP <= 0) {
-        playFaint();
-        eventBus.emit(Events.BUGMON_FAINTED, { name: battle.enemy.name, side: 'enemy' });
-        showMessage(`Wild ${battle.enemy.name} fainted!`, () => endBattle());
+        handleFaint(battle.enemy.name, 'enemy', () => endBattle());
       } else {
         enemyTurn();
       }
@@ -122,20 +114,11 @@ function executeTurn(playerMove) {
   } else {
     enemyTurn(() => {
       if (battle.playerMon.currentHP <= 0) {
-        playFaint();
-        eventBus.emit(Events.BUGMON_FAINTED, { name: battle.playerMon.name, side: 'player' });
-        showMessage(`${battle.playerMon.name} fainted!`, () => {
-          // Heal and return
-          const player = getPlayer();
-          player.party[0].currentHP = player.party[0].hp;
-          endBattle();
-        });
+        handleFaint(battle.playerMon.name, 'player', () => endBattle());
       } else {
         doAttack(battle.playerMon, playerMove, battle.enemy, () => {
           if (battle.enemy.currentHP <= 0) {
-            playFaint();
-            eventBus.emit(Events.BUGMON_FAINTED, { name: battle.enemy.name, side: 'enemy' });
-            showMessage(`Wild ${battle.enemy.name} fainted!`, () => endBattle());
+            handleFaint(battle.enemy.name, 'enemy', () => endBattle());
           } else {
             battle.state = 'menu';
             battle.menuIndex = 0;
@@ -151,15 +134,6 @@ function doAttack(attacker, move, defender, callback) {
   const { damage, effectiveness, critical } = calcDamage(attacker, move, defender, typeChart);
   defender.currentHP -= damage;
   playAttack();
-  if (critical) triggerScreenShake(6, 300);
-
-  eventBus.emit(Events.MOVE_USED, {
-    attacker: attacker.name,
-    move: move.name,
-    defender: defender.name,
-    damage,
-    effectiveness,
-  });
 
   let msg = `${attacker.name} used ${move.name}! ${damage} damage!`;
   if (critical) msg += ' Critical hit!';
@@ -173,13 +147,7 @@ function enemyTurn(callback) {
   const move = movesData.find(m => m.id === moveId);
   doAttack(battle.enemy, move, battle.playerMon, () => {
     if (battle.playerMon.currentHP <= 0) {
-      playFaint();
-      eventBus.emit(Events.BUGMON_FAINTED, { name: battle.playerMon.name, side: 'player' });
-      showMessage(`${battle.playerMon.name} fainted!`, () => {
-        const player = getPlayer();
-        player.party[0].currentHP = player.party[0].hp;
-        endBattle();
-      });
+      handleFaint(battle.playerMon.name, 'player', () => endBattle());
     } else if (callback) {
       callback();
     } else {
@@ -192,11 +160,6 @@ function enemyTurn(callback) {
 function attemptCache() {
   const chance = cacheChance(battle.enemy);
 
-  eventBus.emit(Events.CACHE_ATTEMPTED, {
-    target: battle.enemy.name,
-    chance,
-  });
-
   if (Math.random() < chance) {
     const player = getPlayer();
     const cached = { ...battle.enemy, currentHP: battle.enemy.currentHP };
@@ -206,7 +169,6 @@ function attemptCache() {
     showMessage(`Cached ${battle.enemy.name}!`, () => endBattle());
   } else {
     playCaptureFailure();
-    eventBus.emit(Events.CACHE_FAILED, { name: battle.enemy.name });
     showMessage(`${battle.enemy.name} evicted from cache!`, () => {
       enemyTurn();
     });
@@ -221,20 +183,15 @@ function showMessage(msg, callback) {
 }
 
 function endBattle() {
-  // Sync player mon HP back
   const player = getPlayer();
   const outcome = battle.enemy.currentHP <= 0 ? 'win' : 'other';
   if (battle.playerMon.currentHP > 0) {
     player.party[0].currentHP = battle.playerMon.currentHP;
   }
-  const wasVictory = battle.enemy.currentHP <= 0;
-  if (wasVictory) {
-    playBattleVictory();
-  }
+  if (battle.enemy.currentHP <= 0) playBattleVictory();
   eventBus.emit(Events.BATTLE_ENDED, { outcome });
   battle = null;
 
-  // Check if any party member can evolve after battle
   const evo = checkPartyEvolutions(player.party);
   if (evo) {
     applyEvolution(player.party, evo.partyIndex, evo.to);

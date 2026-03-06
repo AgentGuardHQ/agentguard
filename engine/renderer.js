@@ -4,38 +4,8 @@ import { getTileTexture, getGrassFrame, getBattleBackground } from '../sprites/t
 import { generateMonster, generateEgg } from '../sprites/monsterGen.js';
 
 const TILE = 32;
-const COLORS = {
-  player: '#3498db'
-};
-
 let ctx;
 let frameCount = 0;
-
-// Screen shake state
-let shakeTime = 0;
-let shakeDuration = 0;
-let shakeIntensity = 0;
-let shakeX = 0;
-let shakeY = 0;
-
-export function triggerScreenShake(intensity = 6, duration = 300) {
-  shakeIntensity = intensity;
-  shakeDuration = duration;
-  shakeTime = duration;
-}
-
-export function updateScreenShake(dt) {
-  if (shakeTime <= 0) {
-    shakeX = 0;
-    shakeY = 0;
-    return;
-  }
-  shakeTime -= dt;
-  const progress = Math.max(0, shakeTime / shakeDuration);
-  const currentIntensity = shakeIntensity * progress;
-  shakeX = Math.random() * currentIntensity * 2 - currentIntensity;
-  shakeY = Math.random() * currentIntensity * 2 - currentIntensity;
-}
 
 export function initRenderer(canvas) {
   ctx = canvas.getContext('2d');
@@ -63,12 +33,10 @@ export function drawPlayer(player) {
   const px = player.x * TILE;
   const py = player.y * TILE;
 
-  // Try sprite first
   const spriteName = `player_${player.dir}`;
   if (drawSprite(ctx, spriteName, px, py, TILE, TILE)) return;
 
-  // Fallback: colored square with direction triangle
-  ctx.fillStyle = COLORS.player;
+  ctx.fillStyle = '#3498db';
   ctx.fillRect(px + 4, py + 4, TILE - 8, TILE - 8);
 
   ctx.fillStyle = '#2980b9';
@@ -76,30 +44,18 @@ export function drawPlayer(player) {
   const cy = py + TILE / 2;
   ctx.beginPath();
   if (player.dir === 'up') {
-    ctx.moveTo(cx, py + 2);
-    ctx.lineTo(cx - 4, py + 10);
-    ctx.lineTo(cx + 4, py + 10);
+    ctx.moveTo(cx, py + 2); ctx.lineTo(cx - 4, py + 10); ctx.lineTo(cx + 4, py + 10);
   } else if (player.dir === 'down') {
-    ctx.moveTo(cx, py + TILE - 2);
-    ctx.lineTo(cx - 4, py + TILE - 10);
-    ctx.lineTo(cx + 4, py + TILE - 10);
+    ctx.moveTo(cx, py + TILE - 2); ctx.lineTo(cx - 4, py + TILE - 10); ctx.lineTo(cx + 4, py + TILE - 10);
   } else if (player.dir === 'left') {
-    ctx.moveTo(px + 2, cy);
-    ctx.lineTo(px + 10, cy - 4);
-    ctx.lineTo(px + 10, cy + 4);
+    ctx.moveTo(px + 2, cy); ctx.lineTo(px + 10, cy - 4); ctx.lineTo(px + 10, cy + 4);
   } else {
-    ctx.moveTo(px + TILE - 2, cy);
-    ctx.lineTo(px + TILE - 10, cy - 4);
-    ctx.lineTo(px + TILE - 10, cy + 4);
+    ctx.moveTo(px + TILE - 2, cy); ctx.lineTo(px + TILE - 10, cy - 4); ctx.lineTo(px + TILE - 10, cy + 4);
   }
   ctx.fill();
 }
 
 export function drawBattle(battle, movesData, typeColors) {
-  // Apply screen shake offset to battle scene (not menu)
-  ctx.save();
-  ctx.translate(shakeX, shakeY);
-
   // Background
   const bg = getBattleBackground();
   if (bg) {
@@ -109,7 +65,7 @@ export function drawBattle(battle, movesData, typeColors) {
     ctx.fillRect(0, 0, 480, 320);
   }
 
-  // Enemy BugMon (top right) - wild monsters show as eggs until caught
+  // Enemy BugMon (top right) - wild monsters show as eggs
   if (!battle.enemy.sprite || !drawSprite(ctx, battle.enemy.sprite, 320, 40, 64, 64)) {
     const enemySprite = generateEgg(battle.enemy.id, battle.enemy.color, 64);
     ctx.drawImage(enemySprite, 320, 40);
@@ -117,9 +73,6 @@ export function drawBattle(battle, movesData, typeColors) {
   ctx.fillStyle = '#fff';
   ctx.font = '14px monospace';
   ctx.fillText(battle.enemy.name, 300, 30);
-  if (typeColors && battle.enemy.type) {
-    drawTypeBadge(battle.enemy.name, 300, 30, battle.enemy.type, typeColors);
-  }
   drawHPBar(300, 110, 100, battle.enemy.currentHP, battle.enemy.hp);
 
   // Player BugMon (bottom left)
@@ -130,14 +83,9 @@ export function drawBattle(battle, movesData, typeColors) {
   }
   ctx.fillStyle = '#fff';
   ctx.fillText(playerMon.name, 60, 130);
-  if (typeColors && playerMon.type) {
-    drawTypeBadge(playerMon.name, 60, 130, playerMon.type, typeColors);
-  }
   drawHPBar(60, 210, 100, playerMon.currentHP, playerMon.hp);
 
-  ctx.restore();
-
-  // Menu area (not affected by screen shake)
+  // Menu area
   ctx.fillStyle = '#16213e';
   ctx.fillRect(0, 240, 480, 80);
   ctx.strokeStyle = '#e94560';
@@ -156,7 +104,6 @@ export function drawBattle(battle, movesData, typeColors) {
     moves.forEach((moveId, i) => {
       const move = movesData.find(m => m.id === moveId);
       if (move) {
-        // Type color dot
         if (typeColors && move.type) {
           ctx.fillStyle = typeColors[move.type] || '#fff';
           ctx.beginPath();
@@ -173,26 +120,6 @@ export function drawBattle(battle, movesData, typeColors) {
     ctx.font = '14px monospace';
     ctx.fillText(battle.message, 20, 275);
   }
-}
-
-function drawTypeBadge(name, nameX, nameY, type, typeColors) {
-  ctx.font = '14px monospace';
-  const nameWidth = ctx.measureText(name).width;
-  const label = type.toUpperCase();
-  ctx.font = '9px monospace';
-  const labelWidth = ctx.measureText(label).width;
-  const badgeX = nameX + nameWidth + 6;
-  const badgeY = nameY - 10;
-  const badgeW = labelWidth + 8;
-  const badgeH = 13;
-
-  ctx.fillStyle = typeColors[type] || '#555';
-  ctx.beginPath();
-  ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 3);
-  ctx.fill();
-
-  ctx.fillStyle = '#fff';
-  ctx.fillText(label, badgeX + 4, nameY - 1);
 }
 
 function drawHPBar(x, y, width, current, max) {

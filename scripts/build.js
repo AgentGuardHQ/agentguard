@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // BugMon single-file builder — produces dist/bugmon.html
-// Zero dependencies — uses only Node.js built-ins
+// Dev dependencies: esbuild + terser (zero RUNTIME dependencies)
 // Usage: node scripts/build.js [--no-sprites]
 
 import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import { fileURLToPath } from 'url';
+import { transformSync } from 'esbuild';
+import { minify as terserMinify } from 'terser';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -34,7 +36,6 @@ const MODULE_ORDER = [
   'engine/renderer.js',
   'engine/transition.js',
   'sync/save.js',
-  'sync/client.js',
   'engine/title.js',
   'battle/damage.js',
   'battle/battle-core.js',
@@ -78,22 +79,30 @@ function stripImportsExports(code) {
   return code;
 }
 
-function minifyJS(code) {
-  // Strip single-line comments (preserve URLs and strings)
-  code = code.replace(/(?<![:'"])\/\/(?!['"]).*$/gm, '');
-  // Strip multi-line comments
-  code = code.replace(/\/\*[\s\S]*?\*\//g, '');
-  // Collapse blank lines
-  code = code.replace(/\n\s*\n/g, '\n');
-  // Trim each line
-  code = code.split('\n').map(l => l.trim()).filter(l => l).join('\n');
-  // Semicolons before }
-  code = code.replace(/;\n}/g, '}');
-  // Collapse simple blocks to one line
-  code = code.replace(/\{\n([^\n{]*)\n}/g, '{$1}');
-  // Note: Can't remove spaces around operators safely without a proper parser
-  // (would break inside string literals). Keep it simple.
-  return code;
+async function minifyWithEsbuildAndTerser(code) {
+  // Step 1: esbuild — fast minification, dead code elimination, identifier shortening
+  const esbuildResult = transformSync(code, {
+    minify: true,
+    target: 'es2020',
+    loader: 'js',
+  });
+  let minified = esbuildResult.code;
+
+  // Step 2: terser — additional compression + property mangling where safe
+  const terserResult = await terserMinify(minified, {
+    compress: {
+      passes: 2,
+      unsafe_math: true,
+      drop_console: false,
+    },
+    mangle: {
+      toplevel: true,
+    },
+    format: {
+      comments: false,
+    },
+  });
+  return terserResult.code;
 }
 
 function minifyCSS(css) {
@@ -177,13 +186,14 @@ for (const mod of MODULE_ORDER) {
 bundle += '\n// --- Touch controls & mute ---\n';
 bundle += stripImportsExports(inlineScript);
 
-// Minify JS (before adding sprite data which contains base64)
-let minBundle = minifyJS(bundle);
+// Close the IIFE before minification
+bundle += '\n})();\n';
+
+// Minify JS with esbuild + terser (before adding sprite data which contains base64)
+let minBundle = await minifyWithEsbuildAndTerser(bundle);
 
 // Add sprite inlining after minification (base64 data is not minify-safe)
 minBundle += inlineSprites();
-
-minBundle += '\n})();\n';
 
 // --- Assemble final HTML ---
 const output = `<!DOCTYPE html>
@@ -240,4 +250,76 @@ if (noSprites) {
   console.log('\nBuilt without sprites (--no-sprites). Using procedural fallbacks.');
 }
 
-console.log('\nDone! Open dist/bugmon.html in any browser.');
+// --- Byte budget enforcement ---
+const noBudget = process.argv.includes('--no-budget');
+
+if (!noBudget) {
+  const budgetPath = path.join(ROOT, 'size-budget.json');
+  if (fs.existsSync(budgetPath)) {
+    const budget = JSON.parse(fs.readFileSync(budgetPath, 'utf8'));
+    const green = s => `\x1b[32m${s}\x1b[0m`;
+    const yellow = s => `\x1b[33m${s}\x1b[0m`;
+    const red = s => `\x1b[31m${s}\x1b[0m`;
+    const kb = b => (b / 1024).toFixed(1);
+    let failed = false;
+
+    console.log('\n=== Byte Budget ===\n');
+
+    // Bundle check (gzipped, only meaningful for --no-sprites builds)
+    if (noSprites && budget.bundle) {
+      const { target, cap } = budget.bundle;
+      const pctCap = ((1 - gzSize / cap) * 100).toFixed(0);
+
+      if (gzSize <= target) {
+        console.log(`Bundle:  ${green(`${kb(gzSize)} KB`)} / ${kb(target)} KB target ${green('✓')}`);
+      } else {
+        console.log(`Bundle:  ${yellow(`${kb(gzSize)} KB`)} / ${kb(target)} KB target ${yellow('⚠')}  over by ${kb(gzSize - target)} KB`);
+      }
+
+      if (gzSize <= cap) {
+        console.log(`         ${green(`${kb(gzSize)} KB`)} / ${kb(cap)} KB cap    ${green('✓')}  ${pctCap}% headroom`);
+      } else {
+        console.log(`         ${red(`${kb(gzSize)} KB`)} / ${kb(cap)} KB cap    ${red('✗  OVER CAP by ' + kb(gzSize - cap) + ' KB')}`);
+        failed = true;
+      }
+    }
+
+    // Subsystem checks
+    if (budget.subsystems) {
+      console.log('\nSubsystems (source bytes):');
+      const pad = (s, n) => s.padEnd(n);
+
+      for (const [name, sub] of Object.entries(budget.subsystems)) {
+        let total = 0;
+        for (const pattern of sub.files) {
+          if (pattern.includes('*')) {
+            const dir = path.join(ROOT, path.dirname(pattern));
+            const ext = pattern.split('*.')[1];
+            if (fs.existsSync(dir)) {
+              for (const f of fs.readdirSync(dir)) {
+                if (f.endsWith('.' + ext)) {
+                  total += fs.statSync(path.join(dir, f)).size;
+                }
+              }
+            }
+          } else {
+            const fp = path.join(ROOT, pattern);
+            if (fs.existsSync(fp)) total += fs.statSync(fp).size;
+          }
+        }
+
+        const tStatus = total <= sub.target ? green('✓') : yellow('⚠');
+        const cStatus = total <= sub.cap ? green('✓') : red('✗');
+        console.log(`  ${pad(name + ':', 18)} ${pad(kb(total) + ' KB', 9)} / ${pad(kb(sub.target) + ' KB target', 16)} ${tStatus}  / ${pad(kb(sub.cap) + ' KB cap', 14)} ${cStatus}`);
+      }
+    }
+
+    if (failed) {
+      console.log(red('\n✗ BUILD FAILED: Bundle exceeds hard cap. Reduce size before merging.'));
+      process.exit(1);
+    }
+    console.log('');
+  }
+}
+
+console.log('Done! Open dist/bugmon.html in any browser.');

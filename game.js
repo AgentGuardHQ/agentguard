@@ -12,13 +12,11 @@ import { MONSTERS } from './data/monsters.js';
 import { MOVES } from './data/moves.js';
 import { TYPES } from './data/types.js';
 import { EVOLUTIONS } from './data/evolutions.js';
-import { startTransition, updateTransition, getTransition, drawTransitionOverlay } from './engine/transition.js';
-import { initTracker, logEvent, getEvents } from './evolution/tracker.js';
-import { setEvolutionData, setMonstersDataForEvolution, checkPartyEvolutions, applyEvolution, setPendingEvolution, getPendingEvolution, clearPendingEvolution, getEvolutionProgress } from './evolution/evolution.js';
+import { startTransition, updateTransition, drawTransitionOverlay } from './engine/transition.js';
+import { initTracker } from './evolution/tracker.js';
+import { setEvolutionData, setMonstersDataForEvolution, clearPendingEvolution, getEvolutionProgress } from './evolution/evolution.js';
 import { startEvolutionAnimation, updateEvolutionAnimation, drawEvolutionAnimation, clearEvolutionAnimation } from './evolution/animation.js';
-import { playDevEvent } from './audio/sound.js';
-import { saveGame, loadGame, applySave, hasSave, recordBrowserCache, importFromCLI, exportState } from './sync/save.js';
-import { initSyncClient, getSyncStatus } from './sync/client.js';
+import { saveGame, loadGame, applySave, hasSave, recordBrowserCache } from './sync/save.js';
 import { eventBus, Events } from './engine/events.js';
 import { updateTitle, drawTitle } from './engine/title.js';
 
@@ -69,63 +67,11 @@ async function init() {
     if (mon) recordBrowserCache(mon);
   });
 
-  // Initialize CLI sync client (connects to bugmon sync server if running)
-  initSyncClient();
-
-  // Expose dev event logging and sync API to the console
-  window.bugmon = {
-    log: (eventType) => {
-      const result = logEvent(eventType);
-      if (result) {
-        playDevEvent();
-        console.log(`[BugMon] Logged: ${eventType}`);
-        checkForEvolutions();
-      }
-      return result;
-    },
-    events: getEvents,
-    progress: () => {
-      const player = getPlayer();
-      return player.party.map(mon => ({
-        name: mon.name,
-        evolution: getEvolutionProgress(mon)
-      }));
-    },
-    save: () => { autoSave(); return 'Saved!'; },
-    sync: () => getSyncStatus(),
-    exportState,
-    importFromCLI: (data) => {
-      const result = importFromCLI(data);
-      if (result) {
-        applySave(player, result);
-        console.log('[BugMon] CLI state imported');
-      }
-      return result;
-    },
-  };
-
   // Start game loop
   requestAnimationFrame(loop);
 }
 
-function autoSave() {
-  const player = getPlayer();
-  saveGame(player);
-}
-
-function checkForEvolutions() {
-  const player = getPlayer();
-  const state = getState();
-  if (state !== STATES.EXPLORE) return;
-
-  const evo = checkPartyEvolutions(player.party);
-  if (evo) {
-    setPendingEvolution(evo);
-    const evolved = applyEvolution(player.party, evo.partyIndex, evo.to);
-    startEvolutionAnimation(evo.from, evo.to);
-    setState(STATES.EVOLVING);
-  }
-}
+function autoSave() { saveGame(getPlayer()); }
 
 function loop(timestamp) {
   const dt = timestamp - lastTime;

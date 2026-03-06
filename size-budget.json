@@ -1,0 +1,72 @@
+{
+  "bundle": {
+    "target": 10240,
+    "cap": 16384,
+    "unit": "bytes-gzipped",
+    "note": "Measured on dist/bugmon.html built with --no-sprites"
+  },
+  "subsystems": {
+    "engine": {
+      "target": 5120,
+      "cap": 7500,
+      "files": [
+        "engine/state.js",
+        "engine/events.js",
+        "engine/input.js",
+        "engine/transition.js",
+        "engine/title.js"
+      ]
+    },
+    "rendering": {
+      "target": 8192,
+      "cap": 15500,
+      "files": [
+        "engine/renderer.js",
+        "sprites/sprites.js",
+        "sprites/monsterGen.js",
+        "sprites/tiles.js"
+      ]
+    },
+    "battle": {
+      "target": 8192,
+      "cap": 14500,
+      "files": [
+        "battle/battle-core.js",
+        "battle/battleEngine.js",
+        "battle/damage.js"
+      ]
+    },
+    "data": {
+      "target": 8192,
+      "cap": 13200,
+      "files": [
+        "data/monsters.js",
+        "data/moves.js",
+        "data/types.js",
+        "data/evolutions.js",
+        "data/mapData.js"
+      ]
+    },
+    "game-logic": {
+      "target": 10240,
+      "cap": 19500,
+      "files": [
+        "world/map.js",
+        "world/encounters.js",
+        "world/player.js",
+        "evolution/evolution.js",
+        "evolution/tracker.js",
+        "evolution/animation.js",
+        "game.js"
+      ]
+    },
+    "infrastructure": {
+      "target": 4096,
+      "cap": 7000,
+      "files": [
+        "audio/sound.js",
+        "sync/save.js"
+      ]
+    }
+  }
+}
