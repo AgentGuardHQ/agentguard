@@ -34,7 +34,6 @@ const MODULE_ORDER = [
   'engine/renderer.js',
   'engine/transition.js',
   'sync/save.js',
-  'sync/client.js',
   'engine/title.js',
   'battle/damage.js',
   'battle/battle-core.js',
