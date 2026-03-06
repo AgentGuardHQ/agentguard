@@ -25,17 +25,30 @@ A monster-taming RPG where the monsters are software bugs, the types are program
   <img src="sprites/heisenbug.png" width="64" alt="Heisenbug">
 </p>
 
+## CLI Debugging Tool
+
+BugMon also works as a CLI that wraps your dev commands and turns real errors into monster encounters:
+
+```bash
+bugmon watch -- npm run dev
+bugmon watch -- node server.js
+bugmon dex                      # View your BugDex
+bugmon stats                    # View your bug hunter level and XP
+```
+
+Errors pass through unchanged — BugMon augments, never hides.
+
 ## Add a BugMon in Under 2 Minutes
 
 BugMon is data-driven. Add a new monster by editing a single JSON file -- no code changes needed:
 
 ```json
 {
-  "id": 21,
+  "id": 31,
   "name": "YourBugName",
   "type": "frontend",
   "hp": 30, "attack": 7, "defense": 5, "speed": 6,
-  "moves": ["cacheinvalidation", "hotfix"],
+  "moves": ["layoutshift", "zindexwar"],
   "color": "#3498db",
   "sprite": "yourbugname"
 }
@@ -45,13 +58,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## Features
 
-- **20 unique BugMon** to discover and capture
-- **8 types** -- Memory, Logic, Runtime, Syntax, Frontend, Backend, DevOps, Testing
-- **25 moves** across all eight types with effectiveness matchups
-- Turn-based combat with speed priority and damage calculation
+- **30 BugMon** across 7 types with evolutions
+- **CLI debugging tool** — real errors become monster encounters with fix tips
+- Turn-based combat with speed priority, type effectiveness, and critical hits
 - Tile-based exploration with random encounters in tall grass
 - Capture mechanic with HP-based probability
-- Pixel art sprites with procedural fallbacks
+- Egg hatching mechanic for captured monsters
+- Procedurally generated monster sprites
 - Synthesized sound effects (Web Audio API)
 - Mobile touch controls (D-pad + A/B buttons)
 - **Zero dependencies** -- vanilla JS, HTML5 Canvas, no build step ([see the Lightweight Manifesto](LIGHTWEIGHT.md))
@@ -76,52 +89,17 @@ Walk through the world and step into tall grass to encounter wild BugMon.
 
 ## Type System
 
-8 types organized in two interlocking effectiveness cycles:
+7 types with effectiveness matchups:
 
-**Bug types:** Memory > Runtime > Logic > Syntax > Memory
-
-**Dev types:** Frontend > Backend > DevOps > Testing > Frontend
-
-Each type also has cross-cycle matchups. Full chart:
-
-| | Mem | Log | Run | Syn | Front | Back | DevOps | Test |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Memory** | -- | 1x | **1.5x** | 0.5x | **1.5x** | 0.5x | 1x | 1x |
-| **Logic** | 1x | -- | 0.5x | **1.5x** | 1x | 1x | **1.5x** | 0.5x |
-| **Runtime** | 0.5x | **1.5x** | -- | 1x | 0.5x | 1x | 1x | **1.5x** |
-| **Syntax** | **1.5x** | 0.5x | 1x | -- | 1x | **1.5x** | 0.5x | 1x |
-| **Frontend** | 0.5x | 1x | **1.5x** | 1x | -- | 0.5x | **1.5x** | 1x |
-| **Backend** | **1.5x** | 1x | 1x | 0.5x | **1.5x** | -- | 1x | 0.5x |
-| **DevOps** | 1x | 0.5x | 1x | **1.5x** | 0.5x | 1x | -- | **1.5x** |
-| **Testing** | 1x | **1.5x** | 0.5x | 1x | 1x | **1.5x** | 0.5x | -- |
-
-<details>
-<summary><strong>BugMon Roster (20 total)</strong></summary>
-
-| Name | Type | HP | ATK | DEF | SPD | Moves |
-|------|------|---:|----:|----:|----:|-------|
-| **NullPointer** | Memory | 30 | 8 | 4 | 6 | SegFault, Hotfix |
-| **RaceCondition** | Logic | 25 | 6 | 3 | 10 | ThreadLock, Hotfix |
-| **MemoryLeak** | Memory | 40 | 5 | 6 | 3 | GarbageCollect, MemoryDump |
-| **Deadlock** | Logic | 35 | 7 | 8 | 2 | Mutex, ForceQuit |
-| **OffByOne** | Logic | 28 | 7 | 5 | 7 | NullCheck, Rollback |
-| **MergeConflict** | Syntax | 32 | 6 | 7 | 4 | Refactor, PatchDeploy |
-| **CallbackHell** | Runtime | 27 | 9 | 3 | 8 | HotReload, BlueScreen |
-| **Heisenbug** | Logic | 26 | 7 | 4 | 9 | NullCheck, TypeMismatch |
-| **InfiniteLoop** | Runtime | 45 | 4 | 5 | 1 | CoreDump, HotReload |
-| **SpaghettiCode** | Syntax | 33 | 8 | 5 | 3 | Refactor, Compile |
-| **StackOverflow** | Runtime | 30 | 9 | 4 | 6 | BufferOverrun, BlueScreen |
-| **IndexOutOfBounds** | Memory | 28 | 8 | 3 | 8 | BufferOverrun, SegFault |
-| **CSSFloat** | Frontend | 29 | 6 | 4 | 9 | CacheInvalidation, Hotfix |
-| **404NotFound** | Frontend | 24 | 5 | 5 | 10 | DOMManipulation, NullCheck |
-| **DeprecatedAPI** | Backend | 38 | 7 | 7 | 2 | SQLInjection, APITimeout |
-| **BrokenPipe** | Backend | 30 | 8 | 4 | 7 | APITimeout, MemoryDump |
-| **GitBlame** | DevOps | 31 | 6 | 6 | 5 | DockerKill, PipelineFailure |
-| **ForkBomb** | DevOps | 22 | 10 | 2 | 9 | PipelineFailure, ForceQuit |
-| **UnhandledPromise** | Testing | 27 | 5 | 7 | 6 | AssertionError, MockOverride |
-| **RegexDenial** | Testing | 34 | 8 | 5 | 4 | AssertionError, ThreadLock |
-
-</details>
+| | Front | Back | DevOps | Test | Arch | Sec | AI |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| **Frontend** | -- | **1.5x** | 1x | **1.5x** | 0.5x | 1x | 0.5x |
+| **Backend** | 0.5x | -- | **1.5x** | 1x | **1.5x** | 0.5x | 1x |
+| **DevOps** | 1x | 0.5x | -- | **1.5x** | 1x | **1.5x** | 0.5x |
+| **Testing** | 0.5x | 1x | 0.5x | -- | **1.5x** | 1x | **1.5x** |
+| **Architecture** | **1.5x** | 0.5x | 1x | 0.5x | -- | **1.5x** | 1x |
+| **Security** | 1x | **1.5x** | 0.5x | 1x | 0.5x | -- | **1.5x** |
+| **AI** | **1.5x** | 1x | **1.5x** | 0.5x | 1x | 0.5x | -- |
 
 ## Contribute a BugMon
 
@@ -155,7 +133,14 @@ BugMon/
 ├── world/               # Map, player, encounters
 ├── data/                # JSON content (monsters, moves, types, map)
 ├── audio/               # Synthesized sound effects (Web Audio API)
-└── sprites/             # Pixel art sprites + procedural tile textures
+├── sprites/             # Pixel art sprites + procedural tile textures
+└── cli/                 # CLI debugging tool
+    ├── bin.js           # Entry point
+    ├── core/            # Error & stacktrace parsers
+    ├── monsters/        # Error → monster matching
+    ├── bugdex/          # BugDex persistence
+    ├── ui/              # Terminal renderer (ANSI)
+    └── adapters/        # CLI watch adapter
 ```
 
 All game content (monsters, moves, types) is defined in JSON and loaded at runtime. The engine never hardcodes game data. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical breakdown.
