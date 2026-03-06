@@ -9,7 +9,7 @@ import {
   playAttack, playFaint, playCaptureSuccess,
   playCaptureFailure, playBattleVictory
 } from '../audio/sound.js';
-import { captureChance } from './battle-core.js';
+import { cacheChance } from './battle-core.js';
 import { checkPartyEvolutions, applyEvolution } from '../evolution/evolution.js';
 import { startEvolutionAnimation } from '../evolution/animation.js';
 
@@ -76,8 +76,8 @@ export function updateBattle(dt) {
         battle.state = 'fight';
         battle.moveIndex = 0;
       } else if (battle.menuIndex === 1) {
-        // Capture
-        attemptCapture();
+        // Cache
+        attemptCache();
       } else {
         // Run
         showMessage('Got away safely!', () => endBattle());
@@ -185,25 +185,25 @@ function enemyTurn(callback) {
   });
 }
 
-function attemptCapture() {
-  const chance = captureChance(battle.enemy);
+function attemptCache() {
+  const chance = cacheChance(battle.enemy);
 
-  eventBus.emit(Events.CAPTURE_ATTEMPTED, {
+  eventBus.emit(Events.CACHE_ATTEMPTED, {
     target: battle.enemy.name,
     chance,
   });
 
   if (Math.random() < chance) {
     const player = getPlayer();
-    const captured = { ...battle.enemy, currentHP: battle.enemy.currentHP };
-    player.party.push(captured);
+    const cached = { ...battle.enemy, currentHP: battle.enemy.currentHP };
+    player.party.push(cached);
     playCaptureSuccess();
-    eventBus.emit(Events.CAPTURE_SUCCESS, { name: battle.enemy.name });
-    showMessage(`Caught ${battle.enemy.name}!`, () => endBattle());
+    eventBus.emit(Events.CACHE_SUCCESS, { name: battle.enemy.name });
+    showMessage(`Cached ${battle.enemy.name}!`, () => endBattle());
   } else {
     playCaptureFailure();
-    eventBus.emit(Events.CAPTURE_FAILED, { name: battle.enemy.name });
-    showMessage(`${battle.enemy.name} broke free!`, () => {
+    eventBus.emit(Events.CACHE_FAILED, { name: battle.enemy.name });
+    showMessage(`${battle.enemy.name} evicted from cache!`, () => {
       enemyTurn();
     });
   }

@@ -1,7 +1,7 @@
 // CLI adapter — wraps child processes and intercepts stderr errors
 // Supports two modes:
 //   - watch: passive monitoring, shows encounters on exit
-//   - watch --catch: interactive mode, pauses on errors for battle/catch
+//   - watch --cache: interactive mode, pauses on errors for battle/cache
 
 import { spawn } from 'node:child_process';
 import { parseErrors } from '../core/error-parser.js';
@@ -10,7 +10,7 @@ import { matchMonster } from '../monsters/matcher.js';
 import { recordEncounter } from '../bugdex/bugdex.js';
 import { renderEncounter, renderEncounterPrompt } from '../ui/terminal-renderer.js';
 import { renderContributionPrompt, LOW_CONFIDENCE_THRESHOLD } from '../ui/contribute.js';
-import { interactiveCatch } from '../core/catch.js';
+import { interactiveCache } from '../core/catch.js';
 
 /**
  * Run a command and intercept errors from stderr.
@@ -119,14 +119,14 @@ async function processInteractiveQueue(queue, options) {
     // Prompt for battle
     renderEncounterPrompt(monster);
 
-    const result = await interactiveCatch(monster, {
+    const result = await interactiveCache(monster, {
       message: error.message,
       file: location?.file,
       line: location?.line,
     });
 
-    if (result.caught) {
-      process.stderr.write(`  \x1b[33m+50 XP (catch bonus)\x1b[0m\n\n`);
+    if (result.cached) {
+      process.stderr.write(`  \x1b[33m+50 XP (cache bonus)\x1b[0m\n\n`);
     }
 
     // Suggest contributing if the match was weak

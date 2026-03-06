@@ -1,5 +1,5 @@
-// Interactive battle/catch system for the CLI
-// When a bug is encountered, the player can battle it and try to catch it.
+// Interactive battle/cache system for the CLI
+// When a bug is encountered, the player can battle it and try to cache it.
 
 import { createInterface } from 'node:readline';
 import { readFileSync } from 'node:fs';
@@ -22,13 +22,13 @@ function loadGameData() {
 }
 
 /**
- * Run an interactive battle/catch sequence in the terminal.
+ * Run an interactive battle/cache sequence in the terminal.
  * The player uses their lead BugMon (or a starter) to fight the wild one.
  * @param {object} wildMonster - The wild BugMon that appeared
  * @param {{message: string, file?: string, line?: number}} errorInfo - Error context
- * @returns {Promise<{caught: boolean, fled: boolean, playerFainted: boolean}>}
+ * @returns {Promise<{cached: boolean, fled: boolean, playerFainted: boolean}>}
  */
-export async function interactiveCatch(wildMonster, errorInfo) {
+export async function interactiveCache(wildMonster, errorInfo) {
   loadGameData();
 
   const party = getParty();
@@ -67,7 +67,7 @@ export async function interactiveCatch(wildMonster, errorInfo) {
 
   const effectiveness = typeData.effectiveness;
 
-  let result = { caught: false, fled: false, playerFainted: false };
+  let result = { cached: false, fled: false, playerFainted: false };
 
   process.stderr.write('\n');
   process.stderr.write(c('  ╔══════════════════════════════════════════════╗\n', 'yellow'));
@@ -90,7 +90,7 @@ export async function interactiveCatch(wildMonster, errorInfo) {
 
     // Show action menu
     process.stderr.write(`  ${b('What will you do?')}\n`);
-    process.stderr.write(`  ${c('[1]', 'yellow')} Fight   ${c('[2]', 'yellow')} Catch   ${c('[3]', 'yellow')} Run\n`);
+    process.stderr.write(`  ${c('[1]', 'yellow')} Fight   ${c('[2]', 'yellow')} Cache   ${c('[3]', 'yellow')} Run\n`);
     process.stderr.write('\n');
 
     const action = await ask('  > ');
@@ -103,24 +103,24 @@ export async function interactiveCatch(wildMonster, errorInfo) {
       break;
     }
 
-    if (choice === '2' || choice.toLowerCase() === 'catch') {
-      // Attempt capture
+    if (choice === '2' || choice.toLowerCase() === 'cache') {
+      // Attempt cache
       const hpRatio = enemy.currentHP / enemy.hp;
-      const catchRate = (1 - hpRatio) * 0.5 + 0.1;
+      const cacheRate = (1 - hpRatio) * 0.5 + 0.1;
       const roll = Math.random();
 
-      if (roll < catchRate) {
+      if (roll < cacheRate) {
         const shakes = 3;
         for (let i = 0; i < shakes; i++) {
           process.stderr.write(`  ${c('...', 'yellow')}`);
           await sleep(400);
         }
         process.stderr.write('\n');
-        process.stderr.write(`\n  ${c('★', 'yellow')} ${b(`Gotcha! ${enemy.name} was caught!`)} ${c('★', 'yellow')}\n`);
+        process.stderr.write(`\n  ${c('★', 'yellow')} ${b(`Cached! ${enemy.name} stored successfully!`)} ${c('★', 'yellow')}\n`);
 
         // Add to party
         addToParty(enemy);
-        result.caught = true;
+        result.cached = true;
         break;
       } else {
         const shakes = Math.floor(Math.random() * 3);
@@ -129,7 +129,7 @@ export async function interactiveCatch(wildMonster, errorInfo) {
           await sleep(300);
         }
         process.stderr.write('\n');
-        process.stderr.write(`  ${c('Oh no! It broke free!', 'red')}\n`);
+        process.stderr.write(`  ${c('Cache miss! It evicted itself!', 'red')}\n`);
       }
     } else if (choice === '1' || choice.toLowerCase() === 'fight') {
       // Show moves
@@ -210,6 +210,9 @@ export async function interactiveCatch(wildMonster, errorInfo) {
   return result;
 }
 
+// Keep backwards-compatible export name
+export { interactiveCache as interactiveCatch };
+
 function calcDamage(attacker, move, defender, typeChart) {
   const power = move.power || 5;
   const attack = attacker.attack || 5;
@@ -255,7 +258,7 @@ function getParty() {
 }
 
 /**
- * Add a caught BugMon to the party (max 6).
+ * Add a cached BugMon to the party (max 6), overflow to storage.
  */
 function addToParty(monster) {
   const dex = loadBugDex();
@@ -274,7 +277,7 @@ function addToParty(monster) {
     color: monster.color,
     sprite: monster.sprite,
     rarity: monster.rarity,
-    caughtAt: new Date().toISOString(),
+    cachedAt: new Date().toISOString(),
   };
 
   if (dex.party.length < 6) {
@@ -285,9 +288,9 @@ function addToParty(monster) {
     dex.storage.push(entry);
   }
 
-  // Update caught count in stats
-  if (!dex.stats.totalCaught) dex.stats.totalCaught = 0;
-  dex.stats.totalCaught++;
+  // Update cached count in stats
+  if (!dex.stats.totalCached) dex.stats.totalCached = 0;
+  dex.stats.totalCached++;
 
   saveBugDex(dex);
 }

@@ -113,7 +113,7 @@ export function drawBattle(battle, movesData, typeColors) {
   ctx.strokeRect(0, 240, 480, 80);
 
   if (battle.state === 'menu') {
-    const options = ['Fight', 'Capture', 'Run'];
+    const options = ['Fight', 'Cache', 'Run'];
     options.forEach((opt, i) => {
       ctx.fillStyle = i === battle.menuIndex ? '#e94560' : '#fff';
       ctx.font = '16px monospace';

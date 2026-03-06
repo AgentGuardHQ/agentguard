@@ -262,7 +262,7 @@ function wordWrap(text, maxWidth) {
  */
 export function renderParty(party) {
   if (!party || party.length === 0) {
-    process.stdout.write('\n  No BugMon in your party yet.\n  Run "bugmon watch --catch -- <command>" to start catching!\n\n');
+    process.stdout.write('\n  No BugMon in your party yet.\n  Run "bugmon watch --cache -- <command>" to start caching!\n\n');
     return;
   }
 

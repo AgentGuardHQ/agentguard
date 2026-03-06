@@ -17,8 +17,13 @@ import { initTracker, logEvent, getEvents } from './evolution/tracker.js';
 import { setEvolutionData, setMonstersDataForEvolution, checkPartyEvolutions, applyEvolution, setPendingEvolution, getPendingEvolution, clearPendingEvolution, getEvolutionProgress } from './evolution/evolution.js';
 import { startEvolutionAnimation, updateEvolutionAnimation, drawEvolutionAnimation, clearEvolutionAnimation } from './evolution/animation.js';
 import { playDevEvent } from './audio/sound.js';
+import { saveGame, loadGame, applySave, hasSave, recordBrowserCache, importFromCLI, exportState } from './sync/save.js';
+import { initSyncClient, getSyncStatus } from './sync/client.js';
+import { eventBus, Events } from './engine/events.js';
 
 let lastTime = 0;
+let saveTimer = 0;
+const AUTO_SAVE_INTERVAL = 30000; // Auto-save every 30 seconds
 
 async function init() {
   const canvas = document.getElementById('game');
@@ -43,12 +48,30 @@ async function init() {
 
   initTileTextures();
 
-  // Give player a starter BugMon
+  // Load save or give player a starter BugMon
   const player = getPlayer();
-  const starter = { ...MONSTERS[0], currentHP: MONSTERS[0].hp };
-  player.party.push(starter);
+  const savedState = loadGame();
+  if (savedState) {
+    applySave(player, savedState);
+    console.log('[BugMon] Save loaded');
+  } else {
+    const starter = { ...MONSTERS[0], currentHP: MONSTERS[0].hp };
+    player.party.push(starter);
+  }
 
-  // Expose dev event logging to the console and to the page
+  // Auto-save after battle ends and after caching
+  eventBus.on(Events.BATTLE_ENDED, () => {
+    autoSave();
+  });
+  eventBus.on(Events.CACHE_SUCCESS, (data) => {
+    const mon = MONSTERS.find(m => m.name === data.name);
+    if (mon) recordBrowserCache(mon);
+  });
+
+  // Initialize CLI sync client (connects to bugmon sync server if running)
+  initSyncClient();
+
+  // Expose dev event logging and sync API to the console
   window.bugmon = {
     log: (eventType) => {
       const result = logEvent(eventType);
@@ -66,11 +89,27 @@ async function init() {
         name: mon.name,
         evolution: getEvolutionProgress(mon)
       }));
-    }
+    },
+    save: () => { autoSave(); return 'Saved!'; },
+    sync: () => getSyncStatus(),
+    exportState,
+    importFromCLI: (data) => {
+      const result = importFromCLI(data);
+      if (result) {
+        applySave(player, result);
+        console.log('[BugMon] CLI state imported');
+      }
+      return result;
+    },
   };
 
   // Start game loop
   requestAnimationFrame(loop);
+}
+
+function autoSave() {
+  const player = getPlayer();
+  saveGame(player);
 }
 
 function checkForEvolutions() {
@@ -100,6 +139,13 @@ function loop(timestamp) {
 
 function update(dt) {
   const state = getState();
+
+  // Auto-save periodically during exploration
+  saveTimer += dt;
+  if (saveTimer >= AUTO_SAVE_INTERVAL && state === STATES.EXPLORE) {
+    autoSave();
+    saveTimer = 0;
+  }
 
   if (state === STATES.EXPLORE) {
     const tile = updatePlayer(dt);

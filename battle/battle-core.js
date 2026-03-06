@@ -19,7 +19,7 @@ export function createBattleState(playerMon, enemyMon) {
     enemy: { ...enemyMon, currentHP: enemyMon.currentHP ?? enemyMon.hp },
     turn: 0,
     log: [],
-    outcome: null, // null = ongoing, 'win', 'lose', 'run', 'capture'
+    outcome: null, // null = ongoing, 'win', 'lose', 'run', 'cache'
   };
 }
 
@@ -47,16 +47,16 @@ export function isFainted(bugmon) {
   return bugmon.currentHP <= 0;
 }
 
-// Calculate capture probability
-export function captureChance(enemyMon) {
+// Calculate cache probability
+export function cacheChance(enemyMon) {
   const hpRatio = enemyMon.currentHP / enemyMon.hp;
   return (1 - hpRatio) * 0.5 + 0.1;
 }
 
-// Attempt capture with given random value (0-1)
+// Attempt cache with given random value (0-1)
 // Separating randomness makes this testable/deterministic
-export function attemptCapture(enemyMon, roll) {
-  const chance = captureChance(enemyMon);
+export function attemptCache(enemyMon, roll) {
+  const chance = cacheChance(enemyMon);
   return roll < chance;
 }
 
