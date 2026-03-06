@@ -15,5 +15,13 @@
   { "id": "typemismatch", "name": "TypeMismatch", "power": 8, "type": "logic" },
   { "id": "compile", "name": "Compile", "power": 14, "type": "syntax" },
   { "id": "nullcheck", "name": "NullCheck", "power": 4, "type": "memory" },
-  { "id": "bufferoverrun", "name": "BufferOverrun", "power": 13, "type": "memory" }
+  { "id": "bufferoverrun", "name": "BufferOverrun", "power": 13, "type": "memory" },
+  { "id": "cacheinvalidation", "name": "CacheInvalidation", "power": 9, "type": "frontend" },
+  { "id": "dommanipulation", "name": "DOMManipulation", "power": 7, "type": "frontend" },
+  { "id": "sqlinjection", "name": "SQLInjection", "power": 11, "type": "backend" },
+  { "id": "apitimeout", "name": "APITimeout", "power": 8, "type": "backend" },
+  { "id": "dockerkill", "name": "DockerKill", "power": 10, "type": "devops" },
+  { "id": "pipelinefailure", "name": "PipelineFailure", "power": 7, "type": "devops" },
+  { "id": "assertionerror", "name": "AssertionError", "power": 8, "type": "testing" },
+  { "id": "mockoverride", "name": "MockOverride", "power": 6, "type": "testing" }
 ]

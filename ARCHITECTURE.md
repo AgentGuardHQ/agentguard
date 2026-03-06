@@ -2,7 +2,7 @@
 
 ## Overview
 
-BugMon is a Pokémon-style browser game themed around software bugs. It runs entirely client-side with vanilla JS, HTML Canvas, and zero dependencies. Serve it with any static file server and open `index.html`.
+BugMon is a developer-themed monster battle engine. It runs entirely client-side with vanilla JS, HTML Canvas, and zero dependencies. Serve it with any static file server and open `index.html`.
 
 ```
 python3 -m http.server
@@ -36,6 +36,7 @@ BugMon/
 ├── data/                   Game content (JSON, data-driven)
 │   ├── monsters.json       BugMon creatures, stats, and sprite refs
 │   ├── moves.json          Move definitions
+│   ├── types.json          Type definitions, colors, and effectiveness chart
 │   └── map.json            Tile grid for the world map
 │
 ├── audio/                  Sound effects (Web Audio API, no files)
@@ -50,8 +51,15 @@ BugMon/
 │   ├── deadlock.png        Battle sprite (64x64)
 │   └── player_*.png        Player directional sprites (32x32 x4)
 │
-└── .github/workflows/
-    └── deploy.yml          GitHub Pages auto-deploy on push to main
+├── CONTRIBUTING.md         Contributor guide (add BugMon, moves, sprites)
+│
+└── .github/
+    ├── workflows/
+    │   ├── deploy.yml      GitHub Pages auto-deploy on push to main
+    │   └── validate.yml    JSON data validation on PRs
+    ├── scripts/
+    │   └── validate-data.mjs  Data validation logic
+    └── ISSUE_TEMPLATE/     Issue templates for contributions
 ```
 
 ## Module Dependency Graph
@@ -158,6 +166,7 @@ Unified input system supporting both keyboard and touch:
 {
   "id": 1,
   "name": "NullPointer",
+  "type": "memory",
   "hp": 30, "attack": 8, "defense": 4, "speed": 6,
   "moves": ["segfault", "hotfix"],
   "color": "#e74c3c",
@@ -168,8 +177,24 @@ Unified input system supporting both keyboard and touch:
 
 ### moves.json
 ```json
-{ "id": "segfault", "name": "SegFault", "power": 10 }
+{ "id": "segfault", "name": "SegFault", "power": 10, "type": "memory" }
 ```
+
+### types.json
+```json
+{
+  "types": ["memory", "logic", "runtime", "syntax", "frontend", "backend", "devops", "testing"],
+  "typeColors": { "memory": "#2ecc71", "logic": "#f39c12", ... },
+  "effectiveness": {
+    "memory": { "memory": 1.0, "logic": 1.0, "runtime": 1.5, ... }
+  }
+}
+```
+
+8 types organized in two interlocking effectiveness cycles:
+- **Bug types:** Memory > Runtime > Logic > Syntax > Memory
+- **Dev types:** Frontend > Backend > DevOps > Testing > Frontend
+- Each type also has cross-cycle super-effective and not-very-effective matchups
 
 ### map.json
 Tile values: `0` = ground, `1` = wall, `2` = tall grass

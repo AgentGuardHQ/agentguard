@@ -1,0 +1,55 @@
+name: "New BugMon"
+description: "Propose a new BugMon creature"
+title: "[BugMon] "
+labels: ["new-bugmon", "content"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: "PascalCase name (programming concept, bug, or dev culture reference)"
+      placeholder: "e.g. TechnicalDebt"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - memory
+        - logic
+        - runtime
+        - syntax
+        - frontend
+        - backend
+        - devops
+        - testing
+    validations:
+      required: true
+
+  - type: textarea
+    id: concept
+    attributes:
+      label: Concept
+      description: "What programming concept does this BugMon represent? Why is it funny or relatable?"
+      placeholder: "e.g. TechnicalDebt slowly grows stronger every turn you ignore it..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: stats
+    attributes:
+      label: Suggested Stats
+      description: "Optional. Total should be 40-55."
+      value: |
+        HP:
+        ATK:
+        DEF:
+        SPD:
+
+  - type: textarea
+    id: moves
+    attributes:
+      label: Suggested Moves
+      description: "Pick 2 existing moves from data/moves.json, or suggest new ones"

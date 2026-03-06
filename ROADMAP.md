@@ -11,9 +11,9 @@
 ### Milestone Dependency Map
 
 ```
-V1 -> V1.1 -> V2 -> V2.1 -> V3 -> V4 -> V5 -> V6 -> V7
-                                               |
-                                               +-> V8
+V1 -> V1.1 -> V2 -> V2.5 -> V2.1 -> V3 -> V4 -> V5 -> V6 -> V7
+                                                          |
+                                                          +-> V8
 ```
 
 ---
@@ -54,6 +54,19 @@ V1 -> V1.1 -> V2 -> V2.1 -> V3 -> V4 -> V5 -> V6 -> V7
 - [x] Types assigned to all existing BugMon and moves
 - [x] 8 new BugMon (12 total): OffByOne, MergeConflict, CallbackHell, Heisenbug, InfiniteLoop, SpaghettiCode, StackOverflow, IndexOutOfBounds
 - [x] 10 new moves (17 total): PatchDeploy, Refactor, BlueScreen, CoreDump, Rollback, HotReload, TypeMismatch, Compile, NullCheck, BufferOverrun
+
+## V2.5 -- Open Source & Expanded Types (DONE)
+
+> **Depends on:** V2 | **Effort:** Medium | **Theme:** Make BugMon contributor-friendly
+
+- [x] Expanded type system: 4 new types (Frontend, Backend, DevOps, Testing) -- `[M]`
+- [x] 8x8 type effectiveness chart with two interlocking cycles -- `[S]`
+- [x] 8 new BugMon for new types (20 total): CSSFloat, 404NotFound, DeprecatedAPI, BrokenPipe, GitBlame, ForkBomb, UnhandledPromise, RegexDenial -- `[M]`
+- [x] 8 new moves for new types (25 total): CacheInvalidation, DOMManipulation, SQLInjection, APITimeout, DockerKill, PipelineFailure, AssertionError, MockOverride -- `[M]`
+- [x] README overhaul (open source positioning, contributor teaser) -- `[S]`
+- [x] CONTRIBUTING.md (add BugMon in 2 minutes, schemas, guidelines) -- `[S]`
+- [x] GitHub issue templates (New BugMon, New Move, Balance, Bug Report) -- `[S]`
+- [x] JSON validation GitHub Action (validates data on PRs) -- `[M]`
 
 ## V2.1 -- Roster Polish & Battle UI
 
@@ -210,17 +223,20 @@ V1 -> V1.1 -> V2 -> V2.1 -> V3 -> V4 -> V5 -> V6 -> V7
 | SegFaultling | Memory | IDEA | -- | Illegal access creature |
 | TypeCoercion | Runtime | IDEA | -- | Shapeshifter |
 | ZeroDivide | Logic | IDEA | -- | Approaches infinity |
-| UnhandledPromise | Runtime | IDEA | -- | Silently fails |
+| CSSFloat | Frontend | DONE | V2.5 | Floats unpredictably, hard to pin down |
+| 404NotFound | Frontend | DONE | V2.5 | Exists in theory, never where you look |
+| DeprecatedAPI | Backend | DONE | V2.5 | Ancient, powerful, slowly fading |
+| BrokenPipe | Backend | DONE | V2.5 | Leaks data everywhere |
+| GitBlame | DevOps | DONE | V2.5 | Points fingers, deflects damage |
+| ForkBomb | DevOps | DONE | V2.5 | Multiplies endlessly |
+| UnhandledPromise | Testing | DONE | V2.5 | Silently fails |
+| RegexDenial | Testing | DONE | V2.5 | So complex it causes a denial of service |
+| SegFaultling | Memory | IDEA | -- | Illegal access creature |
+| TypeCoercion | Runtime | IDEA | -- | Shapeshifter |
+| ZeroDivide | Logic | IDEA | -- | Approaches infinity |
 | BitRot | Memory | IDEA | -- | Decays over time |
-| ForkBomb | Runtime | IDEA | -- | Multiplies endlessly |
 | PhantomRead | Memory | IDEA | -- | Reads data that was never written |
-| GitBlame | Syntax | IDEA | -- | Points fingers, deflects damage |
-| RegexDenial | Logic | IDEA | -- | So complex it causes a denial of service |
-| CSSFloat | Syntax | IDEA | -- | Floats unpredictably, hard to pin down |
-| DeprecatedAPI | Runtime | IDEA | -- | Ancient, powerful, slowly fading |
 | KernelPanic | Memory | IDEA | -- | The nuclear option |
-| 404NotFound | Memory | IDEA | -- | Exists in theory, never where you look |
-| BrokenPipe | Runtime | IDEA | -- | Leaks data everywhere |
 | DarkPattern | Logic | IDEA | -- | Manipulative, tricks opponents |
 
 ## Move Ideas Backlog
@@ -244,6 +260,14 @@ V1 -> V1.1 -> V2 -> V2.1 -> V3 -> V4 -> V5 -> V6 -> V7
 | Compile | 14 | Damage | DONE | 2-turn charge attack |
 | NullCheck | 4 | Damage | DONE | Weak but never misses |
 | BufferOverrun | 13 | Damage | DONE | High damage, high risk (recoil) |
+| CacheInvalidation | 9 | Damage | DONE | The hardest problem |
+| DOMManipulation | 7 | Damage | DONE | Directly manipulates the DOM |
+| SQLInjection | 11 | Damage | DONE | Drops tables |
+| APITimeout | 8 | Damage | DONE | Connection timed out |
+| DockerKill | 10 | Damage | DONE | Container terminated |
+| PipelineFailure | 7 | Damage | DONE | Build failed |
+| AssertionError | 8 | Damage | DONE | Expected vs actual |
+| MockOverride | 6 | Damage | DONE | Replaces the real thing |
 | Reboot | 7 | Utility | PLANNED | Full system restart |
 | CtrlZ | -- | Heal | IDEA | Undo last damage taken |
 | DDoS | 6x3 | Damage | IDEA | Multi-hit, 3 weak strikes |
