@@ -14,7 +14,7 @@ import { TYPES } from './data/types.js';
 import { EVOLUTIONS } from './data/evolutions.js';
 import { startTransition, updateTransition, drawTransitionOverlay } from './engine/transition.js';
 import { initTracker } from './evolution/tracker.js';
-import { setEvolutionData, setMonstersDataForEvolution, checkPartyEvolutions, applyEvolution, setPendingEvolution, clearPendingEvolution, getEvolutionProgress } from './evolution/evolution.js';
+import { setEvolutionData, setMonstersDataForEvolution, clearPendingEvolution, getEvolutionProgress } from './evolution/evolution.js';
 import { startEvolutionAnimation, updateEvolutionAnimation, drawEvolutionAnimation, clearEvolutionAnimation } from './evolution/animation.js';
 import { saveGame, loadGame, applySave, hasSave, recordBrowserCache } from './sync/save.js';
 import { eventBus, Events } from './engine/events.js';
@@ -71,24 +71,7 @@ async function init() {
   requestAnimationFrame(loop);
 }
 
-function autoSave() {
-  const player = getPlayer();
-  saveGame(player);
-}
-
-function checkForEvolutions() {
-  const player = getPlayer();
-  const state = getState();
-  if (state !== STATES.EXPLORE) return;
-
-  const evo = checkPartyEvolutions(player.party);
-  if (evo) {
-    setPendingEvolution(evo);
-    const evolved = applyEvolution(player.party, evo.partyIndex, evo.to);
-    startEvolutionAnimation(evo.from, evo.to);
-    setState(STATES.EVOLVING);
-  }
-}
+function autoSave() { saveGame(getPlayer()); }
 
 function loop(timestamp) {
   const dt = timestamp - lastTime;

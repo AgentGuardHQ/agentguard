@@ -115,7 +115,3 @@ export function playEvolution() {
     delayed(() => tone(f, i === 3 ? 0.5 : 0.2, 'sine', 0.3, true), 3200 + i * 200));
 }
 
-export function playDevEvent() {
-  tone(660, 0.08, 'sine', 0.2);
-  delayed(() => tone(880, 0.1, 'sine', 0.2, true), 80);
-}
