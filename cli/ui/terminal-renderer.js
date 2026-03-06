@@ -21,14 +21,13 @@ const FG = {
 };
 
 const TYPE_COLORS = {
-  memory: 'green',
-  logic: 'yellow',
-  runtime: 'red',
-  syntax: 'magenta',
   frontend: 'blue',
-  backend: 'cyan',
+  backend: 'red',
   devops: 'yellow',
-  testing: 'yellow',
+  testing: 'green',
+  architecture: 'magenta',
+  security: 'red',
+  ai: 'cyan',
 };
 
 function color(text, fg) {
@@ -57,34 +56,6 @@ function padVis(str, width) {
 // ── ASCII art per type ──
 
 const TYPE_ART = {
-  memory: [
-    '  ╔══╗  ',
-    '  ║▓▓║  ',
-    ' ╔╝  ╚╗ ',
-    ' ║ ?? ║ ',
-    ' ╚════╝ ',
-  ],
-  logic: [
-    '  /\\_/\\  ',
-    ' ( o.o ) ',
-    '  > ^ <  ',
-    ' /|   |\\ ',
-    ' ~~ ? ~~ ',
-  ],
-  runtime: [
-    ' ╭─────╮ ',
-    ' │ X X │ ',
-    ' │  ~  │ ',
-    ' │/|||\\│ ',
-    ' ╰─────╯ ',
-  ],
-  syntax: [
-    ' {{{{{{  ',
-    ' { >_< } ',
-    ' {  ~  } ',
-    ' {;};};  ',
-    ' }}}}}}  ',
-  ],
   frontend: [
     ' ┌─────┐ ',
     ' │ </> │ ',
@@ -112,6 +83,27 @@ const TYPE_ART = {
     ' │ v x │ ',
     ' │ x v │ ',
     ' ╰──x──╯ ',
+  ],
+  architecture: [
+    ' ╔═╦═╦═╗ ',
+    ' ║ ║ ║ ║ ',
+    ' ╠═╬═╬═╣ ',
+    ' ║ ║ ║ ║ ',
+    ' ╚═╩═╩═╝ ',
+  ],
+  security: [
+    ' ┌──*──┐ ',
+    ' │ /|\\ │ ',
+    ' │/ | \\│ ',
+    ' │\\ | /│ ',
+    ' └──*──┘ ',
+  ],
+  ai: [
+    ' ╭─────╮ ',
+    ' │ 0 1 │ ',
+    ' │ 1 0 │ ',
+    ' │ 0 1 │ ',
+    ' ╰─────╯ ',
   ],
 };
 

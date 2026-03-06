@@ -1,7 +1,7 @@
 {
   "name": "bugmon",
-  "version": "1.0.0",
-  "description": "Debugging tool with game aesthetics — real errors become BugMon encounters",
+  "version": "2.0.0",
+  "description": "A Pokémon-style browser RPG themed around software bugs",
   "type": "module",
   "bin": {
     "bugmon": "./cli/bin.js"
@@ -11,19 +11,16 @@
     "data/"
   ],
   "scripts": {
-    "dev": "node cli/bin.js",
-    "validate": "node .github/scripts/validate-data.mjs"
+    "test": "node tests/run.js",
+    "simulate": "node simulate.js",
+    "simulate:quick": "node simulation/cli.js --battles 1000",
+    "simulate:full": "node simulation/cli.js --battles 50000",
+    "sync-data": "node scripts/sync-data.js",
+    "build": "node scripts/build.js",
+    "build:tiny": "node scripts/build.js --no-sprites",
+    "serve": "python3 -m http.server",
+    "dev": "node cli/bin.js"
   },
-  "keywords": [
-    "debugging",
-    "developer-tools",
-    "error-handling",
-    "gamification",
-    "cli"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jpleva91/BugMon.git"
-  }
+  "keywords": ["game", "rpg", "pokemon", "simulation", "debugging", "developer-tools", "cli"],
+  "license": "MIT"
 }

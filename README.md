@@ -1,110 +1,18 @@
 # BugMon
 
-**Debugging tool with game aesthetics. Every error is a wild encounter.**
+**Developer monsters battling in a type-safe ecosystem.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Play Now](https://img.shields.io/badge/Play-GitHub%20Pages-orange.svg)](https://jpleva91.github.io/BugMon/)
+[![Size](https://img.shields.io/badge/gzipped-~21_KB-brightgreen.svg)](LIGHTWEIGHT.md)
+[![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](LIGHTWEIGHT.md)
 
-> Your errors are monsters. Catch them all.
+> The Pokémon game developers deserve.
 
-BugMon wraps your dev commands and turns runtime errors into monster encounters. TypeError? That's a **NullPointer**. Stack overflow? Meet **StackOverflow**. Fix bugs, earn XP, fill your BugDex.
+A monster-taming RPG where the monsters are software bugs, the types are programming domains, and every battle is a debugging session. Built with zero dependencies, pure vanilla JS, and way too many puns.
 
-```
-╔════════════════════════════════════════════════╗
-║  Wild NullPointer appeared!                    ║
-║                                                ║
-║    ╔══╗                                        ║
-║    ║▓▓║                                        ║
-║   ╔╝  ╚╗                                       ║
-║   ║ ?? ║                                       ║
-║   ╚════╝                                       ║
-║                                                ║
-║  Type: MEMORY    HP: ██████████ 30             ║
-║                                                ║
-║  Cannot read properties of null (reading       ║
-║  'foo')                                        ║
-║                                                ║
-║  >> src/user.service.ts:42:19                  ║
-║                                                ║
-║  Tip: Check if the object exists before        ║
-║       accessing its properties. Use optional   ║
-║       chaining (?.) or a null check.           ║
-╚════════════════════════════════════════════════╝
-  +110 XP | NEW BugDex entry!
-```
-
-## Install
-
-```bash
-npm install -g bugmon
-```
-
-## Usage
-
-```bash
-# Wrap any command — errors become BugMon encounters
-bugmon watch -- npm run dev
-bugmon watch -- node server.js
-bugmon watch -- npx tsc --noEmit
-
-# Check your BugDex (Pokédex for bugs)
-bugmon dex
-
-# View your bug hunter stats
-bugmon stats
-```
-
-## How It Works
-
-1. `bugmon watch` spawns your command and intercepts stderr
-2. Errors are parsed and matched to one of 20 BugMon creatures
-3. An encounter card appears with the monster, error details, file location, and a fix tip
-4. The error is recorded in your BugDex (`~/.bugmon/bugdex.json`)
-5. You earn XP — first encounters give bonus points
-
-**Errors still pass through.** BugMon augments your error output, never hides it.
-
-## The Roster
-
-20 BugMon across 8 types, each mapped to real error patterns:
-
-| BugMon | Type | Catches |
-|--------|------|---------|
-| **NullPointer** | Memory | `TypeError: Cannot read properties of null` |
-| **RaceCondition** | Logic | Race conditions, concurrent access |
-| **MemoryLeak** | Memory | Heap out of memory, ENOMEM |
-| **Deadlock** | Logic | Deadlocks, lock timeouts |
-| **OffByOne** | Logic | Off-by-one, boundary errors |
-| **MergeConflict** | Syntax | `SyntaxError`, parsing errors |
-| **CallbackHell** | Runtime | `is not a function` |
-| **Heisenbug** | Logic | Intermittent, flaky errors |
-| **InfiniteLoop** | Runtime | Maximum call stack, timeouts |
-| **SpaghettiCode** | Syntax | Circular dependencies |
-| **StackOverflow** | Runtime | `RangeError: Maximum call stack` |
-| **IndexOutOfBounds** | Memory | `ReferenceError`, out of range |
-| **CSSFloat** | Frontend | CSS/layout/rendering errors |
-| **404NotFound** | Frontend | ENOENT, file not found, 404 |
-| **DeprecatedAPI** | Backend | Deprecated warnings, missing modules |
-| **BrokenPipe** | Backend | ECONNREFUSED, socket hang up |
-| **GitBlame** | DevOps | Permission denied, EACCES |
-| **ForkBomb** | DevOps | Too many open files, EMFILE |
-| **UnhandledPromise** | Testing | Unhandled promise rejections |
-| **RegexDenial** | Testing | Invalid regex, backtracking |
-
-## XP System
-
-| Event | XP |
-|-------|---:|
-| Encounter a bug | +10 |
-| First encounter of a BugMon | +100 |
-| Fix a bug (error gone on re-run) | +50 |
-
-Level up as you squash more bugs.
-
-## Browser Game
-
-BugMon also lives as a playable browser game at **[jpleva91.github.io/BugMon](https://jpleva91.github.io/BugMon/)** — explore a tile-based world, battle wild BugMon, and capture them with a turn-based combat system.
+**[Play Now](https://jpleva91.github.io/BugMon/)**
 
 <p align="center">
   <img src="sprites/nullpointer.png" width="64" alt="NullPointer">
@@ -117,42 +25,138 @@ BugMon also lives as a playable browser game at **[jpleva91.github.io/BugMon](ht
   <img src="sprites/heisenbug.png" width="64" alt="Heisenbug">
 </p>
 
+## CLI Debugging Tool
+
+BugMon also works as a CLI that wraps your dev commands and turns real errors into monster encounters:
+
+```bash
+bugmon watch -- npm run dev
+bugmon watch -- node server.js
+bugmon dex                      # View your BugDex
+bugmon stats                    # View your bug hunter level and XP
+```
+
+Errors pass through unchanged — BugMon augments, never hides.
+
+## Add a BugMon in Under 2 Minutes
+
+BugMon is data-driven. Add a new monster by editing a single JSON file -- no code changes needed:
+
+```json
+{
+  "id": 31,
+  "name": "YourBugName",
+  "type": "frontend",
+  "hp": 30, "attack": 7, "defense": 5, "speed": 6,
+  "moves": ["layoutshift", "zindexwar"],
+  "color": "#3498db",
+  "sprite": "yourbugname"
+}
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+
+## Features
+
+- **30 BugMon** across 7 types with evolutions
+- **CLI debugging tool** — real errors become monster encounters with fix tips
+- Turn-based combat with speed priority, type effectiveness, and critical hits
+- Tile-based exploration with random encounters in tall grass
+- Capture mechanic with HP-based probability
+- Egg hatching mechanic for captured monsters
+- Procedurally generated monster sprites
+- Synthesized sound effects (Web Audio API)
+- Mobile touch controls (D-pad + A/B buttons)
+- **Zero dependencies** -- vanilla JS, HTML5 Canvas, no build step ([see the Lightweight Manifesto](LIGHTWEIGHT.md))
+
+## How to Play
+
+Walk through the world and step into tall grass to encounter wild BugMon.
+
+### Controls
+
+| Action | Keyboard | Mobile |
+|--------|----------|--------|
+| Move | Arrow keys | D-pad |
+| Confirm | Enter | A button |
+| Back | Escape | B button |
+
+### Battle Options
+
+- **Fight** -- Pick a move. Faster BugMon acts first.
+- **Capture** -- Lower HP = higher catch chance. Failed capture = enemy gets a free turn.
+- **Run** -- Always succeeds.
+
+## Type System
+
+7 types with effectiveness matchups:
+
+| | Front | Back | DevOps | Test | Arch | Sec | AI |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| **Frontend** | -- | **1.5x** | 1x | **1.5x** | 0.5x | 1x | 0.5x |
+| **Backend** | 0.5x | -- | **1.5x** | 1x | **1.5x** | 0.5x | 1x |
+| **DevOps** | 1x | 0.5x | -- | **1.5x** | 1x | **1.5x** | 0.5x |
+| **Testing** | 0.5x | 1x | 0.5x | -- | **1.5x** | 1x | **1.5x** |
+| **Architecture** | **1.5x** | 0.5x | 1x | 0.5x | -- | **1.5x** | 1x |
+| **Security** | 1x | **1.5x** | 0.5x | 1x | 0.5x | -- | **1.5x** |
+| **AI** | **1.5x** | 1x | **1.5x** | 0.5x | 1x | 0.5x | -- |
+
+## Contribute a BugMon
+
+No coding required! Submit your own BugMon in 4 steps:
+
+1. [Open a new BugMon submission](../../issues/new?template=new-bugmon.yml)
+2. Fill out the form with your BugMon's name, type, stats, and moves
+3. A bot will validate your submission and show a battle preview
+4. Once approved by a maintainer, your BugMon joins the game!
+
+See the [issue template](../../issues/new?template=new-bugmon.yml) to get started.
+
+## Run Locally
+
+```bash
+git clone https://github.com/jpleva91/BugMon.git
+cd BugMon
+python3 -m http.server
+# Open http://localhost:8000
+```
+
+Any static file server works. No build step, no `npm install`, no bundler.
+
 ## Architecture
 
 ```
 BugMon/
-├── cli/                    # CLI debugging tool
-│   ├── bin.js              # Entry point
-│   ├── core/               # Error & stacktrace parsers
-│   ├── monsters/           # Error → monster matching
-│   ├── bugdex/             # BugDex persistence
-│   ├── ui/                 # Terminal renderer (ANSI)
-│   └── adapters/           # CLI watch adapter
-├── data/                   # Shared monster/move/type data (JSON)
-├── engine/                 # Browser game engine
-├── battle/                 # Turn-based battle system
-├── world/                  # Map, player, encounters
-├── audio/                  # Synthesized sound effects
-└── sprites/                # Pixel art sprites
+├── game.js              # Game loop and orchestration
+├── engine/              # State machine, input, rendering, transitions
+├── battle/              # Turn-based battle engine + damage calc
+├── world/               # Map, player, encounters
+├── data/                # JSON content (monsters, moves, types, map)
+├── audio/               # Synthesized sound effects (Web Audio API)
+├── sprites/             # Pixel art sprites + procedural tile textures
+└── cli/                 # CLI debugging tool
+    ├── bin.js           # Entry point
+    ├── core/            # Error & stacktrace parsers
+    ├── monsters/        # Error → monster matching
+    ├── bugdex/          # BugDex persistence
+    ├── ui/              # Terminal renderer (ANSI)
+    └── adapters/        # CLI watch adapter
 ```
+
+All game content (monsters, moves, types) is defined in JSON and loaded at runtime. The engine never hardcodes game data. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical breakdown.
 
 ## Contributing
 
-We welcome contributions! Ways to contribute:
-
-- **Add a new BugMon** — edit `data/monsters.json` with a new error pattern
-- **Add a new sprite** — drop a 64x64 PNG into `sprites/`
-- **Improve error matching** — better patterns, more edge cases
-- **New adapters** — VSCode extension, GitHub bot, dev server overlay
+We welcome contributions! The easiest way to contribute is adding new BugMon or moves -- it only takes a JSON edit.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## Design Principles
+## Tech Stack
 
-- **Zero dependencies** — vanilla JS, raw ANSI codes, Node.js built-ins only
-- **Don't swallow errors** — augment, never replace
-- **Tiny** — fast install, no bloat
-- **Adapter pattern** — CLI today, VSCode/GitHub tomorrow
+- Vanilla JavaScript (ES6 modules)
+- HTML5 Canvas 2D
+- Web Audio API (synthesized sounds)
+- Zero dependencies, zero build tools
 
 ## License
 

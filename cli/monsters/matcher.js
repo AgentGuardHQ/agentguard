@@ -53,7 +53,7 @@ export function matchMonster(error) {
 
   // Ultimate fallback
   if (!bestMatch) {
-    bestMatch = allMonsters.find(m => m.name === 'OffByOne') || allMonsters[0];
+    bestMatch = allMonsters.find(m => m.name === 'FlakyTest') || allMonsters[0];
     bestScore = 1;
   }
 
@@ -68,24 +68,24 @@ export function matchMonster(error) {
  */
 function matchByErrorType(errorType, allMonsters) {
   const typeMap = {
-    'null-reference': 'memory',
-    'type-mismatch': 'logic',
-    'type-error': 'logic',
-    'syntax': 'syntax',
-    'undefined-reference': 'memory',
-    'stack-overflow': 'runtime',
-    'range-error': 'runtime',
+    'null-reference': 'backend',
+    'type-mismatch': 'backend',
+    'type-error': 'backend',
+    'syntax': 'frontend',
+    'undefined-reference': 'backend',
+    'stack-overflow': 'backend',
+    'range-error': 'backend',
     'network': 'backend',
-    'file-not-found': 'frontend',
-    'permission': 'devops',
-    'import': 'backend',
+    'file-not-found': 'devops',
+    'permission': 'security',
+    'import': 'devops',
     'unhandled-promise': 'testing',
     'broken-pipe': 'backend',
-    'memory-leak': 'memory',
+    'memory-leak': 'backend',
     'regex': 'testing',
     'assertion': 'testing',
-    'deprecated': 'backend',
-    'generic': 'logic',
+    'deprecated': 'architecture',
+    'generic': 'testing',
   };
 
   const monsterType = typeMap[errorType];
