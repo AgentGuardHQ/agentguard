@@ -5,7 +5,7 @@ import { createInterface } from 'node:readline';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { loadBugDex, saveBugDex } from '../bugdex/bugdex.js';
+import { loadBugDex, saveBugDex } from '../../ecosystem/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +16,7 @@ let typeData = null;
 
 function loadGameData() {
   if (movesData) return;
-  const dataDir = join(__dirname, '..', '..', 'data');
+  const dataDir = join(__dirname, '..', '..', 'ecosystem', 'data');
   movesData = JSON.parse(readFileSync(join(dataDir, 'moves.json'), 'utf8'));
   typeData = JSON.parse(readFileSync(join(dataDir, 'types.json'), 'utf8'));
 }
@@ -244,7 +244,7 @@ function getParty() {
   if (dex.party && dex.party.length > 0) return dex.party;
 
   // Give the player a starter BugMon
-  const dataDir = join(__dirname, '..', '..', 'data');
+  const dataDir = join(__dirname, '..', '..', 'ecosystem', 'data');
   const monsters = JSON.parse(readFileSync(join(dataDir, 'monsters.json'), 'utf8'));
 
   // Pick a random common starter

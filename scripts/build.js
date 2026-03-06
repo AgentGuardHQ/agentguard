@@ -18,31 +18,31 @@ const noSprites = process.argv.includes('--no-sprites');
 
 // --- Dependency graph (manually ordered, leaves first) ---
 const MODULE_ORDER = [
-  'data/monsters.js',
-  'data/moves.js',
-  'data/types.js',
-  'data/mapData.js',
-  'data/evolutions.js',
-  'engine/events.js',
-  'engine/state.js',
-  'audio/sound.js',
-  'engine/input.js',
-  'sprites/sprites.js',
-  'sprites/monsterGen.js',
-  'sprites/tiles.js',
-  'world/map.js',
-  'world/player.js',
-  'world/encounters.js',
-  'engine/renderer.js',
-  'engine/transition.js',
-  'sync/save.js',
-  'engine/title.js',
-  'battle/damage.js',
-  'battle/battleEngine.js',
-  'evolution/tracker.js',
-  'evolution/evolution.js',
-  'evolution/animation.js',
-  'game.js',
+  'ecosystem/data/monsters.js',
+  'ecosystem/data/moves.js',
+  'ecosystem/data/types.js',
+  'ecosystem/data/mapData.js',
+  'ecosystem/data/evolutions.js',
+  'game/engine/events.js',
+  'game/engine/state.js',
+  'game/audio/sound.js',
+  'game/engine/input.js',
+  'game/sprites/sprites.js',
+  'game/sprites/monsterGen.js',
+  'game/sprites/tiles.js',
+  'game/world/map.js',
+  'game/world/player.js',
+  'game/world/encounters.js',
+  'game/engine/renderer.js',
+  'game/engine/transition.js',
+  'game/sync/save.js',
+  'game/engine/title.js',
+  'game/battle/damage.js',
+  'game/battle/battleEngine.js',
+  'game/evolution/tracker.js',
+  'game/evolution/evolution.js',
+  'game/evolution/animation.js',
+  'game/game.js',
 ];
 
 console.log('Building BugMon single-file distribution...\n');
@@ -122,7 +122,7 @@ function minifyCSS(css) {
 function inlineSprites() {
   if (noSprites) return '';
 
-  const spriteDir = path.join(ROOT, 'sprites');
+  const spriteDir = path.join(ROOT, 'game', 'sprites');
   const pngs = fs.readdirSync(spriteDir).filter(f => f.endsWith('.png'));
 
   if (pngs.length === 0) return '';
@@ -222,7 +222,7 @@ fs.writeFileSync(outPath, output);
 
 // --- Copy sprite PNGs for lazy loading (when not inlined) ---
 if (noSprites) {
-  const spriteDir = path.join(ROOT, 'sprites');
+  const spriteDir = path.join(ROOT, 'game', 'sprites');
   const distSprites = path.join(DIST, 'sprites');
   if (!fs.existsSync(distSprites)) fs.mkdirSync(distSprites, { recursive: true });
   const pngs = fs.existsSync(spriteDir) ? fs.readdirSync(spriteDir).filter(f => f.endsWith('.png')) : [];

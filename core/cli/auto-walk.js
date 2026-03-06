@@ -19,7 +19,7 @@ let sessionState = null;
 function loadMap() {
   if (mapData) return mapData;
   try {
-    const dataPath = join(import.meta.dirname || '.', '..', '..', 'data', 'map.json');
+    const dataPath = join(import.meta.dirname || '.', '..', '..', 'ecosystem', 'data', 'map.json');
     mapData = JSON.parse(readFileSync(dataPath, 'utf8'));
   } catch {
     // Fallback simple map bounds

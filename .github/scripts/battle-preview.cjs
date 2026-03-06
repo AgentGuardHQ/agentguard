@@ -38,7 +38,7 @@ function effectivenessText(eff) {
 }
 
 function simulate(submittedBugmon) {
-  const dataDir = path.join(__dirname, '..', '..', 'data');
+  const dataDir = path.join(__dirname, '..', '..', 'ecosystem', 'data');
   const monsters = JSON.parse(fs.readFileSync(path.join(dataDir, 'monsters.json'), 'utf8'));
   const moves = JSON.parse(fs.readFileSync(path.join(dataDir, 'moves.json'), 'utf8'));
   const typesData = JSON.parse(fs.readFileSync(path.join(dataDir, 'types.json'), 'utf8'));

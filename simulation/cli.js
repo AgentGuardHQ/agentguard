@@ -31,9 +31,9 @@ async function main() {
 
   // Load game data
   const root = new URL('../', import.meta.url);
-  const monsters = JSON.parse(await readFile(new URL('data/monsters.json', root), 'utf-8'));
-  const moves = JSON.parse(await readFile(new URL('data/moves.json', root), 'utf-8'));
-  const types = JSON.parse(await readFile(new URL('data/types.json', root), 'utf-8'));
+  const monsters = JSON.parse(await readFile(new URL('ecosystem/data/monsters.json', root), 'utf-8'));
+  const moves = JSON.parse(await readFile(new URL('ecosystem/data/moves.json', root), 'utf-8'));
+  const types = JSON.parse(await readFile(new URL('ecosystem/data/types.json', root), 'utf-8'));
 
   console.log(`Running ${numBattles} battles with "${strategy.name}" strategy (seed: ${seed})...`);
   console.log('');

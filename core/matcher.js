@@ -11,7 +11,7 @@ let monsters = null;
 
 function loadMonsters() {
   if (monsters) return monsters;
-  const dataPath = join(__dirname, '..', '..', 'data', 'monsters.json');
+  const dataPath = join(__dirname, '..', 'ecosystem', 'data', 'monsters.json');
   monsters = JSON.parse(readFileSync(dataPath, 'utf8'));
   return monsters;
 }

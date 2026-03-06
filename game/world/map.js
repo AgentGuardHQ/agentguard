@@ -1,5 +1,5 @@
 // Map tile queries
-import { MAP_DATA } from '../data/mapData.js';
+import { MAP_DATA } from '../../ecosystem/data/mapData.js';
 
 export function getMap() {
   return MAP_DATA;

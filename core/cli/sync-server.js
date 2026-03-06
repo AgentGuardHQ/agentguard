@@ -18,7 +18,7 @@
 
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
-import { loadBugDex, saveBugDex } from '../bugdex/bugdex.js';
+import { loadBugDex, saveBugDex } from '../../ecosystem/storage.js';
 
 const PORT = 9876;
 const WS_MAGIC = '258EAFA5-E914-47DA-95CA-5AB9FE82957E';

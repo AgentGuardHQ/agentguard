@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const dataDir = path.join(__dirname, '..', '..', 'data');
+const dataDir = path.join(__dirname, '..', '..', 'ecosystem', 'data');
 const monstersPath = path.join(dataDir, 'monsters.json');
 
 const bugmonJson = process.argv[2];

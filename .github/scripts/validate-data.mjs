@@ -11,9 +11,9 @@ function error(file, msg) {
 
 // Load all data files
 const [monstersRaw, movesRaw, typesRaw] = await Promise.all([
-  readFile('data/monsters.json', 'utf-8'),
-  readFile('data/moves.json', 'utf-8'),
-  readFile('data/types.json', 'utf-8'),
+  readFile('ecosystem/data/monsters.json', 'utf-8'),
+  readFile('ecosystem/data/moves.json', 'utf-8'),
+  readFile('ecosystem/data/types.json', 'utf-8'),
 ]);
 
 let monsters, moves, types;

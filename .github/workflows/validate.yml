@@ -3,7 +3,7 @@ name: Validate Game Data
 on:
   pull_request:
     paths:
-      - 'data/**'
+      - 'ecosystem/data/**'
 
 jobs:
   validate:

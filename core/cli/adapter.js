@@ -4,13 +4,13 @@
 //   - watch --cache: interactive mode, pauses on errors for battle/cache
 
 import { spawn } from 'node:child_process';
-import { parseErrors } from '../core/error-parser.js';
-import { parseStackTrace, getUserFrame } from '../core/stacktrace-parser.js';
-import { matchMonster } from '../monsters/matcher.js';
-import { recordEncounter } from '../bugdex/bugdex.js';
-import { renderEncounter, renderEncounterPrompt } from '../ui/terminal-renderer.js';
-import { renderContributionPrompt, LOW_CONFIDENCE_THRESHOLD } from '../ui/contribute.js';
-import { interactiveCache } from '../core/catch.js';
+import { parseErrors } from '../error-parser.js';
+import { parseStackTrace, getUserFrame } from '../stacktrace-parser.js';
+import { matchMonster } from '../matcher.js';
+import { recordEncounter } from '../../ecosystem/storage.js';
+import { renderEncounter, renderEncounterPrompt } from './renderer.js';
+import { renderContributionPrompt, LOW_CONFIDENCE_THRESHOLD } from './contribute.js';
+import { interactiveCache } from './catch.js';
 
 /**
  * Run a command and intercept errors from stderr.

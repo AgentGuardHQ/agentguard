@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', 'data');
+const dataDir = path.join(__dirname, '..', 'ecosystem', 'data');
 
 function read(file) {
   return JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));

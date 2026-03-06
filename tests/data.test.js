@@ -3,10 +3,10 @@ import { readFile } from 'node:fs/promises';
 import { test, suite } from './run.js';
 
 const root = new URL('../', import.meta.url);
-const monsters = JSON.parse(await readFile(new URL('data/monsters.json', root), 'utf-8'));
-const moves = JSON.parse(await readFile(new URL('data/moves.json', root), 'utf-8'));
-const types = JSON.parse(await readFile(new URL('data/types.json', root), 'utf-8'));
-const map = JSON.parse(await readFile(new URL('data/map.json', root), 'utf-8'));
+const monsters = JSON.parse(await readFile(new URL('ecosystem/data/monsters.json', root), 'utf-8'));
+const moves = JSON.parse(await readFile(new URL('ecosystem/data/moves.json', root), 'utf-8'));
+const types = JSON.parse(await readFile(new URL('ecosystem/data/types.json', root), 'utf-8'));
+const map = JSON.parse(await readFile(new URL('ecosystem/data/map.json', root), 'utf-8'));
 
 const moveIds = new Set(moves.map(m => m.id));
 const typeNames = new Set(types.types);

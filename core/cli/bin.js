@@ -11,10 +11,10 @@
 //   bugmon sync                         Start sync server (bridges CLI ↔ browser)
 //   bugmon help                         Show help
 
-import { watch } from './adapters/cli-adapter.js';
-import { loadBugDex } from './bugdex/bugdex.js';
-import { getAllMonsters } from './monsters/matcher.js';
-import { renderBugDex, renderStats, renderParty } from './ui/terminal-renderer.js';
+import { watch } from './adapter.js';
+import { loadBugDex } from '../../ecosystem/storage.js';
+import { getAllMonsters } from '../matcher.js';
+import { renderBugDex, renderStats, renderParty } from './renderer.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -68,7 +68,7 @@ switch (command) {
   }
 
   case 'sync': {
-    const { startSyncServer } = await import('./sync/server.js');
+    const { startSyncServer } = await import('./sync-server.js');
     try {
       const { port, clients, stop } = await startSyncServer();
       console.log('');

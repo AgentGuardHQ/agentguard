@@ -4,11 +4,11 @@
   "description": "A Pokémon-style browser RPG themed around software bugs",
   "type": "module",
   "bin": {
-    "bugmon": "./cli/bin.js"
+    "bugmon": "./core/cli/bin.js"
   },
   "files": [
-    "cli/",
-    "data/"
+    "core/",
+    "ecosystem/"
   ],
   "scripts": {
     "test": "node tests/run.js",
@@ -20,7 +20,7 @@
     "build:tiny": "node scripts/build.js --no-sprites",
     "budget": "node scripts/build.js --no-sprites",
     "serve": "python3 -m http.server",
-    "dev": "node cli/bin.js"
+    "dev": "node core/cli/bin.js"
   },
   "keywords": [
     "game",

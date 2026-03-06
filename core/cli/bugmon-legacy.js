@@ -12,9 +12,9 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const { identify } = require('./bugdex');
+const { identify } = require('../../ecosystem/bugdex');
 const { showEncounter, showBugDex, showHelp } = require('./encounter');
-const { getAllMonsters } = require('./bugdex');
+const { getAllMonsters } = require('../../ecosystem/bugdex');
 
 // ── Parse args ────────────────────────────────────────────
 

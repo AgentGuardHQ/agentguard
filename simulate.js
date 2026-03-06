@@ -8,12 +8,12 @@
 //   npm run simulate -- --runs 1000            # statistical analysis
 
 import { readFileSync } from 'fs';
-import { simulateBattle, createBattleState, getTurnOrder, resolveMove, applyDamage, isFainted } from './battle/battle-core.js';
+import { simulateBattle, createBattleState, getTurnOrder, resolveMove, applyDamage, isFainted } from './game/battle/battle-core.js';
 
 // Load game data
-const monsters = JSON.parse(readFileSync('data/monsters.json', 'utf-8'));
-const movesData = JSON.parse(readFileSync('data/moves.json', 'utf-8'));
-const typeData = JSON.parse(readFileSync('data/types.json', 'utf-8'));
+const monsters = JSON.parse(readFileSync('ecosystem/data/monsters.json', 'utf-8'));
+const movesData = JSON.parse(readFileSync('ecosystem/data/moves.json', 'utf-8'));
+const typeData = JSON.parse(readFileSync('ecosystem/data/types.json', 'utf-8'));
 
 function findMonster(name) {
   const mon = monsters.find(m => m.name.toLowerCase() === name.toLowerCase());
