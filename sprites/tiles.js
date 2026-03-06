@@ -1,5 +1,5 @@
 // Procedural tile textures
-const TILE = 32;
+const TILE_PX = 32;
 
 function mulberry32(seed) {
   return function() {
@@ -17,13 +17,13 @@ function mkCanvas(w, h) {
 }
 
 function createGroundTile() {
-  const c = mkCanvas(TILE, TILE);
+  const c = mkCanvas(TILE_PX, TILE_PX);
   const ctx = c.getContext('2d');
   const rng = mulberry32(42);
   ctx.fillStyle = '#c2b280';
-  ctx.fillRect(0, 0, TILE, TILE);
-  for (let y = 0; y < TILE; y += 2) {
-    for (let x = 0; x < TILE; x += 2) {
+  ctx.fillRect(0, 0, TILE_PX, TILE_PX);
+  for (let y = 0; y < TILE_PX; y += 2) {
+    for (let x = 0; x < TILE_PX; x += 2) {
       const o = (rng() - 0.5) * 24 | 0;
       ctx.fillStyle = `rgb(${194 + o},${178 + o},${128 + o})`;
       ctx.fillRect(x, y, 2, 2);
@@ -33,20 +33,20 @@ function createGroundTile() {
 }
 
 function createWallTile() {
-  const c = mkCanvas(TILE, TILE);
+  const c = mkCanvas(TILE_PX, TILE_PX);
   const ctx = c.getContext('2d');
   const rng = mulberry32(99);
   ctx.fillStyle = '#3a3a3a';
-  ctx.fillRect(0, 0, TILE, TILE);
-  for (let row = 0; row * 9 < TILE; row++) {
+  ctx.fillRect(0, 0, TILE_PX, TILE_PX);
+  for (let row = 0; row * 9 < TILE_PX; row++) {
     const by = row * 9;
     const off = (row % 2) * 8;
-    for (let col = -1; col * 16 + off < TILE; col++) {
+    for (let col = -1; col * 16 + off < TILE_PX; col++) {
       const bx = col * 16 + off;
       if (bx + 15 <= 0) continue;
       const v = (rng() - 0.5) * 20 | 0;
       ctx.fillStyle = `rgb(${85 + v},${85 + v},${85 + v})`;
-      const dx = Math.max(0, bx), dw = Math.min(bx + 15, TILE) - dx;
+      const dx = Math.max(0, bx), dw = Math.min(bx + 15, TILE_PX) - dx;
       ctx.fillRect(dx, by, dw, 8);
     }
   }
@@ -54,11 +54,11 @@ function createWallTile() {
 }
 
 function createGrassTile(swayIdx) {
-  const c = mkCanvas(TILE, TILE);
+  const c = mkCanvas(TILE_PX, TILE_PX);
   const ctx = c.getContext('2d');
   const rng = mulberry32(77);
   ctx.fillStyle = '#228B22';
-  ctx.fillRect(0, 0, TILE, TILE);
+  ctx.fillRect(0, 0, TILE_PX, TILE_PX);
   for (let i = 0; i < 12; i++) {
     const bx = (rng() * 28 | 0) + 2;
     const bh = (rng() * 12 | 0) + 10;
@@ -66,9 +66,9 @@ function createGrassTile(swayIdx) {
     const g = (rng() * 60 | 0) + 100;
     ctx.fillStyle = `rgb(${g * 0.2 | 0},${g},${g * 0.15 | 0})`;
     ctx.beginPath();
-    ctx.moveTo(bx - 2, TILE);
-    ctx.lineTo(bx + 2, TILE);
-    ctx.lineTo(bx + sway, TILE - bh);
+    ctx.moveTo(bx - 2, TILE_PX);
+    ctx.lineTo(bx + 2, TILE_PX);
+    ctx.lineTo(bx + sway, TILE_PX - bh);
     ctx.fill();
   }
   return c;

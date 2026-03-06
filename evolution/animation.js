@@ -3,8 +3,8 @@ import { playEvolution } from '../audio/sound.js';
 import { drawSprite } from '../sprites/sprites.js';
 
 let evoAnim = null;
-const PHASES = [2000, 3000, 1500, 2000]; // announce, flash, reveal, complete
-const TOTAL = PHASES.reduce((a, b) => a + b, 0);
+const EVO_PHASES = [2000, 3000, 1500, 2000]; // announce, flash, reveal, complete
+const TOTAL = EVO_PHASES.reduce((a, b) => a + b, 0);
 
 export function startEvolutionAnimation(fromMon, toMon) {
   evoAnim = { fromMon, toMon, timer: 0, done: false };
@@ -28,24 +28,24 @@ export function drawEvolutionAnimation(ctx, w, h) {
   const t = evoAnim.timer;
   const { fromMon, toMon } = evoAnim;
 
-  if (t < PHASES[0]) {
+  if (t < EVO_PHASES[0]) {
     // Announce
     drawMon(ctx, fromMon, cx, cy, sz, 1);
     drawText(ctx, `What? ${fromMon.name} is evolving!`, cx, h - 50);
-  } else if (t < PHASES[0] + PHASES[1]) {
+  } else if (t < EVO_PHASES[0] + EVO_PHASES[1]) {
     // Flash between forms
-    const p = (t - PHASES[0]) / PHASES[1];
+    const p = (t - EVO_PHASES[0]) / EVO_PHASES[1];
     const speed = 4 + p * 20;
-    const showNew = Math.sin((t - PHASES[0]) * 0.01 * speed) > 0;
+    const showNew = Math.sin((t - EVO_PHASES[0]) * 0.01 * speed) > 0;
     const mon = showNew ? toMon : fromMon;
     drawMon(ctx, mon, cx, cy, sz * (1 + p * 0.2), 1);
     if (p > 0.8) {
       ctx.fillStyle = `rgba(255,255,255,${((p - 0.8) * 5).toFixed(2)})`;
       ctx.fillRect(0, 0, w, h);
     }
-  } else if (t < PHASES[0] + PHASES[1] + PHASES[2]) {
+  } else if (t < EVO_PHASES[0] + EVO_PHASES[1] + EVO_PHASES[2]) {
     // Reveal
-    const p = (t - PHASES[0] - PHASES[1]) / PHASES[2];
+    const p = (t - EVO_PHASES[0] - EVO_PHASES[1]) / EVO_PHASES[2];
     if (p < 0.3) {
       ctx.fillStyle = `rgba(255,255,255,${(1 - p / 0.3).toFixed(2)})`;
       ctx.fillRect(0, 0, w, h);

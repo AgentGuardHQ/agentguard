@@ -1,27 +1,27 @@
 // Web Audio API sound effects - all synthesized
-let ctx = null, masterGain = null, muted = false, volume = 0.5;
+let audioCtx = null, masterGain = null, muted = false, volume = 0.5;
 
 function init() {
-  if (ctx) return true;
+  if (audioCtx) return true;
   try {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = ctx.createGain();
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
     masterGain.gain.value = volume;
-    masterGain.connect(ctx.destination);
+    masterGain.connect(audioCtx.destination);
     return true;
   } catch (e) { return false; }
 }
 
 function ok() {
   if (!init()) return false;
-  if (ctx.state === 'suspended') ctx.resume();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return true;
 }
 
-export function unlock() { init(); if (ctx?.state === 'suspended') ctx.resume(); }
+export function unlock() { init(); if (audioCtx?.state === 'suspended') audioCtx.resume(); }
 
 export function toggleMute() {
-  if (!ctx) return false;
+  if (!audioCtx) return false;
   muted = !muted;
   masterGain.gain.value = muted ? 0 : volume;
   return muted;
@@ -30,28 +30,28 @@ export function toggleMute() {
 function tone(freq, dur, type, vol, fade) {
   if (!ok()) return;
   try {
-    const o = ctx.createOscillator(), g = ctx.createGain();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.type = type || 'square';
     o.frequency.value = freq;
     g.gain.value = vol ?? 0.3;
     o.connect(g); g.connect(masterGain);
     o.start();
     if (fade) {
-      g.gain.setValueAtTime(vol ?? 0.3, ctx.currentTime);
-      g.gain.linearRampToValueAtTime(0.001, ctx.currentTime + dur);
+      g.gain.setValueAtTime(vol ?? 0.3, audioCtx.currentTime);
+      g.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     }
-    o.stop(ctx.currentTime + dur + 0.05);
+    o.stop(audioCtx.currentTime + dur + 0.05);
   } catch (e) {}
 }
 
 function sweep(f1, f2, dur, type, vol) {
   if (!ok()) return;
   try {
-    const o = ctx.createOscillator(), g = ctx.createGain();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.type = type || 'sine';
     g.gain.value = vol ?? 0.3;
     o.connect(g); g.connect(masterGain);
-    const t = ctx.currentTime;
+    const t = audioCtx.currentTime;
     o.frequency.setValueAtTime(f1, t);
     o.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
     g.gain.setValueAtTime(vol ?? 0.3, t);
@@ -63,14 +63,14 @@ function sweep(f1, f2, dur, type, vol) {
 function noise(dur, vol) {
   if (!ok()) return;
   try {
-    const n = Math.max(1, ctx.sampleRate * dur | 0);
-    const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+    const n = Math.max(1, audioCtx.sampleRate * dur | 0);
+    const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
-    const s = ctx.createBufferSource(), g = ctx.createGain();
+    const s = audioCtx.createBufferSource(), g = audioCtx.createGain();
     s.buffer = buf; g.gain.value = vol ?? 0.2;
     s.connect(g); g.connect(masterGain);
-    s.start(); s.stop(ctx.currentTime + dur + 0.05);
+    s.start(); s.stop(audioCtx.currentTime + dur + 0.05);
   } catch (e) {}
 }
 

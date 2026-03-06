@@ -3,11 +3,11 @@
 import { getEvents } from './tracker.js';
 
 let evolutionData = null;
-let monstersData = null;
+let evoMonstersData = null;
 let pendingEvolution = null;
 
 export function setEvolutionData(data) { evolutionData = data; }
-export function setMonstersDataForEvolution(data) { monstersData = data; }
+export function setMonstersDataForEvolution(data) { evoMonstersData = data; }
 
 // Find the trigger for a monster's evolution (shared by check + progress)
 function findTrigger(monsterId) {
@@ -28,7 +28,7 @@ export function checkEvolution(monster) {
   const events = getEvents();
   const { event, count } = match.trigger.condition;
   if (events[event] >= count) {
-    const evolvedForm = monstersData.find(m => m.id === match.trigger.to);
+    const evolvedForm = evoMonstersData.find(m => m.id === match.trigger.to);
     if (evolvedForm) {
       return { from: monster, to: evolvedForm, trigger: match.trigger, chain: match.chain };
     }
@@ -60,7 +60,7 @@ export function getEvolutionProgress(monster) {
   const events = getEvents();
   const { event, count } = match.trigger.condition;
   const current = events[event] || 0;
-  const evolvedForm = monstersData ? monstersData.find(m => m.id === match.trigger.to) : null;
+  const evolvedForm = evoMonstersData ? evoMonstersData.find(m => m.id === match.trigger.to) : null;
   return {
     chainName: match.chain.name,
     eventType: event,

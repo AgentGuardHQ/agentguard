@@ -42,6 +42,7 @@ async function main() {
   await import('./simulator.test.js');
   await import('./report.test.js');
   await import('./data.test.js');
+  await import('./build.test.js');
 
   console.log('\n' + '='.repeat(40));
   if (totalFailed === 0) {

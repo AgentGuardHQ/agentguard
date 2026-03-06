@@ -9,17 +9,17 @@ export function startTransition(wildMon) {
 }
 
 // Phases: flash(60), pause(80), flash(60), pause(80), flash(80), fade(300), hold(200)
-const PHASES = [60, 80, 60, 80, 80, 300, 200];
-const TYPES = ['flash', 'pause', 'flash', 'pause', 'flash', 'fade', 'hold'];
+const TRANSITION_PHASES = [60, 80, 60, 80, 80, 300, 200];
+const TRANSITION_TYPES = ['flash', 'pause', 'flash', 'pause', 'flash', 'fade', 'hold'];
 
 export function updateTransition(dt) {
   if (!transition || transition.done) return null;
   transition.timer += dt;
-  if (transition.timer >= PHASES[transition.phase]) {
+  if (transition.timer >= TRANSITION_PHASES[transition.phase]) {
     transition.timer = 0;
     transition.phase++;
-    if (transition.phase < PHASES.length && TYPES[transition.phase] === 'flash') playTransitionFlash();
-    if (transition.phase >= PHASES.length) {
+    if (transition.phase < TRANSITION_PHASES.length && TRANSITION_TYPES[transition.phase] === 'flash') playTransitionFlash();
+    if (transition.phase >= TRANSITION_PHASES.length) {
       transition.done = true;
       const mon = transition.wildMon;
       transition = null;
@@ -32,8 +32,8 @@ export function updateTransition(dt) {
 export function drawTransitionOverlay(ctx, w, h, mapDrawFn) {
   if (!transition) return;
   mapDrawFn();
-  const type = TYPES[transition.phase];
-  const p = transition.timer / PHASES[transition.phase];
+  const type = TRANSITION_TYPES[transition.phase];
+  const p = transition.timer / TRANSITION_PHASES[transition.phase];
   if (type === 'flash') {
     const i = p < 0.5 ? p * 2 : (1 - p) * 2;
     ctx.fillStyle = `rgba(255,255,255,${(i * 0.9).toFixed(2)})`;
