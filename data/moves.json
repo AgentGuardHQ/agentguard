@@ -15,5 +15,10 @@
   { "id": "typemismatch", "name": "TypeMismatch", "power": 8, "type": "logic" },
   { "id": "compile", "name": "Compile", "power": 14, "type": "syntax" },
   { "id": "nullcheck", "name": "NullCheck", "power": 4, "type": "memory" },
-  { "id": "bufferoverrun", "name": "BufferOverrun", "power": 13, "type": "memory" }
+  { "id": "bufferoverrun", "name": "BufferOverrun", "power": 13, "type": "memory" },
+  { "id": "asyncawait", "name": "AsyncAwait", "power": 12, "type": "runtime" },
+  { "id": "safeaccess", "name": "SafeAccess", "power": 9, "type": "memory" },
+  { "id": "typecheck", "name": "TypeCheck", "power": 11, "type": "logic" },
+  { "id": "codeformat", "name": "CodeFormat", "power": 8, "type": "syntax" },
+  { "id": "forcepush", "name": "ForcePush", "power": 14, "type": "syntax" }
 ]

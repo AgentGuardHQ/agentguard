@@ -10,6 +10,7 @@
     "moves": ["segfault", "hotfix"],
     "color": "#e74c3c",
     "sprite": "nullpointer",
+    "evolvesTo": 15,
     "description": "A ghostly red phantom shaped like a broken arrow. Its body is translucent crimson with hollow white eyes that stare into the void. Where its feet should be, the creature tapers into a jagged pointer arrow that points downward into nothingness. Small glitch artifacts flicker around its edges. It looks lost and confused, perpetually searching for something that doesn't exist."
   },
   {
@@ -36,6 +37,7 @@
     "moves": ["garbagecollect", "memorydump"],
     "color": "#2ecc71",
     "sprite": "memoryleak",
+    "evolvesTo": 21,
     "description": "A bloated green blob creature that looks like it is slowly inflating and cannot stop growing. Its body is a round squishy mass of green slime with half-closed sleepy eyes, exhausted from carrying so much. Bright teal droplets drip constantly from its body and pool beneath it. Small floating 0s and 1s orbit around it like debris. A tiny faucet or pipe sticks out of its head, slowly dripping. It looks heavy, tired, and perpetually expanding."
   },
   {
@@ -75,6 +77,7 @@
     "moves": ["refactor", "patchdeploy"],
     "color": "#8e44ad",
     "sprite": "mergeconflict",
+    "evolvesTo": 19,
     "description": "A creature torn between two versions of itself, with <<<< and >>>> markers visible on its body like battle scars. Its left side is one color scheme and its right side another, with a jagged line of equal signs running down the middle. It looks perpetually confused and conflicted, unable to decide which version of itself to be."
   },
   {
@@ -88,6 +91,7 @@
     "moves": ["hotreload", "bluescreen"],
     "color": "#c0392b",
     "sprite": "callbackhell",
+    "evolvesTo": 13,
     "description": "A nightmarish red creature made of nested curly braces and parentheses, each layer deeper and more indented than the last. Its body spirals inward like a vortex of code. Flames lick at its edges and its eyes glow from deep within the nested layers. Arrow functions trail behind it like tentacles. It screams in async agony."
   },
   {
@@ -114,6 +118,7 @@
     "moves": ["coredump", "hotreload"],
     "color": "#e74c3c",
     "sprite": "infiniteloop",
+    "evolvesTo": 20,
     "description": "A massive red ouroboros-like creature endlessly chasing its own tail in a perfect circle. Its body is covered in repeating arrow symbols all pointing forward. Its eyes are dizzy spirals. Loading spinners orbit around it. It has been running since the program started and shows no signs of stopping. Despite its size, it moves incredibly slowly because it is stuck repeating the same path forever."
   },
   {
@@ -127,6 +132,7 @@
     "moves": ["refactor", "compile"],
     "color": "#7d3c98",
     "sprite": "spaghetticode",
+    "evolvesTo": 17,
     "description": "A tangled purple mass of intertwined code lines that form a creature vaguely resembling a ball of spaghetti with eyes. Goto arrows stick out in random directions. Its body is a hopeless knot of dependencies and circular references. Despite being an absolute mess, it somehow still works. It leaves a trail of deprecated functions wherever it slithers."
   },
   {
@@ -140,6 +146,7 @@
     "moves": ["bufferoverrun", "bluescreen"],
     "color": "#cb4335",
     "sprite": "stackoverflow",
+    "evolvesTo": 22,
     "description": "A towering red creature made of stacked rectangular frames, each one representing a function call. It grows taller and taller as frames pile on top, wobbling precariously. Its eyes peek out from near the top of the stack, looking panicked. The bottom frames are crushed under the weight. When it attacks, the whole stack comes crashing down in a spectacular collapse."
   },
   {
@@ -154,5 +161,148 @@
     "color": "#27ae60",
     "sprite": "indexoutofbounds",
     "description": "A green creature shaped like a hand with an extended index finger, always pointing just past the edge of an array. It stands on a numbered grid but is always one square beyond the last valid position. Red error exclamation marks pop up wherever it points. It has a confused expression, never understanding why it keeps reaching into forbidden territory."
+  },
+  {
+    "id": 13,
+    "name": "PromiseChain",
+    "type": "runtime",
+    "hp": 35,
+    "attack": 10,
+    "defense": 5,
+    "speed": 9,
+    "moves": ["hotreload", "bluescreen", "asyncawait"],
+    "color": "#2980b9",
+    "sprite": "promisechain",
+    "evolvesTo": 14,
+    "evolvedFrom": 7,
+    "description": "A sleek blue creature made of linked .then() chains, each link glowing with resolved promise energy. Its body flows like a river of orderly callbacks, each one neatly connected to the next. The chaos of its previous form has been tamed into a flowing sequence. Blue light pulses through each chain link as data passes through. Its eyes are calm and focused, patiently waiting for each operation to resolve."
+  },
+  {
+    "id": 14,
+    "name": "AsyncAwait",
+    "type": "runtime",
+    "hp": 42,
+    "attack": 12,
+    "defense": 7,
+    "speed": 10,
+    "moves": ["asyncawait", "bluescreen", "compile", "hotreload"],
+    "color": "#1abc9c",
+    "sprite": "asyncawait",
+    "evolvedFrom": 13,
+    "description": "A magnificent teal entity that has transcended callback chaos entirely. Its body is composed of clean, linear code streams that flow like ribbons of light. Await symbols orbit it like halos, each one a moment of perfect synchronicity. It moves with effortless grace, handling concurrent operations as naturally as breathing. The ultimate evolution of asynchronous programming, serene and powerful."
+  },
+  {
+    "id": 15,
+    "name": "OptionalChaining",
+    "type": "memory",
+    "hp": 38,
+    "attack": 9,
+    "defense": 6,
+    "speed": 8,
+    "moves": ["segfault", "nullcheck", "safeaccess"],
+    "color": "#e67e22",
+    "sprite": "optionalchaining",
+    "evolvesTo": 16,
+    "evolvedFrom": 1,
+    "description": "A graceful orange phantom with question marks adorning its body like armor. Where NullPointer once pointed into the void, OptionalChaining dances around it with elegant ?. operators. Its translucent body now glows with warm amber light instead of angry red. Each step it takes leaves a trail of safely-navigated property chains. It has learned to ask before reaching."
+  },
+  {
+    "id": 16,
+    "name": "TypeSafety",
+    "type": "memory",
+    "hp": 45,
+    "attack": 11,
+    "defense": 9,
+    "speed": 7,
+    "moves": ["segfault", "safeaccess", "typecheck", "compile"],
+    "color": "#3498db",
+    "sprite": "typesafety",
+    "evolvedFrom": 15,
+    "description": "A majestic blue guardian encased in crystalline type annotations. Its body is a perfect geometric form where every property is validated, every field is checked. Blue shields of type definitions orbit around it. Runtime errors bounce harmlessly off its type-checked armor. The compiler itself seems to smile upon this creature. It represents the pinnacle of safe, predictable code."
+  },
+  {
+    "id": 17,
+    "name": "CleanModule",
+    "type": "syntax",
+    "hp": 40,
+    "attack": 9,
+    "defense": 7,
+    "speed": 5,
+    "moves": ["refactor", "compile", "codeformat"],
+    "color": "#5b2c6f",
+    "sprite": "cleanmodule",
+    "evolvesTo": 18,
+    "evolvedFrom": 10,
+    "description": "Where SpaghettiCode was a tangled mess, CleanModule is a neatly organized cube of well-structured code blocks. Each face of the cube shows a different clean module with clear interfaces. Import and export arrows flow in orderly paths. Its eyes are sharp and focused. A small lint badge glows on its chest. It moves with purpose and precision, leaving no unused variable behind."
+  },
+  {
+    "id": 18,
+    "name": "DesignPattern",
+    "type": "syntax",
+    "hp": 48,
+    "attack": 11,
+    "defense": 9,
+    "speed": 6,
+    "moves": ["refactor", "compile", "codeformat", "patchdeploy"],
+    "color": "#4a235a",
+    "sprite": "designpattern",
+    "evolvedFrom": 17,
+    "description": "The ultimate evolution of code structure. DesignPattern is an ethereal violet entity composed of interlocking geometric shapes that represent classic software patterns. Factory gears, Observer eyes, and Singleton cores orbit its body. Every movement follows the SOLID principles. Gang of Four symbols glow like ancient runes on its surface. It has achieved architectural enlightenment."
+  },
+  {
+    "id": 19,
+    "name": "RebaseMaster",
+    "type": "syntax",
+    "hp": 42,
+    "attack": 9,
+    "defense": 10,
+    "speed": 7,
+    "moves": ["refactor", "patchdeploy", "forcepush", "codeformat"],
+    "color": "#6c3483",
+    "sprite": "rebasemaster",
+    "evolvedFrom": 6,
+    "description": "Where MergeConflict was torn between versions, RebaseMaster has unified them into a single, clean timeline. Its body is a smooth gradient from past to present, with git commit nodes aligned in a perfect linear history. The <<<< and >>>> scars have healed into clean merge lines. It wields a rebase wand that rewrites history itself. Its expression is one of serene mastery over version control."
+  },
+  {
+    "id": 20,
+    "name": "RecursiveElegance",
+    "type": "runtime",
+    "hp": 50,
+    "attack": 8,
+    "defense": 8,
+    "speed": 6,
+    "moves": ["coredump", "hotreload", "compile", "asyncawait"],
+    "color": "#c0392b",
+    "sprite": "recursiveelegance",
+    "evolvedFrom": 9,
+    "description": "InfiniteLoop has broken free of its endless cycle and discovered the beauty of recursion with a base case. Its body now spirals in a fractal pattern, each iteration smaller and more refined until it reaches an elegant termination point. Golden fibonacci spirals adorn its shell. It moves with mathematical precision, each step a calculated iteration toward a solution."
+  },
+  {
+    "id": 21,
+    "name": "GarbageCollector",
+    "type": "memory",
+    "hp": 50,
+    "attack": 7,
+    "defense": 10,
+    "speed": 5,
+    "moves": ["garbagecollect", "memorydump", "coredump", "safeaccess"],
+    "color": "#1e8449",
+    "sprite": "garbagecollector",
+    "evolvedFrom": 3,
+    "description": "MemoryLeak has been healed. GarbageCollector is a sleek green guardian that patrols the heap, efficiently reclaiming unused memory. Its body is lean and optimized, the bloated mass of its previous form replaced by a muscular, efficient frame. A recycling symbol spins on its chest. Small memory blocks orbit it briefly before being cleanly deallocated. It leaves no dangling references."
+  },
+  {
+    "id": 22,
+    "name": "DocsMaster",
+    "type": "runtime",
+    "hp": 40,
+    "attack": 10,
+    "defense": 7,
+    "speed": 8,
+    "moves": ["bufferoverrun", "bluescreen", "codeformat", "typecheck"],
+    "color": "#f39c12",
+    "sprite": "docsmaster",
+    "evolvedFrom": 11,
+    "description": "StackOverflow has evolved beyond crashing into sharing knowledge. DocsMaster is a warm orange sage surrounded by floating documentation pages and code examples. Its stack frames have become library shelves filled with well-organized references. A search bar hovers above its head like a crown. It answers questions with perfectly formatted markdown. Where it once caused errors, it now prevents them through education."
   }
 ]

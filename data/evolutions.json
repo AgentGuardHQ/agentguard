@@ -1,0 +1,149 @@
+{
+  "chains": [
+    {
+      "id": "callback_chain",
+      "name": "Async Evolution",
+      "stages": [
+        { "monsterId": 7, "name": "CallbackHell" },
+        { "monsterId": 13, "name": "PromiseChain" },
+        { "monsterId": 14, "name": "AsyncAwait" }
+      ],
+      "triggers": [
+        {
+          "from": 7,
+          "to": 13,
+          "condition": { "event": "commits", "count": 10 },
+          "description": "Make 10 commits"
+        },
+        {
+          "from": 13,
+          "to": 14,
+          "condition": { "event": "prs_merged", "count": 3 },
+          "description": "Merge 3 pull requests"
+        }
+      ]
+    },
+    {
+      "id": "null_chain",
+      "name": "Type Safety Evolution",
+      "stages": [
+        { "monsterId": 1, "name": "NullPointer" },
+        { "monsterId": 15, "name": "OptionalChaining" },
+        { "monsterId": 16, "name": "TypeSafety" }
+      ],
+      "triggers": [
+        {
+          "from": 1,
+          "to": 15,
+          "condition": { "event": "bugs_fixed", "count": 5 },
+          "description": "Fix 5 bugs"
+        },
+        {
+          "from": 15,
+          "to": 16,
+          "condition": { "event": "tests_passing", "count": 10 },
+          "description": "Pass 10 test runs"
+        }
+      ]
+    },
+    {
+      "id": "spaghetti_chain",
+      "name": "Clean Code Evolution",
+      "stages": [
+        { "monsterId": 10, "name": "SpaghettiCode" },
+        { "monsterId": 17, "name": "CleanModule" },
+        { "monsterId": 18, "name": "DesignPattern" }
+      ],
+      "triggers": [
+        {
+          "from": 10,
+          "to": 17,
+          "condition": { "event": "refactors", "count": 5 },
+          "description": "Perform 5 refactors"
+        },
+        {
+          "from": 17,
+          "to": 18,
+          "condition": { "event": "code_reviews", "count": 5 },
+          "description": "Complete 5 code reviews"
+        }
+      ]
+    },
+    {
+      "id": "merge_chain",
+      "name": "Git Mastery Evolution",
+      "stages": [
+        { "monsterId": 6, "name": "MergeConflict" },
+        { "monsterId": 19, "name": "RebaseMaster" }
+      ],
+      "triggers": [
+        {
+          "from": 6,
+          "to": 19,
+          "condition": { "event": "conflicts_resolved", "count": 5 },
+          "description": "Resolve 5 merge conflicts"
+        }
+      ]
+    },
+    {
+      "id": "loop_chain",
+      "name": "Algorithm Evolution",
+      "stages": [
+        { "monsterId": 9, "name": "InfiniteLoop" },
+        { "monsterId": 20, "name": "RecursiveElegance" }
+      ],
+      "triggers": [
+        {
+          "from": 9,
+          "to": 20,
+          "condition": { "event": "ci_passes", "count": 8 },
+          "description": "Pass 8 CI builds"
+        }
+      ]
+    },
+    {
+      "id": "leak_chain",
+      "name": "Memory Mastery Evolution",
+      "stages": [
+        { "monsterId": 3, "name": "MemoryLeak" },
+        { "monsterId": 21, "name": "GarbageCollector" }
+      ],
+      "triggers": [
+        {
+          "from": 3,
+          "to": 21,
+          "condition": { "event": "deploys", "count": 5 },
+          "description": "Deploy 5 times"
+        }
+      ]
+    },
+    {
+      "id": "stackoverflow_chain",
+      "name": "Knowledge Evolution",
+      "stages": [
+        { "monsterId": 11, "name": "StackOverflow" },
+        { "monsterId": 22, "name": "DocsMaster" }
+      ],
+      "triggers": [
+        {
+          "from": 11,
+          "to": 22,
+          "condition": { "event": "docs_written", "count": 5 },
+          "description": "Write 5 docs"
+        }
+      ]
+    }
+  ],
+  "events": {
+    "commits": { "label": "Commits", "icon": "git-commit", "description": "Code committed to repository" },
+    "prs_merged": { "label": "PRs Merged", "icon": "git-merge", "description": "Pull requests merged" },
+    "bugs_fixed": { "label": "Bugs Fixed", "icon": "bug", "description": "Bug fixes committed" },
+    "tests_passing": { "label": "Tests Passing", "icon": "check", "description": "Test suites passed" },
+    "refactors": { "label": "Refactors", "icon": "wrench", "description": "Code refactored" },
+    "code_reviews": { "label": "Code Reviews", "icon": "eye", "description": "Pull requests reviewed" },
+    "conflicts_resolved": { "label": "Conflicts Resolved", "icon": "git-branch", "description": "Merge conflicts resolved" },
+    "ci_passes": { "label": "CI Passes", "icon": "server", "description": "CI pipeline passed" },
+    "deploys": { "label": "Deploys", "icon": "rocket", "description": "Code deployed" },
+    "docs_written": { "label": "Docs Written", "icon": "book", "description": "Documentation added" }
+  }
+}

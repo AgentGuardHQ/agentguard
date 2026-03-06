@@ -8,6 +8,8 @@ import {
   playAttack, playFaint, playCaptureSuccess,
   playCaptureFailure, playBattleVictory
 } from '../audio/sound.js';
+import { checkPartyEvolutions, applyEvolution, getEvolutionProgress } from '../evolution/evolution.js';
+import { startEvolutionAnimation, clearEvolutionAnimation } from '../evolution/animation.js';
 
 let battle = null;
 let movesData = [];
@@ -189,11 +191,21 @@ function endBattle() {
   if (battle.playerMon.currentHP > 0) {
     player.party[0].currentHP = battle.playerMon.currentHP;
   }
-  if (battle.enemy.currentHP <= 0) {
+  const wasVictory = battle.enemy.currentHP <= 0;
+  if (wasVictory) {
     playBattleVictory();
   }
   battle = null;
-  setState(STATES.EXPLORE);
+
+  // Check if any party member can evolve after battle
+  const evo = checkPartyEvolutions(player.party);
+  if (evo) {
+    const evolved = applyEvolution(player.party, evo.partyIndex, evo.to);
+    startEvolutionAnimation(evo.from, evo.to);
+    setState(STATES.EVOLVING);
+  } else {
+    setState(STATES.EXPLORE);
+  }
 }
 
 export { movesData };
