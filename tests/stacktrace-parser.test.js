@@ -110,4 +110,40 @@ suite('Stacktrace Parser (core/stacktrace-parser.js)', () => {
     const result = extractLocation('just some text');
     assert.strictEqual(result, null);
   });
+
+  // --- Multi-language stack frames ---
+
+  test('parses Python stack frame', () => {
+    const lines = ['  File "/app/main.py", line 42, in <module>'];
+    const frames = parseStackTrace(lines);
+    assert.strictEqual(frames.length, 1);
+    assert.strictEqual(frames[0].file, '/app/main.py');
+    assert.strictEqual(frames[0].line, 42);
+    assert.strictEqual(frames[0].column, null);
+  });
+
+  test('parses Go stack frame', () => {
+    const lines = ['\t/app/main.go:42'];
+    const frames = parseStackTrace(lines);
+    assert.strictEqual(frames.length, 1);
+    assert.strictEqual(frames[0].file, '/app/main.go');
+    assert.strictEqual(frames[0].line, 42);
+  });
+
+  test('parses Rust source location', () => {
+    const lines = ['  --> src/main.rs:42:15'];
+    const frames = parseStackTrace(lines);
+    assert.strictEqual(frames.length, 1);
+    assert.strictEqual(frames[0].file, 'src/main.rs');
+    assert.strictEqual(frames[0].line, 42);
+    assert.strictEqual(frames[0].column, 15);
+  });
+
+  test('parses Java stack frame', () => {
+    const lines = ['\tat com.example.App.main(App.java:42)'];
+    const frames = parseStackTrace(lines);
+    assert.strictEqual(frames.length, 1);
+    assert.strictEqual(frames[0].file, 'App.java');
+    assert.strictEqual(frames[0].line, 42);
+  });
 });
