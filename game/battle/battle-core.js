@@ -1,6 +1,6 @@
 // Pure battle engine - no UI, no audio, no DOM
 
-import { calcDamage } from './damage.js';
+import { calcDamage, isHealMove, calcHealing } from './damage.js';
 
 // Create a fresh battle state from two BugMon data objects
 export function createBattleState(playerMon, enemyMon) {
@@ -21,6 +21,9 @@ export function getTurnOrder(playerMon, enemyMon) {
 // Resolve a single move: attacker uses move against defender
 // Returns { damage, effectiveness } — does NOT mutate state
 export function resolveMove(attacker, move, defender, typeChart) {
+  if (isHealMove(move)) {
+    return { ...calcHealing(move, attacker), damage: 0, effectiveness: 1.0, critical: false };
+  }
   return calcDamage(attacker, move, defender, typeChart);
 }
 
@@ -29,6 +32,14 @@ export function applyDamage(bugmon, damage) {
   return {
     ...bugmon,
     currentHP: Math.max(0, bugmon.currentHP - damage),
+  };
+}
+
+// Apply healing to a BugMon, returning updated copy (capped at max HP)
+export function applyHealing(bugmon, amount) {
+  return {
+    ...bugmon,
+    currentHP: Math.min(bugmon.hp, bugmon.currentHP + amount),
   };
 }
 
@@ -78,30 +89,49 @@ export function executeTurn(state, playerMove, enemyMove, typeChart, rolls = {})
     // Skip if attacker already fainted
     if (isFainted(currentAttacker)) continue;
 
-    const { damage, effectiveness } = resolveMove(currentAttacker, action.move, currentDefender, typeChart);
+    const result = resolveMove(currentAttacker, action.move, currentDefender, typeChart);
 
-    events.push({
-      type: 'MOVE_USED',
-      side: action.side,
-      attacker: currentAttacker.name,
-      move: action.move.name,
-      damage,
-      effectiveness,
-    });
-
-    if (action.side === 'player') {
-      enemy = applyDamage(enemy, damage);
+    if (result.healing !== undefined && result.healing >= 0) {
+      events.push({
+        type: 'MOVE_USED',
+        side: action.side,
+        attacker: currentAttacker.name,
+        move: action.move.name,
+        damage: 0,
+        healing: result.healing,
+        effectiveness: 1.0,
+      });
+      if (action.side === 'player') {
+        playerMon = applyHealing(playerMon, result.healing);
+      } else {
+        enemy = applyHealing(enemy, result.healing);
+      }
     } else {
-      playerMon = applyDamage(playerMon, damage);
-    }
+      const { damage, effectiveness } = result;
 
-    if (action.side === 'player' && isFainted(enemy)) {
-      events.push({ type: 'BUGMON_FAINTED', side: 'enemy', name: enemy.name });
-      break;
-    }
-    if (action.side === 'enemy' && isFainted(playerMon)) {
-      events.push({ type: 'BUGMON_FAINTED', side: 'player', name: playerMon.name });
-      break;
+      events.push({
+        type: 'MOVE_USED',
+        side: action.side,
+        attacker: currentAttacker.name,
+        move: action.move.name,
+        damage,
+        effectiveness,
+      });
+
+      if (action.side === 'player') {
+        enemy = applyDamage(enemy, damage);
+      } else {
+        playerMon = applyDamage(playerMon, damage);
+      }
+
+      if (action.side === 'player' && isFainted(enemy)) {
+        events.push({ type: 'BUGMON_FAINTED', side: 'enemy', name: enemy.name });
+        break;
+      }
+      if (action.side === 'enemy' && isFainted(playerMon)) {
+        events.push({ type: 'BUGMON_FAINTED', side: 'player', name: playerMon.name });
+        break;
+      }
     }
   }
 

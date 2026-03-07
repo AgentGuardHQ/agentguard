@@ -17,3 +17,12 @@ export function calcDamage(attacker, move, defender, typeChart) {
 
   return { damage: Math.max(1, dmg), effectiveness, critical };
 }
+
+export function isHealMove(move) {
+  return move.category === 'heal';
+}
+
+export function calcHealing(move, bugmon) {
+  const restored = Math.min(move.power, bugmon.hp - bugmon.currentHP);
+  return { healing: Math.max(0, restored) };
+}

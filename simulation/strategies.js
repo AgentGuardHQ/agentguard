@@ -13,6 +13,7 @@ function getEffectiveness(moveType, defenderType, typeChart) {
 }
 
 function estimateDamage(attacker, move, defender, typeChart) {
+  if (move.category === 'heal') return 0;
   const base = move.power + attacker.attack - Math.floor(defender.defense / 2) + 2; // avg random
   const eff = getEffectiveness(move.type, defender.type, typeChart);
   return Math.max(1, Math.floor(base * eff));

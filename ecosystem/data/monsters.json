@@ -218,7 +218,7 @@
     "moves": [
       "conflictmarkers",
       "forcepush",
-      "detachedhead"
+      "hotfix"
     ],
     "color": "#e67e22",
     "sprite": "mergeconflict",
@@ -277,7 +277,7 @@
     "speed": 4,
     "moves": [
       "containerspawn",
-      "imagepull",
+      "hotfix",
       "portbinding"
     ],
     "color": "#f39c12",
@@ -773,7 +773,7 @@
       "forcepush",
       "conflictmarkers",
       "cleanhistory",
-      "detachedhead"
+      "hotfix"
     ],
     "color": "#d4ac0d",
     "sprite": "rebasemaster",

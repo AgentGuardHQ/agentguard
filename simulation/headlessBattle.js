@@ -34,33 +34,44 @@ export function runBattle(monA, monB, movesData, typeChart, strategyA, strategyB
 
     // First attacker's turn
     const firstMove = firstStrategy(first, second, movesData, typeChart, rng);
-    const firstResult = calcDamageHeadless(first, firstMove, second, typeChart, rng);
-    second.currentHP -= firstResult.damage;
-
-    log.push({
-      turn: turns,
-      attacker: first.name,
-      move: firstMove.name,
-      damage: firstResult.damage,
-      effectiveness: firstResult.effectiveness,
-      targetHP: Math.max(0, second.currentHP)
-    });
-
-    if (second.currentHP <= 0) break;
+    if (firstMove.category === 'heal') {
+      const healed = Math.min(firstMove.power, first.hp - first.currentHP);
+      first.currentHP = Math.min(first.hp, first.currentHP + firstMove.power);
+      log.push({
+        turn: turns, attacker: first.name, move: firstMove.name,
+        damage: 0, healing: healed, effectiveness: 1.0,
+        targetHP: first.currentHP
+      });
+    } else {
+      const firstResult = calcDamageHeadless(first, firstMove, second, typeChart, rng);
+      second.currentHP -= firstResult.damage;
+      log.push({
+        turn: turns, attacker: first.name, move: firstMove.name,
+        damage: firstResult.damage, effectiveness: firstResult.effectiveness,
+        targetHP: Math.max(0, second.currentHP)
+      });
+      if (second.currentHP <= 0) break;
+    }
 
     // Second attacker's turn
     const secondMove = secondStrategy(second, first, movesData, typeChart, rng);
-    const secondResult = calcDamageHeadless(second, secondMove, first, typeChart, rng);
-    first.currentHP -= secondResult.damage;
-
-    log.push({
-      turn: turns,
-      attacker: second.name,
-      move: secondMove.name,
-      damage: secondResult.damage,
-      effectiveness: secondResult.effectiveness,
-      targetHP: Math.max(0, first.currentHP)
-    });
+    if (secondMove.category === 'heal') {
+      const healed = Math.min(secondMove.power, second.hp - second.currentHP);
+      second.currentHP = Math.min(second.hp, second.currentHP + secondMove.power);
+      log.push({
+        turn: turns, attacker: second.name, move: secondMove.name,
+        damage: 0, healing: healed, effectiveness: 1.0,
+        targetHP: second.currentHP
+      });
+    } else {
+      const secondResult = calcDamageHeadless(second, secondMove, first, typeChart, rng);
+      first.currentHP -= secondResult.damage;
+      log.push({
+        turn: turns, attacker: second.name, move: secondMove.name,
+        damage: secondResult.damage, effectiveness: secondResult.effectiveness,
+        targetHP: Math.max(0, first.currentHP)
+      });
+    }
   }
 
   const winner = a.currentHP > 0 ? 'A' : b.currentHP > 0 ? 'B' : 'draw';

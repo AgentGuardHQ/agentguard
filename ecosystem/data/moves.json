@@ -74,5 +74,7 @@
   { "id": "gridsnap",             "name": "GridSnap",             "power": 12, "type": "frontend" },
   { "id": "cleanhistory",         "name": "CleanHistory",         "power": 10, "type": "devops" },
   { "id": "servicemesh",          "name": "ServiceMesh",          "power": 11, "type": "architecture" },
-  { "id": "fewshotlearn",         "name": "FewShotLearn",         "power": 11, "type": "ai" }
+  { "id": "fewshotlearn",         "name": "FewShotLearn",         "power": 11, "type": "ai" },
+
+  { "id": "hotfix",               "name": "Hotfix",               "power": 12, "type": "devops", "category": "heal" }
 ]
