@@ -1,5 +1,15 @@
-// Battle UI controller - connects pure battle engine to input/audio/state
-import { calcDamage, isHealMove } from './damage.js';
+// Battle UI controller — thin adapter over domain/battle.js
+// Maps domain battle events to input/audio/state/messages.
+// No battle logic here — all computation is delegated to the domain engine.
+
+import {
+  createBattleState, executeTurn,
+  cacheChance, attemptCache, pickEnemyMove,
+  isHealMove, resolveMove, applyDamage, applyHealing
+} from '../../domain/battle.js';
+import {
+  MOVE_USED, PASSIVE_ACTIVATED, BUGMON_FAINTED
+} from '../../domain/events.js';
 import { wasPressed } from '../engine/input.js';
 import { setState, STATES } from '../engine/state.js';
 import { getPlayer } from '../world/player.js';
@@ -9,7 +19,6 @@ import {
   playAttack, playFaint, playCaptureSuccess,
   playCaptureFailure, playBattleVictory
 } from '../audio/sound.js';
-import { cacheChance } from './battle-core.js';
 import { checkPartyEvolutions, applyEvolution } from '../evolution/evolution.js';
 import { startEvolutionAnimation } from '../evolution/animation.js';
 
@@ -66,7 +75,7 @@ export function updateBattle(dt) {
         battle.state = 'fight';
         battle.moveIndex = 0;
       } else if (battle.menuIndex === 1) {
-        attemptCache();
+        doAttemptCache();
       } else {
         showMessage('Got away safely!', () => endBattle());
       }
@@ -81,9 +90,86 @@ export function updateBattle(dt) {
       playMenuConfirm();
       const moveId = battle.playerMon.moves[battle.moveIndex];
       const move = movesData.find(m => m.id === moveId);
-      if (move) executeTurn(move);
+      if (move) doExecuteTurn(move);
     }
   }
+}
+
+/**
+ * Execute a full turn using the domain engine, then play back events as messages.
+ * Domain logic produces events; this function converts them to a message/sound chain.
+ */
+function doExecuteTurn(playerMove) {
+  const typeChart = typeData ? typeData.effectiveness : null;
+  const enemyMove = pickEnemyMove(battle.enemy, movesData, Math.random());
+
+  const domainState = createBattleState(battle.playerMon, battle.enemy);
+  const result = executeTurn(domainState, playerMove, enemyMove, typeChart);
+
+  // Update mutable battle state from domain result
+  battle.playerMon = { ...battle.playerMon, currentHP: result.state.playerMon.currentHP };
+  battle.enemy = { ...battle.enemy, currentHP: result.state.enemy.currentHP };
+
+  // Play back domain events as sequential messages
+  playbackEvents(result.events, 0);
+}
+
+/**
+ * Recursively play back domain events as messages with sounds.
+ */
+function playbackEvents(events, index) {
+  if (index >= events.length) {
+    if (battle.enemy.currentHP <= 0) {
+      handleFaint(battle.enemy.name, 'enemy', () => endBattle());
+    } else if (battle.playerMon.currentHP <= 0) {
+      handleFaint(battle.playerMon.name, 'player', () => endBattle());
+    } else {
+      battle.state = 'menu';
+      battle.menuIndex = 0;
+    }
+    return;
+  }
+
+  const event = events[index];
+  const next = () => playbackEvents(events, index + 1);
+
+  if (event.type === PASSIVE_ACTIVATED) {
+    playAttack();
+    showMessage(event.message, next);
+  } else if (event.type === MOVE_USED) {
+    playAttack();
+    const msg = formatMoveMessage(event);
+    // Check if next event is a faint — handle inline
+    const nextEvent = events[index + 1];
+    if (nextEvent && nextEvent.type === BUGMON_FAINTED) {
+      showMessage(msg, () => {
+        handleFaint(nextEvent.name, nextEvent.side, () => {
+          playbackEvents(events, index + 2);
+        });
+      });
+    } else {
+      showMessage(msg, next);
+    }
+  } else if (event.type === BUGMON_FAINTED) {
+    handleFaint(event.name, event.side, next);
+  } else {
+    next();
+  }
+}
+
+function formatMoveMessage(event) {
+  if (event.healing !== undefined && event.healing > 0) {
+    return `${event.attacker} used ${event.move}! Restored ${event.healing} HP!`;
+  }
+  if (event.healing !== undefined && event.healing === 0 && event.damage === 0) {
+    return `${event.attacker} used ${event.move}! But HP is already full!`;
+  }
+
+  let msg = `${event.attacker} used ${event.move}! ${event.damage} damage!`;
+  if (event.critical) msg += ' Critical hit!';
+  if (event.effectiveness > 1.0) msg += ' Super effective!';
+  else if (event.effectiveness < 1.0) msg += ' Not very effective...';
+  return msg;
 }
 
 function handleFaint(name, side, callback) {
@@ -100,113 +186,8 @@ function handleFaint(name, side, callback) {
   }
 }
 
-function doPlayerAttack(playerMove, afterAttack) {
-  doAttack(battle.playerMon, playerMove, battle.enemy, () => {
-    if (battle.enemy.currentHP <= 0) {
-      handleFaint(battle.enemy.name, 'enemy', () => endBattle());
-    } else if (shouldDoubleTurn(battle.playerMon)) {
-      showMessage(`${battle.playerMon.name}'s NonDeterministic triggers!`, () => {
-        doAttack(battle.playerMon, playerMove, battle.enemy, () => {
-          if (battle.enemy.currentHP <= 0) {
-            handleFaint(battle.enemy.name, 'enemy', () => endBattle());
-          } else {
-            afterAttack();
-          }
-        });
-      });
-    } else {
-      afterAttack();
-    }
-  });
-}
-
-function executeTurn(playerMove) {
-  const playerFirst = battle.playerMon.speed >= battle.enemy.speed;
-
-  if (playerFirst) {
-    doPlayerAttack(playerMove, () => enemyTurn());
-  } else {
-    enemyTurn(() => {
-      if (battle.playerMon.currentHP <= 0) {
-        handleFaint(battle.playerMon.name, 'player', () => endBattle());
-      } else {
-        doPlayerAttack(playerMove, () => {
-          battle.state = 'menu';
-          battle.menuIndex = 0;
-        });
-      }
-    });
-  }
-}
-
-function shouldDoubleTurn(mon) {
-  return mon.passive?.name === 'NonDeterministic' && Math.random() < 0.25;
-}
-
-function doAttack(attacker, move, defender, callback) {
-  if (isHealMove(move)) {
-    const actualHeal = Math.min(move.power, attacker.hp - attacker.currentHP);
-    attacker.currentHP = Math.min(attacker.hp, attacker.currentHP + move.power);
-    playAttack();
-    const msg = actualHeal > 0
-      ? `${attacker.name} used ${move.name}! Restored ${actualHeal} HP!`
-      : `${attacker.name} used ${move.name}! But HP is already full!`;
-    showMessage(msg, callback);
-    return;
-  }
-
-  const typeChart = typeData ? typeData.effectiveness : null;
-  const { damage, effectiveness, critical } = calcDamage(attacker, move, defender, typeChart);
-
-  // RandomFailure: defender may negate damage
-  if (defender.passive?.name === 'RandomFailure' && Math.random() < 0.5) {
-    playAttack();
-    showMessage(`${attacker.name} used ${move.name}! ${defender.name}'s RandomFailure negated the damage!`, callback);
-    return;
-  }
-
-  defender.currentHP -= damage;
-  playAttack();
-
-  let msg = `${attacker.name} used ${move.name}! ${damage} damage!`;
-  if (critical) msg += ' Critical hit!';
-  if (effectiveness > 1.0) msg += ' Super effective!';
-  else if (effectiveness < 1.0) msg += ' Not very effective...';
-  showMessage(msg, callback);
-}
-
-function enemyTurn(callback) {
-  const moveId = battle.enemy.moves[Math.floor(Math.random() * battle.enemy.moves.length)];
-  const move = movesData.find(m => m.id === moveId);
-  doAttack(battle.enemy, move, battle.playerMon, () => {
-    if (battle.playerMon.currentHP <= 0) {
-      handleFaint(battle.playerMon.name, 'player', () => endBattle());
-    } else if (shouldDoubleTurn(battle.enemy)) {
-      showMessage(`${battle.enemy.name}'s NonDeterministic triggers!`, () => {
-        doAttack(battle.enemy, move, battle.playerMon, () => {
-          if (battle.playerMon.currentHP <= 0) {
-            handleFaint(battle.playerMon.name, 'player', () => endBattle());
-          } else if (callback) {
-            callback();
-          } else {
-            battle.state = 'menu';
-            battle.menuIndex = 0;
-          }
-        });
-      });
-    } else if (callback) {
-      callback();
-    } else {
-      battle.state = 'menu';
-      battle.menuIndex = 0;
-    }
-  });
-}
-
-function attemptCache() {
-  const chance = cacheChance(battle.enemy);
-
-  if (Math.random() < chance) {
+function doAttemptCache() {
+  if (attemptCache(battle.enemy, Math.random())) {
     const player = getPlayer();
     const cached = { ...battle.enemy, currentHP: battle.enemy.currentHP };
     player.party.push(cached);
@@ -216,8 +197,41 @@ function attemptCache() {
   } else {
     playCaptureFailure();
     showMessage(`${battle.enemy.name} evicted from cache!`, () => {
-      enemyTurn();
+      doEnemyCounterAttack();
     });
+  }
+}
+
+/**
+ * Enemy gets a free attack after a failed cache attempt.
+ * Uses domain engine for damage calculation.
+ */
+function doEnemyCounterAttack() {
+  const typeChart = typeData ? typeData.effectiveness : null;
+  const enemyMove = pickEnemyMove(battle.enemy, movesData, Math.random());
+
+  // Create a state where enemy goes first (speed trick)
+  const fakeState = createBattleState(
+    { ...battle.playerMon, speed: 0 },
+    { ...battle.enemy, speed: 999 }
+  );
+  const playerMove = movesData.find(m => m.id === battle.playerMon.moves[0]);
+  const result = executeTurn(fakeState, playerMove, enemyMove, typeChart);
+
+  // Only apply enemy's damage to player
+  battle.playerMon = { ...battle.playerMon, currentHP: result.state.playerMon.currentHP };
+
+  // Filter to enemy-side events only
+  const enemyEvents = result.events.filter(e =>
+    e.side === 'enemy' || (e.type === BUGMON_FAINTED && e.side === 'player') ||
+    (e.type === PASSIVE_ACTIVATED && e.side === 'enemy')
+  );
+
+  if (enemyEvents.length > 0) {
+    playbackEvents(enemyEvents, 0);
+  } else {
+    battle.state = 'menu';
+    battle.menuIndex = 0;
   }
 }
 
