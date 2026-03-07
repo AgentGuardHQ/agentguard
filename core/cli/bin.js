@@ -13,6 +13,7 @@
 //   bugmon stats                        View your bug hunter stats
 //   bugmon heal                         Restore party HP
 //   bugmon sync                         Start sync server (bridges CLI ↔ browser)
+//   bugmon claude-init                   Set up Claude Code integration
 //   bugmon help                         Show help
 
 import { watch } from './adapter.js';
@@ -147,6 +148,18 @@ switch (command) {
     break;
   }
 
+  case 'claude-init': {
+    const { claudeInit } = await import('./claude-init.js');
+    await claudeInit(args.slice(1));
+    break;
+  }
+
+  case 'claude-hook': {
+    const { claudeHook } = await import('./claude-hook.js');
+    await claudeHook();
+    break;
+  }
+
   case 'help':
   case '--help':
   case '-h':
@@ -184,6 +197,7 @@ function printHelp() {
     bugmon init                          Install git hooks for evolution tracking
     bugmon scan [path]                   Scan files for bugs (eslint/tsc)
     bugmon sync                          Start sync server (CLI ↔ browser)
+    bugmon claude-init                   Set up Claude Code integration
     bugmon help                          Show this help
 
   \x1b[1mExamples:\x1b[0m

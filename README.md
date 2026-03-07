@@ -9,11 +9,21 @@
 [![Size](https://img.shields.io/badge/gzipped-12_KB-brightgreen.svg)](LIGHTWEIGHT.md)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](LIGHTWEIGHT.md)
 
-> Every runtime error is a wild encounter.
+## Try it now
 
-BugMon wraps your dev commands, intercepts real errors from stderr, and spawns matching monster encounters. A `TypeError: Cannot read properties of null` summons NullPointer. A stack overflow unleashes StackOverflow. You battle them, cache them, build a party — and your real coding activity (commits, PRs merged, bugs fixed) drives their evolution.
+```bash
+npx bugmon demo
+```
 
-Built with zero runtime dependencies, pure vanilla JS, and way too many puns.
+No install. No config. No dependencies. A wild BugMon appears.
+
+### Wrap your dev command
+
+```bash
+npx bugmon watch -- npm run dev
+```
+
+Every error spawns a monster. Fix the bug, defeat the monster. Your real coding activity (commits, PRs merged, bugs fixed) drives their evolution.
 
 <p align="center">
   <img src="sprites/nullpointer.png" width="64" alt="NullPointer">
@@ -26,29 +36,37 @@ Built with zero runtime dependencies, pure vanilla JS, and way too many puns.
   <img src="sprites/heisenbug.png" width="64" alt="Heisenbug">
 </p>
 
-## CLI
+### Claude Code integration
 
-Wrap any dev command. Errors become encounters. Your workflow stays unchanged — BugMon augments, never hides.
+Using [Claude Code](https://docs.anthropic.com/en/docs/claude-code)? BugMon hooks into your sessions — errors trigger encounters automatically.
+
+```bash
+npx bugmon claude-init
+```
+
+### CLI
 
 ```bash
 # Watch mode — intercept errors in real time
-bugmon watch -- npm run dev
-bugmon watch -- node server.js
-bugmon watch -- tsc --watch
+npx bugmon watch -- npm run dev
+npx bugmon watch -- node server.js
+npx bugmon watch -- tsc --watch
 
 # Scan mode — find bugs in your project
-bugmon scan
+npx bugmon scan
 
 # Collection
-bugmon dex                      # View your BugDex
-bugmon party                    # View your party
-bugmon stats                    # Bug hunter level and XP
+npx bugmon dex                    # View your BugDex
+npx bugmon party                  # View your party
+npx bugmon stats                  # Bug hunter level and XP
 
 # Sync CLI ↔ browser game
-bugmon sync
+npx bugmon sync
 ```
 
-30+ error patterns are recognized across Node.js runtime errors, TypeScript compiler output, ESLint, Jest/Vitest test failures, merge conflicts, security findings, and CI output.
+Install globally for the shorter `bugmon` command: `npm i -g bugmon`
+
+30+ error patterns recognized across Node.js, TypeScript, ESLint, Jest/Vitest, merge conflicts, security findings, and CI output. Zero runtime dependencies.
 
 ## Browser Game
 

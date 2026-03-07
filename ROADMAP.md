@@ -372,8 +372,13 @@ The CLI proves the concept. The IDE extension makes it frictionless. BugMon beco
 **JetBrains plugin:**
 - [ ] IntelliJ/WebStorm plugin with tool window — `[L]` *Nice-to-have*
 
+**Claude Code integration:**
+- [x] PostToolUse hook for automatic BugMon encounters on errors — `[M]` *Must-have*
+- [x] `bugmon claude-init` setup command (install/remove hook) — `[S]` *Must-have*
+- [x] `/bugmon` Claude Code skill for in-session collection management — `[S]` *Should-have*
+
 **npm distribution:**
-- [ ] npm package — `npx bugmon` to play instantly in any terminal — `[M]` *Must-have*
+- [x] npm package — `npx bugmon` to play instantly in any terminal — `[M]` *Must-have*
 
 ## V11 — AI Debugging Companion `IDEA`
 
