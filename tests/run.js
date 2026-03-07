@@ -51,6 +51,14 @@ async function main() {
   await import('./events.test.js');
   await import('./matcher.test.js');
   await import('./map.test.js');
+  await import('./input.test.js');
+  await import('./state.test.js');
+  await import('./encounters.test.js');
+  await import('./bosses.test.js');
+  await import('./bugdex-spec.test.js');
+  await import('./save.test.js');
+  await import('./storage.test.js');
+  await import('./game-damage.test.js');
 
   console.log('\n' + '='.repeat(40));
   if (totalFailed === 0) {

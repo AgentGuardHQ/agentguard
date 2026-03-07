@@ -46,6 +46,39 @@ suite('Variable collision detection', () => {
   });
 });
 
+suite('Import path validation', () => {
+  test('all ES module imports in index.html resolve to real files', () => {
+    const htmlPath = path.join(ROOT, 'index.html');
+    const html = fs.readFileSync(htmlPath, 'utf8');
+
+    // Find all import ... from '...' statements
+    const importRe = /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
+    let m;
+    const errors = [];
+    while ((m = importRe.exec(html)) !== null) {
+      const importPath = m[1];
+      // Resolve relative to ROOT (where index.html lives)
+      const resolved = path.join(ROOT, importPath);
+      if (!fs.existsSync(resolved)) {
+        errors.push(`Import "${importPath}" resolves to "${resolved}" which does not exist`);
+      }
+    }
+
+    // Also check <script type="module" src="..."> tags
+    const srcRe = /<script[^>]+src=["']([^"']+)["'][^>]*>/g;
+    while ((m = srcRe.exec(html)) !== null) {
+      const srcPath = m[1];
+      const resolved = path.join(ROOT, srcPath);
+      if (!fs.existsSync(resolved)) {
+        errors.push(`Script src="${srcPath}" resolves to "${resolved}" which does not exist`);
+      }
+    }
+
+    assert.strictEqual(errors.length, 0,
+      `Found ${errors.length} broken import path(s):\n  ${errors.join('\n  ')}`);
+  });
+});
+
 suite('Build output validation', () => {
   test('build produces valid JavaScript', () => {
     execSync('node scripts/build.js --no-sprites --no-budget', { cwd: ROOT, stdio: 'pipe' });
