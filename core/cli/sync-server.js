@@ -19,10 +19,14 @@
 import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
 import { loadBugDex, saveBugDex } from '../../ecosystem/storage.js';
+import {
+  SYNC_PORT, PING_INTERVAL,
+  MSG_PULL_CLI_STATE, MSG_BROWSER_STATE, MSG_PONG,
+  MSG_CLI_STATE, MSG_CLI_EVENT, MSG_PING,
+} from '../../ecosystem/sync-protocol.js';
 
-const PORT = 9876;
+const PORT = SYNC_PORT;
 const WS_MAGIC = '258EAFA5-E914-47DA-95CA-5AB9FE82957E';
-const PING_INTERVAL = 15000;
 
 /**
  * Start the sync server.
@@ -116,7 +120,7 @@ export function startSyncServer() {
     process.stderr.write(`  \x1b[32m✓\x1b[0m Browser connected (${clients.size} client${clients.size > 1 ? 's' : ''})\n`);
 
     // Send initial CLI state
-    sendToClient(client, { type: 'cli_state', data: getCLIState() });
+    sendToClient(client, { type: MSG_CLI_STATE, data: getCLIState() });
 
     socket.on('data', (buffer) => {
       const frames = decodeFrames(buffer);
@@ -161,7 +165,7 @@ export function startSyncServer() {
         continue;
       }
       client.alive = false;
-      sendToClient(client, { type: 'ping' });
+      sendToClient(client, { type: MSG_PING });
     }
   }, PING_INTERVAL);
 
@@ -199,18 +203,18 @@ export function startSyncServer() {
 
 function handleClientMessage(client, msg, clients) {
   switch (msg.type) {
-    case 'pull_cli_state': {
-      sendToClient(client, { type: 'cli_state', data: getCLIState() });
+    case MSG_PULL_CLI_STATE: {
+      sendToClient(client, { type: MSG_CLI_STATE, data: getCLIState() });
       break;
     }
-    case 'browser_state': {
+    case MSG_BROWSER_STATE: {
       if (msg.data) {
         mergeBrowserState(msg.data);
         process.stderr.write('  \x1b[36m↓\x1b[0m Received browser state\n');
       }
       break;
     }
-    case 'pong': {
+    case MSG_PONG: {
       client.alive = true;
       break;
     }
@@ -360,5 +364,5 @@ function sendToClient(client, msg) {
  * @param {object} data
  */
 export function notifyBrowsers(broadcast, event, data) {
-  broadcast({ type: 'cli_event', event, data: getCLIState() });
+  broadcast({ type: MSG_CLI_EVENT, event, data: getCLIState() });
 }

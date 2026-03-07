@@ -3,15 +3,14 @@
 // Minimal test harness — zero dependencies, uses node:assert
 // Usage: node tests/run.js
 
+import { FG, DIM, BOLD, RESET } from '../core/cli/colors.js';
+
 let totalPassed = 0;
 let totalFailed = 0;
 let currentSuite = '';
 
-const RED = '\x1b[31m';
-const GREEN = '\x1b[32m';
-const DIM = '\x1b[2m';
-const BOLD = '\x1b[1m';
-const RESET = '\x1b[0m';
+const RED = FG.red;
+const GREEN = FG.green;
 
 export function test(name, fn) {
   try {

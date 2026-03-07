@@ -2,10 +2,13 @@
 // Connects to the local BugMon sync server (started via `bugmon sync`)
 // Uses WebSocket for real-time bidirectional sync between CLI and browser
 
-const SYNC_PORT = 9876;
+import {
+  SYNC_PORT, RECONNECT_INTERVAL, MAX_RECONNECT_ATTEMPTS,
+  MSG_PULL_CLI_STATE, MSG_BROWSER_STATE, MSG_PONG,
+  MSG_CLI_STATE, MSG_CLI_EVENT, MSG_PING,
+} from '../../ecosystem/sync-protocol.js';
+
 const SYNC_URL = `ws://localhost:${SYNC_PORT}`;
-const RECONNECT_INTERVAL = 5000;
-const MAX_RECONNECT_ATTEMPTS = 12; // Try for 1 minute then back off
 
 let ws = null;
 let connected = false;
@@ -44,7 +47,7 @@ export function getSyncStatus() {
 export function pushToCLI(state) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
   try {
-    ws.send(JSON.stringify({ type: 'browser_state', data: state }));
+    ws.send(JSON.stringify({ type: MSG_BROWSER_STATE, data: state }));
     return true;
   } catch {
     return false;
@@ -57,7 +60,7 @@ export function pushToCLI(state) {
 export function pullFromCLI() {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
   try {
-    ws.send(JSON.stringify({ type: 'pull_cli_state' }));
+    ws.send(JSON.stringify({ type: MSG_PULL_CLI_STATE }));
     return true;
   } catch {
     return false;
@@ -108,7 +111,7 @@ function attemptConnection() {
 
 function handleMessage(msg) {
   switch (msg.type) {
-    case 'cli_state': {
+    case MSG_CLI_STATE: {
       // CLI sent its state — import it
       console.log('[BugMon Sync] Received CLI state');
       if (onSyncCallback) {
@@ -121,7 +124,7 @@ function handleMessage(msg) {
       }
       break;
     }
-    case 'cli_event': {
+    case MSG_CLI_EVENT: {
       // Real-time CLI event (e.g., new encounter, new cache)
       console.log(`[BugMon Sync] CLI event: ${msg.event}`);
       if (msg.event === 'bugmon_cached' && window.bugmon?.importFromCLI) {
@@ -129,8 +132,8 @@ function handleMessage(msg) {
       }
       break;
     }
-    case 'ping': {
-      ws.send(JSON.stringify({ type: 'pong' }));
+    case MSG_PING: {
+      ws.send(JSON.stringify({ type: MSG_PONG }));
       break;
     }
   }

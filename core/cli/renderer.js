@@ -2,58 +2,7 @@
 // Zero dependencies: raw ANSI escape codes
 
 import { renderBugDexContributionPrompt, BUGDEX_CONTRIBUTION_MIN } from './contribute.js';
-
-// ── ANSI helpers ──
-
-const ESC = '\x1b[';
-const RESET = `${ESC}0m`;
-const BOLD = `${ESC}1m`;
-const DIM = `${ESC}2m`;
-
-const FG = {
-  black: `${ESC}30m`,
-  red: `${ESC}31m`,
-  green: `${ESC}32m`,
-  yellow: `${ESC}33m`,
-  blue: `${ESC}34m`,
-  magenta: `${ESC}35m`,
-  cyan: `${ESC}36m`,
-  white: `${ESC}37m`,
-  gray: `${ESC}90m`,
-};
-
-const TYPE_COLORS = {
-  frontend: 'blue',
-  backend: 'red',
-  devops: 'yellow',
-  testing: 'green',
-  architecture: 'magenta',
-  security: 'red',
-  ai: 'cyan',
-};
-
-function color(text, fg) {
-  return `${FG[fg] || ''}${text}${RESET}`;
-}
-
-function bold(text) {
-  return `${BOLD}${text}${RESET}`;
-}
-
-function dim(text) {
-  return `${DIM}${text}${RESET}`;
-}
-
-/** Strip ANSI escape codes to get visible character count. */
-function visLen(str) {
-  return str.replace(/\x1b\[[0-9;]*m/g, '').length;
-}
-
-/** Pad a string (possibly containing ANSI codes) to a visible width. */
-function padVis(str, width) {
-  const diff = width - visLen(str);
-  return diff > 0 ? str + ' '.repeat(diff) : str;
-}
+import { RESET, BOLD, DIM, TYPE_COLORS, color, bold, dim, padVis } from './colors.js';
 
 // ── ASCII art per type ──
 

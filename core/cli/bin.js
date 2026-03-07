@@ -160,6 +160,17 @@ switch (command) {
     break;
   }
 
+  case '--version':
+  case '-v': {
+    const { readFileSync } = await import('node:fs');
+    const { fileURLToPath } = await import('node:url');
+    const { dirname, join } = await import('node:path');
+    const __dir = dirname(fileURLToPath(import.meta.url));
+    const pkg = JSON.parse(readFileSync(join(__dir, '..', '..', 'package.json'), 'utf8'));
+    console.log(`bugmon v${pkg.version}`);
+    break;
+  }
+
   case 'help':
   case '--help':
   case '-h':

@@ -9,6 +9,10 @@ permissions:
   issues: write
   pull-requests: write
 
+concurrency:
+  group: approve-bugmon
+  cancel-in-progress: false
+
 jobs:
   generate-pr:
     if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'bugmon-submission')

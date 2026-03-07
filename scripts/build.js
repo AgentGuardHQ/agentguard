@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // BugMon single-file builder — produces dist/index.html
 // Dev dependencies: esbuild + terser (zero RUNTIME dependencies)
-// Usage: node scripts/build.js [--no-sprites]
+// Usage: node scripts/build.js [--no-sprites] [--sourcemap]
 
 import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import { fileURLToPath } from 'url';
-import { buildSync } from 'esbuild';
+import { buildSync, transformSync } from 'esbuild';
 import { minify as terserMinify } from 'terser';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -15,6 +15,7 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 
 const noSprites = process.argv.includes('--no-sprites');
+const emitSourceMap = process.argv.includes('--sourcemap');
 
 console.log('Building BugMon single-file distribution...\n');
 
@@ -50,12 +51,9 @@ function stripImportsExports(code) {
 }
 
 async function minifyWithTerser(code) {
-  const terserResult = await terserMinify(code, {
+  const terserOpts = {
     compress: {
       passes: 3,
-      unsafe_math: true,
-      unsafe_methods: true,
-      unsafe_proto: true,
       drop_console: true,
       pure_getters: true,
       collapse_vars: true,
@@ -68,16 +66,16 @@ async function minifyWithTerser(code) {
     format: {
       comments: false,
     },
-  });
-  return terserResult.code;
+  };
+  if (emitSourceMap) {
+    terserOpts.sourceMap = { url: 'bundle.js.map' };
+  }
+  const terserResult = await terserMinify(code, terserOpts);
+  return terserResult;
 }
 
 function minifyCSS(css) {
-  css = css.replace(/\/\*[\s\S]*?\*\//g, '');
-  css = css.replace(/\s*([{}:;,>+~])\s*/g, '$1');
-  css = css.replace(/;\}/g, '}');
-  css = css.replace(/\s+/g, ' ');
-  return css.trim();
+  return transformSync(css, { loader: 'css', minify: true }).code;
 }
 
 // --- Sprite inlining (optional) ---
@@ -138,6 +136,7 @@ const esbuildResult = buildSync({
   format: 'iife',
   minify: true,
   target: 'es2020',
+  sourcemap: emitSourceMap ? 'inline' : false,
   write: false,
 });
 
@@ -148,7 +147,8 @@ let bundle = esbuildResult.outputFiles[0].text;
 bundle += '\n' + stripImportsExports(inlineScript);
 
 // Apply terser for additional compression on top of esbuild
-let minBundle = await minifyWithTerser(bundle);
+const terserResult = await minifyWithTerser(bundle);
+let minBundle = terserResult.code;
 
 // Add sprite inlining after minification (base64 data is not minify-safe)
 minBundle += inlineSprites();
@@ -172,6 +172,13 @@ ${bodyHTML}
 if (!fs.existsSync(DIST)) fs.mkdirSync(DIST);
 const outPath = path.join(DIST, 'index.html');
 fs.writeFileSync(outPath, output);
+
+// Write source map if requested
+if (emitSourceMap && terserResult.map) {
+  const mapPath = path.join(DIST, 'bundle.js.map');
+  fs.writeFileSync(mapPath, terserResult.map);
+  console.log(`Source map: ${mapPath}`);
+}
 
 // --- Copy sprite PNGs for lazy loading (when not inlined) ---
 if (noSprites) {

@@ -21,6 +21,11 @@ import { checkBossEncounter, BOSS_TRIGGERS } from '../../ecosystem/bosses.js';
  * @returns {Promise<number>} Exit code
  */
 export function watch(command, args, options = {}) {
+  if (!command || typeof command !== 'string' || command.trim().length === 0) {
+    process.stderr.write('bugmon: watch requires a non-empty command\n');
+    return Promise.resolve(1);
+  }
+
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       stdio: ['inherit', 'inherit', 'pipe'],

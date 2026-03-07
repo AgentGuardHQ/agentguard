@@ -20,7 +20,7 @@
     "build": "node scripts/build.js",
     "build:tiny": "node scripts/build.js --no-sprites",
     "budget": "node scripts/build.js --no-sprites",
-    "serve": "python3 -m http.server",
+    "serve": "node scripts/dev-server.js",
     "dev": "node core/cli/bin.js"
   },
   "keywords": [

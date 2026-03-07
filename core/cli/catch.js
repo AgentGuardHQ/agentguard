@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { loadBugDex, saveBugDex } from '../../ecosystem/storage.js';
+import { RESET, BOLD, DIM, FG, color as c, bold as b } from './colors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -37,17 +38,6 @@ export async function interactiveCache(wildMonster, errorInfo) {
 
   const rl = createInterface({ input: process.stdin, output: process.stderr });
   const ask = (prompt) => new Promise(resolve => rl.question(prompt, resolve));
-
-  const ESC = '\x1b[';
-  const RESET = `${ESC}0m`;
-  const BOLD = `${ESC}1m`;
-  const DIM = `${ESC}2m`;
-  const FG = {
-    red: `${ESC}31m`, green: `${ESC}32m`, yellow: `${ESC}33m`,
-    blue: `${ESC}34m`, cyan: `${ESC}36m`, white: `${ESC}37m`, gray: `${ESC}90m`,
-  };
-  const c = (text, fg) => `${FG[fg] || ''}${text}${RESET}`;
-  const b = (text) => `${BOLD}${text}${RESET}`;
 
   const hpBar = (current, max) => {
     const ratio = max > 0 ? current / max : 0;
