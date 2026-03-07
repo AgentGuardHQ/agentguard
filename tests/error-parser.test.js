@@ -143,4 +143,155 @@ SyntaxError: Unexpected end of input`;
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].type, 'type-error');
   });
+
+  // --- Python errors ---
+
+  test('parses Python NameError', () => {
+    const result = parseErrors("NameError: name 'foo' is not defined");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'undefined-reference');
+  });
+
+  test('parses Python AttributeError', () => {
+    const result = parseErrors("AttributeError: 'NoneType' object has no attribute 'bar'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'null-reference');
+  });
+
+  test('parses Python ImportError', () => {
+    const result = parseErrors("ImportError: No module named 'flask'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'import');
+  });
+
+  test('parses Python ModuleNotFoundError', () => {
+    const result = parseErrors("ModuleNotFoundError: No module named 'requests'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'import');
+  });
+
+  test('parses Python KeyError', () => {
+    const result = parseErrors("KeyError: 'missing_key'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'key-error');
+  });
+
+  test('parses Python IndexError', () => {
+    const result = parseErrors('IndexError: list index out of range');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'range-error');
+  });
+
+  test('parses Python ValueError', () => {
+    const result = parseErrors("ValueError: invalid literal for int() with base 10: 'abc'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'type-mismatch');
+  });
+
+  test('parses Python ZeroDivisionError', () => {
+    const result = parseErrors('ZeroDivisionError: division by zero');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'range-error');
+  });
+
+  test('parses Python RecursionError', () => {
+    const result = parseErrors('RecursionError: maximum recursion depth exceeded');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'stack-overflow');
+  });
+
+  test('merges Python traceback with following error', () => {
+    const input = `Traceback (most recent call last):
+  File "app.py", line 10, in <module>
+    result = data['key']
+KeyError: 'key'`;
+    const result = parseErrors(input);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'key-error');
+    assert.ok(result[0].rawLines.length >= 3, 'should include traceback lines');
+  });
+
+  // --- Go errors ---
+
+  test('parses Go panic with runtime error', () => {
+    const result = parseErrors('panic: runtime error: index out of range [5] with length 3');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'null-reference');
+  });
+
+  test('parses Go general panic', () => {
+    const result = parseErrors('panic: something went wrong');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'stack-overflow');
+  });
+
+  test('parses Go concurrent map write', () => {
+    const result = parseErrors('fatal error: concurrent map writes');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'concurrency');
+  });
+
+  test('parses Go compile error', () => {
+    const result = parseErrors('./main.go:10:5: undefined: foo');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'syntax');
+  });
+
+  // --- Rust errors ---
+
+  test('parses Rust compiler error', () => {
+    const result = parseErrors('error[E0308]: mismatched types');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'type-error');
+  });
+
+  test('parses Rust compiler warning', () => {
+    const result = parseErrors('warning[unused_variables]: unused variable `x`');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'lint-warning');
+  });
+
+  test('parses Rust panic', () => {
+    const result = parseErrors("thread 'main' panicked at 'index out of bounds'");
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'stack-overflow');
+  });
+
+  test('parses Rust borrow of moved value', () => {
+    const result = parseErrors('borrow of moved value: `x`');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'type-error');
+  });
+
+  // --- Java / Kotlin errors ---
+
+  test('parses Java NullPointerException', () => {
+    const result = parseErrors('Exception in thread "main" java.lang.NullPointerException');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'null-reference');
+  });
+
+  test('parses Java ClassNotFoundException', () => {
+    const result = parseErrors('java.lang.ClassNotFoundException: com.example.MyClass');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'import');
+  });
+
+  test('parses Java StackOverflowError', () => {
+    const result = parseErrors('java.lang.StackOverflowError');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'stack-overflow');
+  });
+
+  test('parses Java ConcurrentModificationException', () => {
+    const result = parseErrors('java.util.ConcurrentModificationException');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'concurrency');
+  });
+
+  test('parses Java OutOfMemoryError', () => {
+    const result = parseErrors('java.lang.OutOfMemoryError: Java heap space');
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].type, 'memory-leak');
+  });
 });

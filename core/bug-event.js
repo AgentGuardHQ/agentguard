@@ -56,6 +56,8 @@ const TYPE_SEVERITY = {
   'lint-error': SEVERITY.LOW,
   'lint-warning': SEVERITY.MINOR,
   'test-failure': SEVERITY.MEDIUM,
+  'key-error': SEVERITY.LOW,
+  'concurrency': SEVERITY.HIGH,
   'generic': SEVERITY.LOW,
 };
 
@@ -128,6 +130,8 @@ export const ERROR_TO_MONSTER_TYPE = {
   'lint-error': 'testing',
   'lint-warning': 'testing',
   'test-failure': 'testing',
+  'key-error': 'backend',
+  'concurrency': 'backend',
   'generic': 'testing',
 };
 

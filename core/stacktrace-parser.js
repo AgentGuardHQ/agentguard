@@ -8,6 +8,18 @@ const STACK_LINE_RE = /^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/;
 // Matches: "/path/to/file.ts(42,15): error TS1234: ..."
 const TSC_RE = /^(.+?)\((\d+),(\d+)\):\s*error/;
 
+// Matches: Python  File "path/to/file.py", line 42
+const PYTHON_FRAME_RE = /^\s*File "(.+?)", line (\d+)/;
+
+// Matches: Go  /path/to/file.go:42
+const GO_FRAME_RE = /^\s*(\S+\.go):(\d+)/;
+
+// Matches: Rust  --> src/main.rs:42:15
+const RUST_FRAME_RE = /^\s*-->\s*(.+?):(\d+):(\d+)/;
+
+// Matches: Java  at com.example.App.main(App.java:42)
+const JAVA_FRAME_RE = /^\s*at\s+[\w.$]+\((.+?):(\d+)\)/;
+
 // Matches: "file.js:42"
 const SIMPLE_LOCATION_RE = /^(.+?):(\d+)(?::(\d+))?$/;
 
@@ -46,6 +58,60 @@ export function parseStackTrace(lines) {
         column: parseInt(tscMatch[3], 10),
         fn: null,
       });
+      continue;
+    }
+
+    // Python: File "path", line N
+    const pyMatch = line.match(PYTHON_FRAME_RE);
+    if (pyMatch) {
+      if (!isInternalFrame(pyMatch[1])) {
+        frames.push({
+          file: pyMatch[1],
+          line: parseInt(pyMatch[2], 10),
+          column: null,
+          fn: null,
+        });
+      }
+      continue;
+    }
+
+    // Rust: --> src/main.rs:42:15
+    const rustMatch = line.match(RUST_FRAME_RE);
+    if (rustMatch) {
+      frames.push({
+        file: rustMatch[1],
+        line: parseInt(rustMatch[2], 10),
+        column: parseInt(rustMatch[3], 10),
+        fn: null,
+      });
+      continue;
+    }
+
+    // Java: at com.example.App.main(App.java:42)
+    const javaMatch = line.match(JAVA_FRAME_RE);
+    if (javaMatch) {
+      if (!isInternalFrame(javaMatch[1])) {
+        frames.push({
+          file: javaMatch[1],
+          line: parseInt(javaMatch[2], 10),
+          column: null,
+          fn: null,
+        });
+      }
+      continue;
+    }
+
+    // Go: /path/file.go:42
+    const goMatch = line.match(GO_FRAME_RE);
+    if (goMatch) {
+      if (!isInternalFrame(goMatch[1])) {
+        frames.push({
+          file: goMatch[1],
+          line: parseInt(goMatch[2], 10),
+          column: null,
+          fn: null,
+        });
+      }
       continue;
     }
   }
