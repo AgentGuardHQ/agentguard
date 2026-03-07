@@ -1,10 +1,11 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
 import {
-  createBattleState, getTurnOrder, resolveMove, applyDamage,
+  createBattleState, getTurnOrder, resolveMove, applyDamage, applyHealing,
   isFainted, cacheChance, attemptCache, pickEnemyMove, executeTurn,
   simulateBattle
 } from '../game/battle/battle-core.js';
+import { isHealMove, calcHealing } from '../game/battle/damage.js';
 
 suite('Battle Core (game/battle/battle-core.js)', () => {
   const movesData = [
@@ -166,5 +167,59 @@ suite('Battle Core (game/battle/battle-core.js)', () => {
     assert.ok(typeof result.damage === 'number');
     assert.ok(typeof result.effectiveness === 'number');
     assert.ok(result.damage >= 1);
+  });
+
+  // Healing move tests
+  const healMove = { id: 'hotfix', name: 'Hotfix', power: 12, type: 'devops', category: 'heal' };
+
+  test('isHealMove returns true for heal category', () => {
+    assert.strictEqual(isHealMove(healMove), true);
+    assert.strictEqual(isHealMove(movesData[0]), false);
+  });
+
+  test('calcHealing returns correct amount capped at missing HP', () => {
+    const wounded = { hp: 30, currentHP: 20 };
+    const result = calcHealing(healMove, wounded);
+    assert.strictEqual(result.healing, 10);
+  });
+
+  test('calcHealing returns 0 at full HP', () => {
+    const full = { hp: 30, currentHP: 30 };
+    const result = calcHealing(healMove, full);
+    assert.strictEqual(result.healing, 0);
+  });
+
+  test('applyHealing caps at max HP', () => {
+    const mon = { ...monA, currentHP: 25 };
+    const result = applyHealing(mon, 12);
+    assert.strictEqual(result.currentHP, 30);
+  });
+
+  test('applyHealing does not mutate original', () => {
+    const mon = { ...monA, currentHP: 20 };
+    applyHealing(mon, 10);
+    assert.strictEqual(mon.currentHP, 20);
+  });
+
+  test('executeTurn handles heal move correctly', () => {
+    const woundedA = { ...monA, currentHP: 15 };
+    const state = createBattleState(woundedA, monB);
+    const result = executeTurn(state, healMove, movesData[1], typeChart);
+
+    const healEvent = result.events.find(e => e.side === 'player' && e.healing !== undefined);
+    assert.ok(healEvent, 'should have a healing event');
+    assert.strictEqual(healEvent.damage, 0);
+    assert.ok(healEvent.healing > 0);
+    // Player heals to 27, then enemy attacks reducing HP further
+    assert.ok(result.state.playerMon.currentHP > 15 - 20 , 'HP should be higher than without healing');
+    assert.ok(result.state.playerMon.currentHP <= 27, 'HP should not exceed healed amount');
+  });
+
+  test('resolveMove returns healing for heal moves', () => {
+    const wounded = { ...monA, currentHP: 20 };
+    const result = resolveMove(wounded, healMove, monB, typeChart);
+    assert.strictEqual(result.damage, 0);
+    assert.strictEqual(result.healing, 10);
+    assert.strictEqual(result.effectiveness, 1.0);
   });
 });

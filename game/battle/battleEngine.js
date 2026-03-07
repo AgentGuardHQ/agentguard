@@ -1,5 +1,5 @@
 // Battle UI controller - connects pure battle engine to input/audio/state
-import { calcDamage } from './damage.js';
+import { calcDamage, isHealMove } from './damage.js';
 import { wasPressed } from '../engine/input.js';
 import { setState, STATES } from '../engine/state.js';
 import { getPlayer } from '../world/player.js';
@@ -130,6 +130,17 @@ function executeTurn(playerMove) {
 }
 
 function doAttack(attacker, move, defender, callback) {
+  if (isHealMove(move)) {
+    const actualHeal = Math.min(move.power, attacker.hp - attacker.currentHP);
+    attacker.currentHP = Math.min(attacker.hp, attacker.currentHP + move.power);
+    playAttack();
+    const msg = actualHeal > 0
+      ? `${attacker.name} used ${move.name}! Restored ${actualHeal} HP!`
+      : `${attacker.name} used ${move.name}! But HP is already full!`;
+    showMessage(msg, callback);
+    return;
+  }
+
   const typeChart = typeData ? typeData.effectiveness : null;
   const { damage, effectiveness, critical } = calcDamage(attacker, move, defender, typeChart);
   defender.currentHP -= damage;
