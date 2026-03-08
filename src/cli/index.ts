@@ -9,6 +9,9 @@ import { Command } from 'commander';
 import { registerWatchCommand } from './commands/watch.js';
 import { registerStatusCommand } from './commands/status.js';
 import { registerDemoCommand } from './commands/demo.js';
+import { registerReplayCommand } from './commands/replay.js';
+import { registerTraceCommand } from './commands/trace.js';
+import { registerScoreCommand } from './commands/score.js';
 import { BugRegistry } from '../core/bug-registry.js';
 
 const program = new Command();
@@ -23,5 +26,8 @@ const registry = new BugRegistry();
 registerWatchCommand(program);
 registerStatusCommand(program, registry);
 registerDemoCommand(program);
+registerReplayCommand(program);
+registerTraceCommand(program);
+registerScoreCommand(program);
 
 program.parse();
