@@ -38,6 +38,14 @@ export const BLAST_RADIUS_EXCEEDED = 'BlastRadiusExceeded';
 export const MERGE_GUARD_FAILURE = 'MergeGuardFailure';
 export const EVIDENCE_PACK_GENERATED = 'EvidencePackGenerated';
 
+// Pipeline
+export const PIPELINE_STARTED = 'PipelineStarted';
+export const STAGE_COMPLETED = 'StageCompleted';
+export const STAGE_FAILED = 'StageFailed';
+export const PIPELINE_COMPLETED = 'PipelineCompleted';
+export const PIPELINE_FAILED = 'PipelineFailed';
+export const FILE_SCOPE_VIOLATION = 'FileScopeViolation';
+
 // Developer Signals
 export const FILE_SAVED = 'FileSaved';
 export const TEST_COMPLETED = 'TestCompleted';
@@ -149,6 +157,30 @@ const EVENT_SCHEMAS = {
   [EVIDENCE_PACK_GENERATED]: {
     required: ['packId', 'eventIds'],
     optional: ['summary', 'metadata'],
+  },
+  [PIPELINE_STARTED]: {
+    required: ['runId', 'task'],
+    optional: ['agentRoles', 'stageCount'],
+  },
+  [STAGE_COMPLETED]: {
+    required: ['runId', 'stageId', 'status'],
+    optional: ['duration', 'outputKeys', 'agentRole'],
+  },
+  [STAGE_FAILED]: {
+    required: ['runId', 'stageId', 'errors'],
+    optional: ['agentRole', 'duration'],
+  },
+  [PIPELINE_COMPLETED]: {
+    required: ['runId', 'result'],
+    optional: ['duration', 'stagesCompleted', 'task'],
+  },
+  [PIPELINE_FAILED]: {
+    required: ['runId', 'failedStage', 'errors'],
+    optional: ['duration', 'stagesCompleted', 'task'],
+  },
+  [FILE_SCOPE_VIOLATION]: {
+    required: ['runId', 'files'],
+    optional: ['allowedFiles', 'agentRole'],
   },
   [FILE_SAVED]: {
     required: ['file'],
