@@ -91,6 +91,11 @@ async function main() {
   await import('./domain-events.test.js');
   await import('./event-store.test.js');
 
+  // Replay system tests
+  await import('./session-store.test.js');
+  await import('./recorder.test.js');
+  await import('./replay.test.js');
+
   console.log('\n' + '='.repeat(40));
   if (totalFailed === 0) {
     console.log(`${GREEN}${BOLD}All ${totalPassed} tests passed${RESET}`);
