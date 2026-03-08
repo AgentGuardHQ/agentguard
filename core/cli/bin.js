@@ -228,7 +228,7 @@ switch (command) {
     }
     const { startSyncServer } = await import('./sync-server.js');
     try {
-      const { port, clients, stop } = await startSyncServer();
+      const { port, stop } = await startSyncServer();
       console.log('');
       console.log('  \x1b[1m\x1b[32m⚡ BugMon Sync Server\x1b[0m');
       console.log(`  Listening on \x1b[36mws://localhost:${port}\x1b[0m`);

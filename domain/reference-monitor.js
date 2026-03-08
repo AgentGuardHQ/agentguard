@@ -9,7 +9,7 @@
 //   3. Verifiable — small, auditable core
 //   4. Observable — every decision emits an event
 
-import { createAction, validateAction, DECISION } from './actions.js';
+import { createAction, DECISION } from './actions.js';
 import { evaluate, validatePolicy } from './policy.js';
 import { EventBus } from './event-bus.js';
 import { simpleHash } from './hash.js';

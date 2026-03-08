@@ -1,7 +1,6 @@
 // Pipeline orchestrator — runs stages sequentially with validation gates
 // No DOM, no Node.js APIs — pure domain logic.
 
-import { ROLES } from './roles.js';
 import {
   STAGES,
   STAGE_STATUS,

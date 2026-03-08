@@ -7,7 +7,7 @@ import { FG, DIM, BOLD, RESET } from '../core/cli/colors.js';
 
 let totalPassed = 0;
 let totalFailed = 0;
-let currentSuite = '';
+let _currentSuite = '';
 
 const RED = FG.red;
 const GREEN = FG.green;
@@ -25,7 +25,7 @@ export function test(name, fn) {
 }
 
 export function suite(name, fn) {
-  currentSuite = name;
+  _currentSuite = name;
   console.log(`\n${BOLD}${name}${RESET}`);
   fn();
 }

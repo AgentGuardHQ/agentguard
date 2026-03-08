@@ -1,7 +1,7 @@
 // Headless battle engine for simulation
 // Now delegates to domain/battle.js — single source of truth for battle logic.
 
-import { calcDamage, isHealMove, simulateBattle } from '../domain/battle.js';
+import { calcDamage, simulateBattle } from '../domain/battle.js';
 
 /**
  * Backward-compatible damage calculation for headless simulation.

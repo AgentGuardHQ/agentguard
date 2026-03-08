@@ -24,7 +24,7 @@ export function randomStrategy(attacker, defender, movesData, typeChart, rng) {
 }
 
 // Strategy: always pick the move that deals the most estimated damage
-export function highestDamageStrategy(attacker, defender, movesData, typeChart, rng) {
+export function highestDamageStrategy(attacker, defender, movesData, typeChart, _rng) {
   const moves = getMoves(attacker, movesData);
   let best = moves[0];
   let bestDmg = -1;
@@ -40,7 +40,7 @@ export function highestDamageStrategy(attacker, defender, movesData, typeChart, 
 }
 
 // Strategy: pick the move with the best type effectiveness, breaking ties by power
-export function typeAwareStrategy(attacker, defender, movesData, typeChart, rng) {
+export function typeAwareStrategy(attacker, defender, movesData, typeChart, _rng) {
   const moves = getMoves(attacker, movesData);
   let best = moves[0];
   let bestEff = -1;
@@ -80,7 +80,7 @@ export function hpAwareStrategy(attacker, defender, movesData, typeChart, rng) {
 }
 
 // Strategy: prioritizes survival — heals when HP < 50%, otherwise picks type-aware damage
-export function defensiveStrategy(attacker, defender, movesData, typeChart, rng) {
+export function defensiveStrategy(attacker, defender, movesData, typeChart, _rng) {
   const moves = getMoves(attacker, movesData);
   const hpRatio = (attacker.currentHP ?? attacker.hp) / attacker.hp;
 

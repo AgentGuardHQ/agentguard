@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { test, suite } from './run.js';
 
 // Save existing AudioContext mock state
-const originalAudioContext = globalThis.AudioContext;
-const originalWindow = globalThis.window;
+const _originalAudioContext = globalThis.AudioContext;
+const _originalWindow = globalThis.window;
 
 // Full AudioContext mock for testing sound.js
 function createMockAudioContext() {
@@ -30,7 +30,7 @@ function createMockAudioContext() {
         connect() {},
       };
     }
-    createBuffer(channels, length, sampleRate) {
+    createBuffer(channels, length, _sampleRate) {
       return {
         getChannelData() { return new Float32Array(length); },
       };

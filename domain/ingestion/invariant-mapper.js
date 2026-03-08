@@ -25,7 +25,7 @@ export function violationToMonster(violationEvent, monstersData) {
 
   // Look up the designated monster for this violation type
   const monsterId = VIOLATION_MONSTER_MAP[type];
-  if (monsterId == null) return null;
+  if (monsterId === undefined) return null;
 
   const template = monstersData.find((m) => m.id === monsterId);
   if (!template) return null;

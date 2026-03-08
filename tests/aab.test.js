@@ -74,7 +74,7 @@ suite('AgentGuard — Action Authorization Boundary', () => {
 
   test('authorize allows safe file write with no policies', () => {
     resetEventCounter();
-    const { intent, result, events } = authorize({ tool: 'Write', file: 'src/index.js' }, []);
+    const { result, events } = authorize({ tool: 'Write', file: 'src/index.js' }, []);
     assert.strictEqual(result.allowed, true);
     assert.strictEqual(events.length, 0);
   });

@@ -11,7 +11,7 @@ if (typeof globalThis.AudioContext === 'undefined') {
     createOscillator() { return { connect() {}, start() {}, stop() {}, frequency: { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} } }; }
     createGain() { return { connect() {}, gain: { setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} } }; }
     createBufferSource() { return { connect() {}, start() {}, buffer: null }; }
-    createBuffer(ch, len, rate) { return { getChannelData() { return new Float32Array(len); } }; }
+    createBuffer(_ch, len, _rate) { return { getChannelData() { return new Float32Array(len); } }; }
     get destination() { return {}; }
     get currentTime() { return 0; }
     resume() { return Promise.resolve(); }

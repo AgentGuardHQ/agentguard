@@ -6,7 +6,7 @@
 // TODO(roadmap/phase-6): Extract renderer plugin interface for third-party renderers
 
 import { renderBugDexContributionPrompt, BUGDEX_CONTRIBUTION_MIN } from './contribute.js';
-import { RESET, BOLD, DIM, TYPE_COLORS, color, bold, dim, padVis } from './colors.js';
+import { TYPE_COLORS, color, bold, dim, padVis } from './colors.js';
 
 // ── ASCII art per type ──
 
@@ -25,7 +25,7 @@ const TYPE_ART = {
 /**
  * Render a BugMon encounter card to the terminal.
  */
-export function renderEncounter(monster, error, location, confidence) {
+export function renderEncounter(monster, error, location, _confidence) {
   const typeColor = TYPE_COLORS[monster.type] || 'white';
   const art = TYPE_ART[monster.type] || TYPE_ART.runtime;
   const W = 48; // inner width (between the border chars)

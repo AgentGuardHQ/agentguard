@@ -78,7 +78,7 @@ export async function interactiveBossBattle(boss) {
 
   const effectiveness = typeData.effectiveness;
 
-  let result = { defeated: false, fled: false, playerFainted: false };
+  const result = { defeated: false, fled: false, playerFainted: false };
 
   process.stderr.write('\n');
   process.stderr.write(c('  ╔══════════════════════════════════════════════╗\n', 'red'));

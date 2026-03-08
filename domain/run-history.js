@@ -118,7 +118,7 @@ export function getRecentRuns(history, count = 10) {
  * @param {object[]} runs - Array of run summaries (from history.runs)
  * @returns {Map<number, { encounters: number, resolved: number }>}
  */
-export function getMonsterStats(runs) {
+export function getMonsterStats(_runs) {
   const stats = new Map();
   // This operates on run-level data; for per-monster detail,
   // the caller should aggregate from the full run objects.

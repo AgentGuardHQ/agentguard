@@ -3,7 +3,7 @@ import { test, suite } from './run.js';
 
 // Mock document.createElement('canvas') for Node.js
 if (typeof globalThis.document === 'undefined') {
-  const ops = [];
+  const _ops = [];
   globalThis.document = {
     createElement(tag) {
       if (tag === 'canvas') {

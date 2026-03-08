@@ -5,13 +5,8 @@
 import {
   createBattleState,
   executeTurn,
-  cacheChance,
   attemptCache,
   pickEnemyMove,
-  isHealMove,
-  resolveMove,
-  applyDamage,
-  applyHealing,
 } from '../../domain/battle.js';
 import { MOVE_USED, PASSIVE_ACTIVATED, BUGMON_FAINTED } from '../../domain/events.js';
 import { wasPressed } from '../engine/input.js';
