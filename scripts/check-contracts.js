@@ -21,6 +21,9 @@ const MODULE_PATHS = {
   'domain/ingestion/pipeline': '../dist/domain/ingestion/pipeline.js',
   'domain/ingestion/fingerprint': '../dist/domain/ingestion/fingerprint.js',
   'domain/ingestion/classifier': '../dist/domain/ingestion/classifier.js',
+  'domain/rng': '../dist/domain/rng.js',
+  'domain/strategies': '../dist/domain/strategies.js',
+  'domain/simulator': '../dist/domain/simulator.js',
 };
 
 console.log('Checking module contracts...\n');

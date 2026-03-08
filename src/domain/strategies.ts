@@ -1,30 +1,57 @@
-// AI move selection strategies for battle simulation
-// Each strategy is a function: (attacker, defender, movesData, typeChart, rng) => move
+// AI move selection strategies for battle simulation.
+// Each strategy is a pure function: (attacker, defender, movesData, typeChart, rng) => move.
+// No DOM, no Node.js APIs — pure domain logic.
 
-function getMoves(mon, movesData) {
-  return mon.moves.map((id) => movesData.find((m) => m.id === id)).filter(Boolean);
+import type { Bugmon, BattleMove, TypeChart, BattleRNG } from '../core/types.js';
+import type { Strategy } from './battle.js';
+
+function getMoves(mon: Bugmon, movesData: readonly BattleMove[]): BattleMove[] {
+  return mon.moves
+    .map((id) => movesData.find((m) => m.id === id))
+    .filter((m): m is BattleMove => m !== undefined);
 }
 
-function getEffectiveness(moveType, defenderType, typeChart) {
+function getEffectiveness(
+  moveType: string,
+  defenderType: string,
+  typeChart: TypeChart | null,
+): number {
   if (!typeChart || !moveType || !defenderType) return 1.0;
   return typeChart[moveType]?.[defenderType] ?? 1.0;
 }
 
-function estimateDamage(attacker, move, defender, typeChart) {
+function estimateDamage(
+  attacker: Bugmon,
+  move: BattleMove,
+  defender: Bugmon,
+  typeChart: TypeChart | null,
+): number {
   if (move.category === 'heal') return 0;
   const base = move.power + attacker.attack - Math.floor(defender.defense / 2) + 2; // avg random
   const eff = getEffectiveness(move.type, defender.type, typeChart);
   return Math.max(1, Math.floor(base * eff));
 }
 
-// Strategy: pick a random move
-export function randomStrategy(attacker, defender, movesData, typeChart, rng) {
+/** Pick a random move */
+export const randomStrategy: Strategy = (
+  attacker: Bugmon,
+  _defender: Bugmon,
+  movesData: readonly BattleMove[],
+  _typeChart: TypeChart | null,
+  rng?: BattleRNG,
+): BattleMove => {
   const moves = getMoves(attacker, movesData);
-  return rng.pick(moves);
-}
+  const rand = rng?.random ?? Math.random;
+  return moves[Math.floor(rand() * moves.length)];
+};
 
-// Strategy: always pick the move that deals the most estimated damage
-export function highestDamageStrategy(attacker, defender, movesData, typeChart, _rng) {
+/** Always pick the move that deals the most estimated damage */
+export const highestDamageStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+): BattleMove => {
   const moves = getMoves(attacker, movesData);
   let best = moves[0];
   let bestDmg = -1;
@@ -37,10 +64,15 @@ export function highestDamageStrategy(attacker, defender, movesData, typeChart, 
     }
   }
   return best;
-}
+};
 
-// Strategy: pick the move with the best type effectiveness, breaking ties by power
-export function typeAwareStrategy(attacker, defender, movesData, typeChart, _rng) {
+/** Pick the move with the best type effectiveness, breaking ties by power */
+export const typeAwareStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+): BattleMove => {
   const moves = getMoves(attacker, movesData);
   let best = moves[0];
   let bestEff = -1;
@@ -55,42 +87,57 @@ export function typeAwareStrategy(attacker, defender, movesData, typeChart, _rng
     }
   }
   return best;
-}
+};
 
-// Strategy: 70% chance pick highest damage, 30% chance pick random (simulates imperfect play)
-export function mixedStrategy(attacker, defender, movesData, typeChart, rng) {
-  if (rng.random() < 0.7) {
+/** 70% chance pick highest damage, 30% chance pick random */
+export const mixedStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+  rng?: BattleRNG,
+): BattleMove => {
+  const rand = rng?.random ?? Math.random;
+  if (rand() < 0.7) {
     return highestDamageStrategy(attacker, defender, movesData, typeChart, rng);
   }
   return randomStrategy(attacker, defender, movesData, typeChart, rng);
-}
+};
 
-// Strategy: considers remaining HP — heals when low, otherwise picks highest damage
-export function hpAwareStrategy(attacker, defender, movesData, typeChart, rng) {
+/** Considers remaining HP — heals when low, otherwise picks highest damage */
+export const hpAwareStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+  rng?: BattleRNG,
+): BattleMove => {
   const moves = getMoves(attacker, movesData);
   const hpRatio = (attacker.currentHP ?? attacker.hp) / attacker.hp;
 
-  // If HP below 30%, try to heal
   if (hpRatio < 0.3) {
     const healMove = moves.find((m) => m.category === 'heal');
     if (healMove) return healMove;
   }
 
   return highestDamageStrategy(attacker, defender, movesData, typeChart, rng);
-}
+};
 
-// Strategy: prioritizes survival — heals when HP < 50%, otherwise picks type-aware damage
-export function defensiveStrategy(attacker, defender, movesData, typeChart, _rng) {
+/** Prioritizes survival — heals when HP < 50%, otherwise picks type-aware damage */
+export const defensiveStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+): BattleMove => {
   const moves = getMoves(attacker, movesData);
   const hpRatio = (attacker.currentHP ?? attacker.hp) / attacker.hp;
 
-  // Heal when below 50% HP
   if (hpRatio < 0.5) {
     const healMove = moves.find((m) => m.category === 'heal');
     if (healMove) return healMove;
   }
 
-  // Prefer same-type moves (STAB-like bonus) when effectiveness is equal
   let best = moves[0];
   let bestScore = -1;
 
@@ -105,28 +152,36 @@ export function defensiveStrategy(attacker, defender, movesData, typeChart, _rng
     }
   }
   return best;
-}
+};
 
-// Strategy: phase-based — typeAware early, highestDamage mid, hpAware when desperate
-export function adaptiveStrategy(attacker, defender, movesData, typeChart, rng) {
+/** Phase-based — typeAware early, highestDamage mid, hpAware when desperate */
+export const adaptiveStrategy: Strategy = (
+  attacker: Bugmon,
+  defender: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart | null,
+  rng?: BattleRNG,
+): BattleMove => {
   const ownHpRatio = (attacker.currentHP ?? attacker.hp) / attacker.hp;
   const oppHpRatio = (defender.currentHP ?? defender.hp) / defender.hp;
 
-  // Desperate: heal if possible
   if (ownHpRatio < 0.3) {
     return hpAwareStrategy(attacker, defender, movesData, typeChart, rng);
   }
 
-  // Opponent is weakened: go for maximum damage to finish them
   if (oppHpRatio < 0.5) {
     return highestDamageStrategy(attacker, defender, movesData, typeChart, rng);
   }
 
-  // Early game: exploit type advantages
   return typeAwareStrategy(attacker, defender, movesData, typeChart, rng);
+};
+
+export interface StrategyEntry {
+  readonly fn: Strategy;
+  readonly name: string;
 }
 
-export const STRATEGIES = {
+export const STRATEGIES: Record<string, StrategyEntry> = {
   random: { fn: randomStrategy, name: 'Random' },
   highestDamage: { fn: highestDamageStrategy, name: 'Highest Damage' },
   typeAware: { fn: typeAwareStrategy, name: 'Type Aware' },

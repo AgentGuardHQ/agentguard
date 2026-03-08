@@ -12,6 +12,7 @@ import { registerDemoCommand } from './commands/demo.js';
 import { registerReplayCommand } from './commands/replay.js';
 import { registerTraceCommand } from './commands/trace.js';
 import { registerScoreCommand } from './commands/score.js';
+import { registerSimulateCommand } from './commands/simulate.js';
 import { BugRegistry } from '../core/bug-registry.js';
 
 const program = new Command();
@@ -29,5 +30,6 @@ registerDemoCommand(program);
 registerReplayCommand(program);
 registerTraceCommand(program);
 registerScoreCommand(program);
+registerSimulateCommand(program);
 
 program.parse();

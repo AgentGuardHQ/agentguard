@@ -263,7 +263,7 @@ export function executeTurn(
 }
 
 /** Strategy function type for simulation */
-type Strategy = (
+export type Strategy = (
   attacker: Bugmon,
   defender: Bugmon,
   movesData: readonly BattleMove[],
@@ -271,13 +271,13 @@ type Strategy = (
   rng?: BattleRNG,
 ) => BattleMove;
 
-interface SimulationOptions {
+export interface SimulationOptions {
   strategyA?: Strategy;
   strategyB?: Strategy;
   rng?: BattleRNG;
 }
 
-interface SimulationResult {
+export interface SimulationResult {
   winner: 'A' | 'B' | 'draw';
   turns: number;
   monA: string;

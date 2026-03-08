@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { createRNG } from '../simulation/rng.js';
+import { createRNG } from '../dist/domain/rng.js';
 
-suite('RNG (simulation/rng.js)', () => {
+suite('RNG (domain/rng.ts)', () => {
   test('same seed produces identical sequence', () => {
     const a = createRNG(42);
     const b = createRNG(42);

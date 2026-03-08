@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { simulate } from '../simulation/simulator.js';
-import { randomStrategy } from '../simulation/strategies.js';
+import { simulate } from '../dist/domain/simulator.js';
+import { randomStrategy } from '../dist/domain/strategies.js';
 
-suite('Simulator (simulation/simulator.js)', () => {
+suite('Simulator (domain/simulator.ts)', () => {
   const movesData = [
     { id: 'move1', name: 'Move1', power: 8, type: 'backend' },
     { id: 'move2', name: 'Move2', power: 10, type: 'frontend' }
