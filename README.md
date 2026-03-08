@@ -334,6 +334,7 @@ npm run format                         # Check formatting (Prettier)
 | [Roguelike Design](docs/roguelike-design.md) | Debugging-as-roguelike mechanics |
 | [Event Model](docs/event-model.md) | Canonical event schema and lifecycle |
 | [Bug Event Pipeline](docs/bug-event-pipeline.md) | Signal normalization pipeline |
+| [Agent-Native SDLC](docs/agent-sdlc-architecture.md) | Formal architecture brief and academic foundations |
 | [Product Positioning](docs/product-positioning.md) | What this is and isn't |
 | [Unified Architecture](docs/unified-architecture.md) | How AgentGuard and BugMon integrate |
 | [AgentGuard](docs/agentguard.md) | Governance runtime specification |
