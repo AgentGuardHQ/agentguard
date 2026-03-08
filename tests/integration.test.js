@@ -170,7 +170,7 @@ suite('Integration: Battle → Evolution Check (battle + evolution data)', () =>
     const state = createBattleState(evolvingMon, weakEnemy);
     const move = movesData.find(m => m.id === evolvingMon.moves[0]);
     assert.ok(move);
-    const result = executeTurn(state, move, move, typesData.effectiveness);
+    executeTurn(state, move, move, typesData.effectiveness);
 
     // After winning, check if evolution is possible
     const trigger = findTrigger(evolvingMon.id);

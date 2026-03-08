@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 
 // auto-walk.js writes to ~/.bugmon/session.json and reads map data.
 // We test the pure logic patterns by reimplementing the core algorithms.

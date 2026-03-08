@@ -33,12 +33,11 @@ import {
   getEvolutionProgress,
 } from './evolution/evolution.js';
 import {
-  startEvolutionAnimation,
   updateEvolutionAnimation,
   drawEvolutionAnimation,
   clearEvolutionAnimation,
 } from './evolution/animation.js';
-import { saveGame, loadGame, applySave, hasSave, recordBrowserCache } from './sync/save.js';
+import { saveGame, loadGame, applySave, recordBrowserCache } from './sync/save.js';
 import { eventBus, Events } from './engine/events.js';
 import { updateTitle, drawTitle } from './engine/title.js';
 

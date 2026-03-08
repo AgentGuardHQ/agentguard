@@ -40,7 +40,7 @@ export async function init(options = {}) {
   const sourceDir = join(__dirname, '..', '..', 'hooks');
 
   let installed = 0;
-  let skipped = 0;
+  let _skipped = 0;
 
   process.stderr.write('\n');
   process.stderr.write(
@@ -53,7 +53,7 @@ export async function init(options = {}) {
 
     if (!existsSync(sourcePath)) {
       process.stderr.write(`  ${YELLOW}⚠${RESET}  ${hookName}: source hook not found, skipping\n`);
-      skipped++;
+      _skipped++;
       continue;
     }
 
@@ -61,7 +61,7 @@ export async function init(options = {}) {
       process.stderr.write(
         `  ${YELLOW}⚠${RESET}  ${hookName}: already exists ${DIM}(use --force to overwrite)${RESET}\n`
       );
-      skipped++;
+      _skipped++;
       continue;
     }
 

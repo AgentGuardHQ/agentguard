@@ -7,8 +7,6 @@ import {
   ERROR_OBSERVED,
   ENCOUNTER_STARTED,
   BATTLE_ENDED,
-  RUN_STARTED,
-  RUN_ENDED,
   TEST_COMPLETED,
   FILE_SAVED,
 } from '../../domain/events.js';

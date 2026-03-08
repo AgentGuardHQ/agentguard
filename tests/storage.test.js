@@ -1,8 +1,7 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 
 // We can't easily mock homedir(), so we test calculateLevel logic directly
 // and test recordEncounter/resolveEncounter by temporarily overriding the storage path.

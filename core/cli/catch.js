@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { loadBugDex, saveBugDex } from '../../ecosystem/storage.js';
-import { RESET, BOLD, DIM, FG, color as c, bold as b } from './colors.js';
+import { RESET, DIM, color as c, bold as b } from './colors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,7 +55,7 @@ export async function interactiveCache(wildMonster, errorInfo) {
 
   const effectiveness = typeData.effectiveness;
 
-  let result = { cached: false, fled: false, playerFainted: false };
+  const result = { cached: false, fled: false, playerFainted: false };
 
   process.stderr.write('\n');
   process.stderr.write(c('  ╔══════════════════════════════════════════════╗\n', 'yellow'));

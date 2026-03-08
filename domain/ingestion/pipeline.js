@@ -5,7 +5,7 @@ import { parseErrors } from './parser.js';
 import { parseStackTrace, getUserFrame } from './parser.js';
 import { fingerprint, deduplicateErrors } from './fingerprint.js';
 import { classify } from './classifier.js';
-import { ERROR_OBSERVED, BUG_CLASSIFIED, createEvent } from '../events.js';
+import { ERROR_OBSERVED, createEvent } from '../events.js';
 import { assertShape } from '../shapes.js';
 
 /**

@@ -5,7 +5,7 @@
 // TODO(roadmap/ts-migration): Migrate to TypeScript (src/domain/)
 
 import {
-  MOVE_USED, DAMAGE_DEALT, HEALING_APPLIED,
+  MOVE_USED,
   PASSIVE_ACTIVATED, BUGMON_FAINTED
 } from './events.js';
 
@@ -154,7 +154,8 @@ export function executeTurn(state, playerMove, enemyMove, typeChart, rolls = {})
       return false;
     }
 
-    let { damage, effectiveness, critical } = result;
+    let { damage } = result;
+    const { effectiveness, critical } = result;
 
     // RandomFailure: defender may negate damage
     const passiveRoll = rolls.passive?.() ?? Math.random();

@@ -9,7 +9,7 @@
 //   bugmon replay <id> --stats       Show session statistics only
 
 import { loadSession, listSessions } from './session-store.js';
-import { BOLD, RESET, DIM, FG, color, bold, dim } from './colors.js';
+import { color, bold, dim } from './colors.js';
 
 // Event kind → display info
 const EVENT_DISPLAY = {

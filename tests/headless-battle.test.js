@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { test, suite } from './run.js';
 import { calcDamageHeadless, runBattle } from '../simulation/headlessBattle.js';
 import { createRNG } from '../simulation/rng.js';
-import { randomStrategy, highestDamageStrategy } from '../simulation/strategies.js';
+import { randomStrategy } from '../simulation/strategies.js';
 
 suite('Headless Battle (simulation/headlessBattle.js)', () => {
   const typeChart = {

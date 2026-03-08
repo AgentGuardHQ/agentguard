@@ -16,8 +16,8 @@ const BLUE = `${ESC}34m`;
 const MAGENTA = `${ESC}35m`;
 const CYAN = `${ESC}36m`;
 const WHITE = `${ESC}37m`;
-const BG_RED = `${ESC}41m`;
-const BG_YELLOW = `${ESC}43m`;
+const _BG_RED = `${ESC}41m`;
+const _BG_YELLOW = `${ESC}43m`;
 const BG_MAGENTA = `${ESC}45m`;
 
 const TYPE_COLORS = {
@@ -128,7 +128,7 @@ async function showEncounter(monster, errorInfo) {
   await battleSequence(monster, typeColor);
 }
 
-async function battleSequence(monster, typeColor) {
+async function battleSequence(monster, _typeColor) {
   const frames = ['⚔️  Debugging...', '⚔️  Debugging..', '⚔️  Debugging.'];
   for (const frame of frames) {
     process.stdout.write(`\r  ${frame}`);

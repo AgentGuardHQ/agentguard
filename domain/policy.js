@@ -2,7 +2,7 @@
 // Evaluates actions against declared capability grants and deny rules.
 // No DOM, no Node.js APIs — pure domain logic.
 
-import { ACTION_TYPES, ACTION_CLASS, DECISION } from './actions.js';
+import { DECISION } from './actions.js';
 
 // --- Capability Matching ---
 

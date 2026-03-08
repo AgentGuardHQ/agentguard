@@ -2,16 +2,16 @@ import assert from 'node:assert';
 import { test, suite } from './run.js';
 
 // Mock WebSocket for Node.js
-let lastWsUrl = null;
-let lastWsInstance = null;
+let _lastWsUrl = null;
+let _lastWsInstance = null;
 
 if (typeof globalThis.WebSocket === 'undefined') {
   globalThis.WebSocket = class MockWebSocket {
     static OPEN = 1;
     static CLOSED = 3;
     constructor(url) {
-      lastWsUrl = url;
-      lastWsInstance = this;
+      _lastWsUrl = url;
+      _lastWsInstance = this;
       this.readyState = 3; // CLOSED by default (simulates failed connection)
       this.onopen = null;
       this.onmessage = null;

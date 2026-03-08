@@ -11,7 +11,7 @@
 
 import { parseErrors } from '../error-parser.js';
 import { matchMonster, getAllMonsters } from '../matcher.js';
-import { recordEncounter, loadBugDex } from '../../ecosystem/storage.js';
+import { recordEncounter } from '../../ecosystem/storage.js';
 
 export async function claudeHook() {
   try {
@@ -41,7 +41,7 @@ export async function claudeHook() {
 
     // Match first error to a BugMon
     const error = errors[0];
-    const { monster, confidence } = matchMonster(error);
+    const { monster } = matchMonster(error);
     if (!monster) process.exit(0);
 
     // Record the encounter
@@ -51,7 +51,6 @@ export async function claudeHook() {
     const allMonsters = getAllMonsters();
     const seenCount = Object.keys(dexData.seen || {}).length;
     const totalCount = allMonsters.length;
-    const partyCount = (dexData.party || []).length;
 
     // Print compact encounter notification
     const newTag = isNew ? ' \x1b[33m[NEW!]\x1b[0m' : '';

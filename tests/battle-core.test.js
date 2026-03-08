@@ -100,7 +100,7 @@ suite('Battle Core (game/battle/battle-core.js)', () => {
 
   test('attemptCache succeeds when roll is below chance', () => {
     const halfHP = { hp: 30, currentHP: 15 };
-    const chance = cacheChance(halfHP); // 0.35
+    cacheChance(halfHP); // 0.35
     assert.strictEqual(attemptCache(halfHP, 0.0), true);   // roll 0 < 0.35
     assert.strictEqual(attemptCache(halfHP, 0.99), false);  // roll 0.99 > 0.35
   });

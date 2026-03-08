@@ -216,7 +216,7 @@ export function startSyncServer() {
   });
 }
 
-function handleClientMessage(client, msg, clients) {
+function handleClientMessage(client, msg, _clients) {
   switch (msg.type) {
     case MSG_PULL_CLI_STATE: {
       sendToClient(client, { type: MSG_CLI_STATE, data: getCLIState() });
@@ -383,6 +383,6 @@ function sendToClient(client, msg) {
  * @param {string} event
  * @param {object} data
  */
-export function notifyBrowsers(broadcast, event, data) {
+export function notifyBrowsers(broadcast, event, _data) {
   broadcast({ type: MSG_CLI_EVENT, event, data: getCLIState() });
 }

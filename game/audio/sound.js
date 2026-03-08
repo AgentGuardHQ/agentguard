@@ -1,8 +1,8 @@
 // Web Audio API sound effects - all synthesized
 let audioCtx = null,
   masterGain = null,
-  muted = false,
-  volume = 0.5;
+  muted = false;
+const volume = 0.5;
 
 function init() {
   if (audioCtx) return true;
@@ -12,7 +12,7 @@ function init() {
     masterGain.gain.value = volume;
     masterGain.connect(audioCtx.destination);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -51,7 +51,7 @@ function tone(freq, dur, type, vol, fade) {
       g.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     }
     o.stop(audioCtx.currentTime + dur + 0.05);
-  } catch (e) {}
+  } catch {}
 }
 
 function sweep(f1, f2, dur, type, vol) {
@@ -70,7 +70,7 @@ function sweep(f1, f2, dur, type, vol) {
     g.gain.linearRampToValueAtTime(0.001, t + dur);
     o.start();
     o.stop(t + dur + 0.05);
-  } catch (e) {}
+  } catch {}
 }
 
 function noise(dur, vol) {
@@ -88,7 +88,7 @@ function noise(dur, vol) {
     g.connect(masterGain);
     s.start();
     s.stop(audioCtx.currentTime + dur + 0.05);
-  } catch (e) {}
+  } catch {}
 }
 
 function delayed(fn, ms) {

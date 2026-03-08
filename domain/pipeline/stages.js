@@ -1,7 +1,7 @@
 // Pipeline stage definitions and validation
 // No DOM, no Node.js APIs — pure domain logic.
 
-import { ROLES, ROLE_DEFINITIONS, isValidRole } from './roles.js';
+import { ROLES, isValidRole } from './roles.js';
 
 /**
  * Pipeline stages in execution order.
