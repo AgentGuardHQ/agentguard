@@ -863,3 +863,95 @@ export interface ModuleContract {
   readonly invariants: readonly string[];
   readonly dependencies: readonly string[];
 }
+
+// ---------------------------------------------------------------------------
+// Execution Event Log Types
+// ---------------------------------------------------------------------------
+
+/** Actor who caused the execution event */
+export type Actor = 'human' | 'agent' | 'system';
+
+/** Source system that produced the event */
+export type EventSource = 'cli' | 'ci' | 'git' | 'runtime' | 'editor' | 'governance';
+
+/** Context surrounding an execution event */
+export interface ExecutionContext {
+  readonly repo?: string;
+  readonly branch?: string;
+  readonly commit?: string;
+  readonly file?: string;
+  readonly agentRunId?: string;
+}
+
+/** A universal execution event — the atomic unit of the execution log */
+export interface ExecutionEvent {
+  readonly id: string;
+  readonly timestamp: number;
+  readonly actor: Actor;
+  readonly source: EventSource;
+  readonly kind: string;
+  readonly context: ExecutionContext;
+  readonly payload: Record<string, unknown>;
+  readonly causedBy?: string;
+  readonly fingerprint: string;
+}
+
+/** Filter for querying execution events */
+export interface ExecutionEventFilter {
+  readonly kind?: string;
+  readonly actor?: Actor;
+  readonly source?: EventSource;
+  readonly since?: number;
+  readonly until?: number;
+  readonly agentRunId?: string;
+  readonly file?: string;
+}
+
+/** Execution event log interface */
+export interface ExecutionEventLog {
+  append(event: ExecutionEvent): void;
+  query(filter?: ExecutionEventFilter): ExecutionEvent[];
+  replay(fromId?: string): ExecutionEvent[];
+  trace(eventId: string): ExecutionEvent[];
+  count(): number;
+  clear(): void;
+  toNDJSON(): string;
+  fromNDJSON(ndjson: string): number;
+}
+
+/** Risk score for an agent run */
+export interface RiskScore {
+  readonly agentRunId: string;
+  readonly score: number;
+  readonly level: 'low' | 'medium' | 'high' | 'critical';
+  readonly factors: readonly RiskFactor[];
+  readonly eventCount: number;
+  readonly failureCount: number;
+  readonly violationCount: number;
+}
+
+/** Individual risk factor contributing to a score */
+export interface RiskFactor {
+  readonly name: string;
+  readonly weight: number;
+  readonly detail: string;
+}
+
+/** Cluster of related failures */
+export interface FailureCluster {
+  readonly id: string;
+  readonly rootEvent: ExecutionEvent;
+  readonly events: readonly ExecutionEvent[];
+  readonly commonFile?: string;
+  readonly commonKind?: string;
+  readonly severity: number;
+}
+
+/** Mapping from an execution event to a game encounter */
+export interface EncounterMapping {
+  readonly eventId: string;
+  readonly encounterType: 'monster' | 'boss' | 'evolution';
+  readonly severity: Severity;
+  readonly name: string;
+  readonly description: string;
+}

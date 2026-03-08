@@ -284,6 +284,52 @@ export const MODULE_CONTRACTS: Record<string, ModuleContract> = {
     ],
     dependencies: ['domain/dev-event', 'domain/entities', 'domain/correlation', 'domain/risk'],
   },
+
+  'domain/execution-log/event-schema': {
+    exports: {
+      createExecutionEvent: { params: ['kind', 'options'], returns: 'object' },
+      validateExecutionEvent: { params: ['event'], returns: 'object' },
+      resetExecutionEventCounter: { params: [], returns: 'void' },
+    },
+    invariants: [
+      'createExecutionEvent validates all required fields',
+      'Each event gets a unique ID with xev_ prefix',
+      'Fingerprints are deterministic for same kind+actor+source+payload',
+      'Actor must be human, agent, or system',
+      'Source must be cli, ci, git, runtime, editor, or governance',
+    ],
+    dependencies: ['domain/hash'],
+  },
+
+  'domain/execution-log/event-log': {
+    exports: {
+      createExecutionEventLog: { params: [], returns: 'object' },
+    },
+    invariants: [
+      'append() validates events before storing',
+      'query() supports filtering by kind, actor, source, since, until, agentRunId, file',
+      'replay() returns events from a given ID onward',
+      'trace() walks causedBy chain back to root cause',
+      'toNDJSON()/fromNDJSON() round-trip is lossless',
+    ],
+    dependencies: ['domain/execution-log/event-schema'],
+  },
+
+  'domain/execution-log/event-projections': {
+    exports: {
+      buildCausalChain: { params: ['log', 'eventId'], returns: 'array' },
+      scoreAgentRun: { params: ['log', 'agentRunId'], returns: 'object' },
+      clusterFailures: { params: ['log', 'options'], returns: 'array' },
+      mapToEncounter: { params: ['event'], returns: 'object|null' },
+    },
+    invariants: [
+      'buildCausalChain returns events in chronological order (root first)',
+      'scoreAgentRun returns a risk level of low, medium, high, or critical',
+      'clusterFailures groups failures by file and time proximity',
+      'mapToEncounter returns null for non-failure events',
+    ],
+    dependencies: ['domain/execution-log/event-schema', 'domain/hash'],
+  },
 };
 
 /**

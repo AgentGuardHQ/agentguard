@@ -122,6 +122,50 @@ export const SHAPES: Record<string, ShapeDefinition> = {
     },
     optional: {},
   },
+  ExecutionEvent: {
+    required: {
+      id: 'string',
+      timestamp: 'number',
+      actor: 'string',
+      source: 'string',
+      kind: 'string',
+      context: 'object',
+      payload: 'object',
+      fingerprint: 'string',
+    },
+    optional: { causedBy: 'string' },
+  },
+  RiskScore: {
+    required: {
+      agentRunId: 'string',
+      score: 'number',
+      level: 'string',
+      factors: 'array',
+      eventCount: 'number',
+      failureCount: 'number',
+      violationCount: 'number',
+    },
+    optional: {},
+  },
+  FailureCluster: {
+    required: {
+      id: 'string',
+      rootEvent: 'object',
+      events: 'array',
+      severity: 'number',
+    },
+    optional: { commonFile: 'string', commonKind: 'string' },
+  },
+  EncounterMapping: {
+    required: {
+      eventId: 'string',
+      encounterType: 'string',
+      severity: 'number',
+      name: 'string',
+      description: 'string',
+    },
+    optional: {},
+  },
 };
 
 // --- Type checking ---
