@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { runBattle } from '../simulation/headlessBattle.js';
-import { randomStrategy, highestDamageStrategy } from '../simulation/strategies.js';
-import { createRNG } from '../simulation/rng.js';
+import { runBattle } from '../dist/domain/simulator.js';
+import { randomStrategy, highestDamageStrategy } from '../dist/domain/strategies.js';
+import { createRNG } from '../dist/domain/rng.js';
 
-suite('Headless Battle (simulation/headlessBattle.js)', () => {
+suite('Battle (domain/simulator.ts)', () => {
   const movesData = [
     { id: 'segfault', name: 'SegFault', power: 10, type: 'backend' },
     { id: 'unhandledexception', name: 'UnhandledException', power: 8, type: 'backend' },

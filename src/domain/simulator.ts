@@ -1,20 +1,76 @@
-// Battle simulator — runs N battles and collects aggregate statistics
+// Battle simulator — runs N battles and collects aggregate statistics.
+// Pure orchestration logic, no Node.js APIs, no DOM.
 
+import type { Bugmon, BattleMove, TypeChart } from '../core/types.js';
+import type { Strategy, SimulationResult } from './battle.js';
+import type { StrategyEntry } from './strategies.js';
+import { simulateBattle } from './battle.js';
 import { createRNG } from './rng.js';
-import { runBattle } from './headlessBattle.js';
+
+export interface MatchupStats {
+  wins: number;
+  losses: number;
+  draws: number;
+}
+
+export interface MonsterStats {
+  name: string;
+  type: string;
+  hp: number;
+  attack: number;
+  defense: number;
+  speed: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  totalBattles: number;
+  totalDamageDealt: number;
+  totalDamageTaken: number;
+  totalTurns: number;
+  matchups: Record<string, MatchupStats>;
+}
+
+export interface SimulateResult {
+  stats: Record<string, MonsterStats>;
+  totalBattles: number;
+  strategy: string;
+}
+
+export interface ComparisonMatchup {
+  monA: string;
+  monB: string;
+  aWins: number;
+  bWins: number;
+  draws: number;
+  total: number;
+}
+
+export interface CompareResult {
+  strategyA: string;
+  strategyB: string;
+  winsA: number;
+  winsB: number;
+  totalBattles: number;
+  draws: number;
+  matchups: ComparisonMatchup[];
+}
+
+export interface CompareAllResult {
+  results: CompareResult[];
+  strategyNames: string[];
+}
 
 export function simulate(
-  monsters,
-  movesData,
-  typeChart,
-  strategy,
-  numBattles,
-  baseSeed,
-  strategyName
-) {
-  const stats = {};
+  monsters: readonly Bugmon[],
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart,
+  strategy: Strategy,
+  numBattles: number,
+  baseSeed: number,
+  strategyName?: string,
+): SimulateResult {
+  const stats: Record<string, MonsterStats> = {};
 
-  // Init stats for each monster
   for (const mon of monsters) {
     stats[mon.name] = {
       name: mon.name,
@@ -30,22 +86,20 @@ export function simulate(
       totalDamageDealt: 0,
       totalDamageTaken: 0,
       totalTurns: 0,
-      matchups: {}, // per-opponent breakdown
+      matchups: {},
     };
   }
 
   let battleIndex = 0;
 
-  // Round-robin: every monster fights every other monster
   for (let i = 0; i < monsters.length; i++) {
     for (let j = i + 1; j < monsters.length; j++) {
       const monA = monsters[i];
       const monB = monsters[j];
 
-      // Run multiple battles per matchup for statistical significance
       const battlesPerMatchup = Math.max(
         1,
-        Math.floor(numBattles / ((monsters.length * (monsters.length - 1)) / 2))
+        Math.floor(numBattles / ((monsters.length * (monsters.length - 1)) / 2)),
       );
 
       for (let k = 0; k < battlesPerMatchup; k++) {
@@ -53,12 +107,15 @@ export function simulate(
         const rng = createRNG(seed);
         battleIndex++;
 
-        const result = runBattle(monA, monB, movesData, typeChart, strategy, strategy, rng);
+        const result = simulateBattle(monA, monB, movesData, { effectiveness: typeChart }, 100, {
+          strategyA: strategy,
+          strategyB: strategy,
+          rng,
+        }) as SimulationResult;
 
         const sA = stats[monA.name];
         const sB = stats[monB.name];
 
-        // Init matchup tracking
         if (!sA.matchups[monB.name]) sA.matchups[monB.name] = { wins: 0, losses: 0, draws: 0 };
         if (!sB.matchups[monA.name]) sB.matchups[monA.name] = { wins: 0, losses: 0, draws: 0 };
 
@@ -103,21 +160,21 @@ export function simulate(
  * Strategy A controls monster A, strategy B controls monster B.
  */
 export function compareStrategies(
-  monsters,
-  movesData,
-  typeChart,
-  strategyA,
-  strategyB,
-  numBattles,
-  baseSeed,
-  nameA,
-  nameB
-) {
+  monsters: readonly Bugmon[],
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart,
+  strategyA: Strategy,
+  strategyB: Strategy,
+  numBattles: number,
+  baseSeed: number,
+  nameA: string,
+  nameB: string,
+): CompareResult {
   const winsA = { total: 0, battles: 0 };
   const winsB = { total: 0, battles: 0 };
   let battleIndex = 0;
 
-  const matchups = [];
+  const matchups: ComparisonMatchup[] = [];
 
   for (let i = 0; i < monsters.length; i++) {
     for (let j = i + 1; j < monsters.length; j++) {
@@ -125,7 +182,7 @@ export function compareStrategies(
       const monB = monsters[j];
       const battlesPerMatchup = Math.max(
         1,
-        Math.floor(numBattles / ((monsters.length * (monsters.length - 1)) / 2))
+        Math.floor(numBattles / ((monsters.length * (monsters.length - 1)) / 2)),
       );
 
       let aWins = 0;
@@ -136,7 +193,12 @@ export function compareStrategies(
         const rng = createRNG(seed);
         battleIndex++;
 
-        const result = runBattle(monA, monB, movesData, typeChart, strategyA, strategyB, rng);
+        const result = simulateBattle(monA, monB, movesData, { effectiveness: typeChart }, 100, {
+          strategyA,
+          strategyB,
+          rng,
+        }) as SimulationResult;
+
         if (result.winner === 'A') aWins++;
         else if (result.winner === 'B') bWins++;
       }
@@ -172,15 +234,15 @@ export function compareStrategies(
  * Run a full strategy comparison matrix — every strategy vs every other.
  */
 export function compareAllStrategies(
-  monsters,
-  movesData,
-  typeChart,
-  strategies,
-  numBattles,
-  baseSeed
-) {
+  monsters: readonly Bugmon[],
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart,
+  strategies: Record<string, StrategyEntry>,
+  numBattles: number,
+  baseSeed: number,
+): CompareAllResult {
   const names = Object.keys(strategies);
-  const results = [];
+  const results: CompareResult[] = [];
 
   for (let i = 0; i < names.length; i++) {
     for (let j = i + 1; j < names.length; j++) {
@@ -195,7 +257,7 @@ export function compareAllStrategies(
         numBattles,
         baseSeed + (i * names.length + j) * 100000,
         strategies[nameA].name,
-        strategies[nameB].name
+        strategies[nameB].name,
       );
       results.push(result);
     }
@@ -203,3 +265,29 @@ export function compareAllStrategies(
 
   return { results, strategyNames: names.map((n) => strategies[n].name) };
 }
+
+/**
+ * Run a single battle between two BugMon with strategy-based move selection.
+ * Thin wrapper around simulateBattle — replaces headlessBattle.js.
+ */
+export function runBattle(
+  monA: Bugmon,
+  monB: Bugmon,
+  movesData: readonly BattleMove[],
+  typeChart: TypeChart,
+  strategyA: Strategy,
+  strategyB: Strategy,
+  rng: { random: () => number; seed: number },
+): SimulationResult {
+  return simulateBattle(monA, monB, movesData, { effectiveness: typeChart }, 100, {
+    strategyA,
+    strategyB,
+    rng,
+  }) as SimulationResult;
+}
+
+/**
+ * Backward-compatible damage calculation for headless simulation.
+ * Wraps domain/battle.ts calcDamage with seeded RNG adapter.
+ */
+export { calcDamage } from './battle.js';

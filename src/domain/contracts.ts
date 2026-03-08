@@ -315,6 +315,53 @@ export const MODULE_CONTRACTS: Record<string, ModuleContract> = {
     dependencies: ['domain/execution-log/event-schema'],
   },
 
+  'domain/rng': {
+    exports: {
+      createRNG: { params: ['seed'], returns: 'object' },
+    },
+    invariants: [
+      'Same seed produces identical sequence',
+      'random() returns values in [0, 1)',
+      'int(min, max) returns integers within inclusive range',
+      'Pure function — no side effects',
+    ],
+    dependencies: [],
+  },
+
+  'domain/strategies': {
+    exports: {
+      randomStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      highestDamageStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      typeAwareStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      mixedStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      hpAwareStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      defensiveStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+      adaptiveStrategy: { params: ['attacker', 'defender', 'movesData', 'typeChart', 'rng'], returns: 'object' },
+    },
+    invariants: [
+      'All strategies return a valid BattleMove from the attacker moveset',
+      'Strategies are deterministic when RNG is injected',
+      'Pure functions — no side effects, no DOM, no Node.js APIs',
+    ],
+    dependencies: ['domain/battle'],
+  },
+
+  'domain/simulator': {
+    exports: {
+      simulate: { params: ['monsters', 'movesData', 'typeChart', 'strategy', 'numBattles', 'baseSeed', 'strategyName'], returns: 'object' },
+      compareStrategies: { params: ['monsters', 'movesData', 'typeChart', 'strategyA', 'strategyB', 'numBattles', 'baseSeed', 'nameA', 'nameB'], returns: 'object' },
+      compareAllStrategies: { params: ['monsters', 'movesData', 'typeChart', 'strategies', 'numBattles', 'baseSeed'], returns: 'object' },
+      runBattle: { params: ['monA', 'monB', 'movesData', 'typeChart', 'strategyA', 'strategyB', 'rng'], returns: 'object' },
+      calcDamage: { params: ['attacker', 'move', 'defender', 'typeChart', 'rng'], returns: 'object' },
+    },
+    invariants: [
+      'Round-robin matchups are symmetric (A wins vs B = B losses vs A)',
+      'Deterministic with same seed',
+      'No DOM, no Node.js APIs — pure orchestration logic',
+    ],
+    dependencies: ['domain/battle', 'domain/rng', 'domain/strategies'],
+  },
+
   'domain/execution-log/event-projections': {
     exports: {
       buildCausalChain: { params: ['log', 'eventId'], returns: 'array' },

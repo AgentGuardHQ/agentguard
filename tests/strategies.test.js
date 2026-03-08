@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { randomStrategy, highestDamageStrategy, typeAwareStrategy, mixedStrategy, hpAwareStrategy, defensiveStrategy, adaptiveStrategy } from '../simulation/strategies.js';
-import { createRNG } from '../simulation/rng.js';
+import { randomStrategy, highestDamageStrategy, typeAwareStrategy, mixedStrategy, hpAwareStrategy, defensiveStrategy, adaptiveStrategy } from '../dist/domain/strategies.js';
+import { createRNG } from '../dist/domain/rng.js';
 
-suite('Strategies (simulation/strategies.js)', () => {
+suite('Strategies (domain/strategies.ts)', () => {
   const movesData = [
     { id: 'weak', name: 'Weak', power: 4, type: 'backend' },
     { id: 'strong', name: 'Strong', power: 12, type: 'frontend' },

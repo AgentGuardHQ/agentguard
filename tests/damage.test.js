@@ -1,9 +1,15 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { calcDamageHeadless } from '../simulation/headlessBattle.js';
-import { createRNG } from '../simulation/rng.js';
+import { calcDamage } from '../dist/domain/battle.js';
+import { createRNG } from '../dist/domain/rng.js';
 
-suite('Damage Calculation (battle/damage.js, headlessBattle.js)', () => {
+// Backward-compatible wrapper matching the old calcDamageHeadless interface
+function calcDamageHeadless(attacker, move, defender, typeChart, rng) {
+  const result = calcDamage(attacker, move, defender, typeChart, { random: () => rng.random() });
+  return { damage: result.damage, effectiveness: result.effectiveness };
+}
+
+suite('Damage Calculation (domain/battle.ts)', () => {
   const attacker = { name: 'TestMon', type: 'backend', attack: 8, defense: 4, speed: 6 };
   const defender = { name: 'DefMon', type: 'devops', attack: 6, defense: 6, speed: 5 };
   const move = { id: 'testmove', name: 'TestMove', power: 10, type: 'backend' };

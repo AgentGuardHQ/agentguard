@@ -1,10 +1,17 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { calcDamageHeadless, runBattle } from '../simulation/headlessBattle.js';
-import { createRNG } from '../simulation/rng.js';
-import { randomStrategy } from '../simulation/strategies.js';
+import { runBattle } from '../dist/domain/simulator.js';
+import { calcDamage } from '../dist/domain/battle.js';
+import { createRNG } from '../dist/domain/rng.js';
+import { randomStrategy } from '../dist/domain/strategies.js';
 
-suite('Headless Battle (simulation/headlessBattle.js)', () => {
+// Backward-compatible wrapper matching the old calcDamageHeadless interface
+function calcDamageHeadless(attacker, move, defender, typeChart, rng) {
+  const result = calcDamage(attacker, move, defender, typeChart, { random: () => rng.random() });
+  return { damage: result.damage, effectiveness: result.effectiveness };
+}
+
+suite('Headless Battle (domain/battle.ts + domain/simulator.ts)', () => {
   const typeChart = {
     backend:  { frontend: 0.5, backend: 1.0, devops: 1.5 },
     frontend: { frontend: 1.0, backend: 1.5, devops: 1.0 },

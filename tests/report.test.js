@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
-import { generateReport } from '../simulation/report.js';
+import { generateReport } from '../dist/cli/commands/simulate.js';
 
-suite('Report (simulation/report.js)', () => {
+suite('Report (cli/commands/simulate.ts)', () => {
   function makeStats(overrides = {}) {
     return {
       name: 'TestMon',
