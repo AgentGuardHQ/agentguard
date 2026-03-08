@@ -46,7 +46,7 @@
     "dev": "node dist/cli/bin.js",
     "dev:legacy": "node core/cli/bin.js",
     "prepublishOnly": "npm run build:ts",
-    "build:ts": "tsc --noEmit && tsx esbuild.config.ts",
+    "build:ts": "tsc && tsx esbuild.config.ts",
     "ts:check": "tsc --noEmit",
     "ts:test": "vitest run",
     "ts:test:watch": "vitest"
