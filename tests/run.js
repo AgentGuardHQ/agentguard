@@ -91,6 +91,10 @@ async function main() {
   await import('./domain-events.test.js');
   await import('./event-store.test.js');
 
+  // Source registry and adapters
+  await import('./source-registry.test.js');
+  await import('./sources.test.js');
+
   console.log('\n' + '='.repeat(40));
   if (totalFailed === 0) {
     console.log(`${GREEN}${BOLD}All ${totalPassed} tests passed${RESET}`);
