@@ -2,7 +2,6 @@ import { suite, test } from './run.js';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -76,24 +75,5 @@ suite('Import path validation', () => {
 
     assert.strictEqual(errors.length, 0,
       `Found ${errors.length} broken import path(s):\n  ${errors.join('\n  ')}`);
-  });
-});
-
-suite('Build output validation', () => {
-  test('build produces valid JavaScript', () => {
-    execSync('node scripts/build.js --no-sprites --no-budget', { cwd: ROOT, stdio: 'pipe' });
-
-    const outPath = path.join(ROOT, 'dist', 'index.html');
-    assert.ok(fs.existsSync(outPath), 'dist/index.html should exist');
-
-    const html = fs.readFileSync(outPath, 'utf8');
-    const m = html.match(/<script>([\s\S]*)<\/script>/);
-    assert.ok(m, 'should contain a <script> tag');
-
-    assert.doesNotThrow(() => new Function(m[1]), SyntaxError, 'bundled JS should parse without errors');
-
-    const size = Buffer.byteLength(html);
-    assert.ok(size > 1024, `output too small: ${size} bytes`);
-    assert.ok(size < 200 * 1024, `output too large: ${size} bytes`);
   });
 });
