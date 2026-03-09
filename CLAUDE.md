@@ -55,9 +55,15 @@ BugMon/
 │   │   └── sources/        # Event source adapters
 │   ├── game/               # Browser roguelike (client-side)
 │   │   ├── game.ts         # Game entry point (auto-init, data loading)
-│   │   ├── engine/         # Core framework (state, input, renderer, events)
-│   │   ├── world/          # Dungeon (map, player, encounters)
-│   │   ├── battle/         # Combat (battle-engine, damage, battle-core)
+│   │   ├── theme.ts        # Design system (OLED palette, gold accents, glassmorphism)
+│   │   ├── engine/         # Core framework (state, input, renderer, events, effects)
+│   │   ├── dungeon/        # Idle dungeon runner (primary game mode)
+│   │   │   ├── runner.ts   # Auto-run logic, encounter resolution
+│   │   │   ├── dungeon.ts  # Procedural floor generation
+│   │   │   ├── loot.ts     # Gold, boosts, localStorage persistence
+│   │   │   └── dungeon-renderer.ts  # Premium renderer (parallax, glassmorphic HUD)
+│   │   ├── world/          # Exploration mode (map, player, encounters)
+│   │   ├── battle/         # Combat (battle-engine)
 │   │   ├── evolution/      # Progression (tracker, animation)
 │   │   ├── audio/          # Sound synthesis (Web Audio API)
 │   │   ├── sync/           # Save/sync (localStorage, WebSocket)
@@ -71,9 +77,12 @@ BugMon/
 │   │   ├── contracts.ts    # Module contract registry
 │   │   ├── shapes.ts       # Runtime shape definitions
 │   │   ├── ingestion/      # Error ingestion pipeline
-│   │   └── pipeline/       # Multi-agent pipeline orchestration
+│   │   └── execution/      # Execution adapters + event log
 │   ├── agentguard/         # Governance runtime (RTA)
-│   ├── ecosystem/          # Game content modules (bugdex, bosses, storage)
+│   ├── meta/               # Metadata systems (bugdex, bosses)
+│   ├── orchestration/      # Multi-agent pipeline orchestration
+│   ├── protocol/           # Sync protocol definitions
+│   ├── content/            # Game content validation
 │   ├── watchers/           # Environment watchers (console, test, build)
 │   └── ai/                 # AI integration interface
 │
@@ -190,16 +199,25 @@ The platform uses a dual-layer naming strategy:
 ### Layered Architecture
 All source lives in `src/`, compiled to `dist/`. The codebase is organized into layers:
 - **src/core/** — Shared logic (EventBus, error parsing, bug events). Used by CLI and game.
-- **src/cli/** — Commander-based CLI companion tool. Runs in Node.js only.
-- **src/game/** — Browser roguelike (engine, battle, dungeon, progression, audio, sprites). Runs in the browser only.
+- **src/cli/** — Commander-based CLI companion tool (20 subcommands). Runs in Node.js only.
+- **src/game/** — Browser roguelike with idle dungeon runner (primary mode), exploration, battle, progression, audio, sprites. Runs in the browser only. Zero runtime deps.
+- **src/game/dungeon/** — Idle auto-dungeon runner. Dev character runs through procedural floors, auto-resolves minor enemies, pauses for boss fights.
+- **src/game/theme.ts** — Design system tokens (OLED palette, gold accents, glassmorphism, typography).
 - **ecosystem/data/** — Game content (JSON source of truth + inlined JS modules). Consumed by both CLI and game.
 - **src/domain/** — Pure domain logic with no DOM or Node.js-specific APIs. Battle engine, encounter logic, progression engine, event definitions, ingestion pipeline, governance primitives. All functions are pure and deterministic (when RNG is injected).
 - **src/agentguard/** — Governance runtime implementing the Runtime Assurance Architecture. Evaluates agent actions against policies and invariants.
+- **src/meta/** — Metadata systems (bugdex compendium, boss definitions).
+- **src/orchestration/** — Multi-agent pipeline orchestration (orchestrator, stages, roles).
+- **src/protocol/** — Sync protocol definitions (storage, sync protocol constants).
+- **src/content/** — Game content validation (bugdex-spec).
+- **src/watchers/** — Environment watchers (console, test, build).
 
 ### Roguelike Model
 - Coding sessions are dungeon **runs**
-- Minor enemies (severity 1-2) **auto-resolve** in idle mode
-- Bosses (severity 3+) require **active engagement**
+- Primary mode: **idle dungeon runner** — dev character auto-runs through procedural floors
+- Minor enemies (severity 1-2) **auto-resolve** inline with floating combat text
+- Bosses (severity 3+) **pause the runner** for active engagement
+- Gold and loot persist across runs via localStorage
 - **Bug Grimoire** records defeated enemy types (not a collection game)
 
 ### Domain Layer & Ingestion Pipeline
@@ -212,7 +230,8 @@ The `src/domain/` layer provides environment-agnostic logic:
 - **`src/domain/evolution.ts`** — Progression condition checking (takes event counts as input, no storage dependency)
 - **`src/domain/source-registry.ts`** — Event source plugin registry
 - **`src/domain/ingestion/`** — Multi-stage pipeline: raw stderr → parsed errors → fingerprinted → classified → mapped to BugMon species
-- **`src/domain/pipeline/`** — Multi-agent pipeline orchestration (orchestrator, stages, roles)
+- **`src/domain/execution/`** — Execution event log with causal chains
+- **`src/orchestration/`** — Multi-agent pipeline orchestration (orchestrator, stages, roles)
 - **`src/domain/invariants.ts`**, **`src/domain/policy.ts`**, **`src/domain/reference-monitor.ts`** — Governance primitives consumed by agentguard/
 
 ### Build & Module System

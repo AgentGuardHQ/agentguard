@@ -23,11 +23,11 @@ AgentGuard evaluates governance
     ↓
 BugMon generates encounters
     ↓
-minor enemies auto-resolve (idle)
-bosses require engagement (active)
+dungeon runner auto-resolves minor enemies (idle)
+bosses pause for engagement (active)
     ↓
 Bug Grimoire records defeated enemy types
-XP accumulates across runs
+gold + XP accumulate across runs
     ↑                              |
     └──────────────────────────────┘
 ```
@@ -51,7 +51,7 @@ Establish the conceptual architecture, documentation, and event model that conne
 - [x] Rewritten README, ARCHITECTURE, ROADMAP
 - [x] Updated CLAUDE.md
 
-## Phase 1 — Canonical Event Model
+## Phase 1 — Canonical Event Model `COMPLETE`
 
 > **Theme:** Formalize the event spine
 
@@ -66,80 +66,81 @@ Extend the existing event system (`src/domain/events.ts`, `src/core/event-bus.ts
 - [x] Event store interface (persist, query, replay)
 - [x] Tests for all event types and lifecycle
 
-## Phase 2 — AgentGuard Governance Runtime `CURRENT`
+## Phase 2 — AgentGuard Governance Runtime `MOSTLY COMPLETE`
 
 > **Theme:** Deterministic agent governance
 
 Build the governance runtime that evaluates agent actions against policies and invariants.
 
-- [x] Action Authorization Boundary (AAB) implementation (`agentguard/core/aab.js`)
+- [x] Action Authorization Boundary (AAB) implementation (`src/agentguard/core/aab.ts`)
 - [x] Policy definition format (JSON) (`policy/action_rules.json`, `policy/capabilities.json`)
-- [x] Policy loader and parser (`agentguard/policies/loader.js`)
-- [x] Deterministic policy evaluator (`agentguard/policies/evaluator.js`)
-- [x] Invariant monitoring engine (`agentguard/invariants/checker.js`)
-- [x] Built-in invariants (`agentguard/invariants/definitions.js`)
+- [x] Policy loader and parser (`src/agentguard/policies/loader.ts`)
+- [x] Deterministic policy evaluator (`src/agentguard/policies/evaluator.ts`)
+- [x] Invariant monitoring engine (`src/agentguard/invariants/checker.ts`)
+- [x] Built-in invariants (`src/agentguard/invariants/definitions.ts`)
 - [ ] Blast radius computation
-- [x] Evidence pack generation and persistence (`agentguard/evidence/pack.js`)
-- [ ] CLI governance commands (`bugmon guard`, `bugmon audit`)
-- [x] Governance event emission into canonical event model (via `domain/events.js`)
+- [x] Evidence pack generation and persistence (`src/agentguard/evidence/pack.ts`)
+- [ ] CLI governance commands (`agentguard guard`, `agentguard audit`)
+- [x] Governance event emission into canonical event model (via `src/domain/events.ts`)
 - [ ] Integration with Claude Code hook (governance events from agent actions)
 
-## Phase 3 — BugMon Terminal Roguelike MVP
+## Phase 3 — BugMon Browser Dungeon Runner `COMPLETE`
 
 > **Theme:** Coding sessions become dungeon runs
 
-Implement the roguelike run engine with hybrid idle/active encounters in the terminal.
+Implement the roguelike dungeon runner with hybrid idle/active encounters in the browser.
 
-- [ ] Run engine (session-scoped gameplay lifecycle)
-- [ ] Idle mode: auto-resolve minor enemies (severity 1-2) in background
-- [ ] Active mode: interrupt for bosses and elites (severity 3+)
-- [ ] Configurable idle/active threshold
-- [ ] Encounter difficulty scaling based on session context
-- [ ] Session escalation (unresolved errors compound difficulty)
-- [ ] Stability collapse detection (run death from cascading failures)
-- [ ] Run summary and scoring at session end
-- [ ] Governance boss encounters from AgentGuard events
-- [ ] Bug Grimoire terminal display (enemy compendium)
-- [ ] Run statistics (encounters, defeats, score, duration)
+- [x] Idle dungeon runner (auto-run through procedural floors)
+- [x] Auto-resolve minor enemies (severity 1-2) inline with floating combat text
+- [x] Boss encounters pause for player input (severity 3+)
+- [x] Procedural floor generation (rooms, corridors, treasure, exits)
+- [x] Premium dark aesthetic (OLED + gold/cyan accents, glassmorphic HUD)
+- [x] Dev character with hoodie + laptop sprite and running animation
+- [x] Gold and loot persistence via localStorage
+- [x] Floor progression with increasing difficulty
+- [x] Parallax scrolling dungeon renderer
+- [x] Sound effects for combat, treasure, and floor transitions
 
-## Phase 4 — Event Persistence + Replay
+## Phase 4 — Event Persistence + Replay `PARTIALLY COMPLETE`
 
 > **Theme:** Every session is replayable
 
 Implement durable event storage and deterministic replay.
 
-- [ ] File-based event store (`.bugmon/events/`)
-- [ ] Event stream serialization format
-- [ ] Session metadata (run ID, RNG seed, timestamps)
-- [ ] Replay engine: feed stored event stream through encounter generator
+- [x] File-based event store (`src/domain/event-store.ts`)
+- [x] Event stream serialization (NDJSON)
+- [x] Session metadata (run ID, RNG seed, timestamps)
+- [x] Execution event log (`src/domain/execution/`)
+- [x] CLI replay command (`agentguard replay`)
 - [ ] Deterministic replay with seeded RNG
 - [ ] Replay comparator (verify original vs replayed outcomes)
-- [ ] CLI replay command (`bugmon replay <run-id>`)
 - [ ] Event export/import for sharing sessions
 
-## Phase 5 — Bug Grimoire + Progression
+## Phase 5 — Bug Grimoire + Progression `PARTIALLY COMPLETE`
 
 > **Theme:** Meta-progression across runs
 
 Build the persistent progression system that spans coding sessions.
 
-- [ ] Bug Grimoire: enemy compendium with defeat history, error patterns, fix strategies
+- [x] Bug Grimoire: enemy compendium with defeat history (`src/meta/bugdex.ts`)
+- [x] XP and leveling
+- [x] Dev-activity progression via git hooks (commits, PRs, bug fixes)
+- [x] Evolution chains with activity-based triggers
+- [x] Gold economy (dungeon runner loot)
 - [ ] Grimoire completion tracking and unlock rewards
 - [ ] Achievement system (first boss, perfect run, 100% Grimoire, etc.)
 - [ ] Lifetime statistics aggregation
 - [ ] Developer level with title progression
 - [ ] Difficulty scaling based on developer level
-- [ ] Idle combat effectiveness scaling with level
-- [ ] Dev-activity progression via git hooks (commits, PRs, bug fixes)
 - [ ] Session leaderboard (best scores, fastest boss defeats)
 
-## Phase 6 — Plugin Ecosystem
+## Phase 6 — Plugin Ecosystem `CURRENT`
 
 > **Theme:** Extensible by design
 
 Formalize the plugin system for third-party extensions.
 
-- [ ] Event source plugin interface
+- [x] Event source plugin interface (`src/domain/source-registry.ts`)
 - [ ] Content pack loading system (community enemies, moves, bosses)
 - [ ] Renderer plugin interface
 - [ ] Policy pack loading system
@@ -148,20 +149,22 @@ Formalize the plugin system for third-party extensions.
 - [ ] Plugin registry / discovery mechanism
 - [ ] Language-specific content packs (Python BugMon, Go BugMon, Rust BugMon)
 
-## Phase 7 — Browser / Mobile Renderers
+## Phase 7 — Terminal Roguelike MVP
 
-> **Theme:** Enhanced visual experience
+> **Theme:** Terminal-native dungeon experience
 
-Upgrade the browser game to a roguelike dungeon renderer.
+Bring the dungeon runner experience to the terminal CLI.
 
-- [ ] Roguelike dungeon renderer (procedural floor layouts)
-- [ ] Run-based browser gameplay (session → run mapping)
-- [ ] Idle encounter log in browser UI
-- [ ] Active encounter battle screen
-- [ ] Bug Grimoire browser UI
-- [ ] Mobile-optimized responsive renderer
-- [ ] CLI ↔ browser sync for run state
-- [ ] Sound effects for idle/active transitions
+- [ ] Run engine in terminal (session-scoped gameplay lifecycle)
+- [ ] Idle mode: auto-resolve minor enemies in background with ANSI output
+- [ ] Active mode: interrupt for bosses and elites
+- [ ] Configurable idle/active threshold
+- [ ] Encounter difficulty scaling based on session context
+- [ ] Session escalation (unresolved errors compound difficulty)
+- [ ] Run summary and scoring at session end
+- [ ] Governance boss encounters from AgentGuard events
+- [ ] Bug Grimoire terminal display
+- [ ] Run statistics (encounters, defeats, score, duration)
 
 ## Phase 8 — Editor Integrations
 
@@ -267,39 +270,30 @@ Every feature must fit within the byte budget:
 
 Run `npm run budget` to check compliance.
 
-## Cross-Cutting: TypeScript Migration `IN PROGRESS`
+## TypeScript Migration `COMPLETE`
 
-> **Theme:** Incremental migration to TypeScript
+> **Theme:** TypeScript as single source of truth
 
-A parallel TypeScript implementation exists in `src/` (see `src/README.md` for architecture). This is an incremental migration — the JavaScript implementation remains the production system.
+TypeScript in `src/` is now the **single source of truth** for all system code. The migration from JavaScript to TypeScript is complete.
 
 **Current state:**
-- `src/` directory with 48 TypeScript files across `cli/`, `core/`, `game/`, `domain/`, `agentguard/`, `ecosystem/`, `watchers/`, `ai/`
+- `src/` directory with 134 TypeScript files across `cli/`, `core/`, `game/`, `domain/`, `agentguard/`, `meta/`, `orchestration/`, `protocol/`, `content/`, `watchers/`, `ai/`
 - `tsconfig.json` — strict mode, ES2022 target, rootDir: `src/`, outDir: `dist/`
-- `vitest.config.ts` — test runner for TypeScript tests
+- `vitest.config.ts` — test runner for TypeScript tests (16 test files)
 - `esbuild.config.ts` — builds CLI and game bundles from TS sources
-- 16 TypeScript tests in `tests/ts/` (run via `npm run ts:test`)
-- Runtime dependencies introduced for CLI: `chokidar`, `commander`, `pino`
+- Runtime dependencies for CLI: `chokidar`, `commander`, `pino`
+- Browser game remains zero-dependency
 
-**Commands:**
+**Build pipeline:**
+- `npm run build:ts` — Build TypeScript (tsc + esbuild → dist/)
 - `npm run ts:check` — Type-check (tsc --noEmit)
 - `npm run ts:test` — Run TS tests (vitest)
-- `npm run build:ts` — Build TS (tsc + esbuild)
 
-**Known issues:**
-- Runtime deps (`chokidar`, `commander`, `pino`) are only used by TS code in `src/`, not by the JS CLI
-- `src/game/engine/events.ts` duplicates `src/core/event-bus.ts` — consolidate during migration
-
-**Remaining work:**
-- [ ] Migrate remaining `core/` modules to TypeScript
-- [ ] Migrate `domain/` modules to TypeScript
-- [ ] Migrate `agentguard/` modules to TypeScript
-- [ ] Consolidate `game/engine/events.js` with `domain/event-bus.js`
-- [ ] Integrate TS CLI as primary CLI entry point
-- [ ] Unify JS and TS test suites
-- [ ] Update build pipeline to produce TS-based bundles
+**Key architectural addition (latest):**
+- Idle dungeon runner (`src/game/dungeon/`) — 4 files, ~1,400 lines
+- Premium dark design system (`src/game/theme.ts`) — OLED palette, gold accents, glassmorphism
+- Battle visual effects (`src/game/engine/effects.ts`)
 
 ## Legend
 
-- **Effort:** `[S]` = hours | `[M]` = 1-2 days | `[L]` = 3+ days
-- **Status:** `CURRENT` | `PLANNED` | `IDEA`
+- **Status:** `COMPLETE` | `MOSTLY COMPLETE` | `PARTIALLY COMPLETE` | `CURRENT` | `PLANNED`

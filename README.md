@@ -133,7 +133,8 @@ See [Plugin API](docs/plugin-api.md) for the full extension guide.
 - **Bug Grimoire** — compendium of every enemy type defeated, with encounter history
 - **Dev-activity progression** — commits, PRs, and bug fixes drive level-ups via git hooks
 - **34 named enemies** across 7 types — community-contributed creatures with sprites and lore
-- **Hybrid idle/active** — minor enemies auto-resolve, bosses demand engagement
+- **Idle dungeon runner** — dev character auto-runs through procedural floors, minor enemies auto-resolve
+- **Premium dark aesthetic** — OLED palette, gold accents, glassmorphic HUD, parallax scrolling
 - Turn-based combat with speed priority, type effectiveness, critical hits, and passive abilities
 - Synthesized sound effects (Web Audio API — zero audio files)
 - **Zero browser runtime dependencies** — vanilla JS, HTML5 Canvas, no framework
@@ -206,9 +207,17 @@ npx agentguard claude-init
 
 ## Browser Game
 
-The BugMon browser companion provides a visual roguelike experience — explore a tile-based dungeon, battle enemies, and track your Grimoire progress. It syncs with the CLI in real time via WebSocket.
+The BugMon browser game features an **idle dungeon runner** — your dev character automatically runs through procedural dungeon floors, defeating minor enemies inline and pausing for boss fights. Gold, loot, and progression persist across runs.
 
-**[Play Now](https://jpleva91.github.io/BugMon/)** — the entire game fits in a single 12 KB file (gzipped, smaller than jQuery).
+**[Play Now](https://jpleva91.github.io/BugMon/)** — the entire game fits in a single file (gzipped, smaller than jQuery).
+
+### Visual Design
+
+- Premium dark aesthetic (OLED palette + gold accents)
+- Glassmorphic HUD with floor progress, HP, gold counter
+- Dev character with hoodie + laptop sprite
+- Parallax scrolling dungeon corridors
+- Floating combat text and XP gains
 
 ### Controls
 
@@ -255,22 +264,26 @@ AgentGuard/
 │   ├── agentguard/         # Governance runtime (deterministic RTA)
 │   │   ├── core/           # AAB + RTA engine
 │   │   ├── policies/       # Policy evaluation + loading
-│   │   ├── invariants/     # Invariant checking
+│   │   ├── invariants/     # Invariant checking + definitions
 │   │   └── evidence/       # Evidence pack generation
 │   ├── cli/                # CLI interface (agentguard command)
-│   │   └── commands/       # Subcommands (watch, scan, play, etc.)
+│   │   └── commands/       # 20 subcommands (watch, scan, play, etc.)
 │   ├── core/               # Shared logic (EventBus, parsing, matching)
 │   ├── domain/             # Pure domain logic (no DOM, no Node.js APIs)
 │   │   ├── ingestion/      # Error normalization pipeline
-│   │   └── pipeline/       # Multi-agent pipeline orchestration
+│   │   └── execution/      # Execution adapters + event log
 │   ├── game/               # BugMon browser game (client-side)
-│   │   ├── engine/         # State machine, input, rendering
+│   │   ├── dungeon/        # Idle dungeon runner (primary game mode)
+│   │   ├── engine/         # State machine, input, rendering, effects
 │   │   ├── battle/         # Turn-based battle engine
-│   │   ├── world/          # Map, player, encounters
+│   │   ├── world/          # Map, player, encounters (exploration mode)
 │   │   ├── evolution/      # Dev-activity progression
 │   │   ├── audio/          # Synthesized sounds (Web Audio API)
 │   │   └── sprites/        # Sprites + procedural generation
-│   ├── ecosystem/          # Game content & metagame
+│   ├── meta/               # Metadata (bugdex, bosses)
+│   ├── orchestration/      # Multi-agent pipeline orchestration
+│   ├── protocol/           # Sync protocol definitions
+│   ├── content/            # Game content validation
 │   └── watchers/           # Environment watchers
 ├── dist/                   # Compiled output (tsc + esbuild)
 ├── ecosystem/data/         # Game content (JSON + JS modules)

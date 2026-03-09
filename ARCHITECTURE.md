@@ -30,7 +30,7 @@ For the full integration model, see [docs/unified-architecture.md](docs/unified-
          ┌─────────────────────────────────────────────────────┐
          │              Event Normalization Pipeline            │
          │  source → parse → normalize → classify → dedupe     │
-         │  Implementation: domain/ingestion/                   │
+         │  Implementation: src/domain/ingestion/              │
          └──────────────────────┬──────────────────────────────┘
                                 │
                    ┌────────────────────────┐
@@ -57,6 +57,7 @@ For the full integration model, see [docs/unified-architecture.md](docs/unified-
               │    Subscribers       │
               │  Terminal renderer   │
               │  Browser renderer    │
+              │  Dungeon runner      │
               │  Bug Grimoire        │
               │  Stats engine        │
               │  Replay engine       │
@@ -65,251 +66,207 @@ For the full integration model, see [docs/unified-architecture.md](docs/unified-
 
 ## Project Structure
 
-The codebase follows a **layered architecture** with five top-level directories plus supporting infrastructure:
+TypeScript in `src/` is the **single source of truth**. It compiles to `dist/` via `tsc` (individual modules) + `esbuild` (CLI and game bundles).
 
 ```
-BugMon/
-├── index.html              Entry point - canvas, touch controls, loads game.js
-├── simulate.js             Battle simulator CLI (Node.js)
-├── package.json            npm scripts (simulate, serve, build, test)
+AgentGuard/
+├── index.html              # Entry point (canvas, inline CSS, touch controls)
+├── package.json            # npm scripts, deps, build config
 │
-├── core/                   CLI companion & shared logic (Node.js)
-│   ├── matcher.js          Error → BugMon enemy matching logic
-│   ├── error-parser.js     Error message parser (40+ patterns, 6+ languages)
-│   ├── stacktrace-parser.js Stack trace analysis
-│   ├── bug-event.js        Bug event definitions and severity mapping
-│   ├── sources/            Event source adapters (watch, scan, claude-hook)
-│   └── cli/                CLI tool (bugmon command)
-│       ├── bin.js           Entry point (bugmon command)
-│       ├── adapter.js       CLI watch adapter (event source)
-│       ├── auto-walk.js     Auto-walk feature
-│       ├── boss-battle.js   Boss battle interactive encounter
-│       ├── catch.js         Combat resolution mechanic
-│       ├── claude-hook.js   Claude Code PostToolUse hook (error encounters)
-│       ├── claude-init.js   Claude Code integration setup
-│       ├── colors.js        Shared ANSI color constants
-│       ├── contribute.js    Contribution prompt
-│       ├── demo.js          Demo encounter launcher
-│       ├── encounter.js     CLI encounter logic
-│       ├── init.js          Git hooks installer for progression tracking
-│       ├── renderer.js      Terminal renderer (ANSI)
-│       ├── resolve.js       Bug resolve/XP mechanic
-│       ├── args.js          Lightweight CLI argument parser (zero deps)
-│       ├── scan.js          Error scanning feature
-│       ├── sync-server.js   WebSocket sync server (zero deps)
-│       └── bugmon-legacy.js Legacy CLI version
+├── src/                    # TypeScript source (single source of truth)
+│   ├── agentguard/         # Governance runtime (deterministic RTA)
+│   │   ├── core/           # AAB + RTA engine
+│   │   ├── policies/       # Policy evaluation + loading
+│   │   ├── invariants/     # Invariant checking + definitions
+│   │   ├── evidence/       # Evidence pack generation
+│   │   └── monitor.ts      # Closed-loop governance monitor
+│   ├── cli/                # CLI interface (agentguard command)
+│   │   ├── bin.ts          # Entry point (agentguard + bugmon binaries)
+│   │   ├── index.ts        # CLI exports
+│   │   └── commands/       # 20 subcommands (watch, scan, play, etc.)
+│   ├── core/               # Shared logic (EventBus, parsing, matching)
+│   │   ├── event-bus.ts    # Universal typed EventBus
+│   │   ├── error-parser.ts # Error message parser (40+ patterns)
+│   │   ├── matcher.ts      # Error → BugMon enemy matching
+│   │   ├── types.ts        # Shared type definitions
+│   │   └── sources/        # Event source adapters (watch, scan, claude-hook)
+│   ├── domain/             # Pure domain logic (no DOM, no Node.js APIs)
+│   │   ├── battle.ts       # Pure battle engine (deterministic with injected RNG)
+│   │   ├── encounters.ts   # Encounter logic with rarity weights
+│   │   ├── evolution.ts    # Progression condition checking
+│   │   ├── events.ts       # Canonical domain event definitions
+│   │   ├── dev-event.ts    # Developer signal event types
+│   │   ├── event-bus.ts    # Domain event bus
+│   │   ├── event-store.ts  # Event persistence interface
+│   │   ├── ingestion/      # Error normalization pipeline (8 files)
+│   │   ├── execution/      # Execution adapters
+│   │   ├── invariants.ts   # Governance invariant definitions
+│   │   ├── policy.ts       # Policy evaluation logic
+│   │   ├── reference-monitor.ts  # Governance reference monitor
+│   │   ├── contracts.ts    # Module contract registry
+│   │   ├── shapes.ts       # Runtime shape definitions
+│   │   └── ...             # rng, hash, correlation, projections, etc.
+│   ├── game/               # BugMon browser game (client-side, zero deps)
+│   │   ├── game.ts         # Game entry point (auto-init, data loading)
+│   │   ├── theme.ts        # Design system (OLED palette, gold accents, glassmorphism)
+│   │   ├── engine/         # Core framework (state, input, renderer, events, effects)
+│   │   ├── dungeon/        # Idle dungeon runner (primary game mode)
+│   │   │   ├── runner.ts   # Auto-run logic, phase machine, encounter resolution
+│   │   │   ├── dungeon.ts  # Procedural floor generation (rooms, corridors, loot)
+│   │   │   ├── loot.ts     # Gold, boosts, run persistence (localStorage)
+│   │   │   └── dungeon-renderer.ts  # Premium renderer (parallax, glassmorphic HUD)
+│   │   ├── battle/         # Turn-based battle engine
+│   │   ├── world/          # Map, player, encounters (exploration mode)
+│   │   ├── evolution/      # Dev-activity progression (tracker, animation)
+│   │   ├── audio/          # Sound synthesis (Web Audio API)
+│   │   ├── sync/           # Save/sync (localStorage, WebSocket)
+│   │   └── sprites/        # Pixel art (procedural gen + PNG sprites)
+│   ├── meta/               # Metadata systems (bugdex, bosses)
+│   ├── orchestration/      # Multi-agent pipeline orchestration
+│   ├── protocol/           # Sync protocol definitions
+│   ├── content/            # Game content validation (bugdex-spec)
+│   ├── watchers/           # Environment watchers (console, test, build)
+│   └── ai/                 # AI integration interface
 │
-├── game/                   Browser roguelike (client-side)
-│   ├── game.js             Game loop, data loading, orchestration
-│   ├── engine/             Core engine (framework-level)
-│   │   ├── state.js        Game state machine
-│   │   ├── events.js       Event bus for decoupled communication
-│   │   ├── input.js        Keyboard + touch input
-│   │   ├── renderer.js     All Canvas drawing functions
-│   │   ├── transition.js   Battle transition animation
-│   │   └── title.js        Title screen (ASCII logo, starfield, menu)
-│   ├── world/              Dungeon / exploration
-│   │   ├── map.js          Map data loading, tile queries, collision
-│   │   ├── player.js       Player position, movement
-│   │   └── encounters.js   Wild encounter checks (10% in tall grass)
-│   ├── battle/             Battle systems
-│   │   ├── battle-core.js  Pure battle engine (no UI/audio — testable)
-│   │   ├── battleEngine.js Battle UI controller
-│   │   └── damage.js       Damage formula
-│   ├── evolution/          Progression system
-│   │   ├── evolution.js    Checks conditions, triggers progressions
-│   │   ├── tracker.js      Dev activity tracker (localStorage + .events.json)
-│   │   └── animation.js    Progression visual sequence
-│   ├── audio/              Sound effects (Web Audio API, no files)
-│   │   └── sound.js        Synthesized sound effects
-│   ├── sync/               Save/sync system
-│   │   ├── save.js         Browser-side save/load (localStorage)
-│   │   └── client.js       Client-side sync (WebSocket to CLI)
-│   └── sprites/            Pixel art sprites
-│       ├── sprites.js      Image loader with preload and fallback
-│       ├── monsterGen.js   Procedural sprite generation
-│       ├── tiles.js        Procedural tile texture generation
-│       └── *.png           Battle sprites (64x64) and player sprites (32x32)
+├── dist/                   # Compiled output (tsc + esbuild)
+│   ├── cli/                # Bundled CLI (esbuild)
+│   ├── game/               # Bundled game + sprites (esbuild)
+│   ├── core/               # Individual modules (tsc)
+│   ├── domain/             # Individual modules (tsc)
+│   ├── agentguard/         # Individual modules (tsc)
+│   └── ecosystem/          # Individual modules (tsc)
 │
-├── ecosystem/              Game content & metagame systems
-│   ├── data/               All game data (JSON source + JS modules)
-│   │   ├── monsters.json   31 BugMon enemy definitions
-│   │   ├── monsters.js     Inlined JS module
-│   │   ├── moves.json      72 move definitions
-│   │   ├── moves.js        Inlined JS module
-│   │   ├── types.json      7 types + effectiveness chart
-│   │   ├── types.js        Inlined JS module
-│   │   ├── evolutions.json Progression chains with dev-activity triggers
-│   │   ├── evolutions.js   Inlined JS module
-│   │   ├── map.json        Tile grid for the dungeon
-│   │   └── mapData.js      Inlined JS module
-│   ├── bugdex.js           Bug Grimoire system
-│   ├── bugdex-spec.js      Grimoire specification
-│   ├── bosses.js           Boss encounter definitions and triggers
-│   ├── storage.js          Shared storage utilities
-│   └── sync-protocol.js    Shared WebSocket sync protocol constants
+├── ecosystem/data/         # Game content (JSON source + inlined JS modules)
+│   ├── monsters.json       # 34 BugMon enemy definitions
+│   ├── moves.json          # 76 move definitions
+│   ├── types.json          # 7 types + effectiveness chart
+│   ├── evolutions.json     # Progression chains
+│   ├── map.json            # 15x10 tile grid
+│   └── *.js                # Inlined JS modules (generated by sync-data)
 │
-├── domain/                 Pure domain logic (no DOM, no Node.js-specific APIs)
-│   ├── battle.js           Pure battle engine (deterministic with injected RNG)
-│   ├── encounters.js       Pure encounter logic (rarity weights, trigger checks)
-│   ├── event-bus.js        Universal EventBus (works in Node.js and browser)
-│   ├── events.js           Canonical domain event definitions
-│   ├── event-store.js      Event persistence interface
-│   ├── evolution.js        Pure progression engine (no localStorage)
-│   ├── source-registry.js  Event source plugin registry
-│   ├── actions.js          Action definitions
-│   ├── invariants.js       Invariant definitions
-│   ├── policy.js           Policy evaluation logic
-│   ├── reference-monitor.js Reference monitor for governance
-│   ├── run-history.js      Run history tracking
-│   ├── run-session.js      Run session management
-│   ├── combo.js            Combo system logic
-│   ├── hash.js             Hashing utilities
-│   ├── contracts.js        Module contract registry
-│   ├── shapes.js           Runtime shape definitions
-│   ├── ingestion/          Error ingestion pipeline
-│   │   ├── pipeline.js     Orchestrates: parse → fingerprint → classify → map
-│   │   ├── parser.js       Error message parsing
-│   │   ├── fingerprint.js  Error deduplication via stable fingerprinting
-│   │   ├── classifier.js   Parsed error → BugEvent classification
-│   │   ├── species-mapper.js BugEvent → BugMon species mapping
-│   │   └── invariant-mapper.js Invariant violation → event mapping
-│   ├── pipeline/           Multi-agent pipeline orchestration
-│   │   ├── index.js        Pipeline entry point
-│   │   ├── orchestrator.js Pipeline orchestrator
-│   │   ├── stages.js       Pipeline stage definitions
-│   │   └── roles.js        Pipeline role definitions
-│   └── execution/          Execution adapters
-│       └── adapters.js     Execution environment adapters
+├── policy/                 # Policy configuration (JSON)
+│   ├── action_rules.json   # Agent action validation rules
+│   └── capabilities.json   # Agent capability boundaries
 │
-├── agentguard/             Governance runtime (deterministic RTA)
-│   ├── monitor.js          Closed-loop feedback (escalation, violation tracking)
-│   ├── core/               Core governance engine
-│   │   ├── aab.js          Action Authorization Boundary
-│   │   └── engine.js       Runtime Assurance (RTA) engine
-│   ├── policies/           Policy evaluation
-│   │   ├── evaluator.js    Policy compliance checking
-│   │   └── loader.js       Policy loader from JSON
-│   ├── invariants/         Invariant verification
-│   │   ├── checker.js      Runtime invariant checker
-│   │   └── definitions.js  Invariant registry
-│   └── evidence/           Audit trail
-│       └── pack.js         Evidence collection & reporting
+├── simulation/             # Headless battle simulation
+│   ├── cli.js              # CLI entry (--battles, --compare flags)
+│   ├── simulator.js        # Round-robin matchup orchestrator
+│   ├── headlessBattle.js   # Headless battle runner
+│   ├── strategies.js       # AI battle strategies
+│   ├── report.js           # Statistical report generation
+│   └── rng.js              # Seeded RNG for reproducible sims
 │
-├── policy/                 Policy configuration (JSON)
-│   ├── action_rules.json   Capability rules per agent action
-│   └── capabilities.json   Available action categories
+├── tests/                  # Test suite (77 JS + 16 TS test files)
+│   ├── run.js              # Custom test runner (JS tests import from dist/)
+│   ├── *.test.js           # JavaScript tests
+│   └── ts/                 # TypeScript tests (run via vitest)
 │
-├── runtime/                Event tracing & replay
-│   ├── events/             Event log storage
-│   └── replay/             Replay data
+├── scripts/                # Build tooling
+│   ├── build.js            # Single-file builder (esbuild + terser)
+│   ├── dev-server.js       # Zero-dep dev server with live reload
+│   ├── sync-data.js        # JSON → JS module converter
+│   └── check-contracts.js  # Module contract validation
 │
-├── src/                    TypeScript refactoring (in progress)
-│   ├── cli/                Commander-based CLI (index.ts, commands/)
-│   ├── core/               Typed core (types.ts, event-bus.ts, bug-engine.ts)
-│   ├── game/               Game engine modules (engine.ts, renderer.ts, loop.ts)
-│   ├── watchers/           Environment watchers (console, test, build)
-│   └── ai/                 AI integration interface
-│
-├── simulation/             Headless battle simulation
-│   ├── cli.js              CLI entry point (seeded RNG)
-│   ├── simulator.js        Battle simulator engine
-│   ├── headlessBattle.js   Headless battle runner
-│   ├── strategies.js       AI battle strategies
-│   ├── report.js           Simulation report generator
-│   └── rng.js              Seeded random number generator
-│
-├── tests/                  Test suite (77 JS + 4 TS test files)
-│   ├── run.js              Test runner
-│   └── *.test.js           Tests covering all modules
-│
-├── scripts/                Build tooling
-│   ├── build.js            Single-file builder (esbuild + terser → dist/index.html)
-│   ├── dev-server.js       Zero-dependency dev server with live reload
-│   ├── sync-data.js        JSON → JS module converter
-│   └── prune-merged-branches.sh  Git branch cleanup
-│
-├── docs/                   System documentation
-│   ├── unified-architecture.md  AgentGuard + BugMon integration
-│   ├── agentguard.md       Governance runtime specification
-│   ├── event-model.md      Canonical event schema
-│   ├── bug-event-pipeline.md Signal normalization pipeline
-│   ├── roguelike-design.md Debugging-as-roguelike mechanics
-│   ├── plugin-api.md       Extension points
-│   ├── sequence-diagrams.md System flow diagrams
-│   ├── product-positioning.md What this is and isn't
-│   └── current-priorities.md Active development phase
-│
-├── hooks/                  Git hooks for dev activity tracking
-│   ├── post-commit         Increments commit counter
-│   └── post-merge          Increments merge counter
-│
-└── .github/
-    ├── workflows/          CI/CD automation
-    ├── scripts/            Validation and generation scripts
-    └── ISSUE_TEMPLATE/     Community submission forms
+├── spec/                   # Artifact-first development specs
+├── docs/                   # System documentation
+├── hooks/                  # Git hooks for dev activity tracking
+└── .github/                # CI/CD workflows and issue templates
 ```
 
 ## Layered Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  index.html / simulate.js        (entry points)        │
+│  src/cli/                Commander-based CLI (Node.js)   │
+│  ├── commands/*           20 subcommands                 │
+│  ├── renderer.ts          Terminal rendering (ANSI)      │
+│  └── sync-server.ts       WebSocket sync server          │
 ├─────────────────────────────────────────────────────────┤
-│  core/                     CLI companion & shared logic  │
-│  ├── cli/*                 Terminal UI, watch adapter    │
-│  ├── sources/*             Event source adapters         │
-│  ├── matcher.js            Error → enemy matching        │
-│  └── error-parser.js       Error parsing (40+ patterns)  │
+│  src/game/                Browser roguelike (client-side) │
+│  ├── dungeon/*            Idle dungeon runner (primary)   │
+│  ├── engine/*             State, input, rendering, FX     │
+│  ├── battle/*             Turn-based combat engine        │
+│  ├── world/*              Tile-based exploration          │
+│  ├── evolution/*          Dev-activity progression        │
+│  ├── audio/*              Synthesized sound effects       │
+│  ├── sync/*               Save/load + CLI sync            │
+│  └── sprites/*            Sprite loading + generation     │
 ├─────────────────────────────────────────────────────────┤
-│  game/                     Browser roguelike             │
-│  ├── engine/*              State, input, rendering       │
-│  ├── battle/*              Combat engine + damage calc   │
-│  ├── world/*               Dungeon, player, encounters   │
-│  ├── evolution/*           Dev-activity progression      │
-│  ├── audio/*               Synthesized sound effects     │
-│  ├── sync/*                Save/load + CLI sync          │
-│  └── sprites/*             Sprite loading + generation   │
+│  src/agentguard/          Governance runtime (RTA)        │
+│  ├── core/*               AAB + RTA engine                │
+│  ├── policies/*           Policy evaluation + loading     │
+│  ├── invariants/*         Invariant checking              │
+│  ├── evidence/*           Evidence pack generation        │
+│  └── monitor.ts           Closed-loop feedback            │
 ├─────────────────────────────────────────────────────────┤
-│  agentguard/               Governance runtime (RTA)      │
-│  ├── core/*                AAB + RTA engine              │
-│  ├── policies/*            Policy evaluation + loading   │
-│  ├── invariants/*          Invariant checking            │
-│  ├── evidence/*            Evidence pack generation      │
-│  └── monitor.js            Closed-loop feedback          │
+│  src/domain/              Pure domain logic (no deps)     │
+│  ├── battle.ts            Pure battle engine              │
+│  ├── encounters.ts        Encounter logic                 │
+│  ├── evolution.ts         Progression engine              │
+│  ├── events.ts            Domain event definitions        │
+│  ├── event-bus.ts         Universal EventBus              │
+│  ├── source-registry.ts   Event source plugin registry    │
+│  ├── ingestion/*          Error ingestion pipeline        │
+│  └── execution/*          Execution adapters              │
 ├─────────────────────────────────────────────────────────┤
-│  domain/                   Pure domain logic (no deps)   │
-│  ├── battle.js             Pure battle engine            │
-│  ├── encounters.js         Encounter logic               │
-│  ├── evolution.js          Progression engine            │
-│  ├── event-bus.js          Universal EventBus            │
-│  ├── events.js             Domain event definitions      │
-│  ├── source-registry.js    Event source plugin registry  │
-│  ├── ingestion/*           Error ingestion pipeline      │
-│  └── pipeline/*            Multi-agent orchestration     │
+│  src/core/                Shared logic (CLI + browser)    │
+│  ├── event-bus.ts         Typed EventBus                  │
+│  ├── error-parser.ts      Error parsing (40+ patterns)    │
+│  ├── matcher.ts           Error → enemy matching          │
+│  └── sources/*            Event source adapters            │
 ├─────────────────────────────────────────────────────────┤
-│  ecosystem/                Game content & metagame        │
-│  ├── data/*.json           Source data (monsters, moves)  │
-│  ├── data/*.js             Inlined JS modules            │
-│  ├── bugdex.js             Bug Grimoire                  │
-│  └── bosses.js             Boss definitions              │
+│  src/meta/                Metadata (bugdex, bosses)       │
+│  src/orchestration/       Multi-agent pipeline            │
+│  src/protocol/            Sync protocol definitions       │
+│  src/content/             Game content validation         │
+│  src/watchers/            Environment watchers            │
 ├─────────────────────────────────────────────────────────┤
-│  src/ (TypeScript)         In-progress TS refactoring    │
-│  ├── cli/*                 Commander-based CLI           │
-│  ├── core/*                Typed EventBus, BugEngine     │
-│  ├── game/*                Game engine modules           │
-│  └── watchers/*            Environment watchers          │
+│  ecosystem/data/          Game content (JSON + JS)        │
+│  ├── *.json               Source data (monsters, moves)   │
+│  └── *.js                 Inlined JS modules              │
 └─────────────────────────────────────────────────────────┘
 ```
 
 **Key separation:**
-- **core/** — Node.js code for the CLI. Parses errors, matches them to enemies, renders to terminal. Includes `sources/` for event source adapters. Runs in Node.js only.
-- **game/** — Browser roguelike. Engine, battle, dungeon, progression, audio, sprites. Runs in the browser only.
-- **agentguard/** — Governance runtime implementing the Runtime Assurance Architecture. Evaluates agent actions against policies and invariants. Produces canonical governance events.
-- **domain/** — Pure domain logic with no DOM or Node.js-specific APIs. Battle engine, encounter logic, progression engine, event bus, error ingestion pipeline, multi-agent pipeline orchestration, governance primitives, and source registry. All functions are pure and deterministic (when RNG is injected). Consumed by both core/ and game/.
-- **ecosystem/** — Shared game content (JSON data, Bug Grimoire, bosses). Consumed by both core/ and game/.
+- **src/cli/** — Node.js CLI (`agentguard` command). Parses errors, matches them to enemies, renders to terminal. Includes event source adapters. Runs in Node.js only.
+- **src/game/** — Browser roguelike. Idle dungeon runner, battle engine, exploration, progression, audio, sprites. Runs in the browser only. Zero runtime dependencies.
+- **src/agentguard/** — Governance runtime implementing the Runtime Assurance Architecture. Evaluates agent actions against policies and invariants. Produces canonical governance events.
+- **src/domain/** — Pure domain logic with no DOM or Node.js-specific APIs. Battle engine, encounter logic, progression engine, event bus, error ingestion pipeline, governance primitives, and source registry. All functions are pure and deterministic (when RNG is injected). Consumed by both cli/ and game/.
+- **src/core/** — Shared logic used by both CLI and game. EventBus, error parsing, matching, event source adapters.
+- **ecosystem/data/** — Shared game content (JSON data). Consumed by both cli/ and game/.
 
-**Invariant:** `core/` and `game/` have no cross-imports. Both consume from `ecosystem/` and `domain/`.
+**Invariant:** `src/cli/` and `src/game/` have no cross-imports. Both consume from `src/domain/`, `src/core/`, and `ecosystem/data/`.
+
+## Idle Dungeon Runner
+
+The browser game's primary mode is an **idle auto-dungeon runner** (`src/game/dungeon/`). The character automatically runs through procedural dungeon floors:
+
+- **Auto-run**: Dev character moves through rooms, corridors, and treasure
+- **Minor enemies**: Auto-resolve inline with floating damage numbers
+- **Bosses**: Pause for player input (simple turn-based fight)
+- **Treasure**: Auto-collects gold, boosts, and power-ups
+- **Floors**: Procedurally generated with increasing difficulty
+- **Persistence**: Gold, run stats, and boosts persist via localStorage
+
+### Design System
+
+The game uses a premium dark aesthetic (`src/game/theme.ts`):
+- **OLED palette**: Deep darks (#050510 → #0A0E27 → #151B38)
+- **Gold accents**: Treasure, highlights, premium feel (#F59E0B)
+- **Glassmorphic panels**: Semi-transparent HUD elements with subtle borders
+- **Cyan/purple action accents**: Combat effects and abilities
+- **DM Sans typography**: Clean, modern font
+- **Parallax scrolling**: Multi-layer depth in dungeon corridors
+
+### Runner Phases
+
+```
+running → encounter (auto-battle) → collecting (treasure) → floor_clear → next floor
+                                                              ↓
+                                                          boss (manual)
+                                                              ↓
+                                                          run_over (death stats)
+```
 
 ## AgentGuard Governance Pipeline
 
@@ -336,9 +293,9 @@ BugMon implements a roguelike with hybrid idle/active encounters. See [docs/rogu
 
 **Run lifecycle:** Session start → event monitoring → encounter generation → idle/active combat → run end
 
-**Idle mode:** Minor enemies (severity 1-2) auto-resolve in background. Developer sees notification log.
+**Idle mode (dungeon runner):** The character auto-runs through procedural floors. Minor enemies (severity 1-2) are defeated inline with floating combat text. The developer watches or codes while the game plays itself.
 
-**Active mode:** Bosses and elites (severity 3+) interrupt and require player input.
+**Active mode:** Bosses and elites (severity 3+) pause the runner and require player input for turn-based combat.
 
 **Bug Grimoire:** Permanent compendium of defeated enemy types. Records encounter history, error patterns, and fix strategies.
 
@@ -350,42 +307,40 @@ The pipeline transforms raw signals into canonical events. See [docs/bug-event-p
 source → parse → normalize → classify → dedupe → persist → emit
 ```
 
-Implementation: `domain/ingestion/` with supporting modules in `core/`.
+Implementation: `src/domain/ingestion/` with supporting modules in `src/core/`.
 
 ## Module Dependency Graph
 
 ```
-game/game.js (entry point, browser)
-├── game/engine/events.js        (no deps — event bus)
-├── game/engine/state.js         ← game/engine/events.js
-├── game/engine/input.js         ← game/audio/sound.js
-├── game/engine/renderer.js      ← game/sprites/sprites.js, game/sprites/monsterGen.js
-├── game/engine/transition.js    ← game/audio/sound.js
-├── game/engine/title.js         ← game/engine/input.js, game/engine/state.js, game/audio/sound.js
-├── game/world/map.js            (no deps)
-├── game/world/player.js         ← game/engine/input.js, game/world/map.js, game/audio/sound.js
-├── game/world/encounters.js     ← game/audio/sound.js
-├── game/battle/damage.js        (no deps — pure math)
-├── game/battle/battleEngine.js  ← game/battle/damage.js, game/engine/input.js, game/engine/state.js,
-│                                   game/engine/events.js, game/world/player.js, game/audio/sound.js
-├── game/evolution/tracker.js    (localStorage + .events.json)
-├── game/evolution/evolution.js  ← game/evolution/tracker.js
-├── game/evolution/animation.js  ← game/engine/renderer.js, game/audio/sound.js
-├── game/sync/save.js            (localStorage persistence)
-├── game/audio/sound.js          (no deps, Web Audio API)
-├── game/sprites/sprites.js      (no deps, image loader)
-├── game/sprites/monsterGen.js   (no deps, procedural sprite gen)
-├── game/sprites/tiles.js        (no deps, procedural tile gen)
-├── ecosystem/data/monsters.js   (inlined data module)
-├── ecosystem/data/moves.js      (inlined data module)
-├── ecosystem/data/types.js      (inlined data module)
+src/game/game.ts (entry point, browser)
+├── src/game/theme.ts           (design system tokens, no deps)
+├── src/game/dungeon/runner.ts  ← theme, dungeon, loot, audio
+├── src/game/dungeon/dungeon.ts ← theme (procedural floor gen)
+├── src/game/dungeon/loot.ts    (localStorage persistence)
+├── src/game/dungeon/dungeon-renderer.ts ← theme, runner state
+├── src/game/engine/state.ts    ← engine/events
+├── src/game/engine/input.ts    ← audio/sound
+├── src/game/engine/game-renderer.ts ← sprites, theme
+├── src/game/engine/effects.ts  ← theme (battle visual effects)
+├── src/game/battle/battle-engine.ts ← domain/battle, engine, audio
+├── src/game/world/map.ts       (no deps)
+├── src/game/world/player.ts    ← input, map, audio
+├── src/game/world/encounters.ts ← audio
+├── src/game/evolution/tracker.ts (localStorage)
+├── src/game/audio/sound.ts     (no deps, Web Audio API)
+├── src/game/sprites/sprites.ts (no deps, image loader)
+├── src/game/sprites/monster-gen.ts (procedural sprite gen)
+├── src/game/sprites/tiles.ts   (procedural tile gen)
+├── ecosystem/data/monsters.js  (inlined data module)
+├── ecosystem/data/moves.js     (inlined data module)
+├── ecosystem/data/types.js     (inlined data module)
 └── ecosystem/data/evolutions.js (inlined data module)
 
-core/cli/bin.js (entry point, Node.js CLI)
-├── core/error-parser.js         ← error parsing
-├── core/stacktrace-parser.js    ← stack trace analysis
-├── core/matcher.js              ← error → enemy matching
-└── core/cli/*                   ← CLI subsystems
+src/cli/bin.ts (entry point, Node.js CLI)
+├── src/core/error-parser.ts    ← error parsing
+├── src/core/matcher.ts         ← error → enemy matching
+├── src/cli/commands/*          ← CLI subcommands
+└── src/domain/*                ← pure domain logic
 ```
 
 ## Game State Machine
@@ -395,23 +350,19 @@ core/cli/bin.js (entry point, Node.js CLI)
 │  TITLE  │───────────────>│ EXPLORE │────────────>│ BATTLE_TRANSITION │──────>│ BATTLE  │
 │         │                │         │<────────────│  (flash + fade)   │       │         │
 └─────────┘                └─────────┘  win/run    └──────────────────┘       └─────────┘
-                                │                        ~860ms
-                                │
-                           progression trigger
-                                │
-                                v
-                           ┌──────────┐
-                           │ EVOLVING │  (4-phase animation)
-                           └──────────┘
+     │                          │
+     │  dungeon mode            │ progression trigger
+     ▼                          ▼
+┌──────────┐              ┌──────────┐
+│ DUNGEON  │              │ EVOLVING │  (4-phase animation)
+│ RUNNER   │              └──────────┘
+│ (idle)   │
+└──────────┘
 ```
 
-States: `TITLE`, `EXPLORE`, `BATTLE_TRANSITION`, `BATTLE`, `EVOLVING`, `MENU`
+States: `TITLE`, `EXPLORE`, `BATTLE_TRANSITION`, `BATTLE`, `EVOLVING`, `MENU`, `DUNGEON_RUNNER`
 
 ## Battle System
-
-Two battle APIs coexist in `game/battle/battle-core.js`:
-1. **Original API** (`executeTurn`, `simulateBattle`) — used by `simulate.js` and `battleEngine.js`
-2. **Spec-based API** (`resolveTurn`, `createPureBattleState`) — fully immutable, PP tracking, accuracy
 
 ### Turn Resolution
 1. Compare speeds — faster combatant goes first (ties: player)
@@ -427,7 +378,7 @@ Two battle APIs coexist in `game/battle/battle-core.js`:
 
 ### Boss Encounters
 
-Bosses spawn from systemic failures via threshold triggers defined in `ecosystem/bosses.js`:
+Bosses spawn from systemic failures via threshold triggers:
 
 | Boss | Trigger | Threshold |
 |------|---------|-----------|
@@ -484,21 +435,16 @@ The system supports five extension categories. See [docs/plugin-api.md](docs/plu
 4. **Policy packs** — AgentGuard governance rule sets
 5. **Replay processors** — event stream analysis and transformation
 
-## Event Replay
-
-Events are immutable and ordered. A stored event stream can be replayed to reconstruct any past session. Given the same events and RNG seed, replay produces identical encounters.
-
-See [docs/sequence-diagrams.md](docs/sequence-diagrams.md) for replay flow diagrams.
-
 ## Build System
 
 ```bash
+npm run build:ts       # Compile TypeScript (tsc + esbuild → dist/)
 npm run build          # Full build with inline sprites
 npm run build:tiny     # Build without sprites (smallest)
 npm run budget         # Check size budget compliance
 ```
 
-Pipeline: esbuild (minification, dead code elimination) → terser (3-pass compression) → single HTML file with inlined CSS and JS.
+Pipeline: TypeScript → tsc (individual modules) + esbuild (bundles) → terser (compression) → single HTML file with inlined CSS and JS.
 
 ## Size Budget
 
@@ -512,20 +458,21 @@ Subsystem caps (raw bytes): engine (7.5 KB), rendering (15.5 KB), battle (14.5 K
 ## Testing
 
 ```bash
-npm test               # Run JS tests (77 test files)
-npm run ts:test        # Run TypeScript tests (4 test files, vitest)
+npm test               # Run JS tests (77 test files, import from dist/)
+npm run ts:test        # Run TypeScript tests (16 test files, vitest)
 npm run test:coverage  # Run with coverage (c8, 50% threshold)
 npm run simulate -- --all --runs 100   # Balance analysis
 ```
 
-81 test files (77 JS + 4 TS) covering: battle, damage, encounters, evolution, ingestion pipeline, event bus, game loop, input, map, renderer, save, simulation, sprites, sync, governance (AAB, RTA, invariants, monitor), and more.
+93 test files (77 JS + 16 TS) covering: battle, damage, encounters, evolution, ingestion pipeline, event bus, game loop, input, map, renderer, save, simulation, sprites, sync, governance (AAB, RTA, invariants, monitor), and more.
 
 ## Architectural Invariants
 
-1. **Layer boundaries are strict.** `core/` must not import from `game/`. `game/` must not import from `core/`.
-2. **`battle-core.js` must stay pure.** Zero UI, audio, or DOM dependencies.
+1. **Layer boundaries are strict.** `src/cli/` must not import from `src/game/`. `src/game/` must not import from `src/cli/`.
+2. **Battle engine must stay pure.** Zero UI, audio, or DOM dependencies in `src/domain/battle.ts`.
 3. **JSON is the source of truth.** `.js` data modules are generated artifacts.
 4. **Contributed enemies require no code changes.** New BugMon are added entirely through JSON edits.
 5. **Zero runtime dependencies in browser game.** No npm packages in shipped browser code. CLI has runtime deps (`chokidar`, `commander`, `pino`).
 6. **Deterministic battle engine.** Same inputs + same RNG seed = same outputs.
 7. **Universal EventBus.** Works identically in Node.js and browser.
+8. **TypeScript is the source of truth.** All source lives in `src/`, compiled to `dist/` via tsc + esbuild.
