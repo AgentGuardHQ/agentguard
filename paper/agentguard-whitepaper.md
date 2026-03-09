@@ -1,6 +1,6 @@
 # Deterministic Governance for Autonomous Software Agents: An Execution-Layer Architecture
 
-**Authors:** [Jared Gregory PLeva]
+**Authors:** [Jared G. Pleva]
 **Date:** March 2026
 **Status:** Draft
 
