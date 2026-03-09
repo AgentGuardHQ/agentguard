@@ -30,7 +30,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard guard',
       'agentguard guard --policy agentguard.yaml',
       'agentguard guard --dry-run',
-      "echo '{\"tool\":\"Bash\",\"command\":\"rm -rf /\"}' | agentguard guard",
+      'echo \'{"tool":"Bash","command":"rm -rf /"}\' | agentguard guard',
     ],
   },
   inspect: {
@@ -64,11 +64,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--stats', description: 'Show session statistics only' },
       { flag: '--filter <kind>', description: 'Filter events by kind' },
     ],
-    examples: [
-      'agentguard replay',
-      'agentguard replay --last',
-      'agentguard replay --last --step',
-    ],
+    examples: ['agentguard replay', 'agentguard replay --last', 'agentguard replay --last --step'],
   },
 };
 
@@ -144,9 +140,9 @@ async function main() {
       const { fileURLToPath } = await import('node:url');
       const { dirname, join } = await import('node:path');
       const __dir = dirname(fileURLToPath(import.meta.url));
-      const pkg = JSON.parse(
-        readFileSync(join(__dir, '..', '..', 'package.json'), 'utf8')
-      ) as { version: string };
+      const pkg = JSON.parse(readFileSync(join(__dir, '..', '..', 'package.json'), 'utf8')) as {
+        version: string;
+      };
       console.log(`agentguard v${pkg.version}`);
       break;
     }

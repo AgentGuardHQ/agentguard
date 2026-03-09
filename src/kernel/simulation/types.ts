@@ -26,10 +26,7 @@ export interface ActionSimulator {
   /** Check if this simulator can handle the given intent */
   supports(intent: NormalizedIntent): boolean;
   /** Simulate the action and predict its impact */
-  simulate(
-    intent: NormalizedIntent,
-    context: Record<string, unknown>
-  ): Promise<SimulationResult>;
+  simulate(intent: NormalizedIntent, context: Record<string, unknown>): Promise<SimulationResult>;
 }
 
 /** Registry of action simulators, routes intents to the correct simulator */

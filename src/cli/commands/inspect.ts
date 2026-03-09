@@ -170,10 +170,14 @@ export async function inspect(args: string[]): Promise<void> {
       const num = `${i + 1}.`.padStart(4);
       const icon = a.allowed ? '\x1b[32m\u2713\x1b[0m' : '\x1b[31m\u2717\x1b[0m';
       const status = a.allowed
-        ? a.executed ? '\x1b[32mEXECUTED\x1b[0m' : '\x1b[2mALLOWED\x1b[0m'
+        ? a.executed
+          ? '\x1b[32mEXECUTED\x1b[0m'
+          : '\x1b[2mALLOWED\x1b[0m'
         : '\x1b[31mDENIED\x1b[0m';
 
-      process.stderr.write(`  ${num} ${icon} ${a.action} \x1b[2m${a.target}\x1b[0m \x1b[90m[${status}\x1b[90m]\x1b[0m\n`);
+      process.stderr.write(
+        `  ${num} ${icon} ${a.action} \x1b[2m${a.target}\x1b[0m \x1b[90m[${status}\x1b[90m]\x1b[0m\n`
+      );
       if (!a.allowed) {
         process.stderr.write(`       \x1b[2m${a.reason}\x1b[0m\n`);
       }

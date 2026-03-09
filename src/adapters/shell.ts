@@ -33,7 +33,7 @@ export async function shellAdapter(action: CanonicalAction): Promise<ShellResult
       resolve({
         stdout: stdout.toString(),
         stderr: stderr.toString(),
-        exitCode: error ? error.code ?? 1 : 0,
+        exitCode: error ? (error.code ?? 1) : 0,
       });
     });
   });

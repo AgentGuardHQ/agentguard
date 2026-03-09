@@ -220,9 +220,8 @@ export function createKernel(config: KernelConfig = {}): Kernel {
             simulationResult.riskLevel === 'high'
           ) {
             // Import checker for re-check
-            const { checkAllInvariants, buildSystemState } = await import(
-              '../invariants/checker.js'
-            );
+            const { checkAllInvariants, buildSystemState } =
+              await import('../invariants/checker.js');
             const { DEFAULT_INVARIANTS } = await import('../invariants/definitions.js');
 
             const reCheckState = buildSystemState({
