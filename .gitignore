@@ -6,3 +6,4 @@ runtime/replay/*
 !runtime/events/.gitkeep
 !runtime/replay/.gitkeep
 .agentguard/
+logs/
