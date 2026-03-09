@@ -21,7 +21,9 @@ export async function claudeHook(): Promise<void> {
 
     if (exitCode !== 0 && stderr.trim()) {
       process.stdout.write('\n');
-      process.stdout.write(`  \x1b[1m\x1b[31mError detected:\x1b[0m ${stderr.trim().split('\n')[0].slice(0, 80)}\n`);
+      process.stdout.write(
+        `  \x1b[1m\x1b[31mError detected:\x1b[0m ${stderr.trim().split('\n')[0].slice(0, 80)}\n`
+      );
       process.stdout.write('\n');
     }
   } catch {

@@ -20,11 +20,11 @@ const ANSI = {
 };
 
 const ICONS = {
-  allowed: '\u2713',  // ✓
-  denied: '\u2717',   // ✗
-  warning: '\u26A0',  // ⚠
-  arrow: '\u2192',    // →
-  bullet: '\u2022',   // •
+  allowed: '\u2713', // ✓
+  denied: '\u2717', // ✗
+  warning: '\u26A0', // ⚠
+  arrow: '\u2192', // →
+  bullet: '\u2022', // •
 };
 
 export interface TuiConfig {
@@ -117,7 +117,9 @@ export function renderSimulation(simulation: SimulationResult): string {
         ? ANSI.yellow
         : ANSI.green;
 
-  lines.push(`  ${ANSI.bold}${ANSI.blue}Simulation${ANSI.reset} ${ANSI.dim}(${simulation.simulatorId})${ANSI.reset}`);
+  lines.push(
+    `  ${ANSI.bold}${ANSI.blue}Simulation${ANSI.reset} ${ANSI.dim}(${simulation.simulatorId})${ANSI.reset}`
+  );
 
   for (const change of simulation.predictedChanges) {
     lines.push(`    ${ANSI.dim}${ICONS.bullet} ${change}${ANSI.reset}`);
@@ -135,32 +137,45 @@ export function renderDecisionRecord(record: GovernanceDecisionRecord): string {
   const outcomeColor = record.outcome === 'allow' ? ANSI.green : ANSI.red;
   const outcomeIcon = record.outcome === 'allow' ? ICONS.allowed : ICONS.denied;
 
-  lines.push(`  ${ANSI.bold}Decision Record${ANSI.reset} ${ANSI.dim}${record.recordId}${ANSI.reset}`);
+  lines.push(
+    `  ${ANSI.bold}Decision Record${ANSI.reset} ${ANSI.dim}${record.recordId}${ANSI.reset}`
+  );
   lines.push(`    action: ${record.action.type} ${ANSI.dim}${record.action.target}${ANSI.reset}`);
-  lines.push(`    outcome: ${outcomeColor}${outcomeIcon} ${record.outcome.toUpperCase()}${ANSI.reset}`);
+  lines.push(
+    `    outcome: ${outcomeColor}${outcomeIcon} ${record.outcome.toUpperCase()}${ANSI.reset}`
+  );
   lines.push(`    reason: ${ANSI.dim}${record.reason}${ANSI.reset}`);
 
   if (record.policy.matchedPolicyId) {
-    lines.push(`    policy: ${ANSI.dim}${record.policy.matchedPolicyName} (${record.policy.matchedPolicyId})${ANSI.reset}`);
+    lines.push(
+      `    policy: ${ANSI.dim}${record.policy.matchedPolicyName} (${record.policy.matchedPolicyId})${ANSI.reset}`
+    );
   }
 
   if (record.invariants.violations.length > 0) {
     for (const v of record.invariants.violations) {
-      lines.push(`    ${ANSI.yellow}${ICONS.warning} ${v.name}${ANSI.reset} ${ANSI.dim}(${v.actual})${ANSI.reset}`);
+      lines.push(
+        `    ${ANSI.yellow}${ICONS.warning} ${v.name}${ANSI.reset} ${ANSI.dim}(${v.actual})${ANSI.reset}`
+      );
     }
   }
 
   if (record.simulation) {
     const sim = record.simulation;
-    const riskColor = sim.riskLevel === 'high' ? ANSI.red : sim.riskLevel === 'medium' ? ANSI.yellow : ANSI.green;
-    lines.push(`    simulation: blast=${sim.blastRadius} risk=${riskColor}${sim.riskLevel}${ANSI.reset}`);
+    const riskColor =
+      sim.riskLevel === 'high' ? ANSI.red : sim.riskLevel === 'medium' ? ANSI.yellow : ANSI.green;
+    lines.push(
+      `    simulation: blast=${sim.blastRadius} risk=${riskColor}${sim.riskLevel}${ANSI.reset}`
+    );
   }
 
   if (record.execution.executed) {
     const execStatus = record.execution.success
       ? `${ANSI.green}success${ANSI.reset}`
       : `${ANSI.red}failed${ANSI.reset}`;
-    lines.push(`    execution: ${execStatus} ${ANSI.dim}(${record.execution.durationMs}ms)${ANSI.reset}`);
+    lines.push(
+      `    execution: ${execStatus} ${ANSI.dim}(${record.execution.durationMs}ms)${ANSI.reset}`
+    );
   }
 
   return lines.join('\n');
@@ -169,15 +184,18 @@ export function renderDecisionRecord(record: GovernanceDecisionRecord): string {
 export function renderDecisionTable(records: GovernanceDecisionRecord[]): string {
   const lines: string[] = [];
   lines.push('');
-  lines.push(`  ${ANSI.bold}Decision Records${ANSI.reset} ${ANSI.dim}(${records.length} decisions)${ANSI.reset}`);
+  lines.push(
+    `  ${ANSI.bold}Decision Records${ANSI.reset} ${ANSI.dim}(${records.length} decisions)${ANSI.reset}`
+  );
   lines.push(`  ${ANSI.dim}${'─'.repeat(50)}${ANSI.reset}`);
 
   for (let i = 0; i < records.length; i++) {
     const r = records[i];
     const num = `${i + 1}.`.padStart(4);
-    const icon = r.outcome === 'allow'
-      ? `${ANSI.green}${ICONS.allowed}${ANSI.reset}`
-      : `${ANSI.red}${ICONS.denied}${ANSI.reset}`;
+    const icon =
+      r.outcome === 'allow'
+        ? `${ANSI.green}${ICONS.allowed}${ANSI.reset}`
+        : `${ANSI.red}${ICONS.denied}${ANSI.reset}`;
 
     lines.push(`  ${num} ${icon} ${r.action.type} ${ANSI.dim}${r.action.target}${ANSI.reset}`);
     lines.push(`       ${ANSI.dim}${r.reason}${ANSI.reset}`);
@@ -206,21 +224,27 @@ export function renderKernelResult(result: KernelResult, verbose?: boolean): str
 export function renderActionGraph(results: KernelResult[]): string {
   const lines: string[] = [];
   lines.push('');
-  lines.push(`  ${ANSI.bold}Action Graph${ANSI.reset} ${ANSI.dim}(${results.length} actions)${ANSI.reset}`);
+  lines.push(
+    `  ${ANSI.bold}Action Graph${ANSI.reset} ${ANSI.dim}(${results.length} actions)${ANSI.reset}`
+  );
   lines.push(`  ${ANSI.dim}${'─'.repeat(50)}${ANSI.reset}`);
 
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     const intent = r.decision.intent;
     const num = `${i + 1}.`.padStart(4);
-    const icon = r.allowed ? `${ANSI.green}${ICONS.allowed}${ANSI.reset}` : `${ANSI.red}${ICONS.denied}${ANSI.reset}`;
+    const icon = r.allowed
+      ? `${ANSI.green}${ICONS.allowed}${ANSI.reset}`
+      : `${ANSI.red}${ICONS.denied}${ANSI.reset}`;
     const status = r.allowed
       ? r.executed
         ? `${ANSI.green}EXECUTED${ANSI.reset}`
         : `${ANSI.dim}ALLOWED${ANSI.reset}`
       : `${ANSI.red}DENIED${ANSI.reset}`;
 
-    lines.push(`  ${num} ${icon} ${intent.action} ${ANSI.dim}${intent.target}${ANSI.reset} ${ANSI.gray}[${status}${ANSI.gray}]${ANSI.reset}`);
+    lines.push(
+      `  ${num} ${icon} ${intent.action} ${ANSI.dim}${intent.target}${ANSI.reset} ${ANSI.gray}[${status}${ANSI.gray}]${ANSI.reset}`
+    );
 
     if (!r.allowed) {
       lines.push(`       ${ANSI.dim}${r.decision.decision.reason}${ANSI.reset}`);
@@ -235,19 +259,24 @@ export function renderActionGraph(results: KernelResult[]): string {
   return lines.join('\n');
 }
 
-export function renderEventStream(events: Array<{ kind: string; timestamp: number; [key: string]: unknown }>): string {
+export function renderEventStream(
+  events: Array<{ kind: string; timestamp: number; [key: string]: unknown }>
+): string {
   const lines: string[] = [];
   lines.push('');
-  lines.push(`  ${ANSI.bold}Event Stream${ANSI.reset} ${ANSI.dim}(${events.length} events)${ANSI.reset}`);
+  lines.push(
+    `  ${ANSI.bold}Event Stream${ANSI.reset} ${ANSI.dim}(${events.length} events)${ANSI.reset}`
+  );
   lines.push(`  ${ANSI.dim}${'─'.repeat(50)}${ANSI.reset}`);
 
   for (const event of events) {
     const time = new Date(event.timestamp).toISOString().slice(11, 23);
-    const kindColor = event.kind.includes('Denied') || event.kind.includes('Violation')
-      ? ANSI.red
-      : event.kind.includes('Allowed') || event.kind.includes('Executed')
-        ? ANSI.green
-        : ANSI.cyan;
+    const kindColor =
+      event.kind.includes('Denied') || event.kind.includes('Violation')
+        ? ANSI.red
+        : event.kind.includes('Allowed') || event.kind.includes('Executed')
+          ? ANSI.green
+          : ANSI.cyan;
 
     lines.push(`  ${ANSI.dim}${time}${ANSI.reset} ${kindColor}${event.kind}${ANSI.reset}`);
   }

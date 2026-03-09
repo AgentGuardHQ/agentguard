@@ -53,7 +53,13 @@ function loadPolicyFile(policyPath: string): unknown[] {
 }
 
 function findDefaultPolicy(): string | null {
-  const candidates = ['agentguard.yaml', 'agentguard.yml', 'agentguard.json', '.agentguard.yaml', '.agentguard.yml'];
+  const candidates = [
+    'agentguard.yaml',
+    'agentguard.yml',
+    'agentguard.json',
+    '.agentguard.yaml',
+    '.agentguard.yml',
+  ];
   for (const name of candidates) {
     if (existsSync(name)) return name;
   }
@@ -114,13 +120,18 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   }
 
   // Interactive mode: read from stdin line by line
-  process.stderr.write(`  ${'\x1b[2m'}Listening for actions on stdin (JSON per line)...${'\x1b[0m'}\n`);
+  process.stderr.write(
+    `  ${'\x1b[2m'}Listening for actions on stdin (JSON per line)...${'\x1b[0m'}\n`
+  );
   process.stderr.write(`  ${'\x1b[2m'}Press Ctrl+C to stop.${'\x1b[0m'}\n\n`);
 
   return processStdin(kernel, options);
 }
 
-async function processStdin(kernel: ReturnType<typeof createKernel>, options: GuardOptions): Promise<number> {
+async function processStdin(
+  kernel: ReturnType<typeof createKernel>,
+  options: GuardOptions
+): Promise<number> {
   return new Promise((resolvePromise) => {
     let buffer = '';
 
@@ -163,7 +174,9 @@ async function processStdin(kernel: ReturnType<typeof createKernel>, options: Gu
           };
           process.stdout.write(JSON.stringify(output) + '\n');
         } catch (err) {
-          process.stderr.write(`  \x1b[31mError:\x1b[0m Invalid JSON input: ${(err as Error).message}\n`);
+          process.stderr.write(
+            `  \x1b[31mError:\x1b[0m Invalid JSON input: ${(err as Error).message}\n`
+          );
         }
       }
     });

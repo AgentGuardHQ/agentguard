@@ -88,9 +88,7 @@ export function createFilesystemSimulator(): ActionSimulator {
 
       predictedChanges.push(...reasons);
       details.pathRisk = riskLevel;
-      details.sensitiveMatch = SENSITIVE_PATTERNS.some((p) =>
-        target.toLowerCase().includes(p)
-      );
+      details.sensitiveMatch = SENSITIVE_PATTERNS.some((p) => target.toLowerCase().includes(p));
 
       return {
         predictedChanges,

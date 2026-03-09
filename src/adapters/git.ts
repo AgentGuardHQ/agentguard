@@ -23,8 +23,7 @@ export async function gitAdapter(action: CanonicalAction): Promise<unknown> {
 
   switch (action.type) {
     case 'git.commit': {
-      const message =
-        (action as Record<string, unknown>).message as string | undefined;
+      const message = (action as Record<string, unknown>).message as string | undefined;
       if (!message) {
         throw new Error('git.commit requires a message');
       }
@@ -34,8 +33,7 @@ export async function gitAdapter(action: CanonicalAction): Promise<unknown> {
 
     case 'git.push': {
       const branch = action.target || 'HEAD';
-      const remote =
-        ((action as Record<string, unknown>).remote as string | undefined) || 'origin';
+      const remote = ((action as Record<string, unknown>).remote as string | undefined) || 'origin';
       const result = await execGit(`git push ${remote} ${branch}`, cwd);
       return { pushed: true, branch, remote, output: result.stdout.trim() };
     }
