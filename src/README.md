@@ -1,106 +1,81 @@
-# BugMon TypeScript System
+# AgentGuard / BugMon TypeScript System
 
-A lightweight CLI system that detects software bugs and converts them into roguelike game encounters.
+TypeScript source — the single source of truth for the AgentGuard platform.
 
 ## Architecture
 
-BugMon follows a strict event-driven architecture. Every module communicates through a strongly typed event bus — no direct coupling between systems.
+The system follows a layered architecture with strict dependency rules. All modules communicate through typed event buses and pure domain logic.
 
 ```
-┌─────────────┐     ┌───────────┐     ┌────────────┐     ┌─────────────┐
-│   Watchers   │────▶│ Event Bus │────▶│ Bug Engine  │────▶│ Game Engine  │
-│ (detection)  │     │ (backbone)│     │ (lifecycle) │     │ (encounters) │
-└─────────────┘     └───────────┘     └────────────┘     └─────────────┘
-  console              BugDetected       MonsterSpawned      battle
-  test                 BugResolved       MonsterDefeated     victory
-  build                PlayerDamage      BugAnalyzed         defeat
+┌─────────────┐     ┌───────────┐     ┌──────────────┐     ┌─────────────────┐
+│   Sources    │────▶│ Ingestion │────▶│ Canonical    │────▶│ Subscribers     │
+│ (detection)  │     │ Pipeline  │     │ Event Model  │     │ (renderers)     │
+└─────────────┘     └───────────┘     └──────────────┘     └─────────────────┘
+  stderr              parse             EventBus            Dungeon Runner
+  test output         fingerprint       Event Store         Terminal Renderer
+  agent actions       classify          AgentGuard          Bug Grimoire
+  CI systems          dedupe                                Stats Engine
 ```
 
-## Event Flow
+## Layers
 
-1. **Watchers** observe the development environment (console errors, test failures, build errors)
-2. Watchers emit `BugDetected` events on the **Event Bus**
-3. The **Bug Engine** receives events, registers bugs, and emits `MonsterSpawned`
-4. The **Game Engine** receives monster events and manages encounters
-5. When bugs are resolved, `MonsterDefeated` is emitted with XP rewards
+| Layer | Path | Purpose |
+|-------|------|---------|
+| **CLI** | `src/cli/` | Commander-based CLI (20 subcommands). Node.js only. |
+| **Game** | `src/game/` | Browser roguelike with idle dungeon runner. Zero deps. |
+| **Dungeon** | `src/game/dungeon/` | Idle auto-dungeon runner (primary game mode) |
+| **Theme** | `src/game/theme.ts` | Design system (OLED palette, gold, glassmorphism) |
+| **AgentGuard** | `src/agentguard/` | Governance runtime (AAB, policies, invariants) |
+| **Domain** | `src/domain/` | Pure domain logic (battle, events, ingestion). No DOM/Node APIs. |
+| **Core** | `src/core/` | Shared logic (EventBus, error parsing, matching) |
+| **Meta** | `src/meta/` | Metadata (bugdex compendium, boss definitions) |
+| **Orchestration** | `src/orchestration/` | Multi-agent pipeline orchestration |
+| **Protocol** | `src/protocol/` | Sync protocol definitions |
+| **Content** | `src/content/` | Game content validation |
+| **Watchers** | `src/watchers/` | Environment watchers (console, test, build) |
+| **AI** | `src/ai/` | AI integration interface |
 
-## Module Responsibilities
+## Key Modules
 
 | Module | Path | Purpose |
 |--------|------|---------|
-| **Types** | `src/core/types.ts` | All shared type definitions |
 | **EventBus** | `src/core/event-bus.ts` | Strongly typed pub/sub backbone |
-| **BugRegistry** | `src/core/bug-registry.ts` | In-memory bug storage |
-| **BugEngine** | `src/core/bug-engine.ts` | Bug lifecycle management |
-| **ConsoleWatcher** | `src/watchers/console-watcher.ts` | Runtime error detection |
-| **TestWatcher** | `src/watchers/test-watcher.ts` | Test failure detection |
-| **BuildWatcher** | `src/watchers/build-watcher.ts` | Build error detection |
-| **GameEngine** | `src/game/engine.ts` | Game state machine & combat |
-| **Renderer** | `src/game/renderer.ts` | HTML5 Canvas 2D rendering |
-| **GameLoop** | `src/game/loop.ts` | requestAnimationFrame loop |
-| **AI Interface** | `src/ai/bug-analysis-interface.ts` | Provider-agnostic AI contracts |
-| **CLI** | `src/cli/index.ts` | Commander-based CLI entry point |
+| **ErrorParser** | `src/core/error-parser.ts` | 40+ error patterns across 6+ languages |
+| **Matcher** | `src/core/matcher.ts` | Error → BugMon enemy matching |
+| **Battle** | `src/domain/battle.ts` | Pure deterministic battle engine |
+| **Events** | `src/domain/events.ts` | Canonical event definitions |
+| **Ingestion** | `src/domain/ingestion/` | Error normalization pipeline |
+| **Runner** | `src/game/dungeon/runner.ts` | Idle dungeon runner logic |
+| **DungeonGen** | `src/game/dungeon/dungeon.ts` | Procedural floor generation |
+| **Theme** | `src/game/theme.ts` | Design system tokens |
+| **AAB** | `src/agentguard/core/aab.ts` | Action Authorization Boundary |
+| **CLI** | `src/cli/bin.ts` | CLI entry point |
 
 ## Getting Started
 
 ```bash
-# Install dependencies
-pnpm install
+# Build TypeScript
+npm run build:ts
 
 # Type check
-pnpm run ts:check
+npm run ts:check
 
-# Run tests
-pnpm run ts:test
+# Run TypeScript tests
+npm run ts:test
 
-# CLI commands
-pnpm exec tsx src/cli/index.ts watch        # Start watchers
-pnpm exec tsx src/cli/index.ts demo         # Run demo encounter
-pnpm exec tsx src/cli/index.ts status       # Show status
-```
+# Start dev server
+npm run serve
+# Open http://localhost:8000
 
-## Extension Points
-
-### Custom Watchers
-
-Implement the `Watcher` interface from `src/core/types.ts`:
-
-```typescript
-import type { Watcher, EventMap } from './core/types';
-import type { EventBus } from './core/event-bus';
-
-class MyWatcher implements Watcher {
-  constructor(private eventBus: EventBus<EventMap>) {}
-
-  start() {
-    // Observe your source, emit BugDetected events
-    this.eventBus.emit('BugDetected', { bug: { ... } });
-  }
-
-  stop() { /* cleanup */ }
-}
-```
-
-### AI Analyzers
-
-Implement the `BugAnalyzer` interface:
-
-```typescript
-import type { BugAnalyzer, BugEvent, BugAnalysis } from './core/types';
-
-class MyAIAnalyzer implements BugAnalyzer {
-  async analyzeBug(bug: BugEvent): Promise<BugAnalysis> {
-    // Call your AI provider
-    return { suggestedFix: '...', confidence: 0.9, category: '...', relatedPatterns: [] };
-  }
-}
+# Run CLI
+npm run dev
 ```
 
 ## Design Principles
 
 - **Deterministic**: All core logic is pure and deterministic (RNG injected)
-- **No global state**: All state lives in class instances, wired at startup
-- **Dependency injection**: Constructors accept dependencies, never import singletons
-- **Small functions**: Each function does one thing
+- **Layered**: Strict dependency rules — no cross-imports between cli/ and game/
+- **Zero browser deps**: Browser game has no runtime dependencies
 - **Strong typing**: Full TypeScript strict mode, discriminated unions for events
-- **AI-friendly**: Explicit contracts, small modules, predictable patterns
+- **Data-driven**: Game content in JSON, engine reads data, never hardcodes
+- **Event-driven**: Canonical event model connects all subsystems

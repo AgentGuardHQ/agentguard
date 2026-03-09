@@ -31,7 +31,7 @@ Neither system exists in isolation. AgentGuard produces governance events. BugMo
          │                                                     │
          │  source → parse → normalize → classify → dedupe     │
          │                                                     │
-         │  Implementation: domain/ingestion/                   │
+         │  Implementation: src/domain/ingestion/               │
          └──────────────────────┬──────────────────────────────┘
                                 │
                                 ▼
@@ -164,27 +164,33 @@ The shared layer provides the canonical event model and infrastructure used by b
 
 | Component | Description | Path |
 |-----------|-------------|------|
-| Event schema | Canonical event structure | `domain/events.js` |
-| EventBus | Universal pub/sub | `domain/event-bus.js` |
-| Fingerprinting | Stable event deduplication | `domain/ingestion/fingerprint.js` |
-| Pipeline | Event normalization | `domain/ingestion/pipeline.js` |
-| Replay engine | Event stream replay (planned) | — |
+| Event schema | Canonical event structure | `src/domain/events.ts` |
+| EventBus | Universal pub/sub | `src/core/event-bus.ts`, `src/domain/event-bus.ts` |
+| Fingerprinting | Stable event deduplication | `src/domain/ingestion/fingerprint.ts` |
+| Pipeline | Event normalization | `src/domain/ingestion/pipeline.ts` |
+| Event store | Event persistence | `src/domain/event-store.ts` |
+| Execution log | Causal chain tracking | `src/domain/execution/` |
 
 ## Current Implementation Mapping
 
-The existing codebase maps to the unified architecture as follows:
+The codebase maps to the unified architecture as follows:
 
 | Unified Layer | Current Directory | Description |
 |--------------|-------------------|-------------|
-| Shared / Events | `domain/` | Pure domain logic, event bus, ingestion pipeline |
-| BugMon / Battle Engine | `game/battle/` + `domain/battle.js` | Battle system |
-| BugMon / Terminal Renderer | `core/cli/renderer.js`, `core/cli/encounter.js` | ANSI terminal UI |
-| BugMon / Browser Renderer | `game/` (engine, world, sprites, audio) | Canvas 2D browser game |
-| BugMon / Grimoire | `ecosystem/bugdex.js` | Enemy compendium tracking |
-| BugMon / Stats | `game/evolution/tracker.js` | Dev activity tracking |
+| Shared / Events | `src/domain/` | Pure domain logic, event bus, ingestion pipeline |
+| Shared / Core | `src/core/` | EventBus, error parsing, matching |
+| BugMon / Battle Engine | `src/game/battle/` + `src/domain/battle.ts` | Battle system |
+| BugMon / Dungeon Runner | `src/game/dungeon/` | Idle auto-dungeon (primary game mode) |
+| BugMon / Design System | `src/game/theme.ts` | Premium dark aesthetic, tokens |
+| BugMon / Terminal Renderer | `src/cli/renderer.ts` | ANSI terminal UI |
+| BugMon / Browser Renderer | `src/game/` (engine, world, sprites, audio) | Canvas 2D browser game |
+| BugMon / Grimoire | `src/meta/bugdex.ts` | Enemy compendium tracking |
+| BugMon / Stats | `src/game/evolution/tracker.ts` | Dev activity tracking |
 | Shared / Data | `ecosystem/data/` | Game content (JSON + JS modules) |
-| AgentGuard / Action Interception | `core/cli/claude-hook.js` | Claude Code hook (prototype) |
-| BugMon / Boss System | `ecosystem/bosses.js` | Boss trigger definitions |
+| AgentGuard / Governance | `src/agentguard/` | AAB, policies, invariants, evidence |
+| AgentGuard / Action Interception | `src/core/sources/claude-hook-source.ts` | Claude Code hook |
+| BugMon / Boss System | `src/meta/bosses.ts` | Boss trigger definitions |
+| Orchestration | `src/orchestration/` | Multi-agent pipeline |
 
 ## Target Directory Structure
 

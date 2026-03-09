@@ -107,7 +107,7 @@ Selection priority:
 2. **Type fallback** — no keyword match, but error type maps to a BugMon type (e.g., `null-reference` → backend type).
 3. **Random fallback** — no match at all; select from available roster.
 
-Implementation: `core/matcher.js`
+Implementation: `src/core/matcher.ts`
 
 ### Difficulty Scaling
 
@@ -126,7 +126,7 @@ hp = baseHP + (severity - 1) * 2
 
 ### Boss Escalation
 
-Bosses spawn from systemic failures, not individual errors. The existing boss system (`ecosystem/bosses.js`) defines threshold-based triggers:
+Bosses spawn from systemic failures, not individual errors. The boss system (`src/meta/bosses.ts`) defines threshold-based triggers:
 
 | Boss | Trigger | Threshold |
 |------|---------|-----------|
@@ -214,9 +214,54 @@ Use cases:
 - Sharing memorable runs with other developers
 - Regression testing of the encounter system
 
-## Terminal-First UX
+## Browser Dungeon Runner (Primary Mode)
 
-The primary BugMon interface is the terminal. The roguelike runs alongside the developer's existing workflow.
+The primary BugMon interface is the **idle dungeon runner** in the browser. The dev character runs automatically through procedural dungeon floors while the developer codes.
+
+### Runner Phases
+
+```
+running → encounter (auto-battle) → collecting (treasure) → floor_clear → next floor
+                                                              ↓
+                                                          boss (manual fight)
+                                                              ↓
+                                                          run_over (death stats)
+```
+
+### Visual Design
+
+The dungeon runner uses a premium dark aesthetic:
+- **OLED palette**: Deep darks (#050510 → #0A0E27 → #151B38)
+- **Gold accents**: Treasure, highlights, premium feel
+- **Glassmorphic HUD**: Floor progress, HP bar, gold counter, event log
+- **Parallax scrolling**: Multi-layer depth in dungeon corridors
+- **Floating combat text**: Damage numbers, XP gains, loot pickups
+- **Dev character**: Hoodie + laptop sprite with running animation
+
+### Encounter Resolution
+
+- **Minor enemies** (severity 1-2): Auto-resolve inline. The character runs through them, showing floating damage numbers and XP gains. No interruption.
+- **Bosses** (severity 3+): The runner pauses. A simple turn-based combat interface appears. The developer must engage.
+- **Treasure**: Auto-collects gold and boosts. Floating "+5g" text.
+
+### Floor Progression
+
+Each floor is procedurally generated:
+- Rooms connected by corridors
+- Random enemy placements scaled by floor depth
+- Treasure chests with gold and boosts
+- Boss room at the end of every Nth floor
+- Floor difficulty increases as the developer progresses
+
+### Persistence
+
+- Gold persists across runs via localStorage
+- Run history tracked (floors cleared, enemies defeated, gold earned)
+- Boosts collected during a run reset on death
+
+## Terminal UX
+
+The terminal provides a text-based interface for the CLI:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -237,13 +282,7 @@ The primary BugMon interface is the terminal. The roguelike runs alongside the d
 └─────────────────────────────────────────────────────┘
 ```
 
-The terminal renderer displays:
-- Current run status (run number, current "floor", developer level)
-- Encounter details (BugMon name, HP, error message, source location)
-- Battle options
-- Session statistics
-
-Browser and mobile renderers provide enhanced visual experiences but are not required. The terminal is the canonical interface.
+The browser dungeon runner is the recommended experience; the terminal renderer provides a fallback for CLI-only workflows.
 
 ## Design Rationale
 
