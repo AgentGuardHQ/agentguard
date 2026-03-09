@@ -1,345 +1,627 @@
 # Autonomous SDLC Architecture
 
-> Design specification for an externally orchestrated, governance-first autonomous software development lifecycle powered by AgentGuard and Claude Code agents.
+> AgentGuard as a self-governing agent execution kernel: a capability-secured syscall runtime for autonomous software development.
 
-## 1. Introduction & Design Goals
+## 1. Architectural Thesis
 
-AgentGuard is a governed action runtime that intercepts AI agent tool calls, enforces policies and invariants, and emits auditable lifecycle events. This document describes how an **external orchestration layer** uses AgentGuard to enable autonomous AI-driven software development — where multiple role-specialized Claude Code agents pick up tasks from GitHub Issues, develop in isolated worktrees, and submit pull requests, all governed by deterministic policies.
+AgentGuard is a governed action runtime for AI coding agents. This document describes how it becomes a **self-governing autonomous SDLC testbed** — where AI agents develop AgentGuard itself, governed by AgentGuard's own runtime.
+
+### The Reflexive Property
+
+```
+AgentGuard
+    ↑
+developed by agents
+    ↑
+governed by AgentGuard itself
+```
+
+This is structurally identical to:
+- Compilers compiling themselves
+- Operating systems building themselves
+- Kubernetes managing Kubernetes
+
+The system becomes a **live laboratory for agent safety**. Instead of theorizing about agent governance, we observe real agent behavior: failure modes, policy violations, unsafe tool usage, CI breakage patterns, drift between intent and execution. That produces empirical data, not theoretical models.
+
+### The OS Analogy
+
+In an operating system, programs cannot access hardware directly:
+
+```
+program → syscall → kernel → hardware
+```
+
+The kernel enforces permissions, memory safety, resource limits, and auditing. The same model applies to agents:
+
+```
+agent → syscall → AgentGuard kernel → system resources
+```
+
+Agents cannot directly access the filesystem, git, shell, or CI. Everything flows through AgentGuard's syscall interface. AgentGuard decides: **ALLOW**, **DENY**, or **REQUIRE_APPROVAL**.
+
+### Three-Layer Security Model
+
+Every syscall passes through three independent evaluation layers:
+
+```
+Layer 1: Capabilities    →  Can this agent even attempt this class of action?
+Layer 2: Policies        →  Is this action allowed under current governance rules?
+Layer 3: Invariants      →  Would this action violate system correctness constraints?
+```
+
+Each layer answers a different question. Each layer's decision is recorded separately in the audit trail. This separation prevents the system from collapsing into a single pile of allow/deny logic.
+
+**Default posture**: closed unless explicitly granted. No capability = no attempt possible.
 
 ### Design Goals
 
-1. **Governance-first**: Every agent action passes through AgentGuard's kernel before execution. No action escapes the policy/invariant/escalation pipeline.
-2. **External orchestration**: The scheduler, task management, and agent lifecycle live outside AgentGuard. AgentGuard remains a focused governance runtime.
-3. **GitHub-native task management**: GitHub Issues serve as the task registry. Labels encode state, priority, and role assignment. No custom task database.
-4. **Isolation by default**: Each agent works in a git worktree. Agents never share a working directory. All changes reach `main` through pull requests.
-5. **Deterministic audit trail**: Every governance decision is persisted to JSONL. Every task state change is recorded as a GitHub Issue comment. The full history is replayable.
-6. **Escalation-aware scheduling**: The scheduler monitors AgentGuard's escalation level and pauses autonomously when denial rates indicate systemic problems.
-
-### Non-Goals
-
-- Replacing AgentGuard's kernel or policy engine.
-- Building a custom task database (GitHub Issues is the source of truth).
-- Real-time multi-agent collaboration on the same files (worktree isolation avoids this entirely).
-- Autonomous merging — all PRs require human review.
+1. **Self-governing**: AgentGuard governs its own development. Every agent action on AgentGuard's codebase passes through AgentGuard's kernel.
+2. **Syscall-mediated**: Agents interact with the system through 5 primitive operations. No direct access to filesystem, git, or shell.
+3. **Capability-secured**: Agents possess specific, bounded, time-limited authority tokens. Default-deny, not default-allow.
+4. **Minimal viable first**: 1 planner agent + 1 coder agent + governance runtime. No swarm until the narrow loop works.
+5. **Experimentally grounded**: Every governance decision produces structured telemetry. Agent failure patterns become research data.
 
 ---
 
-## 2. System Topology
+## 2. Agent Syscall Interface
+
+### The 5 SDLC Primitives
+
+Everything agents do in a development lifecycle reduces to five operations:
+
+| Syscall | Purpose | Examples |
+|---------|---------|---------|
+| **`read_resource`** | Inspect system state | Read source files, view git diff, read issue descriptions, check test results |
+| **`write_resource`** | Modify files | Write source code, edit tests, update configuration |
+| **`run_task`** | Execute deterministic processes | Run tests, lint, build, type-check |
+| **`create_artifact`** | Produce task outputs | Generate test results, coverage reports, lint reports |
+| **`propose_change`** | Submit work for review | Create commits, open pull requests |
+
+Agents cannot perform anything outside this set. That gives deterministic governance over a small, auditable surface.
+
+### Mapping to AgentGuard's Action Types
+
+AgentGuard already defines 23 canonical action types across 8 classes (`src/core/actions.ts:27-51`). The 5 SDLC syscalls are a higher-level abstraction over these implementation-level types:
+
+| Syscall | AgentGuard Action Types |
+|---------|------------------------|
+| `read_resource` | `file.read`, `git.diff` |
+| `write_resource` | `file.write`, `file.delete`, `file.move` |
+| `run_task` | `test.run`, `test.run.unit`, `test.run.integration`, `npm.script.run` |
+| `create_artifact` | `file.write` (to artifact output paths) |
+| `propose_change` | `git.commit`, `git.branch.create` + external PR creation |
+
+The AAB (`src/kernel/aab.ts`) is the syscall router. It already normalizes Claude Code tool calls into canonical action types via `TOOL_ACTION_MAP`:
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        GitHub (Cloud)                                │
-│                                                                      │
-│  ┌─────────────┐   ┌──────────────────┐   ┌─────────────────────┐   │
-│  │ Issues       │   │ Pull Requests     │   │ Actions Workflows   │   │
-│  │ (Task Queue) │   │ (Agent Output)    │   │ (Scheduler Trigger) │   │
-│  └──────┬──────┘   └────────▲─────────┘   └──────────┬──────────┘   │
-│         │                   │                         │              │
-└─────────┼───────────────────┼─────────────────────────┼──────────────┘
-          │ poll              │ create PR                │ trigger
-          ▼                   │                         ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     External Scheduler                               │
-│                                                                      │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │
-│  │ Issue     │  │ Agent        │  │ Worktree     │  │ PR         │  │
-│  │ Poller    │→ │ Spawner      │→ │ Manager      │→ │ Creator    │  │
-│  └──────────┘  └──────┬───────┘  └──────────────┘  └────────────┘  │
-│                        │                                             │
-└────────────────────────┼─────────────────────────────────────────────┘
-                         │ spawn claude CLI
-                         ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              Agent Worktree (isolated git worktree)                   │
-│                                                                      │
-│  ┌──────────────┐          ┌─────────────────────────────────────┐  │
-│  │ Claude Code   │  hook   │ AgentGuard Runtime                   │  │
-│  │ Agent         │────────→│                                     │  │
-│  │ (role-scoped) │         │  RawAgentAction                     │  │
-│  └──────────────┘         │    ↓ normalizeIntent (AAB)           │  │
-│                            │  NormalizedIntent                    │  │
-│                            │    ↓ evaluate (Policy Evaluator)     │  │
-│                            │    ↓ check (Invariant Checker)       │  │
-│                            │    ↓ simulate (Impact Simulation)    │  │
-│                            │  MonitorDecision                     │  │
-│                            │    ↓ execute or deny                 │  │
-│                            │  KernelResult → JSONL sink           │  │
-│                            └─────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+Claude Code Tool    →  AAB normalization  →  Action Type (syscall)
+Write               →  normalizeIntent()  →  file.write (write_resource)
+Edit                →  normalizeIntent()  →  file.write (write_resource)
+Read                →  normalizeIntent()  →  file.read (read_resource)
+Bash                →  detectGitAction()  →  git.* or shell.exec
+Glob                →  normalizeIntent()  →  file.read (read_resource)
+Grep                →  normalizeIntent()  →  file.read (read_resource)
 ```
 
-**Components**:
+For `Bash` tool calls, `detectGitAction()` further classifies git commands (e.g., `git push` → `git.push`, `git commit` → `git.commit`).
 
-| Component | Location | Responsibility |
-|-----------|----------|---------------|
-| GitHub Issues | github.com | Task registry (labels = state machine) |
-| GitHub Actions | github.com | Scheduled/manual scheduler trigger |
-| External Scheduler | Standalone process or GH Action | Polls issues, spawns agents, manages worktrees, creates PRs |
-| Claude Code Agent | Per-worktree process | Executes SDLC work (coding, testing, docs) |
-| AgentGuard Runtime | In each worktree | Governance: policy, invariants, escalation, audit |
-| JSONL Audit Trail | `.agentguard/` per worktree | Immutable decision log |
+### Syscall Wire Format
 
----
-
-## 3. Canonical Action Representation (CAR)
-
-The CAR is the formalized wire format for agent actions as they flow through the governance pipeline. It unifies AgentGuard's existing interfaces:
-
-- **`RawAgentAction`** (`src/kernel/aab.ts:17-27`): The raw tool call from Claude Code
-- **`NormalizedIntent`** (`src/policy/evaluator.ts:24-33`): The AAB-normalized evaluation form
-- **`CanonicalAction`** (`src/core/types.ts`): The execution form with id/fingerprint
-
-The CAR adds multi-agent context (role, task, pipeline stage) that the external scheduler injects.
-
-### Schema
-
-```typescript
-interface CanonicalActionRepresentation {
-  // Identity
-  id: string;                    // Unique action ID (e.g., "act_1709913600_a1b2")
-  fingerprint: string;           // Content hash for deduplication
-
-  // Action semantics (from AAB normalization)
-  type: string;                  // One of 23 canonical types (e.g., "file.write")
-  class: string;                 // One of 8 classes (e.g., "file", "git", "shell")
-  target: string;                // File path, branch name, or command
-  command?: string;              // Raw shell command (for shell.exec actions)
-  destructive: boolean;          // AAB classification (true for rm, force-push, etc.)
-
-  // Agent context (injected by scheduler)
-  agent: string;                 // Agent instance ID (e.g., "agent_dev_1a2b")
-  role: string;                  // Agent role (e.g., "developer")
-  taskId: string;                // GitHub Issue number (e.g., "issue_42")
-  justification: string;         // Why the agent proposed this action
-
-  // Governance metadata
-  timestamp: number;             // Unix ms
-  runId: string;                 // AgentGuard kernel run ID
-  pipelineStage?: string;        // SDLC stage (e.g., "implementation", "testing")
-
-  // Blast radius
-  affectedPaths?: string[];      // Files this action will modify
-  estimatedBlastRadius?: number; // File count estimate
-}
-```
-
-### JSON Example
+Every syscall carries this structure (evolved from the Canonical Action Representation):
 
 ```json
 {
-  "id": "act_1709913600_a1b2",
-  "fingerprint": "c3d4e5f6",
-  "type": "file.write",
-  "class": "file",
-  "target": "src/tasks/registry.ts",
-  "destructive": false,
-  "agent": "agent_dev_1a2b",
-  "role": "developer",
-  "taskId": "issue_42",
-  "justification": "Implement task registry module per architecture spec",
-  "timestamp": 1709913600000,
-  "runId": "run_1709913400_abc",
-  "pipelineStage": "implementation",
-  "affectedPaths": ["src/tasks/registry.ts"],
-  "estimatedBlastRadius": 3
+  "syscall": "write_resource",
+  "target": "src/kernel/monitor.ts",
+  "agent_id": "agent_dev_1a2b",
+  "capability_id": "cap_0192",
+  "payload": {
+    "content": "...",
+    "diff_lines": 42
+  },
+  "context": {
+    "task_id": "issue_42",
+    "role": "developer",
+    "run_id": "run_1709913400_abc",
+    "pipeline_stage": "implementation"
+  }
 }
 ```
 
-### How the CAR Maps to AgentGuard Interfaces
-
-The scheduler constructs the CAR by combining data from multiple sources:
-
-```
-GitHub Issue (taskId, allowedPaths)
-  + Agent Registry (agent, role)
-  + Claude Code Hook Payload (tool_name, tool_input)
-    → normalizeClaudeCodeAction() → RawAgentAction
-    → AAB.normalizeIntent() → NormalizedIntent (type, class, target, destructive)
-    → kernel.propose() → KernelResult (runId, decision, events)
-    = CanonicalActionRepresentation
-```
-
-Today, the scheduler passes role/task context through `RawAgentAction.metadata`:
+This maps to `RawAgentAction` (`src/kernel/aab.ts:17-27`) with context injected via `metadata`:
 
 ```typescript
-// In the scheduler's hook wrapper:
-const raw: RawAgentAction = normalizeClaudeCodeAction(hookPayload);
-raw.metadata = {
-  ...raw.metadata,
-  role: agent.role,           // "developer"
-  taskId: issue.number,       // 42
-  pipelineStage: "implementation",
+const raw: RawAgentAction = {
+  tool: 'Edit',
+  file: 'src/kernel/monitor.ts',
+  content: '...',
+  agent: 'agent_dev_1a2b',
+  metadata: {
+    role: 'developer',
+    taskId: 42,
+    capabilityId: 'cap_0192',
+    pipelineStage: 'implementation',
+    hook: 'PreToolUse',
+  },
 };
 ```
 
-The `metadata` field on `RawAgentAction` is already a `Record<string, unknown>` and flows through to `NormalizedIntent.metadata`, making this approach work with AgentGuard's current interfaces without modification.
+### The Critical Rule
 
-### Action Type Reference
+**Agents must not be able to bypass the syscall interface.**
 
-AgentGuard defines 23 canonical action types across 8 classes (`src/core/actions.ts:27-51`):
+This is enforced by registering AgentGuard as a **PreToolUse** hook for all Claude Code tools. The hook intercepts every tool call before execution and routes it through `kernel.propose()`. If the kernel denies the action, the tool call is blocked.
 
-| Class | Action Types |
-|-------|-------------|
-| **file** | `file.read`, `file.write`, `file.delete`, `file.move` |
-| **test** | `test.run`, `test.run.unit`, `test.run.integration` |
-| **git** | `git.diff`, `git.commit`, `git.push`, `git.branch.create`, `git.branch.delete`, `git.checkout`, `git.reset`, `git.merge` |
-| **shell** | `shell.exec` |
-| **npm** | `npm.install`, `npm.script.run`, `npm.publish` |
-| **http** | `http.request` |
-| **deploy** | `deploy.trigger` |
-| **infra** | `infra.apply`, `infra.destroy` |
-
-The AAB maps Claude Code tools to action types via `TOOL_ACTION_MAP` (`src/kernel/aab.ts:36-43`):
-
-| Claude Code Tool | Action Type |
-|-----------------|-------------|
-| `Write` | `file.write` |
-| `Edit` | `file.write` |
-| `Read` | `file.read` |
-| `Bash` | `shell.exec` (or git.* via `detectGitAction()`) |
-| `Glob` | `file.read` |
-| `Grep` | `file.read` |
+Without PreToolUse enforcement, the capability model is advisory, not real.
 
 ---
 
-## 4. Agent Roles & Permission Matrix
+## 3. Capability Model
 
-The autonomous SDLC uses 7 specialized roles. Each role maps to a set of allowed/denied action types, owned file paths, and blast radius limits. The external scheduler assigns roles when spawning agents.
+### What a Capability Is
 
-### Role Definitions
+A capability is a **signed grant of authority** to perform a bounded class of actions. Not role-based labels like "coder agent = can code." Instead, concrete, scoped, time-limited authority:
 
-| Role | Description | Pipeline Stage |
-|------|-------------|---------------|
-| **research** | Explores codebase, reads docs, produces research summaries | Pre-pipeline |
-| **product** | Grooms tickets, writes acceptance criteria, defines scope | Pre-pipeline |
-| **architect** | Designs architecture, produces specs, declares file scope | Stage 0: Planning |
-| **developer** | Implements features within architect-defined scope | Stage 1: Implementation |
-| **qa** | Writes tests, runs test suites, reports coverage gaps | Stage 2: Verification |
-| **documentation** | Writes docs, updates README, adds code comments | Stage 3: Documentation |
-| **auditor** | Reviews all changes, reports violations, final safety gate | Stage 4: Review |
+```json
+{
+  "id": "cap_0192",
+  "subject": "agent_dev_1a2b",
+  "operation": "write_resource",
+  "scopes": [
+    "repo://agent-guard/src/**",
+    "repo://agent-guard/tests/**"
+  ],
+  "constraints": {
+    "deny": [
+      "repo://agent-guard/src/kernel/**",
+      "repo://agent-guard/src/policy/**",
+      "repo://agent-guard/src/invariants/**"
+    ],
+    "max_files": 20,
+    "max_diff_lines": 500
+  },
+  "issued_to": "agent_dev_1a2b",
+  "issued_by": "agentguard-scheduler",
+  "issued_at": "2026-03-09T10:00:00Z",
+  "expires_at": "2026-03-09T10:30:00Z",
+  "task_id": "issue_42"
+}
+```
 
-### Permission Matrix
+This means:
+- The agent **can** write files in `src/**` and `tests/**`
+- The agent **cannot** write to `src/kernel/**`, `src/policy/**`, or `src/invariants/**` (self-modification protection)
+- The agent **cannot** modify more than 20 files or 500 diff lines
+- The authority **expires** after 30 minutes
+- The authority is **scoped to a single task**
 
-| | file.read | file.write | file.delete | shell.exec | git.commit | git.push | test.run | npm.install | deploy.trigger |
-|---|---|---|---|---|---|---|---|---|---|
-| **research** | Y | - | - | Y (read-only) | - | - | - | - | - |
-| **product** | Y | Y (docs) | - | - | - | - | - | - | - |
-| **architect** | Y | Y (docs/spec) | - | - | - | - | - | - | - |
-| **developer** | Y | Y (src/tests) | Y (src/tests) | Y | Y | - | - | Y | - |
-| **qa** | Y | Y (tests) | - | Y | Y | - | Y | - | - |
-| **documentation** | Y | Y (docs/*.md) | - | - | Y | - | - | - | - |
-| **auditor** | Y | - | - | Y (read-only) | - | - | Y | - | - |
+### Why Capabilities, Not Just Policies
 
-**Key constraints**:
-- No role can `git.push` directly — all changes go through PRs
-- Only `developer` can `npm.install` (dependency changes)
-- Only `developer` and `qa` can `git.commit`
-- `deploy.trigger` and `infra.*` are denied for all autonomous roles
-- `research` and `auditor` are read-only (no file modifications)
+Pure policy says: "any agent may ask, the system decides every time." The default is open-unless-denied.
 
-### Owned Paths (File Scope)
+Capabilities say: "the agent can only even attempt actions for which it holds authority." The default is **closed-unless-explicitly-granted**.
 
-Each role has directory patterns it may modify. The governance layer enforces these via policy `scope` conditions.
+That is the correct default for autonomous systems. It changes the failure mode from "the system forgot to deny something" to "the system must explicitly grant everything."
 
-| Role | Owned Paths |
-|------|------------|
-| **research** | (none — read-only) |
-| **product** | `docs/product/**`, `spec/**` |
-| **architect** | `docs/**`, `spec/**`, `*.md` (root-level) |
-| **developer** | `src/**`, `tests/**`, `package.json` |
-| **qa** | `tests/**` |
-| **documentation** | `docs/**`, `*.md`, `examples/**` |
-| **auditor** | (none — read-only) |
+### The 5 Core Capabilities
 
-### Blast Radius Limits
+Each maps to one of the 5 syscalls:
 
-| Role | Max Files Per Action | Max Total Modified Files |
-|------|---------------------|-------------------------|
-| **research** | 0 | 0 |
-| **product** | 5 | 10 |
-| **architect** | 5 | 15 |
-| **developer** | 20 | 50 |
-| **qa** | 15 | 30 |
-| **documentation** | 5 | 20 |
-| **auditor** | 0 | 0 |
+**A. Read Capability**
+```json
+{
+  "operation": "read_resource",
+  "scopes": ["repo://agent-guard/src/**", "repo://agent-guard/docs/**", "artifact://test-results/**"]
+}
+```
 
-### Role-Specific CLAUDE.md Templates
+**B. Write Capability**
+```json
+{
+  "operation": "write_resource",
+  "scopes": ["repo://agent-guard/src/**", "repo://agent-guard/tests/**"],
+  "constraints": {
+    "deny": ["repo://agent-guard/src/kernel/**", "repo://agent-guard/src/policy/**"],
+    "max_files": 20
+  }
+}
+```
 
-Each agent receives a role-specific system prompt via `CLAUDE.md` in its worktree. Example for the developer role:
+**C. Task Capability**
+```json
+{
+  "operation": "run_task",
+  "scopes": ["task://test", "task://lint", "task://build", "task://ts:check"]
+}
+```
 
-```markdown
-# Agent Role: Developer
+**D. Artifact Capability**
+```json
+{
+  "operation": "create_artifact",
+  "scopes": ["artifact://test-results/**", "artifact://coverage/**", "artifact://lint-report/**"]
+}
+```
 
-You are a developer agent working on task #{issue_number}: {issue_title}.
+**E. Change Proposal Capability**
+```json
+{
+  "operation": "propose_change",
+  "scopes": ["branch://agent/issue-42/*"],
+  "constraints": {
+    "requires_artifacts": ["test-results", "coverage"],
+    "requires_tests_passing": true
+  }
+}
+```
 
-## Scope
-You may ONLY modify files matching these patterns:
-{allowed_paths}
+### Capability Validation Flow
 
-## Constraints
-- Do NOT modify files outside your scope
-- Do NOT push directly to any branch — commit only
-- Do NOT install packages not listed in the task description
-- Do NOT modify CI/CD configuration (.github/*, Dockerfile)
-- Run `npm run ts:check` before committing
-- Write tests for new functionality
+For each syscall, the kernel validates in order:
 
-## Task
-{issue_body}
+1. **Authentic?** — Is the token genuine (signature check)?
+2. **Expired?** — Is the token still valid?
+3. **Subject match?** — Does the token belong to this agent?
+4. **Operation match?** — Does the token authorize this syscall type?
+5. **Scope match?** — Does the target fall within the granted scopes?
+6. **Constraints satisfied?** — Are constraint limits (max_files, deny patterns) met?
+
+Only after capability validation does the syscall proceed to Layer 2 (policies) and Layer 3 (invariants).
+
+### Roles as Capability Bundles
+
+Roles are an ergonomic layer. A "developer" role expands into a set of capability grants:
+
+```
+developer role → [
+  read_resource(repo://**),
+  write_resource(repo://src/**, repo://tests/**),
+  run_task(task://test, task://lint, task://build),
+  create_artifact(artifact://test-results/**, artifact://coverage/**),
+  propose_change(branch://agent/*)
+]
+```
+
+This keeps role-based thinking for humans while maintaining precise authority for governance.
+
+### Capability Lifecycle
+
+Capabilities are:
+- **Short-lived**: Issued per task, expire when the task completes or times out
+- **Task-scoped**: Each GitHub Issue gets a fresh authority envelope
+- **Revocable**: The scheduler can revoke capabilities if escalation level rises
+- **Non-transferable**: An agent cannot pass its capability to another agent (delegation requires the scheduler)
+
+### Delegation
+
+A planner agent does not directly issue capabilities. Instead, the scheduler observes the planner's output (file scope declarations, task assignments) and mints appropriately scoped capabilities for downstream agents:
+
+```
+Planner (via propose_change) → "Task: add rate limiting to monitor.ts"
+  → Scheduler reads planner output
+  → Scheduler mints capability for coder:
+      write_resource(src/kernel/monitor.ts, tests/ts/monitor.test.ts)
+      run_task(test, lint)
+      propose_change(branch://agent/issue-42)
+  → Coder receives bounded capability
+```
+
+This prevents agents from minting arbitrary authority.
+
+---
+
+## 4. Three-Layer Security Model
+
+### Layer 1 — Capabilities: Authority
+
+**Question**: Can this agent even attempt this class of action?
+
+**Implementation**: Capability token validation (new — to be built).
+
+**Behavior**: Default-deny. If no valid capability exists for the requested syscall + scope, the action is immediately rejected before policy evaluation begins.
+
+**Example**:
+```
+Agent: agent_qa_3c4d
+Syscall: write_resource
+Target: src/kernel/kernel.ts
+Capability: write_resource(tests/**)
+
+Result: DENIED (target outside capability scope)
+```
+
+### Layer 2 — Policies: Governance
+
+**Question**: Is this action allowed under current governance rules?
+
+**Implementation**: Existing `PolicyRule` evaluation in `src/policy/evaluator.ts`. The `evaluate()` function matches actions against loaded policy rules, checking action patterns, scope conditions, branch conditions, and limits.
+
+**Behavior**: Rules can allow or deny. Deny rules from any source take priority (the evaluator checks denies first at `evaluator.ts:107`).
+
+**Example**:
+```
+Agent: agent_dev_1a2b
+Syscall: write_resource
+Target: .github/workflows/ci.yml
+Capability: write_resource(src/**, tests/**) — PASSES (different check)
+Policy: deny file.write scope:[.github/**] — DENIED
+
+Result: DENIED (policy denial, reason: "CI config changes require human approval")
+```
+
+### Layer 3 — Invariants: Correctness
+
+**Question**: Would this action violate system correctness constraints?
+
+**Implementation**: Existing `DEFAULT_INVARIANTS` in `src/invariants/definitions.ts`. Six built-in invariants checked via `InvariantChecker`:
+
+1. **`no-secret-exposure`** (severity 5): No `.env`, credentials, `.pem`, `.key` files committed
+2. **`protected-branch`** (severity 5): No direct push to main/master
+3. **`blast-radius`** (severity 4): File modification count within limits
+4. **`test-before-push`** (severity 3): Tests must pass before push
+5. **`no-force-push`** (severity 5): No `git push --force`
+6. **`lockfile-integrity`** (severity 3): Lock file consistency
+
+**Example**:
+```
+Agent: agent_dev_1a2b
+Syscall: propose_change
+Target: branch://main
+Capability: propose_change(branch://agent/*) — DENIED (scope mismatch)
+
+But even if capability passed:
+Invariant: protected-branch — DENIED (direct push to main forbidden)
+```
+
+### Combined Evaluation Flow
+
+```
+Agent proposes tool call
+  ↓
+PreToolUse hook fires
+  ↓
+normalizeClaudeCodeAction() → RawAgentAction
+  ↓
+AAB.normalizeIntent() → NormalizedIntent (action type, target, destructive)
+  ↓
+┌─────────────────────────────────────────────────┐
+│ Layer 1: Capability Validation                   │
+│   Is capability token valid?                     │
+│   Does operation match?                          │
+│   Is target within scope?                        │
+│   Are constraints satisfied?                     │
+│                                                  │
+│   → If DENIED: emit CapabilityDenied, return     │
+└─────────────────────────┬───────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────┐
+│ Layer 2: Policy Evaluation                       │
+│   evaluate(intent, policies) → EvalResult        │
+│   Match rules by action pattern, scope, branch   │
+│                                                  │
+│   → If DENIED: emit PolicyDenied, return         │
+└─────────────────────────┬───────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────┐
+│ Layer 3: Invariant Checking                      │
+│   checkInvariants(systemState) → violations[]    │
+│   Verify correctness constraints hold            │
+│                                                  │
+│   → If VIOLATED: emit InvariantViolation, return │
+└─────────────────────────┬───────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────┐
+│ Monitor: Escalation Check                        │
+│   Track denial rate, adjust escalation level     │
+│   NORMAL → ELEVATED → HIGH → LOCKDOWN            │
+│   LOCKDOWN = all actions denied                  │
+└─────────────────────────┬───────────────────────┘
+                          ↓
+                     EXECUTE action
+                          ↓
+              Emit lifecycle events to JSONL
+```
+
+### Audit Semantics
+
+Each layer's decision is recorded separately in the `GovernanceDecisionRecord`:
+
+```json
+{
+  "recordId": "dec_1709913600_a1b2",
+  "runId": "run_1709913400_abc",
+  "timestamp": 1709913600000,
+  "action": {
+    "type": "file.write",
+    "target": "src/kernel/monitor.ts",
+    "agent": "agent_dev_1a2b",
+    "destructive": false
+  },
+  "capability": {
+    "id": "cap_0192",
+    "operation": "write_resource",
+    "scope_match": true,
+    "constraints_satisfied": true
+  },
+  "policy": {
+    "matchedPolicyId": "sdlc-developer-policy",
+    "matchedPolicyName": "Developer Agent Policy",
+    "severity": 4,
+    "decision": "allow",
+    "reason": "Developer may modify source and tests"
+  },
+  "invariants": {
+    "allHold": true,
+    "violations": []
+  },
+  "monitor": {
+    "escalationLevel": 0,
+    "totalEvaluations": 47,
+    "totalDenials": 2
+  },
+  "outcome": "allow",
+  "execution": {
+    "executed": true,
+    "success": true,
+    "durationMs": 12
+  }
+}
+```
+
+Now you can answer for any action:
+- **What authority did the agent have?** → `capability`
+- **Who issued it?** → `capability.issued_by`
+- **Was it within scope?** → `capability.scope_match`
+- **Which governance rule applied?** → `policy.matchedPolicyId`
+- **Were correctness constraints maintained?** → `invariants.allHold`
+- **What was the escalation level?** → `monitor.escalationLevel`
+
+---
+
+## 5. System Topology
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                      GitHub (Cloud)                             │
+│                                                                 │
+│  ┌──────────────┐  ┌───────────────┐  ┌─────────────────────┐ │
+│  │ Issues        │  │ Pull Requests  │  │ Actions Workflows   │ │
+│  │ (Task Queue)  │  │ (Agent Output) │  │ (Scheduler Trigger) │ │
+│  └──────┬───────┘  └───────▲───────┘  └──────────┬──────────┘ │
+└─────────┼──────────────────┼─────────────────────┼─────────────┘
+          │ poll             │ create PR            │ trigger
+          ▼                  │                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   External Scheduler                             │
+│                                                                  │
+│  ┌──────────┐  ┌──────────────┐  ┌──────────┐  ┌────────────┐  │
+│  │ Issue     │  │ Capability   │  │ Worktree │  │ PR         │  │
+│  │ Poller    │→ │ Minter       │→ │ Manager  │→ │ Creator    │  │
+│  └──────────┘  └──────┬───────┘  └──────────┘  └────────────┘  │
+│                        │ mint caps + spawn                       │
+└────────────────────────┼────────────────────────────────────────┘
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│            Agent Worktree (isolated git worktree)                │
+│                                                                  │
+│  ┌──────────────────┐                                           │
+│  │ Claude Code Agent │   Every tool call is a syscall:          │
+│  │ (capability-bound)│                                          │
+│  └────────┬─────────┘                                           │
+│           │ PreToolUse hook                                      │
+│           ▼                                                      │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │              AgentGuard Kernel (syscall handler)           │   │
+│  │                                                           │   │
+│  │  RawAgentAction → AAB (syscall router) → NormalizedIntent │   │
+│  │       ↓                                                   │   │
+│  │  Layer 1: Capability validation                           │   │
+│  │       ↓                                                   │   │
+│  │  Layer 2: Policy evaluation                               │   │
+│  │       ↓                                                   │   │
+│  │  Layer 3: Invariant checking                              │   │
+│  │       ↓                                                   │   │
+│  │  Monitor (escalation)                                     │   │
+│  │       ↓                                                   │   │
+│  │  Execute or Deny → JSONL audit trail                      │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. Task Lifecycle via GitHub Issues
+## 6. Agent Roles as Capability Bundles
 
-GitHub Issues serve as the task registry. The scheduler interacts with issues via the `gh` CLI or GitHub API. State is encoded in labels.
+### Role Definitions
+
+7 roles, each defined as a bundle of capabilities:
+
+| Role | Capability Bundle |
+|------|------------------|
+| **research** | `read_resource(repo://**)` |
+| **product** | `read_resource(repo://**)` + `write_resource(docs/product/**, spec/**)` |
+| **architect** | `read_resource(repo://**)` + `write_resource(docs/**, spec/**, *.md)` |
+| **developer** | `read_resource(repo://**)` + `write_resource(src/**, tests/**, package.json)` + `run_task(test, lint, build, ts:check)` + `create_artifact(test-results, coverage)` + `propose_change(branch://agent/*)` |
+| **qa** | `read_resource(repo://**)` + `write_resource(tests/**)` + `run_task(test, test:unit, test:integration, lint)` + `create_artifact(test-results, coverage, lint-report)` + `propose_change(branch://agent/*)` |
+| **documentation** | `read_resource(repo://**)` + `write_resource(docs/**, *.md, examples/**)` + `propose_change(branch://agent/*)` |
+| **auditor** | `read_resource(repo://**)` + `run_task(test, lint)` + `create_artifact(audit-report)` |
+
+### Self-Modification Protection
+
+When AgentGuard governs its own development, certain paths must be protected from agent modification:
+
+| Protected Path | Reason |
+|---------------|--------|
+| `src/kernel/**` | Core governance logic — agent modifications could weaken enforcement |
+| `src/policy/**` | Policy engine — agents must not modify their own governance rules |
+| `src/invariants/**` | Invariant definitions — agents must not weaken correctness constraints |
+| `agentguard.yaml` | Default policy — changing this changes what agents can do |
+| `.claude/settings.json` | Hook configuration — agents must not disable governance hooks |
+
+These paths are excluded from all write capabilities via `constraints.deny`. Only human commits can modify governance-critical code.
+
+### CLAUDE.md Role Templates
+
+Each agent receives a role-specific CLAUDE.md in its worktree:
+
+```markdown
+# Agent Role: Developer
+# Task: #{issue_number} — {issue_title}
+
+## Authority
+You hold capabilities for: read_resource, write_resource, run_task, propose_change.
+Your write scope is limited to: {allowed_paths}
+Protected paths (will be denied): src/kernel/**, src/policy/**, src/invariants/**
+
+## Constraints
+- Do NOT attempt to modify files outside your scope (the syscall will be denied)
+- Do NOT push directly to any branch — commit to your worktree branch only
+- Run `npm run ts:check` and `npm run ts:test` before committing
+- Write tests for new functionality
+
+## Task Description
+{issue_body}
+
+## Acceptance Criteria
+{acceptance_criteria}
+```
+
+---
+
+## 7. Task Lifecycle via GitHub Issues
+
+GitHub Issues serve as the task registry. State is encoded in labels.
 
 ### Label Schema
 
-| Category | Labels | Purpose |
-|----------|--------|---------|
-| **Status** | `status:pending`, `status:assigned`, `status:in-progress`, `status:review`, `status:completed`, `status:failed` | State machine |
-| **Type** | `task:implementation`, `task:test-generation`, `task:documentation`, `task:bug-fix`, `task:refactor`, `task:architecture`, `task:research`, `task:review` | Maps to agent role |
-| **Priority** | `priority:critical`, `priority:high`, `priority:medium`, `priority:low` | Scheduling order |
-| **Role** | `role:developer`, `role:qa`, `role:architect`, etc. | Required agent role |
-| **Retry** | `retry:0`, `retry:1`, `retry:2`, `retry:3` | Retry counter |
-| **Governance** | `governance:clean`, `governance:violations`, `governance:lockdown` | AgentGuard status |
+| Category | Labels |
+|----------|--------|
+| **Status** | `status:pending`, `status:assigned`, `status:in-progress`, `status:review`, `status:completed`, `status:failed` |
+| **Type** | `task:implementation`, `task:test-generation`, `task:documentation`, `task:bug-fix`, `task:refactor`, `task:architecture`, `task:research`, `task:review` |
+| **Priority** | `priority:critical`, `priority:high`, `priority:medium`, `priority:low` |
+| **Role** | `role:developer`, `role:qa`, `role:architect`, `role:documentation`, `role:auditor` |
+| **Retry** | `retry:0`, `retry:1`, `retry:2`, `retry:3` |
+| **Governance** | `governance:clean`, `governance:violations`, `governance:lockdown` |
 
 ### State Machine
 
 ```
-                    ┌─────────────────────────────────────┐
-                    │                                     │
-                    ▼                                     │
-┌─────────┐   ┌──────────┐   ┌─────────────┐   ┌────────┴──┐
-│ pending  │──→│ assigned │──→│ in-progress │──→│  review    │
-└─────────┘   └──────────┘   └──────┬──────┘   └─────┬─────┘
-                                     │                 │
-                                     ▼                 ▼
-                               ┌──────────┐     ┌───────────┐
-                               │  failed  │     │ completed │
-                               └────┬─────┘     └───────────┘
+┌─────────┐   ┌──────────┐   ┌─────────────┐   ┌──────────┐
+│ pending  │──→│ assigned │──→│ in-progress │──→│  review  │
+└─────────┘   └──────────┘   └──────┬──────┘   └────┬─────┘
+                                     │                │
+                                     ▼                ▼
+                               ┌──────────┐    ┌───────────┐
+                               │  failed  │    │ completed │
+                               └────┬─────┘    └───────────┘
                                     │
                                     ▼ (if retries remain)
-                               ┌──────────┐
-                               │ pending  │ (retry)
-                               └──────────┘
+                               ┌─────────┐
+                               │ pending  │
+                               └─────────┘
 ```
 
-**Transitions**:
-
-| From | To | Trigger | Action |
-|------|----|---------|--------|
-| `pending` | `assigned` | Scheduler picks up issue | Add `role:X` label, post assignment comment |
-| `assigned` | `in-progress` | Agent starts work | Update label, post start comment with agent ID |
-| `in-progress` | `review` | Agent completes, PR created | Update label, link PR in comment |
-| `in-progress` | `failed` | Agent error, timeout, or lockdown | Update label, post error summary |
-| `failed` | `pending` | Retry (if `retry:N` < max) | Increment retry label, remove assignment |
-| `review` | `completed` | Human merges PR | Update label, post completion summary |
-
 ### Issue Body Template
-
-The scheduler expects issues to follow this structure:
 
 ```markdown
 ## Task Description
@@ -351,14 +633,20 @@ The scheduler expects issues to follow this structure:
 
 ## File Scope
 Allowed paths for this task:
+- `src/adapters/**`
+- `tests/ts/adapter-*.test.ts`
+
+## Protected Paths
+These paths must NOT be modified (enforced by capabilities):
+- `src/kernel/**`
 - `src/policy/**`
-- `tests/ts/policy-*.test.ts`
+- `src/invariants/**`
 
 ## Dependencies
 Depends on: #41, #39
 
 ## Branch
-`feature/rate-limiting`
+`agent/implementation/issue-42`
 
 ## Priority
 high
@@ -367,445 +655,134 @@ high
 3
 ```
 
-### Assignment Comment Format
-
-When the scheduler assigns an agent, it posts:
+### Assignment Comment
 
 ```markdown
 **AgentGuard Scheduler** assigned this task.
 
 - **Agent**: `agent_dev_1a2b`
 - **Role**: developer
-- **Worktree**: `feature/rate-limiting`
-- **Policy**: `sdlc-developer-policy`
+- **Capabilities**: read_resource(repo://), write_resource(src/**, tests/**), run_task(test, lint, build), propose_change(branch://agent/issue-42/*)
+- **Protected**: src/kernel/**, src/policy/**, src/invariants/**
 - **Max Actions**: 200
 - **Timeout**: 30m
 - **Run ID**: `run_1709913400_abc`
-
-Governance events will be logged to `.agentguard/events/run_1709913400_abc.jsonl`.
 ```
 
-### Completion Comment Format
+### Completion Comment
 
 ```markdown
 **AgentGuard Scheduler** — task completed.
 
 - **PR**: #87
 - **Actions**: 142 proposed, 138 allowed, 4 denied
-- **Escalation**: NORMAL (no violations)
+- **Capability denials**: 1 (attempted write to src/kernel/)
+- **Policy denials**: 2 (scope violations)
+- **Invariant violations**: 1 (blast radius exceeded, resolved after split)
+- **Escalation**: NORMAL
 - **Duration**: 18m 32s
-- **Files Modified**: 8
-- **Tests**: 12 new, all passing
 
 <details>
 <summary>Governance Summary</summary>
 
-| Metric | Value |
-|--------|-------|
-| Total evaluations | 142 |
-| Policy denials | 3 (scope violations) |
-| Invariant violations | 1 (blast radius exceeded, resolved) |
-| Escalation level | NORMAL |
-| Decision records | `.agentguard/decisions/run_1709913400_abc.jsonl` |
+| Layer | Evaluations | Denials |
+|-------|------------|---------|
+| Capabilities | 142 | 1 |
+| Policies | 141 | 2 |
+| Invariants | 139 | 1 |
 
 </details>
 ```
 
 ---
 
-## 6. External Scheduler Architecture
+## 8. Minimal Viable Architecture
 
-The scheduler is a standalone Node.js process (or GitHub Actions job) that orchestrates the autonomous SDLC loop. It does not modify AgentGuard — it consumes AgentGuard's governance APIs via the Claude Code hook mechanism.
+### Phase 1: One Planner + One Coder + Governance
 
-### Components
-
-```
-scheduler/
-├── index.ts              # Entry point
-├── config.ts             # Scheduler configuration
-├── poller.ts             # GitHub Issues poller (gh CLI)
-├── spawner.ts            # Agent process manager
-├── worktree.ts           # Git worktree lifecycle
-├── github.ts             # GitHub API interactions (issues, PRs)
-├── role-policy.ts        # Role → CLAUDE.md + policy generation
-└── metrics.ts            # Scheduler telemetry
-```
-
-### Configuration
-
-```yaml
-# scheduler.yaml
-scheduler:
-  pollIntervalMs: 60000          # Check for new tasks every 60s
-  maxConcurrentAgents: 3         # Total active agent processes
-  maxActionsPerTask: 200         # Kill agent after N actions
-  taskTimeoutMs: 1800000         # 30-minute timeout per task
-  maxRetriesPerTask: 3           # Max retry attempts
-
-github:
-  owner: "your-org"
-  repo: "your-repo"
-  baseBranch: "main"
-  issueLabels:                   # Only pick up issues with these labels
-    - "agentguard-task"
-
-governance:
-  policyDir: "./policies"        # Directory with role-scoped YAML policies
-  escalationPauseLevel: 2        # Pause scheduler at HIGH (2)
-  dryRun: false                  # Set true for testing
-
-roles:
-  developer:
-    maxConcurrent: 1
-    allowedActions: [file.read, file.write, file.delete, shell.exec, git.commit, npm.install]
-    ownedPaths: ["src/**", "tests/**"]
-    blastRadius: 20
-  qa:
-    maxConcurrent: 2
-    allowedActions: [file.read, file.write, test.run, test.run.unit, shell.exec, git.commit]
-    ownedPaths: ["tests/**"]
-    blastRadius: 15
-  # ... other roles
-```
-
-### Scheduling Algorithm
+The minimal loop that produces useful experiments:
 
 ```
-Priority ordering:
-  1. priority:critical tasks first
-  2. Within same priority: oldest issue first
-  3. Tasks with all dependencies met only
-  4. Tasks matching an available role slot
+roadmap.md (human-written)
+      ↓
+planner agent (read_resource only)
+      ↓
+GitHub Issue (task definition + file scope)
+      ↓
+coder agent (capability-bound)
+      ↓
+every tool call → AgentGuard kernel
+      ↓
+policy checks + invariant checks
+      ↓
+allow / deny
+      ↓
+commit → PR → human review → merge
+      ↓
+CI
 ```
 
-The scheduler maintains a simple in-memory map of active agents:
+### What Already Exists in AgentGuard
 
-```typescript
-interface ActiveAgent {
-  agentId: string;
-  role: string;
-  issueNumber: number;
-  worktreePath: string;
-  process: ChildProcess;
-  startedAt: number;
-  actionCount: number;
-}
-```
+| Component | Status | Location |
+|-----------|--------|----------|
+| Action type normalization (AAB) | Exists | `src/kernel/aab.ts` |
+| Policy evaluation | Exists | `src/policy/evaluator.ts` |
+| 6 invariant checks | Exists | `src/invariants/definitions.ts` |
+| Escalation monitor (4 levels) | Exists | `src/kernel/monitor.ts` |
+| JSONL event persistence | Exists | `src/events/jsonl.ts` |
+| GovernanceDecisionRecord | Exists | `src/kernel/decisions/` |
+| Pre-execution simulation | Exists | `src/kernel/simulation/` |
+| Evidence pack generation | Exists | `src/kernel/evidence.ts` |
+| Claude Code adapter | Exists | `src/adapters/claude-code.ts` |
+| `claude-init` (hook setup) | Exists | `src/cli/commands/claude-init.ts` |
+| `claude-hook` (PostToolUse/Bash) | Partial | `src/cli/commands/claude-hook.ts` |
 
-### Safety Limits
+### What Needs to Be Built
 
-| Limit | Default | Purpose |
-|-------|---------|---------|
-| Max actions per task | 200 | Prevent runaway agents |
-| Task timeout | 30 minutes | Prevent hung agents |
-| Max concurrent agents | 3 | Resource management |
-| Max retries per task | 3 | Prevent infinite retry loops |
-| Escalation pause level | HIGH (2) | Stop all agents if governance detects systemic issues |
+| Component | Priority | Description |
+|-----------|----------|-------------|
+| **PreToolUse hook for all tools** | P0 | Extend `claude-hook` to intercept all tools via PreToolUse, run `kernel.propose()`, block unauthorized actions. This is the syscall enforcement layer. |
+| **Capability token schema** | P1 | JSON token format with id, subject, operation, scopes, constraints, expiry. Validated before policy evaluation. |
+| **Capability validator in kernel** | P1 | New validation step in `kernel.propose()` between AAB normalization and policy evaluation. |
+| **External scheduler** | P1 | Standalone process: poll GitHub Issues, mint capabilities, create worktrees, spawn claude CLI, monitor agents, create PRs. |
+| **Role-to-capability mapping** | P2 | Expand role assignment into concrete capability tokens per task. |
 
-### Heartbeat & Health
+### Concrete End-to-End Flow
 
-The scheduler monitors agent processes:
-- **Process alive**: Check if `ChildProcess` is still running every 10s
-- **Action rate**: If an agent hasn't produced an action in 5 minutes, consider it stuck
-- **JSONL tail**: Watch the agent's JSONL event file for `ACTION_DENIED` events to track denial rate
-
----
-
-## 7. Policy Configuration
-
-Each agent role gets a YAML policy file that AgentGuard's evaluator processes. These use the existing `PolicyRule` format from `src/policy/evaluator.ts:4-14`.
-
-### Developer Policy (`policies/developer.yaml`)
-
-```yaml
-id: sdlc-developer-policy
-name: Developer Agent Policy
-description: Governs developer agents in the autonomous SDLC
-severity: 4
-
-rules:
-  # Developer can write to src/ and tests/
-  - action: file.write
-    effect: allow
-    conditions:
-      scope:
-        - "src/**"
-        - "tests/**"
-        - "package.json"
-    reason: Developer may modify source, tests, and package.json
-
-  # Developer cannot touch CI configs
-  - action: file.write
-    effect: deny
-    conditions:
-      scope:
-        - ".github/**"
-        - "Dockerfile"
-        - "docker-compose*"
-        - ".env*"
-    reason: CI and environment config changes require human approval
-
-  # Developer cannot touch docs
-  - action: file.write
-    effect: deny
-    conditions:
-      scope:
-        - "docs/**"
-        - "*.md"
-    reason: Documentation changes require documentation role
-
-  # No direct push — must go through PR
-  - action: git.push
-    effect: deny
-    reason: All changes must go through pull request review
-
-  # No force push ever
-  - action: git.force-push
-    effect: deny
-    reason: Force push rewrites shared history
-
-  # No destructive infra actions
-  - action:
-      - deploy.trigger
-      - infra.apply
-      - infra.destroy
-      - npm.publish
-    effect: deny
-    reason: Production-affecting actions require human authorization
-
-  # Allow reads universally
-  - action: file.read
-    effect: allow
-    reason: Reading is always safe
-
-  # Allow shell execution (for builds, tests, linting)
-  - action: shell.exec
-    effect: allow
-    reason: Shell access needed for build and test commands
-
-  # Allow commits (agent commits to worktree branch)
-  - action: git.commit
-    effect: allow
-    reason: Commits to feature branch are safe
-
-  # Allow branch creation
-  - action: git.branch.create
-    effect: allow
-    reason: Feature branches are safe to create
-
-  # Allow npm install
-  - action: npm.install
-    effect: allow
-    reason: Dependencies needed for development
-```
-
-### QA Policy (`policies/qa.yaml`)
-
-```yaml
-id: sdlc-qa-policy
-name: QA Agent Policy
-description: Governs QA/testing agents
-severity: 4
-
-rules:
-  # QA can write tests
-  - action: file.write
-    effect: allow
-    conditions:
-      scope:
-        - "tests/**"
-        - "**/*.test.ts"
-        - "**/*.test.js"
-        - "**/*.spec.ts"
-    reason: QA writes test files
-
-  # QA cannot modify source code
-  - action: file.write
-    effect: deny
-    conditions:
-      scope:
-        - "src/**"
-    reason: QA agents do not modify production code
-
-  # QA can run tests
-  - action:
-      - test.run
-      - test.run.unit
-      - test.run.integration
-    effect: allow
-    reason: Test execution is the QA role's primary function
-
-  # No push, no deploy
-  - action:
-      - git.push
-      - deploy.trigger
-      - npm.publish
-    effect: deny
-    reason: QA cannot push or deploy
-
-  - action: file.read
-    effect: allow
-    reason: Reading is always safe
-
-  - action: shell.exec
-    effect: allow
-    reason: Shell access needed for test commands
-
-  - action: git.commit
-    effect: allow
-    reason: Commits to feature branch are safe
-```
-
-### Architect Policy (`policies/architect.yaml`)
-
-```yaml
-id: sdlc-architect-policy
-name: Architect Agent Policy
-description: Governs architect agents (planning/spec only)
-severity: 3
-
-rules:
-  # Architects write specs and docs only
-  - action: file.write
-    effect: allow
-    conditions:
-      scope:
-        - "docs/**"
-        - "spec/**"
-        - "ARCHITECTURE.md"
-        - "CLAUDE.md"
-    reason: Architects write specifications and documentation
-
-  # Architects cannot modify source code or tests
-  - action:
-      - file.write
-      - file.delete
-    effect: deny
-    conditions:
-      scope:
-        - "src/**"
-        - "tests/**"
-        - "package.json"
-    reason: Architects do not modify source code
-
-  # No git, no shell, no deploy
-  - action:
-      - git.push
-      - git.commit
-      - shell.exec
-      - deploy.trigger
-      - npm.install
-    effect: deny
-    reason: Architects produce specs only
-
-  - action: file.read
-    effect: allow
-    reason: Reading is always safe
-```
-
-### Auditor Policy (`policies/auditor.yaml`)
-
-```yaml
-id: sdlc-auditor-policy
-name: Auditor Agent Policy
-description: Read-only review agent
-severity: 5
-
-rules:
-  # Auditor cannot write anything
-  - action:
-      - file.write
-      - file.delete
-      - file.move
-      - git.commit
-      - git.push
-      - npm.install
-      - npm.publish
-      - deploy.trigger
-    effect: deny
-    reason: Auditor is strictly read-only
-
-  # Auditor can read and run tests
-  - action: file.read
-    effect: allow
-    reason: Reading is the auditor's primary function
-
-  - action:
-      - test.run
-      - test.run.unit
-      - test.run.integration
-    effect: allow
-    reason: Auditor verifies test results
-
-  - action: shell.exec
-    effect: allow
-    conditions:
-      scope:
-        - "npm test*"
-        - "npm run ts:test*"
-        - "npm run lint*"
-        - "git log*"
-        - "git diff*"
-    reason: Auditor can run read-only shell commands
-```
-
-### Policy Selection
-
-The scheduler selects a policy file based on the agent's assigned role:
-
-```typescript
-function getPolicyPath(role: string): string {
-  return `policies/${role}.yaml`;
-}
-```
-
-When spawning the agent, the scheduler starts AgentGuard with the role-specific policy:
-
+**Setup (one-time)**:
 ```bash
-# In the agent's worktree:
-npx agentguard guard --policy policies/developer.yaml
+# Install AgentGuard hook in Claude Code
+npx agentguard claude-init
+
+# Configure policies
+cp policies/developer.yaml .agentguard/active-policy.yaml
 ```
 
-The agent's Claude Code hooks then route all tool calls through the AgentGuard kernel loaded with this policy.
+**Per-task flow**:
+
+1. **Human creates GitHub Issue** with `agentguard-task` + `task:implementation` + `priority:high` labels
+2. **Scheduler polls** and finds the pending issue
+3. **Scheduler mints capabilities** based on issue's file scope section
+4. **Scheduler creates worktree**: `git worktree add ../worktrees/issue-42 -b agent/implementation/issue-42`
+5. **Scheduler writes CLAUDE.md** with role template + task description
+6. **Scheduler writes capability token** to `.agentguard/capabilities/current.json` in the worktree
+7. **Scheduler spawns agent**: `claude --print -p "Complete the task described in CLAUDE.md"` in the worktree
+8. **Agent works** — every tool call triggers PreToolUse hook → AgentGuard kernel
+9. **Kernel evaluates**: capability check → policy check → invariant check → execute or deny
+10. **Agent completes** — commits to worktree branch
+11. **Scheduler creates PR** via `gh pr create`
+12. **Scheduler posts completion comment** on the issue with governance summary
+13. **Human reviews PR** — merges or requests changes
+14. **Scheduler cleans up** worktree
 
 ---
 
-## 8. Governance Integration
+## 9. Governance Integration
 
-### Current Hook Architecture
+### Hook Architecture
 
-AgentGuard integrates with Claude Code via hooks registered in `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "node /path/to/claude-hook.js" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Currently (`src/cli/commands/claude-hook.ts`), the hook:
-1. Reads JSON from stdin (the `ClaudeCodeHookPayload`)
-2. Only processes `Bash` tool uses
-3. Reports errors from stderr to stdout
-4. Always exits 0 (hooks must never fail)
-
-### Extended Hook for Full Governance
-
-For the autonomous SDLC, the hook must be extended to:
-1. Process **all** tool uses (not just Bash)
-2. Use **PreToolUse** hooks (to deny actions before execution)
-3. Route through the full `kernel.propose()` pipeline
-4. Return deny signals for unauthorized actions
-
-The extended hook architecture:
+The scheduler configures `.claude/settings.json` in each worktree:
 
 ```json
 {
@@ -816,7 +793,7 @@ The extended hook architecture:
         "hooks": [
           {
             "type": "command",
-            "command": "npx agentguard claude-hook --mode=pre --policy=policies/developer.yaml --run-id=run_abc"
+            "command": "npx agentguard claude-hook --mode=pre --run-id=run_abc"
           }
         ]
       }
@@ -836,610 +813,421 @@ The extended hook architecture:
 }
 ```
 
-**PreToolUse flow**:
+### PreToolUse Flow (Syscall Enforcement)
 
 ```
 Claude Code proposes tool call
   → PreToolUse hook fires
-  → claude-hook reads stdin JSON (ClaudeCodeHookPayload)
+  → claude-hook reads ClaudeCodeHookPayload from stdin
   → normalizeClaudeCodeAction(payload) → RawAgentAction
-  → Inject role/taskId into metadata from environment:
-      AGENTGUARD_ROLE=developer
-      AGENTGUARD_TASK_ID=42
-      AGENTGUARD_RUN_ID=run_abc
+  → Load capability token from .agentguard/capabilities/current.json
+  → Inject capability + role + taskId into RawAgentAction.metadata
   → kernel.propose(rawAction) → KernelResult
-  → If denied: write deny message to stdout, exit 0
-     (Claude Code shows the message and skips the tool call)
+  → If denied: write denial message to stdout (Claude Code shows it, skips tool call)
   → If allowed: exit 0 silently (tool call proceeds)
-  → Decision persisted to JSONL
+  → Decision persisted to .agentguard/events/<runId>.jsonl
 ```
 
-**PostToolUse flow**:
+### PostToolUse Flow (Telemetry)
 
 ```
 Claude Code completes tool call
   → PostToolUse hook fires
-  → claude-hook reads result (tool_output)
   → Log execution result to JSONL
-  → Check for error patterns (test failures, build errors)
-  → Update action count in shared state file
-  → If action count > max: write "Action limit reached" to stdout
+  → Increment action counter in .agentguard/state/counter.json
+  → If action count exceeds max: write "Action limit reached" to stdout
 ```
 
 ### Environment Variables
 
-The scheduler sets these environment variables when spawning the Claude Code agent:
-
 | Variable | Example | Purpose |
 |----------|---------|---------|
-| `AGENTGUARD_ROLE` | `developer` | Agent's assigned role |
+| `AGENTGUARD_ROLE` | `developer` | Agent's role |
 | `AGENTGUARD_TASK_ID` | `42` | GitHub Issue number |
-| `AGENTGUARD_RUN_ID` | `run_1709913400_abc` | Kernel run ID for this task |
-| `AGENTGUARD_POLICY` | `policies/developer.yaml` | Policy file path |
+| `AGENTGUARD_RUN_ID` | `run_1709913400_abc` | Kernel run ID |
+| `AGENTGUARD_POLICY` | `policies/developer.yaml` | Policy file |
 | `AGENTGUARD_MAX_ACTIONS` | `200` | Action limit |
-| `AGENTGUARD_DRY_RUN` | `false` | Dry-run mode |
+| `AGENTGUARD_CAP_FILE` | `.agentguard/capabilities/current.json` | Capability token path |
 
 ### Escalation Integration
 
-The monitor (`src/kernel/monitor.ts`) tracks escalation levels:
+The monitor (`src/kernel/monitor.ts`) tracks escalation:
 
-```typescript
-const ESCALATION = {
-  NORMAL: 0,    // All clear
-  ELEVATED: 1,  // Elevated denial rate
-  HIGH: 2,      // Significant violations detected
-  LOCKDOWN: 3,  // All actions denied
-};
-```
+| Level | Value | Behavior |
+|-------|-------|----------|
+| NORMAL | 0 | All clear |
+| ELEVATED | 1 | Elevated denial rate, continue with caution |
+| HIGH | 2 | Significant violations — scheduler pauses |
+| LOCKDOWN | 3 | All actions denied |
 
-The scheduler reads the monitor state by tailing the JSONL event stream for `StateChanged` events with escalation level updates. When the level reaches `HIGH` (configurable via `escalationPauseLevel`), the scheduler:
-
-1. Sends SIGTERM to all active agent processes
-2. Posts a comment on all in-progress issues: "Scheduler paused due to escalation level HIGH"
-3. Updates issue labels to `status:failed` with `governance:lockdown`
-4. Stops polling for new tasks
-5. Waits for human intervention (manual scheduler restart)
+When JSONL events show escalation reaching HIGH, the scheduler:
+1. Terminates all active agent processes
+2. Posts comments on all in-progress issues
+3. Updates issue labels to `governance:lockdown`
+4. Stops polling until human intervention
 
 ---
 
-## 9. GitHub Actions Workflow
+## 10. Execution Loop
 
-### Scheduled Autonomous Run
+### Minimal Scheduler Pseudocode
 
-```yaml
-# .github/workflows/agentguard-sdlc.yml
-name: AgentGuard Autonomous SDLC
-
-on:
-  schedule:
-    - cron: '0 */4 * * *'        # Every 4 hours
-  workflow_dispatch:
-    inputs:
-      task_type:
-        description: 'Task type filter (empty = all pending tasks)'
-        required: false
-        type: choice
-        options:
-          - ''
-          - implementation
-          - test-generation
-          - documentation
-          - bug-fix
-          - refactor
-      max_tasks:
-        description: 'Maximum tasks to process'
-        required: false
-        default: '1'
-        type: string
-      dry_run:
-        description: 'Dry run (evaluate but do not execute)'
-        required: false
-        default: 'false'
-        type: boolean
-
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-
-jobs:
-  autonomous-sdlc:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0           # Full history for worktrees
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build AgentGuard
-        run: npm run build:ts
-
-      - name: Run Scheduler (one-shot)
-        run: |
-          npx agentguard-scheduler run \
-            --max-tasks ${{ inputs.max_tasks || '1' }} \
-            --timeout 30m \
-            --task-type "${{ inputs.task_type }}" \
-            ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload governance artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: governance-audit-${{ github.run_id }}
-          path: .agentguard/
-          retention-days: 30
 ```
+INITIALIZE:
+  config = loadSchedulerConfig()
+  github = createGitHubClient(config.github)
 
-### Task Creation Workflow
+MAIN LOOP:
+  while scheduler.running:
 
-For creating tasks from issue templates:
+    // 1. POLL
+    issues = github.listIssues({
+      labels: ["agentguard-task", "status:pending"],
+      sort: "created", direction: "asc"
+    })
+    .filter(i => allDependenciesMet(i))
+    .sort(byPriority)
 
-```yaml
-# .github/workflows/create-sdlc-task.yml
-name: Create SDLC Task
+    if issues.length === 0 || activeAgents >= config.maxConcurrent:
+      sleep(config.pollIntervalMs)
+      continue
 
-on:
-  issues:
-    types: [labeled]
+    issue = issues[0]
 
-jobs:
-  validate-task:
-    if: contains(github.event.label.name, 'agentguard-task')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate issue format
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const issue = context.payload.issue;
-            const body = issue.body || '';
+    // 2. DETERMINE ROLE
+    role = mapTaskTypeToRole(extractLabel(issue, "task:"))
+    //   task:implementation → developer
+    //   task:test-generation → qa
+    //   task:architecture → architect
 
-            // Check required sections
-            const required = ['## Task Description', '## File Scope', '## Priority'];
-            const missing = required.filter(s => !body.includes(s));
+    // 3. MINT CAPABILITIES
+    filePaths = parseFileScope(issue.body)
+    capabilities = mintCapabilityBundle(role, {
+      taskId: issue.number,
+      scopes: filePaths,
+      protectedPaths: SELF_MODIFICATION_DENY_LIST,
+      expiresIn: config.taskTimeoutMs,
+    })
 
-            if (missing.length > 0) {
-              await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: issue.number,
-                body: `Missing required sections: ${missing.join(', ')}\n\nPlease update the issue body to include all required sections.`,
-              });
-              return;
-            }
+    // 4. CREATE WORKTREE
+    branch = `agent/${taskType}/issue-${issue.number}`
+    worktreePath = exec(`git worktree add ../worktrees/${branch} -b ${branch}`)
 
-            // Add status:pending label
-            await github.rest.issues.addLabels({
-              ...context.repo,
-              issue_number: issue.number,
-              labels: ['status:pending'],
-            });
+    // 5. PREPARE WORKTREE
+    writeFile(`${worktreePath}/CLAUDE.md`, renderRoleTemplate(role, issue))
+    writeFile(`${worktreePath}/.agentguard/capabilities/current.json`, capabilities)
+    writeFile(`${worktreePath}/.claude/settings.json`, renderHookSettings(runId))
+    copyFile(`policies/${role}.yaml`, `${worktreePath}/.agentguard/policy.yaml`)
+
+    // 6. UPDATE ISSUE
+    github.updateLabels(issue.number, { add: ["status:assigned", `role:${role}`] })
+    github.postComment(issue.number, renderAssignmentComment({...}))
+
+    // 7. SPAWN AGENT
+    agentProcess = spawn("claude", ["--print", "-p", renderTaskPrompt(issue)], {
+      cwd: worktreePath,
+      env: { AGENTGUARD_ROLE: role, AGENTGUARD_TASK_ID: issue.number, ... },
+      timeout: config.taskTimeoutMs,
+    })
+
+    github.updateLabels(issue.number, { add: ["status:in-progress"] })
+
+    // 8. ON COMPLETION
+    agentProcess.on("exit", async (code) => {
+      summary = parseJsonlEvents(`${worktreePath}/.agentguard/events/${runId}.jsonl`)
+
+      if code === 0 && summary.escalationLevel < HIGH:
+        exec(`git push origin ${branch}`, { cwd: worktreePath })
+        pr = github.createPR({
+          title: `[${role}] ${issue.title}`,
+          body: renderPRBody(issue, summary, capabilities),
+          head: branch, base: "main",
+        })
+        github.updateLabels(issue.number, { add: ["status:review"] })
+        github.postComment(issue.number, renderCompletionComment(pr, summary))
+      else:
+        retries = extractRetryCount(issue)
+        if retries < config.maxRetries:
+          github.updateLabels(issue.number, {
+            add: ["status:pending", `retry:${retries + 1}`],
+            remove: ["status:in-progress"]
+          })
+        else:
+          github.updateLabels(issue.number, { add: ["status:failed"] })
+        github.postComment(issue.number, renderFailureComment(summary))
+
+      exec(`git worktree remove ${worktreePath} --force`)
+    })
 ```
 
 ---
 
-## 10. Telemetry & Observability
+## 11. Policy Configuration
 
-### JSONL Event Envelope
+Role-scoped YAML policies using AgentGuard's existing `PolicyRule` format.
 
-Every governance event is persisted to `.agentguard/events/<runId>.jsonl`. The autonomous SDLC extends the existing event envelope with optional agent/task context fields. This is backward-compatible — older AgentGuard consumers ignore unknown fields.
+### Developer Policy (`policies/developer.yaml`)
+
+```yaml
+id: sdlc-developer-policy
+name: Developer Agent Policy
+description: Governs developer agents — allows src/ and tests/ modifications
+severity: 4
+
+rules:
+  - action: file.write
+    effect: allow
+    conditions:
+      scope: ["src/**", "tests/**", "package.json"]
+    reason: Developer may modify source, tests, and package.json
+
+  - action: file.write
+    effect: deny
+    conditions:
+      scope: [".github/**", "Dockerfile", ".env*", "agentguard.yaml"]
+    reason: CI, environment, and governance config require human approval
+
+  - action: [file.write, file.delete]
+    effect: deny
+    conditions:
+      scope: ["src/kernel/**", "src/policy/**", "src/invariants/**"]
+    reason: Self-modification protection — governance code is human-only
+
+  - action: [git.push, deploy.trigger, infra.apply, infra.destroy, npm.publish]
+    effect: deny
+    reason: Production-affecting actions require human authorization
+
+  - action: file.read
+    effect: allow
+    reason: Reading is always safe
+
+  - action: [shell.exec, git.commit, git.branch.create, npm.install]
+    effect: allow
+    reason: Development operations within worktree are safe
+```
+
+### QA Policy (`policies/qa.yaml`)
+
+```yaml
+id: sdlc-qa-policy
+name: QA Agent Policy
+severity: 4
+
+rules:
+  - action: file.write
+    effect: allow
+    conditions:
+      scope: ["tests/**", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts"]
+    reason: QA writes test files
+
+  - action: file.write
+    effect: deny
+    conditions:
+      scope: ["src/**"]
+    reason: QA agents do not modify production code
+
+  - action: [test.run, test.run.unit, test.run.integration]
+    effect: allow
+    reason: Test execution is QA's primary function
+
+  - action: [git.push, deploy.trigger, npm.publish]
+    effect: deny
+    reason: QA cannot push or deploy
+
+  - action: [file.read, shell.exec, git.commit]
+    effect: allow
+    reason: Basic development operations
+```
+
+### Auditor Policy (`policies/auditor.yaml`)
+
+```yaml
+id: sdlc-auditor-policy
+name: Auditor Agent Policy
+severity: 5
+
+rules:
+  - action: [file.write, file.delete, file.move, git.commit, git.push, npm.install, deploy.trigger]
+    effect: deny
+    reason: Auditor is strictly read-only
+
+  - action: [file.read, test.run, test.run.unit, test.run.integration]
+    effect: allow
+    reason: Auditor reads code and verifies tests
+```
+
+---
+
+## 12. Telemetry & Observability
+
+### What Already Exists
+
+AgentGuard already logs every action as structured events. The `GovernanceDecisionRecord` (`src/kernel/decisions/types.ts`) captures:
+
+- `action.type` — the syscall (e.g., `file.write`)
+- `action.target` — the resource (e.g., `src/kernel/monitor.ts`)
+- `action.agent` — the agent ID
+- `outcome` — `allow` or `deny`
+- `reason` — human-readable explanation
+- `policy.matchedPolicyId` — which policy rule applied
+- `invariants.violations[]` — which correctness checks failed
+- `monitor.escalationLevel` — current escalation state
+- `execution.success` — whether the action succeeded
+
+Events are persisted to `.agentguard/events/<runId>.jsonl`, one JSON per line.
+
+### Enhanced Telemetry for Autonomous SDLC
+
+The autonomous loop adds capability context to each event (via `metadata`):
 
 ```json
 {
   "id": "evt_1709913600_42",
-  "kind": "ActionAllowed",
+  "kind": "ActionDenied",
   "timestamp": 1709913600000,
   "fingerprint": "a1b2c3d4",
-  "payload": {
-    "intent": {
-      "action": "file.write",
-      "target": "src/tasks/registry.ts",
-      "agent": "claude-code",
-      "destructive": false,
-      "metadata": {
-        "role": "developer",
-        "taskId": 42,
-        "pipelineStage": "implementation",
-        "hook": "PreToolUse"
-      }
-    },
-    "decision": "allow",
-    "matchedRule": {
-      "action": "file.write",
-      "effect": "allow",
-      "conditions": { "scope": ["src/**", "tests/**"] }
-    },
-    "reason": "Developer may modify source and tests"
+  "actionType": "file.write",
+  "target": "src/kernel/kernel.ts",
+  "reason": "Self-modification protection — governance code is human-only",
+  "metadata": {
+    "agent_id": "agent_dev_1a2b",
+    "role": "developer",
+    "task_id": 42,
+    "capability_id": "cap_0192",
+    "capability_scope_match": false,
+    "layer": "capability",
+    "run_id": "run_1709913400_abc"
   }
 }
 ```
 
-### Key Telemetry Events
+### The Dogfooding Dividend
 
-| Event Kind | When | Key Fields |
-|-----------|------|------------|
-| `ActionRequested` | Agent proposes tool call | `action`, `target`, `agent`, `metadata.role`, `metadata.taskId` |
-| `ActionAllowed` | Policy allows the action | `decision`, `matchedRule`, `reason` |
-| `ActionDenied` | Policy or invariant denies | `decision`, `reason`, `severity` |
-| `ActionExecuted` | Action completed successfully | `executionResult` |
-| `ActionFailed` | Action execution error | `error` |
-| `InvariantViolation` | Invariant check failed | `invariantId`, `expected`, `actual` |
-| `BlastRadiusExceeded` | Too many files affected | `filesAffected`, `limit` |
-| `StateChanged` | Escalation level changed | `from`, `to`, `reason` |
-| `PolicyDenied` | Explicit policy denial | `rule`, `reason` |
+Running this on AgentGuard's own codebase produces empirical data on:
 
-### GitHub Issue Comments as Audit Trail
+| Signal | What It Tells You |
+|--------|------------------|
+| Most-denied action types | Which operations agents attempt unsafely |
+| Capability scope violations | Where agents exceed their authority |
+| Policy denial patterns | Which governance rules produce the most friction |
+| Invariant violation frequency | Which correctness constraints agents hit |
+| Escalation triggers | What behavior patterns cause systemic denial rates |
+| Self-modification attempts | How often agents try to weaken their own governance |
+| Code quality drift | Whether agent-written code maintains standards |
 
-The scheduler posts structured comments on issues at key lifecycle points:
-
-1. **Assignment**: Agent ID, role, policy, run ID
-2. **Progress** (every 50 actions): Action count, denial count, escalation level
-3. **Completion**: PR link, full governance summary, metrics
-4. **Failure**: Error details, retry count, escalation status
-
-### Metrics Dashboard
-
-The scheduler exposes metrics for monitoring:
-
-```typescript
-interface SchedulerMetrics {
-  // Task metrics
-  tasksCompleted: number;
-  tasksFailed: number;
-  tasksRetried: number;
-  tasksPending: number;
-
-  // Agent metrics
-  activeAgents: number;
-  totalAgentsSpawned: number;
-
-  // Governance metrics
-  totalActionsProposed: number;
-  totalActionsAllowed: number;
-  totalActionsDenied: number;
-  totalInvariantViolations: number;
-  currentEscalationLevel: number;
-
-  // Performance
-  averageTaskDurationMs: number;
-  averageActionsPerTask: number;
-  uptimeMs: number;
-}
-```
-
-These can be exposed via stdout JSON (for GitHub Actions), a local metrics file, or a webhook.
+This telemetry is the raw material for:
+- Policy hardening (every violation → policy improvement)
+- Agent safety research (real failure modes, not theoretical ones)
+- Product evidence (AgentGuard's own development proves its governance model works)
 
 ---
 
-## 11. Execution Loop
+## 13. Recommended AgentGuard Enhancements
 
-### Complete Scheduler Pseudocode
+Prioritized changes to AgentGuard's codebase to support the autonomous SDLC:
 
-```
-INITIALIZE:
-  config = loadSchedulerConfig("scheduler.yaml")
-  github = createGitHubClient(config.github)
-  metrics = createMetrics()
+### Priority 0 — Extended `claude-hook` (Syscall Enforcement Layer)
 
-MAIN LOOP:
-  while scheduler.status === "running":
+**File**: `src/cli/commands/claude-hook.ts`
 
-    // 1. POLL FOR TASKS
-    issues = github.listIssues({
-      labels: ["agentguard-task", "status:pending"],
-      sort: "created",
-      direction: "asc",
-    })
+Currently: PostToolUse only, Bash only, reports errors.
+Needed: PreToolUse for all tools, full `kernel.propose()` evaluation, deny messages to stdout.
 
-    // 2. FILTER & PRIORITIZE
-    ready = issues
-      .filter(issue => allDependenciesMet(issue))
-      .sort(byPriority)  // critical > high > medium > low
+This is the **critical enabler**. Without PreToolUse enforcement, agents can execute unauthorized actions before governance evaluates them.
 
-    if ready.length === 0:
-      sleep(config.pollIntervalMs)
-      continue
-
-    if activeAgents.size >= config.maxConcurrentAgents:
-      sleep(config.pollIntervalMs)
-      continue
-
-    // 3. SELECT TASK
-    issue = ready[0]
-    taskType = extractLabel(issue, "task:")
-    role = mapTaskTypeToRole(taskType)
-    //   task:implementation → developer
-    //   task:test-generation → qa
-    //   task:architecture → architect
-    //   task:documentation → documentation
-    //   task:bug-fix → developer
-    //   task:review → auditor
-
-    if activeAgentsForRole(role) >= config.roles[role].maxConcurrent:
-      continue  // Role slot full, try next issue
-
-    // 4. ASSIGN TASK
-    agentId = generateAgentId(role)  // "agent_dev_1a2b"
-    runId = generateRunId()          // "run_1709913400_abc"
-
-    github.updateIssueLabels(issue.number, {
-      add: ["status:assigned", `role:${role}`],
-      remove: ["status:pending"],
-    })
-
-    github.postComment(issue.number, formatAssignmentComment({
-      agentId, role, runId, maxActions: config.maxActionsPerTask,
-    }))
-
-    // 5. CREATE WORKTREE
-    branch = `agentguard/${taskType}/${issue.number}`
-    worktreePath = await createWorktree(branch, config.github.baseBranch)
-    //   git worktree add ../worktrees/<branch> -b <branch> origin/<baseBranch>
-
-    // 6. PREPARE WORKTREE
-    writeClaudeMd(worktreePath, role, issue)
-    //   Write role-specific CLAUDE.md with task description and file scope
-
-    writeClaudeSettings(worktreePath, {
-      hooks: {
-        PreToolUse: [{
-          matcher: "*",
-          hooks: [{
-            type: "command",
-            command: `npx agentguard claude-hook --mode=pre --policy=${getPolicyPath(role)} --run-id=${runId}`,
-          }],
-        }],
-        PostToolUse: [{
-          matcher: "*",
-          hooks: [{
-            type: "command",
-            command: `npx agentguard claude-hook --mode=post --run-id=${runId}`,
-          }],
-        }],
-      },
-    })
-
-    copyPolicyFile(worktreePath, role)
-    //   Copy policies/<role>.yaml into the worktree
-
-    // 7. SPAWN AGENT
-    agentProcess = spawn("claude", [
-      "--print",                        // Non-interactive mode
-      "--allowedTools", toolsForRole(role),
-      "-p", formatTaskPrompt(issue),    // Task prompt from issue body
-    ], {
-      cwd: worktreePath,
-      env: {
-        ...process.env,
-        AGENTGUARD_ROLE: role,
-        AGENTGUARD_TASK_ID: String(issue.number),
-        AGENTGUARD_RUN_ID: runId,
-        AGENTGUARD_POLICY: getPolicyPath(role),
-        AGENTGUARD_MAX_ACTIONS: String(config.maxActionsPerTask),
-      },
-      timeout: config.taskTimeoutMs,
-    })
-
-    github.updateIssueLabels(issue.number, {
-      add: ["status:in-progress"],
-      remove: ["status:assigned"],
-    })
-
-    activeAgents.set(agentId, {
-      agentId, role, issueNumber: issue.number,
-      worktreePath, process: agentProcess,
-      startedAt: Date.now(), actionCount: 0,
-    })
-
-    // 8. MONITOR AGENT (async)
-    agentProcess.on("exit", async (code) => {
-      agent = activeAgents.get(agentId)
-      activeAgents.delete(agentId)
-
-      governanceSummary = parseJsonlEvents(
-        `${worktreePath}/.agentguard/events/${runId}.jsonl`
-      )
-
-      if code === 0 && governanceSummary.escalationLevel < ESCALATION.HIGH:
-        // SUCCESS PATH
-        // Push branch and create PR
-        await exec(`git push origin ${branch}`, { cwd: worktreePath })
-
-        pr = await github.createPR({
-          title: `[${role}] ${issue.title}`,
-          body: formatPRBody(issue, governanceSummary),
-          head: branch,
-          base: config.github.baseBranch,
-        })
-
-        github.updateIssueLabels(issue.number, {
-          add: ["status:review", "governance:clean"],
-          remove: ["status:in-progress"],
-        })
-
-        github.postComment(issue.number, formatCompletionComment({
-          pr, governanceSummary,
-        }))
-
-      else:
-        // FAILURE PATH
-        retryCount = extractRetryCount(issue)
-
-        if retryCount < config.maxRetriesPerTask:
-          github.updateIssueLabels(issue.number, {
-            add: ["status:pending", `retry:${retryCount + 1}`],
-            remove: ["status:in-progress", `retry:${retryCount}`, `role:${role}`],
-          })
-          github.postComment(issue.number, formatFailureComment({
-            reason: code !== 0 ? "Agent process exited with error" : "Escalation level too high",
-            governanceSummary,
-            retryCount: retryCount + 1,
-            maxRetries: config.maxRetriesPerTask,
-          }))
-        else:
-          github.updateIssueLabels(issue.number, {
-            add: ["status:failed", "governance:violations"],
-            remove: ["status:in-progress"],
-          })
-          github.postComment(issue.number, formatFailureComment({
-            reason: "Max retries exhausted",
-            governanceSummary,
-            retryCount,
-            maxRetries: config.maxRetriesPerTask,
-          }))
-
-      // Cleanup worktree
-      await exec(`git worktree remove ${worktreePath} --force`)
-
-      metrics.update(governanceSummary)
-    })
-
-    // 9. CHECK GLOBAL ESCALATION
-    // Periodically check all active agents' JSONL streams
-    if anyAgentAtEscalation(ESCALATION.HIGH):
-      scheduler.pause()
-      terminateAllAgents()
-      for each activeIssue:
-        github.postComment(activeIssue, "Scheduler paused: escalation level HIGH detected")
-        github.updateIssueLabels(activeIssue, { add: ["governance:lockdown"] })
-```
-
-### Agent Worker Lifecycle
-
-```
-AGENT PROCESS (claude CLI in worktree):
-
-  1. Claude Code starts, reads CLAUDE.md with:
-     - Role assignment
-     - Task description (from GitHub Issue)
-     - File scope constraints
-     - Governance notice
-
-  2. For each tool call Claude proposes:
-     a. PreToolUse hook fires → agentguard claude-hook --mode=pre
-     b. Hook reads ClaudeCodeHookPayload from stdin
-     c. normalizeClaudeCodeAction(payload) → RawAgentAction
-     d. RawAgentAction.metadata enriched with:
-        - role (from AGENTGUARD_ROLE env)
-        - taskId (from AGENTGUARD_TASK_ID env)
-     e. kernel.propose(rawAction) → KernelResult
-     f. If KernelResult.allowed === false:
-        - Write denial message to stdout
-        - Claude Code sees the message, skips tool call
-     g. If KernelResult.allowed === true:
-        - Exit silently, tool call proceeds
-
-  3. PostToolUse hook fires → agentguard claude-hook --mode=post
-     a. Log execution result to JSONL
-     b. Increment action counter in shared state
-
-  4. Agent completes task:
-     a. Creates commits on worktree branch
-     b. Exits with code 0
-
-  5. Agent fails:
-     a. Exits with non-zero code
-     b. Scheduler detects via process.on("exit")
-```
-
----
-
-## 12. Recommended AgentGuard Enhancements
-
-The design above works with AgentGuard's current interfaces by passing role/task context through `metadata`. However, the following enhancements would make governance more precise and the integration cleaner:
-
-### Priority 1 — Extended Hook Command
-
-Extend `src/cli/commands/claude-hook.ts` to support full governance mode:
-
+**Changes**:
 - Accept `--mode=pre|post` flag
-- Accept `--policy=<file>` to load a policy
-- Accept `--run-id=<id>` for session continuity
-- In `pre` mode: run `kernel.propose()` and write deny messages to stdout
-- In `post` mode: log execution results to JSONL
+- Accept `--policy=<file>` and `--run-id=<id>` flags
+- In `pre` mode: load policy, load capability token, run `kernel.propose()`, write deny to stdout if blocked
+- In `post` mode: log execution result, update action counter
 - Process all tool types (not just Bash)
 
-This is the **critical enabler** for the autonomous SDLC — without PreToolUse governance, agents can execute unauthorized actions.
+### Priority 1 — Capability Token Validation
 
-### Priority 2 — Role and Task Fields on Core Interfaces
+**New file**: `src/kernel/capability.ts`
 
-Add `role?: string` and `taskId?: string` to:
-- `RawAgentAction` (`src/kernel/aab.ts:17-27`)
-- `NormalizedIntent` (`src/policy/evaluator.ts:24-33`)
+```typescript
+interface CapabilityToken {
+  id: string;
+  subject: string;
+  operation: string;
+  scopes: string[];
+  constraints?: {
+    deny?: string[];
+    max_files?: number;
+    max_diff_lines?: number;
+    requires_artifacts?: string[];
+  };
+  issued_to: string;
+  issued_by: string;
+  issued_at: string;
+  expires_at: string;
+  task_id: string;
+}
 
-This makes role/task context first-class rather than buried in `metadata`.
+function validateCapability(token: CapabilityToken, intent: NormalizedIntent): CapabilityResult;
+```
+
+**Modify**: `src/kernel/kernel.ts` — add capability validation before `monitor.process()` in `propose()`.
+
+### Priority 2 — Role/Task as First-Class Fields
+
+**Modify**: `src/kernel/aab.ts` — add `role?: string` and `taskId?: string` to `RawAgentAction`
+**Modify**: `src/policy/evaluator.ts` — add `role?: string` and `taskId?: string` to `NormalizedIntent`
 
 ### Priority 3 — Role-Based Policy Conditions
 
-Extend `PolicyRule.conditions` (`src/policy/evaluator.ts:7-12`):
+**Modify**: `src/policy/evaluator.ts` — add `roles?: string[]` and `ownership?: string[]` to `PolicyRule.conditions`
 
-```typescript
-conditions?: {
-  scope?: string[];
-  limit?: number;
-  branches?: string[];
-  requireTests?: boolean;
-  roles?: string[];          // NEW: match against intent.role
-  ownership?: string[];      // NEW: directory patterns the role owns
-};
-```
+### Priority 4 — New Invariants
 
-Add `matchRole()` and `matchOwnership()` alongside existing `matchAction()`, `matchScope()`, `matchConditions()`.
+**Modify**: `src/invariants/definitions.ts`:
+- `architectural-boundary`: Files must be within role's owned paths
+- `self-modification-guard`: Governance-critical paths cannot be modified by agents
+- `build-must-succeed`: Build passing before commit/push
 
-### Priority 4 — Rate Limiting in Monitor
+### Priority 5 — New Event Kinds
 
-Extend `src/kernel/monitor.ts` with per-agent rate limiting:
-- Track action timestamps per agent: `Map<string, number[]>`
-- Track retry counts per agent per action type: `Map<string, Map<string, number>>`
-- Configurable limits: `maxActions` per `windowMs`
-
-### Priority 5 — New Invariants
-
-Add to `DEFAULT_INVARIANTS` in `src/invariants/definitions.ts`:
-- **`architectural-boundary`**: Verify `state.modifiedFiles` are within `state.allowedPaths`
-- **`build-must-succeed`**: Require build passing before commit/push
-- **`ci-compatibility`**: CI config changes (`.github/**`, `Dockerfile`) require explicit authorization
-
-### Priority 6 — New Event Kinds
-
-Add to the `EventKind` union in `src/core/types.ts`:
-- Task lifecycle: `TaskCreated`, `TaskAssigned`, `TaskStarted`, `TaskCompleted`, `TaskFailed`
-- Multi-agent: `AgentRegistered`, `ConflictDetected`, `RateLimitExceeded`
+**Modify**: `src/core/types.ts` — add: `CapabilityDenied`, `CapabilityExpired`, `TaskAssigned`, `TaskCompleted`, `AgentRegistered`
 
 ---
 
-## 13. Open Questions & Future Work
+## 14. Open Questions & Future Work
 
 ### Open Questions
 
-1. **PreToolUse hook blocking**: Claude Code's PreToolUse hooks can display messages but may not fully block tool execution in all cases. Need to verify the exact blocking semantics for each tool type.
+1. **PreToolUse blocking semantics**: Does Claude Code's PreToolUse hook reliably block tool execution when stdout contains a denial message? This needs empirical verification for each tool type.
 
-2. **Agent prompt engineering**: The effectiveness of role constraints depends heavily on the CLAUDE.md system prompt. How much can we rely on prompt-based constraints vs. governance-based enforcement? (Answer: governance is the backstop — prompts reduce denial noise.)
+2. **Capability token signing**: For the minimal viable version, local JSON files are sufficient. For multi-machine deployments, capability tokens need cryptographic signing. What signing scheme? (HMAC is simplest, JWT is most portable.)
 
-3. **Dependency resolution**: When task A depends on task B, and task B produces a PR that hasn't been merged yet, should task A work against task B's branch? Or wait for merge to main?
+3. **Self-modification boundary**: Which files constitute "governance-critical" code? The current list (`src/kernel/**`, `src/policy/**`, `src/invariants/**`) may be too broad or too narrow.
 
-4. **Concurrent worktree limits**: Git worktrees share the object store. With many agents, `git gc` and `git repack` may become bottlenecks. What's the practical limit?
+4. **Dependency resolution**: When task A depends on task B's unmerged PR, should task A work against task B's branch? Or wait for merge?
 
-5. **Cost management**: Each agent invocation consumes API tokens. Should the scheduler have a per-run or per-day token budget?
+5. **Cost management**: Each agent invocation consumes API tokens. Should the scheduler enforce a per-task or per-day token budget?
 
 ### Future Work
 
-- **Parallel pipeline execution**: Run independent tasks (e.g., tests for different modules) in parallel across multiple agents.
-- **Agent memory**: Persist agent learnings (common denial reasons, preferred code patterns) across task invocations.
-- **Automated review**: Use an auditor agent to review PRs before human review, reducing review burden.
-- **Metrics dashboard**: Web UI showing scheduler status, active agents, governance metrics, task history.
-- **Webhook notifications**: Slack/Discord alerts for task completion, failures, and escalation events.
-- **Policy learning**: Analyze denial patterns to suggest policy rule adjustments.
-- **Multi-repo support**: Orchestrate agents across multiple repositories with cross-repo dependency tracking.
-- **Conflict detection**: When two agents' worktrees modify overlapping files, detect potential merge conflicts early and either serialize the tasks or alert a human.
+- **Capability delegation**: Planner agents issue scoped capabilities to downstream agents (requires trust model for the planner).
+- **Capability revocation**: Real-time revocation when escalation level rises (currently capabilities have fixed expiry).
+- **Parallel pipelines**: Independent tasks in separate worktrees, running concurrently.
+- **Agent memory**: Persist learnings across tasks (common denial reasons, preferred patterns).
+- **Automated review**: Auditor agent reviews PRs before human review.
+- **Conflict detection**: Detect overlapping file modifications across concurrent worktrees.
+- **Policy learning**: Analyze denial telemetry to suggest policy rule adjustments.
+- **Safety benchmarks**: Publish agent failure telemetry as a reproducible safety benchmark.
+
+### The Long-Term Vision
+
+If the reflexive model works — AgentGuard governing its own development — the system demonstrates a concrete answer to the question: "How do you let AI agents do real work while maintaining deterministic control?"
+
+The answer is not "trust the model" or "add guardrails." The answer is:
+
+```
+capability-secured syscall interface
+  → deterministic policy evaluation
+  → correctness invariant enforcement
+  → structured audit trail
+```
+
+That is the architectural primitive. Everything else is scaffolding.
