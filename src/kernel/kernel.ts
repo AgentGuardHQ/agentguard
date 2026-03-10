@@ -23,7 +23,8 @@ import {
 import { simpleHash } from '../core/hash.js';
 import type { GovernanceDecisionRecord, DecisionSink } from './decisions/types.js';
 import { buildDecisionRecord } from './decisions/factory.js';
-import type { SimulatorRegistry } from './simulation/types.js';
+import type { SimulatorRegistry, ImpactForecast } from './simulation/types.js';
+import { buildImpactForecast } from './simulation/forecast.js';
 import type { SeededRng } from '../core/rng.js';
 import { generateSeed, createSeededRng } from '../core/rng.js';
 
@@ -204,19 +205,25 @@ export function createKernel(config: KernelConfig = {}): Kernel {
 
       // 5b. ALLOWED — run simulation if available, then re-check
       let simulationResult = null;
+      let forecast: ImpactForecast | null = null;
 
       if (simulators && simulators.find(decision.intent)) {
         const simulator = simulators.find(decision.intent)!;
         try {
           simulationResult = await simulator.simulate(decision.intent, systemContext);
 
-          // Emit simulation event
+          // Build structured impact forecast
+          forecast = buildImpactForecast(decision.intent, simulationResult, blastRadiusThreshold);
+          simulationResult.forecast = forecast;
+
+          // Emit simulation event with forecast data
           const simEvent = createEvent(SIMULATION_COMPLETED, {
             simulatorId: simulationResult.simulatorId,
             riskLevel: simulationResult.riskLevel,
             blastRadius: simulationResult.blastRadius,
             predictedChanges: simulationResult.predictedChanges,
             durationMs: simulationResult.durationMs,
+            forecast,
           });
           allEvents.push(simEvent);
           sinkEvent(simEvent);
@@ -280,6 +287,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 riskLevel: simulationResult.riskLevel,
                 simulatorId: simulationResult.simulatorId,
                 durationMs: simulationResult.durationMs,
+                forecast: forecast || undefined,
               };
 
               const decisionRecord = buildDecisionRecord({
@@ -416,6 +424,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
             riskLevel: simulationResult.riskLevel,
             simulatorId: simulationResult.simulatorId,
             durationMs: simulationResult.durationMs,
+            forecast: forecast || undefined,
           }
         : null;
 

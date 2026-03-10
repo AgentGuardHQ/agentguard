@@ -3,6 +3,22 @@
 
 import type { NormalizedIntent } from '../../policy/evaluator.js';
 
+/** Structured impact forecast for predictive governance */
+export interface ImpactForecast {
+  /** File paths predicted to be changed by this action */
+  predictedFiles: string[];
+  /** Downstream modules or packages impacted by the change */
+  dependenciesAffected: string[];
+  /** Likelihood of test failure (0–100) based on scope and sensitivity of changes */
+  testRiskScore: number;
+  /** Weighted blast radius score from the blast-radius computation engine */
+  blastRadiusScore: number;
+  /** Risk level derived from the combined forecast assessment */
+  riskLevel: 'low' | 'medium' | 'high';
+  /** Factors that contributed to the blast radius score */
+  blastRadiusFactors: Array<{ name: string; multiplier: number; reason: string }>;
+}
+
 /** Result of simulating an action before execution */
 export interface SimulationResult {
   /** Human-readable list of predicted changes */
@@ -17,6 +33,8 @@ export interface SimulationResult {
   simulatorId: string;
   /** How long the simulation took (ms) */
   durationMs: number;
+  /** Structured impact forecast (populated by buildImpactForecast) */
+  forecast?: ImpactForecast;
 }
 
 /** An action simulator predicts the impact of an action before execution */
