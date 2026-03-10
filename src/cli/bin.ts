@@ -108,6 +108,23 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard import ./exports/run.agentguard.jsonl --as custom_run_id',
     ],
   },
+  'ci-check': {
+    name: 'agentguard ci-check',
+    description: 'CI governance verification — check a session for violations',
+    usage: 'agentguard ci-check <session-file> [flags]',
+    flags: [
+      { flag: '--fail-on-violation', description: 'Exit 1 if invariant violations found' },
+      { flag: '--fail-on-denial', description: 'Exit 1 if any actions were denied' },
+      { flag: '--json', description: 'Output result as JSON' },
+      { flag: '--last', description: 'Use the most recent local run' },
+      { flag: '--base-dir, -d <dir>', description: 'Base directory for event storage' },
+    ],
+    examples: [
+      'agentguard ci-check session.agentguard.jsonl --fail-on-violation',
+      'agentguard ci-check --last --fail-on-denial --json',
+      'agentguard ci-check session.jsonl --fail-on-violation --fail-on-denial',
+    ],
+  },
   simulate: {
     name: 'agentguard simulate',
     description: 'Simulate an action and display predicted impact without executing',
@@ -212,6 +229,17 @@ async function main() {
       break;
     }
 
+    case 'ci-check': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS['ci-check']));
+        break;
+      }
+      const { ciCheck } = await import('./commands/ci-check.js');
+      const code = await ciCheck(args.slice(1));
+      process.exit(code);
+      break;
+    }
+
     case 'simulate': {
       if (wantsHelp) {
         console.log(formatHelp(COMMANDS.simulate));
@@ -307,6 +335,10 @@ function printHelp(): void {
     agentguard plugin install <path>          Install a plugin from a local path
     agentguard plugin remove <id>             Remove a plugin by ID
     agentguard plugin search [query]          Search for plugins on npm
+
+  \x1b[1mCI/CD:\x1b[0m
+    agentguard ci-check <session>             Verify governance session in CI
+    agentguard ci-check --last                Check most recent run locally
 
   \x1b[1mIntegration:\x1b[0m
     agentguard claude-init                    Set up Claude Code hook integration
