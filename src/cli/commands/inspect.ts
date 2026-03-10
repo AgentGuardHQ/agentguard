@@ -13,6 +13,10 @@ import type { GovernanceDecisionRecord } from '../../kernel/decisions/types.js';
 const BASE_DIR = '.agentguard';
 const EVENTS_DIR = join(BASE_DIR, 'events');
 
+function isPolicyTraceEvent(e: DomainEvent): e is PolicyTraceEvent & DomainEvent {
+  return e.kind === 'PolicyTraceRecorded';
+}
+
 function loadEvents(runId: string): DomainEvent[] {
   const filePath = getEventFilePath(runId);
   if (!existsSync(filePath)) {
@@ -116,9 +120,7 @@ export async function inspect(args: string[]): Promise<void> {
 
   // Show policy evaluation traces if --traces flag is present
   if (showTraces) {
-    const traceEvents = events.filter(
-      (e) => e.kind === 'PolicyTraceRecorded'
-    ) as unknown as PolicyTraceEvent[];
+    const traceEvents = events.filter(isPolicyTraceEvent);
     if (traceEvents.length > 0) {
       process.stderr.write(renderPolicyTraces(traceEvents));
     } else {
