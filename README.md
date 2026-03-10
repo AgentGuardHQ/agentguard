@@ -149,8 +149,9 @@ agentguard plugin install <path>          # Install a plugin from a local path
 agentguard plugin remove <id>            # Remove a plugin by ID
 agentguard plugin search [query]          # Search for plugins on npm
 
-# === Evidence ===
-agentguard evidence-pr                    # Generate PR governance reports
+# === Simulation ===
+agentguard simulate <action-json>         # Simulate action and show predicted impact
+agentguard simulate --action <type>       # Simulate by action type and flags
 
 # === Integration ===
 agentguard claude-init                    # Set up Claude Code hook integration
@@ -261,8 +262,7 @@ src/
 │   └── index.ts            # Module re-exports
 ├── cli/                    # CLI entry point + commands
 │   ├── bin.ts              # Main entry
-│   ├── evidence-summary.ts # Evidence summary generation
-│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, plugin, claude-hook, claude-init, evidence-pr
+│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, plugin, claude-hook, claude-init
 ├── telemetry/              # Runtime telemetry and logging
 └── core/                   # Shared utilities (types, actions, hash, rng, execution-log)
 
@@ -270,8 +270,10 @@ vscode-extension/              # VS Code extension
 ├── src/
 │   ├── extension.ts           # Sidebar panels, file watcher, notifications
 │   ├── providers/             # Tree data providers (run status, run history, recent events)
-│   └── services/              # Event reader, notification formatter + service
+│   └── services/              # Event reader, notification formatter + service, diagnostics, violation mapper
 └── package.json               # Extension manifest
+
+policies/                      # Policy packs (YAML: ci-safe, enterprise, open-source, strict)
 ```
 
 ## Run Locally

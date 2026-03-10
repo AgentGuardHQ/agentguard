@@ -55,7 +55,9 @@ src/
 ├── telemetry/     Runtime telemetry and logging
 └── core/          Shared utilities (types, actions, hash, execution-log)
 
-vscode-extension/  VS Code extension (sidebar panels, notifications, event reader)
+vscode-extension/  VS Code extension (sidebar panels, notifications, event reader, inline diagnostics)
+
+policies/          Policy packs (YAML: ci-safe, enterprise, open-source, strict)
 ```
 
 ## Layer Rules
