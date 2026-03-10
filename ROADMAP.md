@@ -78,7 +78,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Renderer Plugin System | Implemented | `src/renderers/` |
 | CLI (guard, inspect, events, replay, export, import, simulate, analytics, plugin, claude-hook, claude-init) | Implemented | `src/cli/` |
 | Claude Code Hook Integration | Implemented | `src/adapters/claude-code.ts` |
-| VS Code Extension (sidebar panels, event reader) | Implemented | `vscode-extension/` |
+| VS Code Extension (sidebar panels, event reader, inline diagnostics) | Implemented | `vscode-extension/` |
 | Policy Pack Loader | Implemented | `src/policy/pack-loader.ts` |
 | YAML Policy Parser | Implemented | `src/policy/yaml-loader.ts` |
 
@@ -226,7 +226,7 @@ Monitor escalation state transitions are emitted to the EventBus but not persist
 
 - [x] VS Code extension: sidebar panel with run status (`vscode-extension/src/providers/run-status-provider.ts`)
 - [x] VS Code: governance notifications for policy violations (`vscode-extension/src/services/notification-service.ts`)
-- [ ] VS Code: inline invariant violation indicators
+- [x] VS Code: inline invariant violation indicators (`vscode-extension/src/services/diagnostics-service.ts`, `vscode-extension/src/services/violation-mapper.ts`)
 - [ ] JetBrains plugin (IntelliJ/WebStorm)
 - [ ] Claude Code deep integration (full governance kernel in hook pipeline)
 
@@ -263,7 +263,7 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 
 > **Theme:** Shareable, composable, discoverable policies
 
-- [ ] Policy templates for common scenarios (strict, permissive, CI-only)
+- [x] Policy templates for common scenarios (`policies/strict`, `policies/ci-safe`, `policies/enterprise`, `policies/open-source`)
 - [ ] Policy composition (multiple policy files merged with precedence)
 - [ ] Policy validation CLI (`agentguard policy validate <file>`)
 - [ ] Community policy packs (SOC2, HIPAA, internal engineering standards)
