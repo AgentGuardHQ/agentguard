@@ -50,6 +50,9 @@ export const ACTION_FAILED: EventKind = 'ActionFailed';
 // Decision Records
 export const DECISION_RECORDED: EventKind = 'DecisionRecorded';
 
+// Policy Traces
+export const POLICY_TRACE_RECORDED: EventKind = 'PolicyTraceRecorded';
+
 // Simulation
 export const SIMULATION_COMPLETED: EventKind = 'SimulationCompleted';
 
@@ -191,6 +194,10 @@ const EVENT_SCHEMAS: Record<string, EventSchema> = {
   [DECISION_RECORDED]: {
     required: ['recordId', 'outcome', 'actionType'],
     optional: ['target', 'reason', 'metadata'],
+  },
+  [POLICY_TRACE_RECORDED]: {
+    required: ['actionType', 'decision', 'totalRulesChecked'],
+    optional: ['target', 'phaseThatMatched', 'rulesEvaluated', 'durationMs', 'metadata'],
   },
   [SIMULATION_COMPLETED]: {
     required: ['simulatorId', 'riskLevel', 'blastRadius'],
