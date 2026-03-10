@@ -5,8 +5,6 @@
 import { createKernel } from '../../kernel/kernel.js';
 import type { KernelConfig } from '../../kernel/kernel.js';
 import { createLiveRegistry } from '../../adapters/registry.js';
-import { createJsonlSink } from '../../events/jsonl.js';
-import { createDecisionJsonlSink } from '../../events/decision-jsonl.js';
 import { createTelemetryDecisionSink } from '../../telemetry/runtimeLogger.js';
 import { loadPolicyDefs } from '../policy-resolver.js';
 import { createSimulatorRegistry } from '../../kernel/simulation/registry.js';
@@ -20,6 +18,9 @@ import { createRendererRegistry } from '../../renderers/registry.js';
 import type { RendererRegistry } from '../../renderers/registry.js';
 import { createTuiRenderer } from '../../renderers/tui-renderer.js';
 
+import { createStorageBundle } from '../../storage/factory.js';
+import type { StorageConfig } from '../../storage/types.js';
+
 export interface GuardOptions {
   policy?: string;
   dryRun?: boolean;
@@ -28,6 +29,8 @@ export interface GuardOptions {
   simulate?: boolean;
   /** Optional pre-configured renderer registry (for custom renderers) */
   renderers?: RendererRegistry;
+  /** Storage backend config */
+  store?: StorageConfig;
 }
 
 export async function guard(_args: string[], options: GuardOptions = {}): Promise<number> {
@@ -50,9 +53,11 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   // Generate run ID using seeded RNG so both sinks share it
   const runId = `run_${Date.now()}_${simpleHash(rng.random().toString())}`;
 
-  // Create sinks
-  const jsonlSink = createJsonlSink({ runId });
-  const decisionSink = createDecisionJsonlSink({ runId });
+  // Create sinks — use storage bundle if configured, otherwise default JSONL
+  const storeConfig = options.store ?? { backend: 'jsonl' as const };
+  const storage = await createStorageBundle(storeConfig);
+  const eventSink = storage.createEventSink(runId);
+  const decisionSink = storage.createDecisionSink(runId);
   const telemetrySink = createTelemetryDecisionSink();
 
   // Build kernel config
@@ -62,7 +67,7 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     policyDefs,
     dryRun: options.dryRun ?? false,
     adapters: options.dryRun ? undefined : createLiveRegistry(),
-    sinks: [jsonlSink],
+    sinks: [eventSink],
     decisionSinks: [decisionSink, telemetrySink],
     simulators: simulators.all().length > 0 ? simulators : undefined,
   };
@@ -95,12 +100,13 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     process.stderr.write(`  ${'\x1b[2m'}Press Ctrl+C to stop.${'\x1b[0m'}\n\n`);
   }
 
-  return processStdin(kernel, renderers);
+  return processStdin(kernel, renderers, storage);
 }
 
 async function processStdin(
   kernel: ReturnType<typeof createKernel>,
-  renderers: RendererRegistry
+  renderers: RendererRegistry,
+  storage: { close(): void }
 ): Promise<number> {
   const startTime = Date.now();
   let totalActions = 0;
@@ -168,6 +174,7 @@ async function processStdin(
         durationMs: Date.now() - startTime,
       });
       renderers.disposeAll();
+      storage.close();
     };
 
     process.stdin.on('end', () => {

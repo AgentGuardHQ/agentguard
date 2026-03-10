@@ -3,6 +3,7 @@
 // AgentGuard CLI — Runtime governance for AI coding agents
 
 import { formatHelp } from './args.js';
+import { resolveStorageConfig } from '../storage/factory.js';
 
 interface CommandHelp {
   name: string;
@@ -27,6 +28,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--markdown, --md', description: 'Output as Markdown' },
       { flag: '--dir, -d <path>', description: 'Base directory for event data' },
       { flag: '--min-cluster <n>', description: 'Minimum cluster size (default: 2)' },
+      { flag: '--store <backend>', description: 'Storage backend: jsonl (default) or sqlite' },
     ],
     examples: [
       'agentguard analytics',
@@ -43,6 +45,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--policy, -p <file>', description: 'Policy file (YAML or JSON)' },
       { flag: '--dry-run', description: 'Evaluate without executing actions' },
       { flag: '--verbose, -v', description: 'Show detailed output' },
+      { flag: '--store <backend>', description: 'Storage backend: jsonl (default) or sqlite' },
     ],
     examples: [
       'agentguard guard',
@@ -153,7 +156,7 @@ async function main() {
         break;
       }
       const { analytics: analyticsCmd } = await import('./commands/analytics.js');
-      const code = await analyticsCmd(args.slice(1));
+      const code = await analyticsCmd(args.slice(1), resolveStorageConfig(args.slice(1)));
       process.exit(code);
       break;
     }
@@ -170,11 +173,13 @@ async function main() {
       const verbose = flags.includes('--verbose') || flags.includes('-v');
 
       const { guard } = await import('./commands/guard.js');
+      const storageConfig = resolveStorageConfig(flags);
       const code = await guard(args.slice(1), {
         policy: policyFile,
         dryRun,
         verbose,
         stdin: true,
+        store: storageConfig,
       });
       process.exit(code);
       break;
