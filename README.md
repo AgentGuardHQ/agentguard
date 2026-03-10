@@ -29,7 +29,7 @@ Expected output:
 
 ```
   AgentGuard Runtime Active
-  policy: Demo Safety Policy | invariants: 7 active
+  policy: Demo Safety Policy | invariants: 8 active
 
   ✓ file.read src/auth/service.ts (dry-run)
   ✓ file.write src/auth/service.ts (dry-run)
@@ -62,7 +62,7 @@ AI coding agents execute file writes, shell commands, and git operations autonom
 AgentGuard adds a **deterministic decision point** between proposal and execution:
 
 - **Safety policies** — declare what agents can and cannot do in YAML
-- **Invariant enforcement** — 7 built-in checks (secrets, protected branches, blast radius, skill protection) run on every action
+- **Invariant enforcement** — 8 built-in checks (secrets, protected branches, blast radius, skill/task protection) run on every action
 - **Audit trail** — every decision is recorded as structured JSONL, inspectable after the fact
 - **Session debugging** — replay any agent session to see exactly what happened and why
 
@@ -72,7 +72,7 @@ AgentGuard evaluates every agent action through a **governed action kernel**:
 
 1. **Normalize** — Claude Code tool calls (Bash, Write, Edit, Read) are mapped to canonical action types (shell.exec, file.write, file.read)
 2. **Evaluate** — policies match against the action (deny git.push to main, deny destructive commands, enforce scope limits)
-3. **Check invariants** — 7 built-in safety checks run on every action
+3. **Check invariants** — 8 built-in safety checks run on every action
 4. **Execute** — if allowed, the action runs via adapters (file, shell, git handlers)
 5. **Emit events** — full lifecycle events sunk to JSONL for audit trail
 
@@ -80,7 +80,7 @@ AgentGuard evaluates every agent action through a **governed action kernel**:
 
 ```
   AgentGuard Runtime Active
-  policy: agentguard.yaml | invariants: 7 active
+  policy: agentguard.yaml | invariants: 8 active
 
   ✓ file.write src/auth/service.ts
   ✓ shell.exec npm test
@@ -120,7 +120,7 @@ Drop an `agentguard.yaml` in your repo root — the CLI picks it up automaticall
 
 ## Built-in Invariants
 
-7 safety invariants run on every action evaluation:
+8 safety invariants run on every action evaluation:
 
 | Invariant | Severity | Description |
 |-----------|----------|-------------|
@@ -128,6 +128,7 @@ Drop an `agentguard.yaml` in your repo root — the CLI picks it up automaticall
 | **protected-branch** | 4 (high) | Prevents direct push to main/master |
 | **no-force-push** | 4 (high) | Forbids force push |
 | **no-skill-modification** | 4 (high) | Prevents modification of .claude/skills/ files |
+| **no-scheduled-task-modification** | 4 (high) | Prevents modification of scheduled task files |
 | **blast-radius-limit** | 3 (medium) | Enforces file modification limit (default 20) |
 | **test-before-push** | 3 (medium) | Requires tests pass before push |
 | **lockfile-integrity** | 2 (low) | Ensures package.json changes sync with lockfiles |
@@ -147,9 +148,20 @@ agentguard inspect [runId]                # Show action graph and decisions for 
 agentguard inspect --last                 # Inspect most recent run
 agentguard events [runId]                 # Show raw event stream for a run
 
+# === Portability ===
+agentguard export <runId>                 # Export a governance session to JSONL
+agentguard export --last                  # Export the most recent run
+agentguard import <file>                  # Import a governance session from JSONL
+
 # === Replay ===
 agentguard replay --last                  # Replay a governance session timeline
 agentguard replay --last --step           # Step through events interactively
+
+# === Plugins ===
+agentguard plugin list                    # List installed plugins
+agentguard plugin install <path>          # Install a plugin from a local path
+agentguard plugin remove <id>            # Remove a plugin by ID
+agentguard plugin search [query]          # Search for plugins on npm
 
 # === Integration ===
 agentguard claude-init                    # Set up Claude Code hook integration
@@ -217,6 +229,7 @@ src/
 │   ├── evidence.ts         # Evidence pack generation
 │   ├── replay-comparator.ts # Replay outcome comparison
 │   ├── replay-engine.ts    # Deterministic replay engine
+│   ├── replay-processor.ts # Replay event processor
 │   ├── decisions/          # Typed decision records
 │   └── simulation/         # Pre-execution impact simulation
 ├── events/                 # Canonical event model
@@ -228,17 +241,30 @@ src/
 ├── policy/                 # Policy system
 │   ├── evaluator.ts        # Rule matching engine
 │   ├── loader.ts           # Policy validation + loading
+│   ├── pack-loader.ts      # Policy pack loader (community policy sets)
 │   └── yaml-loader.ts      # YAML policy parser
 ├── invariants/             # Invariant system
-│   ├── definitions.ts      # 7 built-in invariants
+│   ├── definitions.ts      # 8 built-in invariants
 │   └── checker.ts          # Invariant evaluation engine
 ├── adapters/               # Execution adapters
 │   ├── file.ts, shell.ts, git.ts  # Action handlers
 │   ├── claude-code.ts      # Claude Code hook adapter
 │   └── registry.ts         # Adapter registry
+├── plugins/                # Plugin ecosystem
+│   ├── discovery.ts        # Plugin discovery mechanism
+│   ├── registry.ts         # Plugin registry
+│   ├── sandbox.ts          # Plugin sandboxing
+│   ├── validator.ts        # Plugin validation
+│   ├── types.ts            # Plugin type definitions
+│   └── index.ts            # Module re-exports
+├── renderers/              # Renderer plugin system
+│   ├── registry.ts         # Renderer registry
+│   ├── tui-renderer.ts     # TUI renderer implementation
+│   ├── types.ts            # Renderer type definitions
+│   └── index.ts            # Module re-exports
 ├── cli/                    # CLI entry point + commands
 │   ├── bin.ts              # Main entry
-│   └── commands/           # guard, inspect, replay, claude-hook, claude-init
+│   └── commands/           # guard, inspect, replay, export, import, plugin, claude-hook, claude-init
 ├── telemetry/              # Runtime telemetry and logging
 └── core/                   # Shared utilities (types, actions, hash, rng, execution-log)
 ```

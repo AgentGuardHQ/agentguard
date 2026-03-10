@@ -45,9 +45,11 @@ Each top-level directory under `src/` maps to a single architectural concept:
 src/
 ├── kernel/        Governed action kernel (orchestrate, normalize, decide, escalate)
 ├── events/        Canonical event model (schema, bus, store, JSONL persistence)
-├── policy/        Policy system (evaluator, loaders)
-├── invariants/    Invariant system (7 built-in definitions, checker)
+├── policy/        Policy system (evaluator, loaders, pack loader)
+├── invariants/    Invariant system (8 built-in definitions, checker)
 ├── adapters/      Execution adapters (file, shell, git, claude-code)
+├── plugins/       Plugin ecosystem (discovery, registry, validation, sandboxing)
+├── renderers/     Renderer plugin system (registry, TUI renderer)
 ├── cli/           CLI entry point and commands
 ├── telemetry/     Runtime telemetry and logging
 └── core/          Shared utilities (types, actions, hash, execution-log)
@@ -60,7 +62,9 @@ src/
 - **policy/** may import from core/ only
 - **invariants/** may import from core/, events/ only
 - **adapters/** may import from core/, kernel/ only
-- **cli/** may import from kernel/, events/, policy/, core/
+- **plugins/** may import from core/, events/, kernel/ only
+- **renderers/** may import from core/, events/ only
+- **cli/** may import from kernel/, events/, policy/, plugins/, renderers/, core/
 - **telemetry/** may import from core/ only
 - **core/** has no project imports (leaf layer)
 
