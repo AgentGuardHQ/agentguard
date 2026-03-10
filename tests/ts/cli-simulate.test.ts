@@ -1,5 +1,5 @@
 // Tests for CLI simulate command — standalone impact analysis
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -338,5 +338,67 @@ rules:
     const output = stdoutChunks.join('');
     const result = JSON.parse(output.trim());
     expect(result.governance).toBeUndefined();
+  });
+
+  describe('readStdin', () => {
+    let origIsTTY: boolean | undefined;
+
+    beforeEach(() => {
+      origIsTTY = process.stdin.isTTY;
+    });
+
+    afterEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.stdin as any).isTTY = origIsTTY;
+    });
+
+    it('reads valid JSON from non-TTY stdin and runs simulation', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.stdin as any).isTTY = undefined;
+
+      // Use file.write so the filesystem simulator can handle it
+      const payload = JSON.stringify({ tool: 'Write', file: 'src/index.ts' });
+      setImmediate(() => {
+        process.stdin.emit('data', Buffer.from(payload));
+        process.stdin.emit('end');
+      });
+
+      const { simulate } = await import('../../src/cli/commands/simulate.js');
+      const code = await simulate([]);
+
+      expect(code).toBe(0);
+      expect(stderrChunks.join('')).toContain('filesystem-simulator');
+    });
+
+    it('returns error code 1 for invalid JSON on stdin', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.stdin as any).isTTY = undefined;
+
+      setImmediate(() => {
+        process.stdin.emit('data', Buffer.from('{ not valid json'));
+        process.stdin.emit('end');
+      });
+
+      const { simulate } = await import('../../src/cli/commands/simulate.js');
+      const code = await simulate([]);
+
+      expect(code).toBe(1);
+      expect(stderrChunks.join('')).toContain('Invalid JSON on stdin');
+    });
+
+    it('resolves null on stdin error event and shows No action provided', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (process.stdin as any).isTTY = undefined;
+
+      setImmediate(() => {
+        process.stdin.emit('error', new Error('stdin error'));
+      });
+
+      const { simulate } = await import('../../src/cli/commands/simulate.js');
+      const code = await simulate([]);
+
+      expect(code).toBe(1);
+      expect(stderrChunks.join('')).toContain('No action provided');
+    });
   });
 });

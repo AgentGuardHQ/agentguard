@@ -256,37 +256,45 @@ async function readStdin(): Promise<string | null> {
     const chunks: Buffer[] = [];
     let resolved = false;
 
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        process.stdin.removeAllListeners('data');
-        process.stdin.removeAllListeners('end');
-        process.stdin.pause();
-        resolve(null);
-      }
-    }, 100);
-
-    process.stdin.on('data', (chunk: Buffer) => {
+    const onData = (chunk: Buffer) => {
       chunks.push(chunk);
-    });
-
-    process.stdin.on('end', () => {
+    };
+    const onEnd = () => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
+        process.stdin.off('data', onData);
+        process.stdin.off('end', onEnd);
+        process.stdin.off('error', onError);
         const text = Buffer.concat(chunks).toString('utf8').trim();
         resolve(text.length > 0 ? text : null);
       }
-    });
-
-    process.stdin.on('error', () => {
+    };
+    const onError = () => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
+        process.stdin.off('data', onData);
+        process.stdin.off('end', onEnd);
+        process.stdin.off('error', onError);
         resolve(null);
       }
-    });
+    };
 
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        process.stdin.off('data', onData);
+        process.stdin.off('end', onEnd);
+        process.stdin.off('error', onError);
+        process.stdin.pause();
+        resolve(null);
+      }
+    }, 500);
+
+    process.stdin.on('data', onData);
+    process.stdin.on('end', onEnd);
+    process.stdin.on('error', onError);
     process.stdin.resume();
   });
 }
