@@ -8,7 +8,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 
 **Key characteristics:**
 - Governed action kernel: propose → normalize → evaluate → execute → emit
-- 7 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, lockfile integrity)
+- 8 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, lockfile integrity)
 - YAML/JSON policy format with pattern matching, scopes, and branch conditions
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - JSONL event persistence for audit trail and replay
@@ -46,6 +46,7 @@ src/
 │   ├── evidence.ts         # Evidence pack generation
 │   ├── replay-comparator.ts # Replay outcome comparison
 │   ├── replay-engine.ts    # Deterministic replay engine
+│   ├── replay-processor.ts # Replay event processor
 │   ├── decisions/          # Typed decision records
 │   │   ├── factory.ts      # Decision record factory
 │   │   └── types.ts        # Decision record type definitions
@@ -64,9 +65,10 @@ src/
 ├── policy/                 # Policy system
 │   ├── evaluator.ts        # Rule matching engine
 │   ├── loader.ts           # Policy validation + loading
+│   ├── pack-loader.ts      # Policy pack loader (community policy sets)
 │   └── yaml-loader.ts      # YAML policy parser
 ├── invariants/             # Invariant system
-│   ├── definitions.ts      # 7 built-in invariant definitions
+│   ├── definitions.ts      # 8 built-in invariant definitions
 │   └── checker.ts          # Invariant evaluation engine
 ├── adapters/               # Execution adapters
 │   ├── registry.ts         # Adapter registry (action class → handler)
@@ -82,7 +84,23 @@ src/
 │   ├── replay.ts           # Session replay logic
 │   ├── session-store.ts    # Session management
 │   ├── file-event-store.ts # File-based event persistence
-│   └── commands/           # guard, inspect, replay, claude-hook, claude-init
+│   └── commands/           # guard, inspect, replay, export, import, plugin, claude-hook, claude-init
+├── plugins/                # Plugin ecosystem
+│   ├── discovery.ts        # Plugin discovery mechanism
+│   ├── registry.ts         # Plugin registry
+│   ├── sandbox.ts          # Plugin sandboxing
+│   ├── validator.ts        # Plugin validation
+│   ├── types.ts            # Plugin type definitions
+│   └── index.ts            # Module re-exports
+├── renderers/              # Renderer plugin system
+│   ├── registry.ts         # Renderer registry
+│   ├── tui-renderer.ts     # TUI renderer implementation
+│   ├── types.ts            # Renderer type definitions
+│   └── index.ts            # Module re-exports
+├── telemetry/              # Runtime telemetry
+│   ├── index.ts            # Module re-exports
+│   ├── runtimeLogger.ts    # Runtime logging implementation
+│   └── types.ts            # Telemetry type definitions
 └── core/                   # Shared utilities
     ├── types.ts            # Shared TypeScript type definitions
     ├── actions.ts          # 23 canonical action types across 8 classes
@@ -95,14 +113,10 @@ src/
         ├── event-projections.ts # Event projections
         ├── event-schema.ts # Event schema definitions
         └── index.ts        # Module re-exports
-├── telemetry/              # Runtime telemetry
-│   ├── index.ts            # Module re-exports
-│   ├── runtimeLogger.ts    # Runtime logging implementation
-│   └── types.ts            # Telemetry type definitions
 
 tests/
 ├── *.test.js               # 14 JS test files (custom zero-dependency harness)
-└── ts/*.test.ts            # 41 TS test files (vitest)
+└── ts/*.test.ts            # 49 TS test files (vitest)
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 docs/                       # System documentation (architecture, event model, specs)
 hooks/                      # Git hooks (post-commit, post-merge)
@@ -141,7 +155,7 @@ The kernel loop is the core of AgentGuard. Every agent action passes through it:
 1. Agent proposes action (Claude Code tool call → `RawAgentAction`)
 2. AAB normalizes intent (tool → action type, detect git/destructive commands)
 3. Policy evaluator matches rules (deny/allow with scopes, branches, limits)
-4. Invariant checker verifies system state (7 defaults)
+4. Invariant checker verifies system state (8 defaults)
 5. If allowed: execute via adapter (file/shell/git handlers)
 6. Emit lifecycle events: `ACTION_REQUESTED` → `ACTION_ALLOWED/DENIED` → `ACTION_EXECUTED/FAILED`
 7. Sink all events to JSONL for audit trail
@@ -153,9 +167,11 @@ See `docs/unified-architecture.md` for the full model.
 Each top-level directory maps to a single architectural concept:
 - **src/kernel/** — Governed action kernel, escalation, evidence, decisions, simulation
 - **src/events/** — Canonical event model (schema, bus, store, persistence)
-- **src/policy/** — Policy evaluator + loaders (YAML/JSON)
+- **src/policy/** — Policy evaluator + loaders (YAML/JSON, pack loader)
 - **src/invariants/** — Invariant definitions + checker
 - **src/adapters/** — Execution adapters (file, shell, git, claude-code)
+- **src/plugins/** — Plugin ecosystem (discovery, registry, validation, sandboxing)
+- **src/renderers/** — Renderer plugin system (registry, TUI renderer)
 - **src/cli/** — CLI entry point and commands
 - **src/core/** — Shared utilities (types, actions, hash, execution-log)
 - **src/telemetry/** — Runtime telemetry and logging
@@ -166,7 +182,10 @@ Each top-level directory maps to a single architectural concept:
 - `agentguard guard --dry-run` — Evaluate without executing actions
 - `agentguard inspect [runId]` — Show action graph and decisions for a run
 - `agentguard events [runId]` — Show raw event stream for a run
+- `agentguard export <runId>` — Export a governance session to a portable JSONL file
+- `agentguard import <file>` — Import a governance session from a portable JSONL file
 - `agentguard replay` — Replay a governance session timeline
+- `agentguard plugin list|install|remove|search` — Manage plugins
 - `agentguard claude-hook` — Handle Claude Code PreToolUse/PostToolUse hook events
 - `agentguard claude-init` — Set up Claude Code hook integration
 
@@ -233,8 +252,8 @@ npm run test:coverage      # Run with coverage (c8, 50% line threshold)
 
 **Test structure:**
 - **JS tests** (`tests/*.test.js`): 14 files using a custom zero-dependency harness (`tests/run.js` with `node:assert`)
-- **TypeScript tests** (`tests/ts/*.test.ts`): 41 files using vitest
-- **Coverage areas**: adapters, kernel (AAB, engine, monitor, blast radius), CLI commands, decision records, domain models, events, evidence packs, execution log, invariants, JSONL persistence, policy evaluation, simulation, telemetry, TUI renderer, YAML loading
+- **TypeScript tests** (`tests/ts/*.test.ts`): 49 files using vitest
+- **Coverage areas**: adapters, kernel (AAB, engine, monitor, blast radius), CLI commands, decision records, domain models, events, evidence packs, execution log, invariants, JSONL persistence, plugins (discovery, registry, validation), policy evaluation (including pack loader), renderers, replay (engine, comparator, processor), simulation, telemetry, TUI renderer, YAML loading
 
 ## CI/CD & Automation
 

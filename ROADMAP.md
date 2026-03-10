@@ -70,7 +70,7 @@ Build the governance runtime that evaluates agent actions against policies and i
 - [x] Governance event emission into canonical event model
 - [x] Integration with Claude Code hook (`src/adapters/claude-code.ts`, `src/cli/commands/claude-hook.ts`)
 
-## Phase 3 — Event Persistence + Replay `MOSTLY COMPLETE`
+## Phase 3 — Event Persistence + Replay `COMPLETE`
 
 > **Theme:** Every session is replayable
 
@@ -83,19 +83,19 @@ Implement durable event storage and deterministic replay.
 - [x] CLI replay command (`agentguard replay`)
 - [x] Deterministic replay with seeded RNG (`src/core/rng.ts`, `src/kernel/replay-engine.ts`)
 - [x] Replay comparator (verify original vs replayed outcomes) (`src/kernel/replay-comparator.ts`)
-- [ ] Event export/import for sharing sessions
+- [x] Event export/import for sharing sessions (`src/cli/commands/export.ts`, `src/cli/commands/import.ts`)
 
-## Phase 4 — Plugin Ecosystem
+## Phase 4 — Plugin Ecosystem `COMPLETE`
 
 > **Theme:** Extensible by design
 
 Formalize the plugin system for third-party extensions.
 
-- [ ] Policy pack loading system (community policy sets)
-- [ ] Renderer plugin interface
-- [ ] Replay processor interface
-- [ ] Plugin validation and sandboxing
-- [ ] Plugin registry / discovery mechanism
+- [x] Policy pack loading system (community policy sets) (`src/policy/pack-loader.ts`)
+- [x] Renderer plugin interface (`src/renderers/`)
+- [x] Replay processor interface (`src/kernel/replay-processor.ts`)
+- [x] Plugin validation and sandboxing (`src/plugins/validator.ts`, `src/plugins/sandbox.ts`)
+- [x] Plugin registry / discovery mechanism (`src/plugins/registry.ts`, `src/plugins/discovery.ts`)
 
 ## Phase 5 — Editor Integrations
 
