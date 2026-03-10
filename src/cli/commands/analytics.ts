@@ -16,6 +16,10 @@ export async function analytics(args: string[], storageConfig?: StorageConfig): 
     const { clusterViolations } = await import('../../analytics/cluster.js');
     const { computeAllTrends } = await import('../../analytics/trends.js');
     const storage = await createStorageBundle(storageConfig);
+    if (!storage.db) {
+      process.stderr.write('  Error: SQLite storage backend did not initialize database.\n');
+      return 1;
+    }
     const db = storage.db as import('better-sqlite3').Database;
     const { violations, sessionCount } = aggregateViolationsSqlite(db);
     const clusters = clusterViolations(violations, minClusterSize ?? 2);

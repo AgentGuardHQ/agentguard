@@ -64,8 +64,11 @@ async function createSqliteBundle(config: StorageConfig): Promise<StorageBundle>
   // Ensure parent directory exists
   try {
     mkdirSync(dirname(dbPath), { recursive: true });
-  } catch {
-    // May already exist
+  } catch (err) {
+    // Ignore EEXIST — directory already exists
+    if ((err as NodeJS.ErrnoException).code !== 'EEXIST') {
+      process.stderr.write(`[agentguard] Warning: failed to create SQLite directory: ${err}\n`);
+    }
   }
 
   const db = new Database(dbPath);
@@ -81,8 +84,8 @@ async function createSqliteBundle(config: StorageConfig): Promise<StorageBundle>
     close(): void {
       try {
         db.close();
-      } catch {
-        // Swallow close errors
+      } catch (err) {
+        process.stderr.write(`[agentguard] Warning: failed to close SQLite database: ${err}\n`);
       }
     },
     db,
