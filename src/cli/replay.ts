@@ -1,7 +1,7 @@
 // Replay CLI — flight recorder playback for debugging sessions.
 //
 // DONE(roadmap): Phase 4 — Full replay engine: see src/kernel/replay-engine.ts
-// TODO(roadmap): Phase 4 — Replay comparator (verify original vs replayed outcomes)
+// DONE(roadmap): Phase 4 — Replay comparator: see src/kernel/replay-comparator.ts
 // TODO(roadmap): Phase 6 — Replay processor plugin interface
 
 import { loadSession, listSessions } from './session-store.js';
