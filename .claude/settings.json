@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node C:\\Users\\jplev\\Documents\\GitHub\\agent-guard\\dist\\cli\\claude-hook.js pre"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node C:\\Users\\jplev\\Documents\\GitHub\\agent-guard\\dist\\cli\\claude-hook.js post"
+          }
+        ]
+      }
+    ]
+  }
+}
