@@ -12,6 +12,7 @@ import type { EvidencePack } from './evidence.js';
 import { loadPolicies } from '../policy/loader.js';
 import { DEFAULT_INVARIANTS } from '../invariants/definitions.js';
 import type { AgentGuardInvariant } from '../invariants/definitions.js';
+import { createEvent, POLICY_TRACE_RECORDED } from '../events/schema.js';
 
 export const INTERVENTION = {
   DENY: 'deny',
@@ -94,6 +95,30 @@ export function createEngine(config: EngineConfig = {}): Engine {
 
     evaluate(rawAction, systemContext = {}) {
       const { intent, result: authResult, events: authEvents } = authorize(rawAction, policies);
+
+      // Emit policy evaluation trace if available
+      if (authResult.trace) {
+        const traceEvent = createEvent(POLICY_TRACE_RECORDED, {
+          actionType: intent.action,
+          target: intent.target,
+          decision: authResult.decision,
+          totalRulesChecked: authResult.trace.totalRulesChecked,
+          phaseThatMatched: authResult.trace.phaseThatMatched,
+          rulesEvaluated: authResult.trace.rulesEvaluated.map((r) => ({
+            policyId: r.policyId,
+            policyName: r.policyName,
+            ruleIndex: r.ruleIndex,
+            effect: r.rule.effect,
+            actionPattern: r.rule.action,
+            actionMatched: r.actionMatched,
+            conditionsMatched: r.conditionsMatched,
+            conditionDetails: r.conditionDetails,
+            outcome: r.outcome,
+          })),
+          durationMs: authResult.trace.durationMs,
+        });
+        authEvents.push(traceEvent);
+      }
 
       const state = buildSystemState({
         ...systemContext,

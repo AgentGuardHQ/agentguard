@@ -32,6 +32,30 @@ export interface NormalizedIntent {
   destructive: boolean;
 }
 
+/** Evaluation result for a single rule against an intent */
+export interface RuleEvaluation {
+  policyId: string;
+  policyName: string;
+  ruleIndex: number;
+  rule: PolicyRule;
+  actionMatched: boolean;
+  conditionsMatched: boolean;
+  conditionDetails: {
+    scopeMatched?: boolean;
+    limitExceeded?: boolean;
+    branchMatched?: boolean;
+  };
+  outcome: 'match' | 'no-match' | 'skipped';
+}
+
+/** Full evaluation trace capturing every rule checked during policy evaluation */
+export interface PolicyEvaluationTrace {
+  rulesEvaluated: RuleEvaluation[];
+  totalRulesChecked: number;
+  phaseThatMatched: 'deny' | 'allow' | 'default' | null;
+  durationMs: number;
+}
+
 export interface EvalResult {
   allowed: boolean;
   decision: 'allow' | 'deny';
@@ -39,6 +63,8 @@ export interface EvalResult {
   matchedPolicy: LoadedPolicy | null;
   reason: string;
   severity: number;
+  /** Detailed evaluation trace — which rules were checked, which matched, and why */
+  trace?: PolicyEvaluationTrace;
 }
 
 function matchAction(pattern: string, action: string): boolean {
@@ -70,29 +96,48 @@ function matchScope(scopePatterns: string[], target: string): boolean {
   return false;
 }
 
-function matchConditions(conditions: PolicyRule['conditions'], intent: NormalizedIntent): boolean {
-  if (!conditions) return true;
+interface ConditionMatchResult {
+  matched: boolean;
+  scopeMatched?: boolean;
+  limitExceeded?: boolean;
+  branchMatched?: boolean;
+}
+
+function matchConditions(
+  conditions: PolicyRule['conditions'],
+  intent: NormalizedIntent
+): ConditionMatchResult {
+  if (!conditions) return { matched: true };
 
   if (conditions.scope && !matchScope(conditions.scope, intent.target)) {
-    return false;
+    return { matched: false, scopeMatched: false };
   }
 
+  const scopeMatched = conditions.scope ? true : undefined;
+  let limitExceeded: boolean | undefined;
+  let branchMatched: boolean | undefined;
+
   if (conditions.limit !== undefined && intent.filesAffected !== undefined) {
-    if (intent.filesAffected > conditions.limit) {
-      return true;
+    limitExceeded = intent.filesAffected > conditions.limit;
+    if (limitExceeded) {
+      return { matched: true, scopeMatched, limitExceeded };
     }
   }
 
   if (conditions.branches && intent.branch) {
-    if (conditions.branches.includes(intent.branch)) {
-      return true;
+    branchMatched = conditions.branches.includes(intent.branch);
+    if (branchMatched) {
+      return { matched: true, scopeMatched, limitExceeded, branchMatched };
     }
   }
 
-  return true;
+  return { matched: true, scopeMatched, limitExceeded, branchMatched };
 }
 
 export function evaluate(intent: NormalizedIntent, policies: LoadedPolicy[]): EvalResult {
+  const startTime = performance.now();
+  const rulesEvaluated: RuleEvaluation[] = [];
+
   if (!intent || !intent.action) {
     return {
       allowed: false,
@@ -101,19 +146,68 @@ export function evaluate(intent: NormalizedIntent, policies: LoadedPolicy[]): Ev
       matchedPolicy: null,
       reason: 'Intent is missing required field: action',
       severity: 5,
+      trace: {
+        rulesEvaluated: [],
+        totalRulesChecked: 0,
+        phaseThatMatched: null,
+        durationMs: performance.now() - startTime,
+      },
     };
   }
 
+  // Phase 1: Evaluate deny rules
   for (const policy of policies) {
-    for (const rule of policy.rules) {
-      if (rule.effect !== 'deny') continue;
+    for (let ruleIndex = 0; ruleIndex < policy.rules.length; ruleIndex++) {
+      const rule = policy.rules[ruleIndex];
+      if (rule.effect !== 'deny') {
+        rulesEvaluated.push({
+          policyId: policy.id,
+          policyName: policy.name,
+          ruleIndex,
+          rule,
+          actionMatched: false,
+          conditionsMatched: false,
+          conditionDetails: {},
+          outcome: 'skipped',
+        });
+        continue;
+      }
 
       const actions = Array.isArray(rule.action) ? rule.action : [rule.action];
-      const actionMatches = actions.some((pattern) => matchAction(pattern, intent.action));
+      const actionMatched = actions.some((pattern) => matchAction(pattern, intent.action));
 
-      if (!actionMatches) continue;
+      if (!actionMatched) {
+        rulesEvaluated.push({
+          policyId: policy.id,
+          policyName: policy.name,
+          ruleIndex,
+          rule,
+          actionMatched: false,
+          conditionsMatched: false,
+          conditionDetails: {},
+          outcome: 'no-match',
+        });
+        continue;
+      }
 
-      if (matchConditions(rule.conditions, intent)) {
+      const conditionResult = matchConditions(rule.conditions, intent);
+
+      if (conditionResult.matched) {
+        rulesEvaluated.push({
+          policyId: policy.id,
+          policyName: policy.name,
+          ruleIndex,
+          rule,
+          actionMatched: true,
+          conditionsMatched: true,
+          conditionDetails: {
+            scopeMatched: conditionResult.scopeMatched,
+            limitExceeded: conditionResult.limitExceeded,
+            branchMatched: conditionResult.branchMatched,
+          },
+          outcome: 'match',
+        });
+
         return {
           allowed: false,
           decision: 'deny',
@@ -121,19 +215,101 @@ export function evaluate(intent: NormalizedIntent, policies: LoadedPolicy[]): Ev
           matchedPolicy: policy,
           reason: rule.reason || `Denied by policy "${policy.name}"`,
           severity: policy.severity,
+          trace: {
+            rulesEvaluated,
+            totalRulesChecked: rulesEvaluated.length,
+            phaseThatMatched: 'deny',
+            durationMs: performance.now() - startTime,
+          },
         };
       }
+
+      rulesEvaluated.push({
+        policyId: policy.id,
+        policyName: policy.name,
+        ruleIndex,
+        rule,
+        actionMatched: true,
+        conditionsMatched: false,
+        conditionDetails: {
+          scopeMatched: conditionResult.scopeMatched,
+          limitExceeded: conditionResult.limitExceeded,
+          branchMatched: conditionResult.branchMatched,
+        },
+        outcome: 'no-match',
+      });
     }
   }
 
+  // Phase 2: Evaluate allow rules
   for (const policy of policies) {
-    for (const rule of policy.rules) {
+    for (let ruleIndex = 0; ruleIndex < policy.rules.length; ruleIndex++) {
+      const rule = policy.rules[ruleIndex];
       if (rule.effect !== 'allow') continue;
 
-      const actions = Array.isArray(rule.action) ? rule.action : [rule.action];
-      const actionMatches = actions.some((pattern) => matchAction(pattern, intent.action));
+      // This rule was already recorded in the deny phase as 'skipped'
+      const alreadyRecorded = rulesEvaluated.some(
+        (r) => r.policyId === policy.id && r.ruleIndex === ruleIndex
+      );
 
-      if (actionMatches && matchConditions(rule.conditions, intent)) {
+      const actions = Array.isArray(rule.action) ? rule.action : [rule.action];
+      const actionMatched = actions.some((pattern) => matchAction(pattern, intent.action));
+
+      if (!actionMatched) {
+        if (!alreadyRecorded) {
+          rulesEvaluated.push({
+            policyId: policy.id,
+            policyName: policy.name,
+            ruleIndex,
+            rule,
+            actionMatched: false,
+            conditionsMatched: false,
+            conditionDetails: {},
+            outcome: 'no-match',
+          });
+        }
+        continue;
+      }
+
+      const conditionResult = matchConditions(rule.conditions, intent);
+
+      if (conditionResult.matched) {
+        // Update the existing 'skipped' entry or add new one
+        if (alreadyRecorded) {
+          const idx = rulesEvaluated.findIndex(
+            (r) => r.policyId === policy.id && r.ruleIndex === ruleIndex
+          );
+          rulesEvaluated[idx] = {
+            policyId: policy.id,
+            policyName: policy.name,
+            ruleIndex,
+            rule,
+            actionMatched: true,
+            conditionsMatched: true,
+            conditionDetails: {
+              scopeMatched: conditionResult.scopeMatched,
+              limitExceeded: conditionResult.limitExceeded,
+              branchMatched: conditionResult.branchMatched,
+            },
+            outcome: 'match',
+          };
+        } else {
+          rulesEvaluated.push({
+            policyId: policy.id,
+            policyName: policy.name,
+            ruleIndex,
+            rule,
+            actionMatched: true,
+            conditionsMatched: true,
+            conditionDetails: {
+              scopeMatched: conditionResult.scopeMatched,
+              limitExceeded: conditionResult.limitExceeded,
+              branchMatched: conditionResult.branchMatched,
+            },
+            outcome: 'match',
+          });
+        }
+
         return {
           allowed: true,
           decision: 'allow',
@@ -141,7 +317,30 @@ export function evaluate(intent: NormalizedIntent, policies: LoadedPolicy[]): Ev
           matchedPolicy: policy,
           reason: rule.reason || `Allowed by policy "${policy.name}"`,
           severity: 0,
+          trace: {
+            rulesEvaluated,
+            totalRulesChecked: rulesEvaluated.filter((r) => r.outcome !== 'skipped').length,
+            phaseThatMatched: 'allow',
+            durationMs: performance.now() - startTime,
+          },
         };
+      }
+
+      if (!alreadyRecorded) {
+        rulesEvaluated.push({
+          policyId: policy.id,
+          policyName: policy.name,
+          ruleIndex,
+          rule,
+          actionMatched: true,
+          conditionsMatched: false,
+          conditionDetails: {
+            scopeMatched: conditionResult.scopeMatched,
+            limitExceeded: conditionResult.limitExceeded,
+            branchMatched: conditionResult.branchMatched,
+          },
+          outcome: 'no-match',
+        });
       }
     }
   }
@@ -153,6 +352,12 @@ export function evaluate(intent: NormalizedIntent, policies: LoadedPolicy[]): Ev
     matchedPolicy: null,
     reason: 'No matching policy — default allow',
     severity: 0,
+    trace: {
+      rulesEvaluated,
+      totalRulesChecked: rulesEvaluated.filter((r) => r.outcome !== 'skipped').length,
+      phaseThatMatched: 'default',
+      durationMs: performance.now() - startTime,
+    },
   };
 }
 
