@@ -192,24 +192,6 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard init policy-pack --name strict-policy',
     ],
   },
-  init: {
-    name: 'agentguard init',
-    description: 'Scaffold a new governance extension',
-    usage: 'agentguard init --extension <type> [--name <name>] [--dir <path>]',
-    flags: [
-      {
-        flag: '--extension, -e <type>',
-        description: 'Extension type: invariant, policy-pack, adapter, renderer, replay-processor',
-      },
-      { flag: '--name, -n <name>', description: 'Extension name (default: my-<type>)' },
-      { flag: '--dir, -d <path>', description: 'Output directory (default: ./<name>)' },
-    ],
-    examples: [
-      'agentguard init --extension renderer --name json-renderer',
-      'agentguard init invariant --name vendor-guard',
-      'agentguard init policy-pack --name strict-policy',
-    ],
-  },
 };
 
 async function main() {
