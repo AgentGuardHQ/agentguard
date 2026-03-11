@@ -73,7 +73,7 @@ function postPrComment(prNumber: string, markdown: string): boolean {
 
     if (commentsJson) {
       // Update existing comment by deleting and re-posting
-      const commentIds = commentsJson.split('\n').filter(Boolean);
+      const commentIds = commentsJson.split('\n').filter((id) => /^\d+$/.test(id));
       for (const id of commentIds) {
         try {
           execSync(`gh api repos/{owner}/{repo}/issues/comments/${id} -X DELETE`, {
@@ -161,6 +161,11 @@ export async function evidencePr(args: string[]): Promise<number> {
       '\n  \x1b[31mError:\x1b[0m Could not determine PR number.\n' +
         '  Use --pr <number> or run from a branch with an open PR.\n\n'
     );
+    return 1;
+  }
+
+  if (!/^\d+$/.test(prNumber)) {
+    process.stderr.write('\n  \x1b[31mError:\x1b[0m PR number must be numeric.\n\n');
     return 1;
   }
 
