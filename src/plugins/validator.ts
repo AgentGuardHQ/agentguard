@@ -14,7 +14,13 @@ import type {
 import { VALID_CAPABILITIES } from './types.js';
 
 /** Valid plugin types */
-const VALID_PLUGIN_TYPES: readonly PluginType[] = ['renderer', 'replay-processor', 'policy-pack'];
+const VALID_PLUGIN_TYPES: readonly PluginType[] = [
+  'renderer',
+  'replay-processor',
+  'policy-pack',
+  'invariant',
+  'adapter',
+];
 
 /** Semver pattern: major.minor.patch with optional pre-release */
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
