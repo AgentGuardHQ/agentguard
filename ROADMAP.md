@@ -306,7 +306,7 @@ The JSONL persistence layer was the right starting point — append-only, human-
 - [x] Risk scoring per agent run
 - [ ] Failure clustering and trend detection (extend `src/analytics/`)
 - [ ] Timeline viewer for governance sessions (`agentguard replay --ui`)
-- [x] Policy evaluation traces visualization (`agentguard traces`, `src/cli/commands/traces.ts`)
+- [ ] Policy evaluation traces visualization
 - [ ] Metrics export (Prometheus / OpenTelemetry)
 - [x] Foundation for kernel-level tracing (define tracepoint interface)
 - [ ] Application-level process and network monitoring (Node.js-based, pre-eBPF)
