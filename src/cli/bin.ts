@@ -207,6 +207,23 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard init policy-pack --name strict-policy',
     ],
   },
+  'evidence-pr': {
+    name: 'agentguard evidence-pr',
+    description: 'Attach governance evidence report to a pull request',
+    usage: 'agentguard evidence-pr [pr-number] [flags]',
+    flags: [
+      { flag: '--pr, -n <number>', description: 'PR number (auto-detected if omitted)' },
+      { flag: '--run, -r <runId>', description: 'Use events from a specific run' },
+      { flag: '--last', description: 'Use events from the most recent run only' },
+      { flag: '--dry-run', description: 'Print markdown without posting to GitHub' },
+    ],
+    examples: [
+      'agentguard evidence-pr',
+      'agentguard evidence-pr --pr 42',
+      'agentguard evidence-pr --last --dry-run',
+      'agentguard evidence-pr --run run_1234567890_abc',
+    ],
+  },
 };
 
 async function main() {
@@ -365,6 +382,17 @@ async function main() {
       break;
     }
 
+    case 'evidence-pr': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS['evidence-pr']));
+        break;
+      }
+      const { evidencePr } = await import('./commands/evidence-pr.js');
+      const code = await evidencePr(args.slice(1));
+      process.exit(code);
+      break;
+    }
+
     case 'init': {
       if (wantsHelp) {
         console.log(formatHelp(COMMANDS.init));
@@ -458,6 +486,11 @@ function printHelp(): void {
     agentguard plugin install <path>          Install a plugin from a local path
     agentguard plugin remove <id>             Remove a plugin by ID
     agentguard plugin search [query]          Search for plugins on npm
+
+  \x1b[1mEvidence:\x1b[0m
+    agentguard evidence-pr                    Attach governance evidence to a PR
+    agentguard evidence-pr --pr <number>      Post evidence to a specific PR
+    agentguard evidence-pr --dry-run          Preview the evidence report
 
   \x1b[1mScaffolding:\x1b[0m
     agentguard init --extension <type>        Scaffold a new governance extension
