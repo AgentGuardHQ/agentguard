@@ -174,24 +174,6 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard simulate --action file.write --target .env --policy agentguard.yaml',
     ],
   },
-  init: {
-    name: 'agentguard init',
-    description: 'Scaffold a new governance extension',
-    usage: 'agentguard init --extension <type> [--name <name>] [--dir <path>]',
-    flags: [
-      {
-        flag: '--extension, -e <type>',
-        description: 'Extension type: invariant, policy-pack, adapter, renderer, replay-processor',
-      },
-      { flag: '--name, -n <name>', description: 'Extension name (default: my-<type>)' },
-      { flag: '--dir, -d <path>', description: 'Output directory (default: ./<name>)' },
-    ],
-    examples: [
-      'agentguard init --extension renderer --name json-renderer',
-      'agentguard init invariant --name vendor-guard',
-      'agentguard init policy-pack --name strict-policy',
-    ],
-  },
   diff: {
     name: 'agentguard diff',
     description: 'Compare two governance sessions side-by-side',
@@ -445,7 +427,7 @@ function printHelp(): void {
     agentguard events [runId]                 Show raw event stream for a run
     agentguard analytics                      Analyze violation patterns across sessions
 
-  \x1b[1mComparison:\x1b[0m
+  [1mComparison:[0m
     agentguard diff <runA> <runB>              Compare two governance sessions
     agentguard diff --last                     Compare the two most recent runs
     agentguard diff --last --json              Output comparison as JSON
@@ -480,6 +462,7 @@ function printHelp(): void {
   \x1b[1mScaffolding:\x1b[0m
     agentguard init --extension <type>        Scaffold a new governance extension
     agentguard init --extension <type> -n X   Name the extension
+
 
   \x1b[1mCI/CD:\x1b[0m
     agentguard ci-check <session>             Verify governance session in CI
