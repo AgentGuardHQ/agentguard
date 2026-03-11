@@ -28,10 +28,10 @@ describe('resolveStorageConfig', () => {
     delete process.env.AGENTGUARD_DB_PATH;
   });
 
-  it('defaults to jsonl', () => {
+  it('defaults to sqlite', () => {
     delete process.env.AGENTGUARD_STORE;
     const config = resolveStorageConfig([]);
-    expect(config.backend).toBe('jsonl');
+    expect(config.backend).toBe('sqlite');
   });
 
   it('parses --store sqlite flag', () => {

@@ -8,7 +8,7 @@ export type StorageBackend = 'jsonl' | 'sqlite';
 
 /** Configuration for the storage layer */
 export interface StorageConfig {
-  /** Which backend to use. Default: 'jsonl' */
+  /** Which backend to use. Default: 'sqlite' */
   readonly backend: StorageBackend;
   /** For sqlite: path to the .db file. Default: ~/.agentguard/agentguard.db */
   readonly dbPath?: string;

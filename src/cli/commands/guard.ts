@@ -73,7 +73,7 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   const runId = `run_${Date.now()}_${simpleHash(rng.random().toString())}`;
 
   // Create sinks — use storage bundle if configured, otherwise default JSONL
-  const storeConfig = options.store ?? { backend: 'jsonl' as const };
+  const storeConfig = options.store ?? { backend: 'sqlite' as const };
   const storage = await createStorageBundle(storeConfig);
   const eventSink = storage.createEventSink(runId);
   const decisionSink = storage.createDecisionSink(runId);

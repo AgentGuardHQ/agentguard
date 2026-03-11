@@ -23,7 +23,14 @@ export interface StorageBundle {
 /** Create a storage bundle based on configuration */
 export async function createStorageBundle(config: StorageConfig): Promise<StorageBundle> {
   if (config.backend === 'sqlite') {
-    return createSqliteBundle(config);
+    try {
+      return await createSqliteBundle(config);
+    } catch (err) {
+      process.stderr.write(
+        `[agentguard] SQLite unavailable (${(err as Error).message}), falling back to JSONL.\n`
+      );
+      return createJsonlBundle(config);
+    }
   }
   return createJsonlBundle(config);
 }
@@ -126,7 +133,7 @@ export function resolveStorageConfig(args: string[]): StorageConfig {
   const envStore = process.env.AGENTGUARD_STORE;
 
   const raw = storeArg !== undefined ? storeArg : envStore;
-  const backend = raw === 'sqlite' ? 'sqlite' : 'jsonl';
+  const backend = raw === 'jsonl' ? 'jsonl' : 'sqlite';
 
   const dirIdx = args.findIndex((a) => a === '--dir' || a === '-d');
   const baseDir = dirIdx !== -1 ? args[dirIdx + 1] : undefined;

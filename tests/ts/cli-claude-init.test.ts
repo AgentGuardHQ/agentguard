@@ -225,16 +225,16 @@ describe('claudeInit', () => {
     expect(written.hooks.PostToolUse[0].hooks[0].command).toContain('post --store sqlite');
   });
 
-  it('does not include --store suffix when no --store flag is provided', async () => {
+  it('includes --store sqlite by default when no --store flag is provided', async () => {
     vi.mocked(existsSync).mockReturnValue(false);
 
     await claudeInit([]);
 
     const written = JSON.parse(vi.mocked(writeFileSync).mock.calls[0][1] as string);
 
-    // Commands should end with just 'pre' and 'post', no trailing flags
-    expect(written.hooks.PreToolUse[0].hooks[0].command).not.toContain('--store');
-    expect(written.hooks.PostToolUse[0].hooks[0].command).not.toContain('--store');
+    // SQLite is now the default — commands should include --store sqlite
+    expect(written.hooks.PreToolUse[0].hooks[0].command).toContain('--store sqlite');
+    expect(written.hooks.PostToolUse[0].hooks[0].command).toContain('--store sqlite');
   });
 
   it('combines --store with --global flag', async () => {
@@ -270,10 +270,10 @@ describe('claudeInit', () => {
     const written = JSON.parse(vi.mocked(writeFileSync).mock.calls[0][1] as string);
 
     expect(written.hooks.PreToolUse[0].hooks[0].command).toContain(
-      'pre --db-path "/home/user/.agentguard/agentguard.db"'
+      'pre --store sqlite --db-path "/home/user/.agentguard/agentguard.db"'
     );
     expect(written.hooks.PostToolUse[0].hooks[0].command).toContain(
-      'post --db-path "/home/user/.agentguard/agentguard.db"'
+      'post --store sqlite --db-path "/home/user/.agentguard/agentguard.db"'
     );
   });
 
