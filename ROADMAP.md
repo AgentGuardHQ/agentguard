@@ -76,7 +76,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Cross-session Analytics (aggregation, clustering, trends) | Implemented | `src/analytics/` |
 | Plugin Ecosystem (discovery, registry, validation) | Implemented | `src/plugins/` |
 | Renderer Plugin System | Implemented | `src/renderers/` |
-| CLI (guard, inspect, events, replay, export, import, simulate, ci-check, analytics, plugin, claude-hook, claude-init, init) | Implemented | `src/cli/` |
+| CLI (guard, inspect, events, replay, export, import, simulate, ci-check, analytics, plugin, policy, claude-hook, claude-init, init, diff, evidence-pr) | Implemented | `src/cli/` |
 | Claude Code Hook Integration | Implemented | `src/adapters/claude-code.ts` |
 | VS Code Extension (sidebar panels, event reader, inline diagnostics) | Implemented | `vscode-extension/` |
 | Policy Pack Loader | Implemented | `src/policy/pack-loader.ts` |
@@ -302,7 +302,7 @@ The JSONL persistence layer was the right starting point — append-only, human-
 > **Theme:** Close the trust gap between application-level logging and actual system behavior
 
 - [ ] Enhanced telemetry beyond current flat event logging
-- [ ] Run comparison and diff (`agentguard diff <run1> <run2>`)
+- [x] Run comparison and diff (`agentguard diff <run1> <run2>`) (`src/cli/commands/diff.ts`)
 - [x] Risk scoring per agent run
 - [ ] Failure clustering and trend detection (extend `src/analytics/`)
 - [ ] Timeline viewer for governance sessions (`agentguard replay --ui`)
@@ -318,7 +318,7 @@ The JSONL persistence layer was the right starting point — append-only, human-
 - [x] GitHub Actions integration (reusable workflow)
 - [ ] Pre-merge policy validation (block PRs that violate policy)
 - [ ] CI replay verification (replay governance session in CI)
-- [ ] Evidence packs attached to pull requests
+- [x] Evidence packs attached to pull requests (`src/cli/commands/evidence-pr.ts`, `src/cli/evidence-summary.ts`)
 - [ ] Policy violation gating (fail CI on unresolved violations)
 
 ### Phase 13 — Environmental Enforcement `PLANNED`
