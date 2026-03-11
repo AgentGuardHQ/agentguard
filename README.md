@@ -162,6 +162,15 @@ agentguard policy validate <file>        # Validate a policy file without starti
 agentguard ci-check <session>             # Verify governance session for violations
 agentguard ci-check --last                # Check most recent run locally
 
+# === Comparison ===
+agentguard diff <run1> <run2>             # Compare two governance sessions side-by-side
+agentguard diff --last                   # Compare the two most recent runs
+
+# === Evidence ===
+agentguard evidence-pr                    # Attach governance evidence summary to a PR
+agentguard evidence-pr --pr <number>     # Post evidence to a specific PR
+agentguard evidence-pr --dry-run         # Preview evidence report
+
 # === Integration ===
 agentguard claude-init                    # Set up Claude Code hook integration
 agentguard init <type>                    # Scaffold governance extensions
@@ -275,7 +284,8 @@ src/
 │   └── index.ts            # Module re-exports
 ├── cli/                    # CLI entry point + commands
 │   ├── bin.ts              # Main entry
-│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, claude-hook, claude-init, init
+│   ├── evidence-summary.ts # Evidence summary generator for PR reports
+│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, claude-hook, claude-init, init, diff, evidence-pr
 ├── storage/                # SQLite storage backend (opt-in alternative to JSONL)
 ├── telemetry/              # Runtime telemetry and logging
 └── core/                   # Shared utilities (types, actions, hash, rng, execution-log)

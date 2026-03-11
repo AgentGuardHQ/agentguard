@@ -96,7 +96,8 @@ src/
 │   ├── replay.ts           # Session replay logic
 │   ├── session-store.ts    # Session management
 │   ├── file-event-store.ts # File-based event persistence
-│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, claude-hook, claude-init, init
+│   ├── evidence-summary.ts # Evidence summary generator for PR reports
+│   └── commands/           # analytics, guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, claude-hook, claude-init, init, diff, evidence-pr
 ├── plugins/                # Plugin ecosystem
 │   ├── discovery.ts        # Plugin discovery mechanism
 │   ├── registry.ts         # Plugin registry
@@ -146,7 +147,7 @@ vscode-extension/              # VS Code extension
 
 tests/
 ├── *.test.js               # 14 JS test files (custom zero-dependency harness)
-└── ts/*.test.ts            # 71 TS test files (vitest)
+└── ts/*.test.ts            # 73 TS test files (vitest)
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, enterprise, open-source, strict)
 docs/                       # System documentation (architecture, event model, specs)
@@ -225,6 +226,8 @@ Each top-level directory maps to a single architectural concept:
 - `agentguard policy validate <file>` — Validate a policy file (YAML/JSON)
 - `agentguard claude-hook` — Handle Claude Code PreToolUse/PostToolUse hook events
 - `agentguard claude-init` — Set up Claude Code hook integration
+- `agentguard diff <run1> <run2>` — Compare two governance sessions side-by-side
+- `agentguard evidence-pr` — Attach governance evidence summary to a pull request
 - `agentguard init <type>` — Scaffold governance extensions (invariant, policy-pack, adapter, renderer, replay-processor)
 
 ### Event Model
@@ -293,8 +296,8 @@ npm run test:coverage      # Run with coverage (c8, 50% line threshold)
 
 **Test structure:**
 - **JS tests** (`tests/*.test.js`): 14 files using a custom zero-dependency harness (`tests/run.js` with `node:assert`)
-- **TypeScript tests** (`tests/ts/*.test.ts`): 71 files using vitest
-- **Coverage areas**: adapters, analytics (including risk scorer), kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate), decision records, domain models, events, evidence packs, execution log, export-import roundtrip, impact forecast, invariants, JSONL persistence, notification formatter, plugins (discovery, registry, validation), policy evaluation (including composer, pack loader, policy packs, evaluation trace), renderers, replay (engine, comparator, processor), simulation, SQLite storage (analytics, commands, migrations, sink, store, factory), telemetry (including tracepoint), TUI renderer, violation mapper, VS Code event reader, YAML loading
+- **TypeScript tests** (`tests/ts/*.test.ts`): 73 files using vitest
+- **Coverage areas**: adapters, analytics (including risk scorer), kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate, diff, evidence-pr), decision records, domain models, events, evidence packs, evidence summary, execution log, export-import roundtrip, impact forecast, invariants, JSONL persistence, notification formatter, plugins (discovery, registry, validation), policy evaluation (including composer, pack loader, policy packs, evaluation trace), renderers, replay (engine, comparator, processor), simulation, SQLite storage (analytics, commands, migrations, sink, store, factory), telemetry (including tracepoint), TUI renderer, violation mapper, VS Code event reader, YAML loading
 
 ## CI/CD & Automation
 
