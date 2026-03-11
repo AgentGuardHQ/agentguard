@@ -39,8 +39,8 @@ import {
 } from '../dist/events/schema.js';
 
 suite('Domain Events — Schema Validation', () => {
-  test('ALL_EVENT_KINDS contains all 46 event kinds', () => {
-    assert.strictEqual(ALL_EVENT_KINDS.size, 46);
+  test('ALL_EVENT_KINDS contains all 49 event kinds', () => {
+    assert.strictEqual(ALL_EVENT_KINDS.size, 49);
     assert.ok(ALL_EVENT_KINDS.has(ERROR_OBSERVED));
     assert.ok(ALL_EVENT_KINDS.has(BATTLE_ENDED));
     assert.ok(ALL_EVENT_KINDS.has(STATE_CHANGED));
