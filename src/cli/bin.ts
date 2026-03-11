@@ -174,6 +174,21 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard simulate --action file.write --target .env --policy agentguard.yaml',
     ],
   },
+  diff: {
+    name: 'agentguard diff',
+    description: 'Compare two governance sessions side-by-side',
+    usage: 'agentguard diff <runId-A> <runId-B> [flags]',
+    flags: [
+      { flag: '--json', description: 'Output as JSON' },
+      { flag: '--last', description: 'Compare the two most recent runs' },
+      { flag: '--dir, -d <path>', description: 'Base directory for event data' },
+    ],
+    examples: [
+      'agentguard diff run_abc123 run_def456',
+      'agentguard diff --last',
+      'agentguard diff --last --json',
+    ],
+  },
   init: {
     name: 'agentguard init',
     description: 'Scaffold a new governance extension',
@@ -328,6 +343,16 @@ async function main() {
       break;
     }
 
+    case 'diff': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS.diff));
+        break;
+      }
+      const { diff: diffCmd } = await import('./commands/diff.js');
+      await diffCmd(args.slice(1));
+      break;
+    }
+
     case 'plugin': {
       if (wantsHelp) {
         const { plugin: pluginCmd } = await import('./commands/plugin.js');
@@ -401,6 +426,11 @@ function printHelp(): void {
     agentguard inspect [runId]                Inspect action graph and decisions
     agentguard events [runId]                 Show raw event stream for a run
     agentguard analytics                      Analyze violation patterns across sessions
+
+  [1mComparison:[0m
+    agentguard diff <runA> <runB>              Compare two governance sessions
+    agentguard diff --last                     Compare the two most recent runs
+    agentguard diff --last --json              Output comparison as JSON
 
   \x1b[1mSimulation:\x1b[0m
     agentguard simulate <action-json>          Simulate action and show predicted impact
