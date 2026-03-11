@@ -128,6 +128,7 @@ AgentGuard tracks repeated denials and invariant violations. If an agent repeate
 # === Governance ===
 agentguard guard                          # Start governed action runtime
 agentguard guard --policy <file>          # Use a specific policy file (YAML/JSON)
+agentguard guard --policy a --policy b   # Compose multiple policies with precedence
 agentguard guard --dry-run                # Evaluate without executing actions
 agentguard inspect [runId]                # Show action graph and decisions for a run
 agentguard inspect --last                 # Inspect most recent run
@@ -237,6 +238,7 @@ src/
 │   ├── jsonl.ts            # JSONL event persistence (audit trail)
 │   └── decision-jsonl.ts   # Decision record persistence
 ├── policy/                 # Policy system
+│   ├── composer.ts         # Policy composition (multi-file merging)
 │   ├── evaluator.ts        # Rule matching engine
 │   ├── loader.ts           # Policy validation + loading
 │   ├── pack-loader.ts      # Policy pack loader (community policy sets)

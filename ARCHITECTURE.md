@@ -46,7 +46,7 @@ src/
 ├── analytics/     Cross-session violation analytics (aggregation, clustering, trends, risk scoring)
 ├── kernel/        Governed action kernel (orchestrate, normalize, decide, escalate)
 ├── events/        Canonical event model (schema, bus, store, JSONL persistence)
-├── policy/        Policy system (evaluator, loaders, pack loader)
+├── policy/        Policy system (composer, evaluator, loaders, pack loader)
 ├── invariants/    Invariant system (8 built-in definitions, checker)
 ├── adapters/      Execution adapters (file, shell, git, claude-code)
 ├── plugins/       Plugin ecosystem (discovery, registry, validation, sandboxing)
