@@ -203,6 +203,7 @@ describe('init command', () => {
 
   describe('custom directory', () => {
     it('should use --dir when provided', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       const code = await init([
         '--extension',
         'renderer',
@@ -219,6 +220,32 @@ describe('init command', () => {
         (call) => typeof call[0] === 'string' && (call[0] as string).includes('custom-dir')
       );
       expect(hasCustomDir).toBe(true);
+
+      // Next steps output should show the --dir path, not the --name
+      const allOutput = consoleSpy.mock.calls.flat().join('\n');
+      expect(allOutput).toContain('custom-dir');
+      expect(allOutput).not.toContain('cd test');
+    });
+  });
+
+  describe('name validation', () => {
+    it('should reject names with template syntax or special characters', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const code = await init(['--extension', 'renderer', '--name', 'bad`name']);
+      expect(code).toBe(1);
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid extension name'));
+    });
+
+    it('should reject names with uppercase letters', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const code = await init(['--extension', 'renderer', '--name', 'BadName']);
+      expect(code).toBe(1);
+    });
+
+    it('should accept valid kebab-case names', async () => {
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+      const code = await init(['--extension', 'renderer', '--name', 'my-renderer-v2']);
+      expect(code).toBe(0);
     });
   });
 
