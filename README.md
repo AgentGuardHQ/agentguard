@@ -131,6 +131,7 @@ agentguard guard                          # Start governed action runtime
 agentguard guard --policy <file>          # Use a specific policy file (YAML/JSON)
 agentguard guard --policy a --policy b   # Compose multiple policies with precedence
 agentguard guard --dry-run                # Evaluate without executing actions
+agentguard guard --trace                  # Show policy evaluation traces inline
 agentguard inspect [runId]                # Show action graph and decisions for a run
 agentguard inspect --last                 # Inspect most recent run
 agentguard events [runId]                 # Show raw event stream for a run
@@ -161,6 +162,7 @@ agentguard policy validate <file>        # Validate a policy file without starti
 # === CI/CD ===
 agentguard ci-check <session>             # Verify governance session for violations
 agentguard ci-check --last                # Check most recent run locally
+agentguard ci-check --post-evidence       # Post evidence report as PR comment
 
 # === Comparison ===
 agentguard diff <run1> <run2>             # Compare two governance sessions side-by-side
@@ -180,6 +182,7 @@ agentguard traces --last --json          # JSON output
 # === Integration ===
 agentguard claude-init                    # Set up Claude Code hook integration
 agentguard init <type>                    # Scaffold governance extensions
+agentguard init --template <name>         # Scaffold policy from template (strict, permissive, ci-only, development)
 agentguard help                           # Show all commands
 ```
 
@@ -305,6 +308,7 @@ vscode-extension/              # VS Code extension
 └── package.json               # Extension manifest
 
 policies/                      # Policy packs (YAML: ci-safe, enterprise, open-source, strict)
+templates/                     # Policy templates for init --template scaffolding
 ```
 
 ## Run Locally

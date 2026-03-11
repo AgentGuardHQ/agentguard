@@ -150,6 +150,7 @@ tests/
 └── ts/*.test.ts            # 74 TS test files (vitest)
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, enterprise, open-source, strict)
+templates/                  # Policy templates for init --template scaffolding
 docs/                       # System documentation (architecture, event model, specs)
 hooks/                      # Git hooks (post-commit, post-merge)
 examples/                   # Example governance scenarios and error demos
@@ -215,6 +216,7 @@ Each top-level directory maps to a single architectural concept:
 - `agentguard guard` — Start the governed action runtime (policy + invariant enforcement)
 - `agentguard guard --policy <file>` — Use a specific policy file (YAML or JSON)
 - `agentguard guard --dry-run` — Evaluate without executing actions
+- `agentguard guard --trace` — Show policy evaluation traces inline
 - `agentguard inspect [runId]` — Show action graph and decisions for a run
 - `agentguard events [runId]` — Show raw event stream for a run
 - `agentguard export <runId>` — Export a governance session to a portable JSONL file
@@ -223,6 +225,7 @@ Each top-level directory maps to a single architectural concept:
 - `agentguard plugin list|install|remove|search` — Manage plugins
 - `agentguard simulate <action-json>` — Simulate an action and display predicted impact without executing
 - `agentguard ci-check <session-file>` — CI governance verification (check a session for violations)
+- `agentguard ci-check --post-evidence` — Post governance evidence report as PR comment
 - `agentguard policy validate <file>` — Validate a policy file (YAML/JSON)
 - `agentguard claude-hook` — Handle Claude Code PreToolUse/PostToolUse hook events
 - `agentguard claude-init` — Set up Claude Code hook integration
@@ -230,6 +233,7 @@ Each top-level directory maps to a single architectural concept:
 - `agentguard evidence-pr` — Attach governance evidence summary to a pull request
 - `agentguard traces [runId]` — Display policy evaluation traces for a run
 - `agentguard init <type>` — Scaffold governance extensions (invariant, policy-pack, adapter, renderer, replay-processor)
+- `agentguard init --template <name>` — Scaffold policy from template (strict, permissive, ci-only, development)
 
 ### Event Model
 The canonical event model is the architectural spine. Event kinds defined in `src/events/schema.ts`:

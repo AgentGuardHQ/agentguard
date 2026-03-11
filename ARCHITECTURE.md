@@ -59,6 +59,7 @@ src/
 vscode-extension/  VS Code extension (sidebar panels, notifications, event reader, inline diagnostics)
 
 policies/          Policy packs (YAML: ci-safe, enterprise, open-source, strict)
+templates/         Policy templates for init --template scaffolding
 ```
 
 ## Layer Rules
