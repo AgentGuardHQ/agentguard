@@ -40,13 +40,17 @@ const COMMANDS: Record<string, CommandHelp> = {
     description: 'Start the governed action runtime — enforce policies and invariants',
     usage: 'agentguard guard [flags]',
     flags: [
-      { flag: '--policy, -p <file>', description: 'Policy file (YAML or JSON)' },
+      {
+        flag: '--policy, -p <file>',
+        description: 'Policy file (YAML or JSON). Repeatable for composition.',
+      },
       { flag: '--dry-run', description: 'Evaluate without executing actions' },
       { flag: '--verbose, -v', description: 'Show detailed output' },
     ],
     examples: [
       'agentguard guard',
       'agentguard guard --policy agentguard.yaml',
+      'agentguard guard --policy base.yaml --policy overrides.yaml',
       'agentguard guard --dry-run',
       'echo \'{"tool":"Bash","command":"rm -rf /"}\' | agentguard guard',
     ],
@@ -176,14 +180,23 @@ async function main() {
         break;
       }
       const flags = args.slice(1);
-      const policyIdx = flags.findIndex((f) => f === '--policy' || f === '-p');
-      const policyFile = policyIdx !== -1 ? flags[policyIdx + 1] : undefined;
+
+      // Collect all --policy/-p flags (repeatable for composition)
+      const policyFiles: string[] = [];
+      for (let i = 0; i < flags.length; i++) {
+        if ((flags[i] === '--policy' || flags[i] === '-p') && flags[i + 1]) {
+          policyFiles.push(flags[i + 1]);
+          i++; // skip the value
+        }
+      }
+
       const dryRun = flags.includes('--dry-run');
       const verbose = flags.includes('--verbose') || flags.includes('-v');
 
       const { guard } = await import('./commands/guard.js');
       const code = await guard(args.slice(1), {
-        policy: policyFile,
+        policy: policyFiles.length === 1 ? policyFiles[0] : undefined,
+        policies: policyFiles.length > 1 ? policyFiles : undefined,
         dryRun,
         verbose,
         stdin: true,
@@ -337,6 +350,7 @@ function printHelp(): void {
   \x1b[1mGovernance:\x1b[0m
     agentguard guard                          Start governed action runtime
     agentguard guard --policy <file>          Use a specific policy file (YAML/JSON)
+    agentguard guard --policy a --policy b    Compose multiple policies with precedence
     agentguard guard --dry-run                Evaluate without executing actions
     agentguard inspect [runId]                Inspect action graph and decisions
     agentguard events [runId]                 Show raw event stream for a run
