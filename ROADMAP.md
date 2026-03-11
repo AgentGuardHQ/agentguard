@@ -60,7 +60,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Action Authorization Boundary (AAB) | Implemented (2 bypass vectors) | `src/kernel/aab.ts` |
 | Policy Evaluator (two-phase deny/allow) | Implemented | `src/policy/evaluator.ts` |
 | 8 Built-in Invariants | Fully Implemented | `src/invariants/definitions.ts`, `src/invariants/checker.ts` |
-| Event Model (45 event kinds) | Comprehensive | `src/events/schema.ts` |
+| Event Model (46 event kinds) | Comprehensive | `src/events/schema.ts` |
 | JSONL Persistence | Implemented | `src/events/jsonl.ts` |
 | Simulation Engine (3 simulators + impact forecast) | Fully Implemented | `src/kernel/simulation/` |
 | Blast Radius Computation | Implemented | `src/kernel/blast-radius.ts` |
@@ -105,7 +105,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | AAB Reference Monitor | Implemented | 1 bypass vector to close (missing-adapter fixed) |
 | Policy Evaluator | Implemented | Production |
 | 8 Built-in Invariants | Fully Implemented | Production |
-| Event Model (45 kinds) | Comprehensive | Production |
+| Event Model (46 kinds) | Comprehensive | Production |
 | Simulation & Forecasting | Fully Implemented | Production |
 | Escalation State Machine | Implemented | Functional (events not persisted) |
 | Cross-session Analytics | Implemented | Functional (forensic only) |
@@ -264,8 +264,8 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 > **Theme:** Shareable, composable, discoverable policies
 
 - [x] Policy templates for common scenarios (`policies/strict`, `policies/ci-safe`, `policies/enterprise`, `policies/open-source`)
-- [ ] Policy composition (multiple policy files merged with precedence)
-- [ ] Policy validation CLI (`agentguard policy validate <file>`)
+- [x] Policy composition (multiple policy files merged with precedence) (`src/policy/composer.ts`, `guard --policy a --policy b`)
+- [x] Policy validation CLI (`agentguard policy validate <file>`)
 - [ ] Community policy packs (SOC2, HIPAA, internal engineering standards)
 - [ ] Policy pack versioning and compatibility
 
