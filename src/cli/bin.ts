@@ -433,9 +433,11 @@ function printHelp(): void {
     agentguard init --extension <type>        Scaffold a new governance extension
     agentguard init --extension <type> -n X   Name the extension
 
+
   \x1b[1mCI/CD:\x1b[0m
     agentguard ci-check <session>             Verify governance session in CI
     agentguard ci-check --last                Check most recent run locally
+
 
   \x1b[1mIntegration:\x1b[0m
     agentguard claude-init                    Set up Claude Code hook integration

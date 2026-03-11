@@ -4,6 +4,7 @@
 // Always exits 0 — hooks must never fail.
 // Supports both JSONL (default) and SQLite storage backends via --store flag or AGENTGUARD_STORE env var.
 
+import { fileURLToPath } from 'node:url';
 import type { ClaudeCodeHookPayload } from '../../adapters/claude-code.js';
 
 export async function claudeHook(hookType?: string, extraArgs: string[] = []): Promise<void> {
@@ -140,4 +141,12 @@ function readStdin(): Promise<string> {
     process.stdin.on('error', () => resolve(''));
     if (process.stdin.isTTY) resolve('');
   });
+}
+
+// Entry point: when run directly via `node claude-hook.js pre|post`, invoke claudeHook().
+// Without this, the file only exports the function and nothing executes.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const hookArg = process.argv[2]; // 'pre' or 'post'
+  const extra = process.argv.slice(3); // e.g., ['--store', 'sqlite']
+  claudeHook(hookArg, extra);
 }

@@ -143,6 +143,8 @@ describe('validateManifest', () => {
       expect(validateManifest(validManifest({ type: 'renderer' })).valid).toBe(true);
       expect(validateManifest(validManifest({ type: 'replay-processor' })).valid).toBe(true);
       expect(validateManifest(validManifest({ type: 'policy-pack' })).valid).toBe(true);
+      expect(validateManifest(validManifest({ type: 'invariant' })).valid).toBe(true);
+      expect(validateManifest(validManifest({ type: 'adapter' })).valid).toBe(true);
     });
 
     it('rejects unknown plugin types', () => {
