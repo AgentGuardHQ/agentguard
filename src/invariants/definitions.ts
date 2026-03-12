@@ -543,6 +543,62 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
   },
 
   {
+    id: 'no-cicd-config-modification',
+    name: 'No CI/CD Config Modification',
+    description:
+      'CI/CD pipeline configurations must not be modified by governed actions — prevents supply chain attacks via malicious build steps',
+    severity: 5,
+    check(state) {
+      const CICD_DIR_PATTERNS = [
+        '.github/workflows/',
+        '.github\\workflows\\',
+        '.circleci/',
+        '.circleci\\',
+        '.buildkite/',
+        '.buildkite\\',
+      ];
+      const CICD_FILE_PATTERNS = [
+        '.gitlab-ci.yml',
+        'Jenkinsfile',
+        '.travis.yml',
+        'azure-pipelines.yml',
+      ];
+
+      const matchesCicdPath = (str: string) => {
+        const normalized = str.replace(/\\/g, '/');
+        return (
+          CICD_DIR_PATTERNS.some((p) => str.includes(p)) ||
+          CICD_FILE_PATTERNS.some((p) => normalized.includes(p))
+        );
+      };
+
+      const target = state.currentTarget || '';
+      const targetViolation = target !== '' && matchesCicdPath(target);
+
+      const command = state.currentCommand || '';
+      const commandViolation = command !== '' && matchesCicdPath(command);
+
+      const cicdFiles = (state.modifiedFiles || []).filter((f) => matchesCicdPath(f));
+
+      const holds = !targetViolation && !commandViolation && cicdFiles.length === 0;
+
+      const violations: string[] = [];
+      if (targetViolation) violations.push(`target: ${target}`);
+      if (commandViolation) violations.push(`command references CI/CD config`);
+      if (cicdFiles.length > 0) violations.push(`modified: ${cicdFiles.join(', ')}`);
+
+      return {
+        holds,
+        expected: 'No modifications to CI/CD configuration files',
+        actual: holds
+          ? 'No CI/CD config files affected'
+          : `CI/CD config modification detected (${violations.join('; ')})`,
+      };
+    },
+  },
+
+
+  {
     id: 'lockfile-integrity',
     name: 'Lockfile Integrity',
     description: 'Package lockfiles must stay in sync with manifests',
