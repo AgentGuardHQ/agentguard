@@ -31,7 +31,14 @@ export interface ViolationCluster {
 }
 
 /** Dimension used to cluster violations */
-export type ClusterDimension = 'actionType' | 'target' | 'invariant' | 'kind' | 'reason';
+export type ClusterDimension =
+  | 'actionType'
+  | 'target'
+  | 'invariant'
+  | 'kind'
+  | 'reason'
+  | 'category'
+  | 'errorPattern';
 
 /** Trend direction for a violation pattern */
 export type TrendDirection = 'increasing' | 'decreasing' | 'stable' | 'new' | 'resolved';
@@ -84,6 +91,7 @@ export interface FailureAnalysis {
   readonly failuresByCategory: Partial<Record<FailureCategory, number>>;
   readonly clusters: readonly ViolationCluster[];
   readonly trends: readonly ViolationTrend[];
+  readonly rateTrends: readonly FailureRateTrend[];
   readonly topPatterns: readonly FailurePattern[];
 }
 
@@ -109,6 +117,20 @@ export interface RunRiskScore {
   readonly totalDenials: number;
   readonly totalViolations: number;
   readonly peakEscalation: number;
+}
+
+/** Failure rate trend — tracks how the ratio of failures to total actions changes over time */
+export interface FailureRateTrend {
+  readonly key: string;
+  readonly dimension: ClusterDimension;
+  readonly recentRate: number;
+  readonly previousRate: number;
+  readonly recentFailures: number;
+  readonly recentTotal: number;
+  readonly previousFailures: number;
+  readonly previousTotal: number;
+  readonly direction: TrendDirection;
+  readonly changePercent: number;
 }
 
 /** Options for the analytics engine */

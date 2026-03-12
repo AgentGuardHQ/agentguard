@@ -162,6 +162,21 @@ function appendFailureAnalysisMarkdown(lines: string[], fa: FailureAnalysis): vo
     }
     lines.push('');
   }
+
+  if (fa.rateTrends.length > 0) {
+    lines.push('### Failure Rate Trends');
+    lines.push('');
+    lines.push('| Action | Direction | Recent Rate | Previous Rate | Change |');
+    lines.push('|--------|-----------|-------------|---------------|--------|');
+    for (const rt of fa.rateTrends.slice(0, 20)) {
+      const dir = `${trendIndicator(rt.direction)} ${rt.direction}`;
+      const change = rt.changePercent > 0 ? `+${rt.changePercent}%` : `${rt.changePercent}%`;
+      const recentPct = `${(rt.recentRate * 100).toFixed(1)}% (${rt.recentFailures}/${rt.recentTotal})`;
+      const prevPct = `${(rt.previousRate * 100).toFixed(1)}% (${rt.previousFailures}/${rt.previousTotal})`;
+      lines.push(`| ${rt.key} | ${dir} | ${recentPct} | ${prevPct} | ${change} |`);
+    }
+    lines.push('');
+  }
 }
 
 /** Generate a JSON report */
@@ -315,6 +330,18 @@ function appendFailureAnalysisTerminal(lines: string[], fa: FailureAnalysis): vo
       lines.push(
         `  ${dir} ${trend.key} (${trend.dimension}): ${trend.recentCount} recent / ${trend.previousCount} previous (${change})`
       );
+    }
+    lines.push('');
+  }
+
+  if (fa.rateTrends.length > 0) {
+    lines.push('  Failure Rate Trends');
+    for (const rt of fa.rateTrends.slice(0, 10)) {
+      const dir = trendIndicator(rt.direction);
+      const change = rt.changePercent > 0 ? `+${rt.changePercent}%` : `${rt.changePercent}%`;
+      const recentPct = `${(rt.recentRate * 100).toFixed(1)}%`;
+      const prevPct = `${(rt.previousRate * 100).toFixed(1)}%`;
+      lines.push(`  ${dir} ${rt.key}: ${recentPct} recent / ${prevPct} previous (${change})`);
     }
     lines.push('');
   }
