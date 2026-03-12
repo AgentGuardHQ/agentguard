@@ -2,7 +2,13 @@
 // and infers likely root causes for recurring patterns.
 
 import { simpleHash } from '../core/hash.js';
-import type { ViolationRecord, ViolationCluster, ClusterDimension } from './types.js';
+import type {
+  ViolationRecord,
+  ViolationCluster,
+  ClusterDimension,
+  FailureCategory,
+} from './types.js';
+import { categorizeFailure } from './aggregator.js';
 
 const DEFAULT_MIN_CLUSTER_SIZE = 2;
 
@@ -19,9 +25,48 @@ function extractKey(violation: ViolationRecord, dimension: ClusterDimension): st
       return violation.kind;
     case 'reason':
       return violation.reason ?? null;
+    case 'category':
+      return categorizeFailure(violation.kind);
+    case 'errorPattern':
+      return normalizeErrorPattern(violation.reason ?? null);
     default:
       return null;
   }
+}
+
+/**
+ * Normalize an error message into a pattern by stripping variable parts.
+ * Replaces file paths, numbers, and UUIDs with placeholders so similar errors cluster together.
+ */
+export function normalizeErrorPattern(message: string | null): string | null {
+  if (!message) return null;
+
+  let pattern = message;
+
+  // Replace file paths (Unix and Windows) with <path>
+  pattern = pattern.replace(/(?:\/[\w./-]+|[A-Z]:\\[\w.\\-]+)/g, '<path>');
+
+  // Replace UUIDs with <uuid>
+  pattern = pattern.replace(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+    '<uuid>'
+  );
+
+  // Replace hex hashes (7+ chars) with <hash>
+  pattern = pattern.replace(/\b[0-9a-f]{7,40}\b/gi, '<hash>');
+
+  // Replace numbers with <N> (digits that may be adjacent to units like ms, KB, etc.)
+  pattern = pattern.replace(/\d+/g, '<N>');
+
+  // Collapse whitespace
+  pattern = pattern.replace(/\s+/g, ' ').trim();
+
+  // Truncate to prevent very long patterns
+  if (pattern.length > 120) {
+    pattern = pattern.slice(0, 117) + '...';
+  }
+
+  return pattern;
 }
 
 /** Generate a human-readable label for a cluster */
@@ -37,6 +82,10 @@ function clusterLabel(dimension: ClusterDimension, key: string): string {
       return `Event: ${key}`;
     case 'reason':
       return `Reason: ${key}`;
+    case 'category':
+      return `Category: ${key}`;
+    case 'errorPattern':
+      return `Error: ${key}`;
     default:
       return key;
   }
@@ -92,6 +141,21 @@ function inferCause(
     if (reasons.length === 1) {
       return `All denials share the same reason: ${reasons[0]}`;
     }
+  }
+
+  if (dimension === 'category') {
+    const categoryLabels: Record<FailureCategory, string> = {
+      denial: 'Policy or authorization denials — review policy rules and agent permissions',
+      violation: 'Invariant violations — review invariant definitions and agent behavior',
+      execution: 'Execution failures — check command reliability and error handling',
+      escalation: 'Escalation events — agent actions repeatedly trigger elevated governance',
+      pipeline: 'Pipeline failures — review stage definitions and dependencies',
+    };
+    return categoryLabels[key as FailureCategory] ?? undefined;
+  }
+
+  if (dimension === 'errorPattern') {
+    return `Recurring error pattern across ${sessionCount} session(s): ${key}`;
   }
 
   return undefined;
@@ -152,6 +216,32 @@ export function clusterViolations(
 
   for (const dim of dimensions) {
     allClusters.push(...clusterByDimension(violations, dim, minSize));
+  }
+
+  return allClusters.sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Cluster failures using failure-specific dimensions (category + error pattern)
+ * in addition to the standard dimensions. This provides richer grouping for
+ * execution errors, escalations, and pipeline failures.
+ */
+export function clusterFailures(
+  failures: readonly ViolationRecord[],
+  minSize = DEFAULT_MIN_CLUSTER_SIZE
+): ViolationCluster[] {
+  const dimensions: ClusterDimension[] = [
+    'category',
+    'errorPattern',
+    'actionType',
+    'target',
+    'kind',
+    'reason',
+  ];
+  const allClusters: ViolationCluster[] = [];
+
+  for (const dim of dimensions) {
+    allClusters.push(...clusterByDimension(failures, dim, minSize));
   }
 
   return allClusters.sort((a, b) => b.count - a.count);

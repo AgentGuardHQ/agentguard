@@ -1,12 +1,12 @@
 {
-  "commits": 9,
+  "commits": 11,
   "prs_merged": 1,
-  "bugs_fixed": 1,
+  "bugs_fixed": 2,
   "tests_passing": 0,
   "refactors": 0,
   "code_reviews": 0,
   "conflicts_resolved": 0,
   "ci_passes": 0,
   "deploys": 0,
-  "docs_written": 3
+  "docs_written": 4
 }

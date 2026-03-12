@@ -8,9 +8,10 @@ import {
   listSessionIds,
   loadSessionEvents,
 } from './aggregator.js';
-import { clusterViolations } from './cluster.js';
+import { clusterViolations, clusterFailures } from './cluster.js';
 import { computeAllRunRiskScores } from './risk-scorer.js';
-import { computeAllTrends } from './trends.js';
+import { computeAllTrends, computeFailureRateTrends } from './trends.js';
+import type { DomainEvent } from '../core/types.js';
 import type {
   AnalyticsReport,
   AnalyticsOptions,
@@ -30,7 +31,7 @@ export function analyze(options: AnalyticsOptions = {}): AnalyticsReport {
   const trendWindowMs = options.trendWindowMs ?? DEFAULT_TREND_WINDOW_MS;
 
   // 1. Aggregate violations from all sessions
-  const { violations, sessionCount, allEvents } = aggregateViolations(baseDir);
+  const { violations, sessionCount } = aggregateViolations(baseDir);
 
   // 2. Count by kind
   const violationsByKind: Record<string, number> = {};
@@ -58,7 +59,7 @@ export function analyze(options: AnalyticsOptions = {}): AnalyticsReport {
 
   // 6. Compute per-run risk scores
   const sessionIds = listSessionIds(baseDir);
-  const sessionEventsMap = new Map<string, typeof allEvents>();
+  const sessionEventsMap = new Map<string, DomainEvent[]>();
   for (const sid of sessionIds) {
     sessionEventsMap.set(sid, loadSessionEvents(sid, baseDir));
   }
@@ -86,7 +87,7 @@ function buildFailureAnalysis(
   minClusterSize: number,
   trendWindowMs: number
 ): FailureAnalysis {
-  const { failures } = aggregateFailures(baseDir);
+  const { failures, allEvents } = aggregateFailures(baseDir);
 
   // Count by kind
   const failuresByKind: Record<string, number> = {};
@@ -101,11 +102,14 @@ function buildFailureAnalysis(
     failuresByCategory[cat] = (failuresByCategory[cat] ?? 0) + 1;
   }
 
-  // Cluster failures
-  const failureClusters = clusterViolations(failures, minClusterSize);
+  // Cluster failures using failure-specific dimensions (category, errorPattern, etc.)
+  const failureClusters = clusterFailures(failures, minClusterSize);
 
-  // Compute failure trends
+  // Compute raw failure count trends
   const failureTrends = computeAllTrends(failures, trendWindowMs);
+
+  // Compute failure rate trends (failures / total actions ratio over time)
+  const rateTrends = computeFailureRateTrends(failures, allEvents, trendWindowMs);
 
   // Extract top patterns with categories
   const patternMap = new Map<string, { count: number; category: FailureCategory }>();
@@ -130,6 +134,7 @@ function buildFailureAnalysis(
     failuresByCategory,
     clusters: failureClusters,
     trends: failureTrends,
+    rateTrends,
     topPatterns,
   };
 }

@@ -8,14 +8,20 @@ export {
   listSessionIds,
   loadSessionEvents,
 } from './aggregator.js';
-export { clusterViolations, clusterByDimension } from './cluster.js';
+export {
+  clusterViolations,
+  clusterByDimension,
+  clusterFailures,
+  normalizeErrorPattern,
+} from './cluster.js';
 export { computeRunRiskScore, computeAllRunRiskScores } from './risk-scorer.js';
-export { computeAllTrends, computeTrends } from './trends.js';
+export { computeAllTrends, computeTrends, computeFailureRateTrends } from './trends.js';
 export { toMarkdown, toJson, toTerminal } from './reporter.js';
 export type {
   ViolationRecord,
   ViolationCluster,
   ViolationTrend,
+  FailureRateTrend,
   AnalyticsReport,
   AnalyticsOptions,
   ClusterDimension,

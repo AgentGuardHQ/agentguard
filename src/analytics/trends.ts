@@ -1,7 +1,14 @@
 // Trend identification — detects increasing/decreasing violation patterns
 // by comparing recent vs previous time windows.
 
-import type { ViolationRecord, ViolationTrend, ClusterDimension, TrendDirection } from './types.js';
+import type { DomainEvent } from '../core/types.js';
+import type {
+  ViolationRecord,
+  ViolationTrend,
+  FailureRateTrend,
+  ClusterDimension,
+  TrendDirection,
+} from './types.js';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_WINDOW_MS = 7 * ONE_DAY_MS; // 7-day windows
@@ -49,6 +56,11 @@ function countByKey(
         break;
       case 'reason':
         key = v.reason;
+        break;
+      case 'category':
+      case 'errorPattern':
+        // These dimensions are handled by cluster.ts, not used in raw trend counting
+        key = undefined;
         break;
     }
 
@@ -126,4 +138,116 @@ export function computeAllTrends(
   }
 
   return allTrends.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+}
+
+/**
+ * Compute failure rate trends — compares the ratio of failures to total actions
+ * between recent and previous time windows. This detects whether a particular
+ * action type is becoming MORE failure-prone, not just whether raw counts are changing.
+ */
+export function computeFailureRateTrends(
+  failures: readonly ViolationRecord[],
+  allEvents: readonly DomainEvent[],
+  windowMs = DEFAULT_WINDOW_MS
+): FailureRateTrend[] {
+  if (failures.length === 0 || allEvents.length === 0) return [];
+
+  const now = Math.max(...allEvents.map((e) => e.timestamp));
+  const recentStart = now - windowMs;
+  const previousStart = recentStart - windowMs;
+
+  // Split all events into windows for total counts
+  const recentEvents = allEvents.filter((e) => e.timestamp >= recentStart);
+  const previousEvents = allEvents.filter(
+    (e) => e.timestamp >= previousStart && e.timestamp < recentStart
+  );
+
+  // Split failures into windows
+  const recentFailures = failures.filter((f) => f.timestamp >= recentStart);
+  const previousFailures = failures.filter(
+    (f) => f.timestamp >= previousStart && f.timestamp < recentStart
+  );
+
+  // Count failures by actionType in each window
+  const recentFailureCounts = countByKey(recentFailures, 'actionType');
+  const previousFailureCounts = countByKey(previousFailures, 'actionType');
+
+  // Count total events by actionType in each window
+  const recentTotalCounts = countEventsByActionType(recentEvents);
+  const previousTotalCounts = countEventsByActionType(previousEvents);
+
+  const allKeys = new Set([...recentFailureCounts.keys(), ...previousFailureCounts.keys()]);
+  const trends: FailureRateTrend[] = [];
+
+  for (const key of allKeys) {
+    const rf = recentFailureCounts.get(key) ?? 0;
+    const rt = recentTotalCounts.get(key) ?? 0;
+    const pf = previousFailureCounts.get(key) ?? 0;
+    const pt = previousTotalCounts.get(key) ?? 0;
+
+    const recentRate = rt > 0 ? rf / rt : 0;
+    const previousRate = pt > 0 ? pf / pt : 0;
+
+    const direction = determineRateTrend(recentRate, previousRate, rf, pf);
+
+    if (direction === 'stable' && rf === 0) continue;
+
+    const changePercent =
+      previousRate === 0
+        ? recentRate > 0
+          ? 100
+          : 0
+        : Math.round(((recentRate - previousRate) / previousRate) * 100);
+
+    trends.push({
+      key,
+      dimension: 'actionType',
+      recentRate: Math.round(recentRate * 1000) / 1000,
+      previousRate: Math.round(previousRate * 1000) / 1000,
+      recentFailures: rf,
+      recentTotal: rt,
+      previousFailures: pf,
+      previousTotal: pt,
+      direction,
+      changePercent,
+    });
+  }
+
+  return trends.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+}
+
+/** Count events by actionType from raw domain events */
+function countEventsByActionType(events: readonly DomainEvent[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const e of events) {
+    const rec = e as unknown as Record<string, unknown>;
+    const actionType = (rec.actionType as string | undefined) ?? (rec.action as string | undefined);
+    if (actionType) {
+      counts.set(actionType, (counts.get(actionType) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/** Determine trend direction from failure rates */
+function determineRateTrend(
+  recentRate: number,
+  previousRate: number,
+  recentCount: number,
+  previousCount: number
+): TrendDirection {
+  if (previousCount === 0 && recentCount > 0) return 'new';
+  if (recentCount === 0 && previousCount > 0) return 'resolved';
+  if (previousCount === 0 && recentCount === 0) return 'stable';
+
+  const rateChange =
+    previousRate === 0
+      ? recentRate > 0
+        ? 100
+        : 0
+      : ((recentRate - previousRate) / previousRate) * 100;
+
+  if (rateChange > 20) return 'increasing';
+  if (rateChange < -20) return 'decreasing';
+  return 'stable';
 }

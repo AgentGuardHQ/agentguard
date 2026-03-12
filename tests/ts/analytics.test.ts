@@ -14,8 +14,8 @@ vi.mock('node:fs', () => ({
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import type { ViolationRecord, ClusterDimension } from '../../src/analytics/types.js';
-import { clusterViolations, clusterByDimension } from '../../src/analytics/cluster.js';
-import { computeTrends, computeAllTrends } from '../../src/analytics/trends.js';
+import { clusterViolations, clusterByDimension, clusterFailures, normalizeErrorPattern } from '../../src/analytics/cluster.js';
+import { computeTrends, computeAllTrends, computeFailureRateTrends } from '../../src/analytics/trends.js';
 import { toMarkdown, toJson, toTerminal } from '../../src/analytics/reporter.js';
 import {
   aggregateViolations,
@@ -823,6 +823,7 @@ describe('failure reporter', () => {
       failuresByCategory: { execution: 3, denial: 2, escalation: 1, pipeline: 2 },
       clusters: [],
       trends: [],
+      rateTrends: [],
       topPatterns: [
         { pattern: 'ActionFailed:shell.exec', count: 3, category: 'execution' as const },
         { pattern: 'ActionDenied:git.push', count: 2, category: 'denial' as const },
@@ -861,5 +862,345 @@ describe('failure reporter', () => {
       expect(parsed.failureAnalysis.totalFailures).toBe(8);
       expect(parsed.failureAnalysis.failuresByCategory.execution).toBe(3);
     });
+  });
+
+  describe('reporter with rate trends', () => {
+    const reportWithRateTrends = {
+      ...reportWithFailures,
+      failureAnalysis: {
+        ...reportWithFailures.failureAnalysis,
+        rateTrends: [
+          {
+            key: 'shell.exec',
+            dimension: 'actionType' as ClusterDimension,
+            recentRate: 0.5,
+            previousRate: 0.2,
+            recentFailures: 5,
+            recentTotal: 10,
+            previousFailures: 2,
+            previousTotal: 10,
+            direction: 'increasing' as const,
+            changePercent: 150,
+          },
+        ],
+      },
+    };
+
+    it('includes rate trends in markdown output', () => {
+      const md = toMarkdown(reportWithRateTrends);
+      expect(md).toContain('### Failure Rate Trends');
+      expect(md).toContain('shell.exec');
+      expect(md).toContain('50.0%');
+      expect(md).toContain('20.0%');
+    });
+
+    it('includes rate trends in terminal output', () => {
+      const output = toTerminal(reportWithRateTrends);
+      expect(output).toContain('Failure Rate Trends');
+      expect(output).toContain('shell.exec');
+      expect(output).toContain('50.0%');
+    });
+  });
+});
+
+// --- Error Pattern Normalization Tests ---
+
+describe('normalizeErrorPattern', () => {
+  it('returns null for null input', () => {
+    expect(normalizeErrorPattern(null)).toBeNull();
+  });
+
+  it('replaces Unix file paths with <path>', () => {
+    const result = normalizeErrorPattern('Failed to read /usr/local/bin/config.json');
+    expect(result).toContain('<path>');
+    expect(result).not.toContain('/usr/local');
+  });
+
+  it('replaces Windows file paths with <path>', () => {
+    const result = normalizeErrorPattern('Cannot open C:\\Users\\test\\file.ts');
+    expect(result).toContain('<path>');
+    expect(result).not.toContain('C:\\Users');
+  });
+
+  it('replaces UUIDs with <uuid>', () => {
+    const result = normalizeErrorPattern('Session 550e8400-e29b-41d4-a716-446655440000 failed');
+    expect(result).toContain('<uuid>');
+    expect(result).not.toContain('550e8400');
+  });
+
+  it('replaces standalone numbers with <N>', () => {
+    const result = normalizeErrorPattern('Exit code 137 after 3000ms');
+    expect(result).toBe('Exit code <N> after <N>ms');
+  });
+
+  it('truncates long patterns', () => {
+    const longMessage = 'Error: '.repeat(50);
+    const result = normalizeErrorPattern(longMessage);
+    expect(result!.length).toBeLessThanOrEqual(120);
+    expect(result).toContain('...');
+  });
+
+  it('collapses whitespace', () => {
+    const result = normalizeErrorPattern('Error:   multiple    spaces');
+    expect(result).toBe('Error: multiple spaces');
+  });
+});
+
+// --- Failure-Specific Clustering Tests ---
+
+describe('clusterFailures', () => {
+  const failures: ViolationRecord[] = [
+    makeViolation({
+      eventId: 'f1',
+      kind: 'ActionFailed',
+      actionType: 'shell.exec',
+      reason: 'Exit code 1',
+    }),
+    makeViolation({
+      eventId: 'f2',
+      kind: 'ActionFailed',
+      actionType: 'shell.exec',
+      reason: 'Exit code 2',
+    }),
+    makeViolation({
+      eventId: 'f3',
+      kind: 'ActionDenied',
+      actionType: 'git.push',
+      reason: 'Protected branch',
+    }),
+    makeViolation({
+      eventId: 'f4',
+      kind: 'ActionDenied',
+      actionType: 'git.push',
+      reason: 'Protected branch',
+    }),
+    makeViolation({
+      eventId: 'f5',
+      kind: 'ActionEscalated',
+      actionType: 'file.write',
+      reason: 'Blast radius exceeded',
+    }),
+    makeViolation({
+      eventId: 'f6',
+      kind: 'ActionEscalated',
+      actionType: 'file.write',
+      reason: 'Blast radius exceeded',
+    }),
+  ];
+
+  it('clusters by category dimension', () => {
+    const clusters = clusterFailures(failures, 2);
+    const categoryClusters = clusters.filter((c) => c.groupBy === 'category');
+    expect(categoryClusters.length).toBeGreaterThanOrEqual(2);
+
+    const executionCluster = categoryClusters.find((c) => c.key === 'execution');
+    expect(executionCluster).toBeDefined();
+    expect(executionCluster!.count).toBe(2);
+
+    const denialCluster = categoryClusters.find((c) => c.key === 'denial');
+    expect(denialCluster).toBeDefined();
+    expect(denialCluster!.count).toBe(2);
+  });
+
+  it('clusters by errorPattern dimension', () => {
+    const clusters = clusterFailures(failures, 2);
+    const errorClusters = clusters.filter((c) => c.groupBy === 'errorPattern');
+    expect(errorClusters.length).toBeGreaterThanOrEqual(1);
+
+    // "Exit code 1" and "Exit code 2" should normalize to the same pattern
+    const exitCodeCluster = errorClusters.find((c) => c.key.includes('Exit code'));
+    expect(exitCodeCluster).toBeDefined();
+    expect(exitCodeCluster!.count).toBe(2);
+  });
+
+  it('includes inferred cause for category clusters', () => {
+    const clusters = clusterFailures(failures, 2);
+    const executionCluster = clusters.find(
+      (c) => c.groupBy === 'category' && c.key === 'execution'
+    );
+    expect(executionCluster?.inferredCause).toContain('Execution failures');
+  });
+
+  it('includes standard dimensions alongside failure-specific ones', () => {
+    const clusters = clusterFailures(failures, 2);
+    const dimensions = new Set(clusters.map((c) => c.groupBy));
+    expect(dimensions.has('category')).toBe(true);
+    expect(dimensions.has('actionType')).toBe(true);
+  });
+});
+
+// --- Failure Rate Trend Tests ---
+
+describe('computeFailureRateTrends', () => {
+  const oneDay = 24 * 60 * 60 * 1000;
+  const windowMs = 7 * oneDay;
+  const now = Date.now();
+
+  it('returns empty for no failures', () => {
+    const trends = computeFailureRateTrends([], [], windowMs);
+    expect(trends).toEqual([]);
+  });
+
+  it('detects increasing failure rate', () => {
+    const allEvents = [
+      // Previous window: 10 shell.exec events, 1 failure
+      ...Array.from({ length: 10 }, (_, i) => ({
+        id: `prev_${i}`,
+        kind: 'ActionAllowed',
+        timestamp: now - windowMs - oneDay * 3 + i,
+        fingerprint: 'fp',
+        actionType: 'shell.exec',
+      })),
+      // Recent window: 10 shell.exec events, 5 failures
+      ...Array.from({ length: 10 }, (_, i) => ({
+        id: `recent_${i}`,
+        kind: 'ActionAllowed',
+        timestamp: now - oneDay + i,
+        fingerprint: 'fp',
+        actionType: 'shell.exec',
+      })),
+    ];
+
+    const failures: ViolationRecord[] = [
+      // 1 failure in previous window
+      makeViolation({
+        eventId: 'pf1',
+        kind: 'ActionFailed',
+        actionType: 'shell.exec',
+        timestamp: now - windowMs - oneDay * 3,
+      }),
+      // 5 failures in recent window
+      ...Array.from({ length: 5 }, (_, i) =>
+        makeViolation({
+          eventId: `rf_${i}`,
+          kind: 'ActionFailed',
+          actionType: 'shell.exec',
+          timestamp: now - oneDay + i,
+        })
+      ),
+    ];
+
+    const trends = computeFailureRateTrends(failures, allEvents, windowMs);
+    const shellTrend = trends.find((t) => t.key === 'shell.exec');
+    expect(shellTrend).toBeDefined();
+    expect(shellTrend!.direction).toBe('increasing');
+    expect(shellTrend!.recentRate).toBeGreaterThan(shellTrend!.previousRate);
+  });
+
+  it('detects new failure pattern', () => {
+    const allEvents = [
+      { id: 'e1', kind: 'ActionAllowed', timestamp: now, fingerprint: 'fp', actionType: 'git.push' },
+    ];
+
+    const failures: ViolationRecord[] = [
+      makeViolation({
+        eventId: 'f1',
+        kind: 'ActionFailed',
+        actionType: 'git.push',
+        timestamp: now,
+      }),
+    ];
+
+    const trends = computeFailureRateTrends(failures, allEvents, windowMs);
+    const pushTrend = trends.find((t) => t.key === 'git.push');
+    expect(pushTrend).toBeDefined();
+    expect(pushTrend!.direction).toBe('new');
+  });
+
+  it('detects resolved failure pattern', () => {
+    const allEvents = [
+      // Previous and recent window events
+      { id: 'p1', kind: 'ActionAllowed', timestamp: now - windowMs - oneDay * 3, fingerprint: 'fp', actionType: 'npm.install' },
+      { id: 'r1', kind: 'ActionAllowed', timestamp: now, fingerprint: 'fp', actionType: 'npm.install' },
+    ];
+
+    const failures: ViolationRecord[] = [
+      // Only in previous window
+      makeViolation({
+        eventId: 'f1',
+        kind: 'ActionFailed',
+        actionType: 'npm.install',
+        timestamp: now - windowMs - oneDay * 3,
+      }),
+    ];
+
+    const trends = computeFailureRateTrends(failures, allEvents, windowMs);
+    const npmTrend = trends.find((t) => t.key === 'npm.install');
+    expect(npmTrend).toBeDefined();
+    expect(npmTrend!.direction).toBe('resolved');
+  });
+
+  it('returns stable when rate change is exactly +20% (strict > threshold)', () => {
+    // Validates the strict inequality: rateChange of 20.0 is NOT > 20, so direction = 'stable'
+    // even though changePercent (Math.rounded) will display as 20%.
+    const pBase = now - windowMs * 2;
+    const rBase = now - windowMs;
+    const mkEvt = (id: string, ts: number) => ({
+      id,
+      kind: 'ActionAllowed' as const,
+      timestamp: ts,
+      fingerprint: 'fp',
+      actionType: 'file.write',
+    });
+    // 10 events in each window; last event timestamp = now so computed now aligns
+    const allEvents = [
+      ...Array.from({ length: 10 }, (_, i) => mkEvt(`p${i}`, pBase + i * 1000)),
+      ...Array.from({ length: 9 }, (_, i) => mkEvt(`r${i}`, rBase + i * 1000)),
+      mkEvt('r9', now),
+    ];
+    // prev: 5/10 = 0.5 rate; recent: 6/10 = 0.6 rate → rateChange = 20.0 (not > 20) → stable
+    const failures: ViolationRecord[] = [
+      ...Array.from({ length: 5 }, (_, i) =>
+        makeViolation({ eventId: `pf${i}`, actionType: 'file.write', timestamp: pBase + i * 1000 })
+      ),
+      ...Array.from({ length: 6 }, (_, i) =>
+        makeViolation({ eventId: `rf${i}`, actionType: 'file.write', timestamp: rBase + i * 1000 })
+      ),
+    ];
+    const result = computeFailureRateTrends(failures, allEvents, windowMs);
+    const trend = result.find((t) => t.key === 'file.write');
+    expect(trend).toBeDefined();
+    expect(trend!.direction).toBe('stable');
+    expect(trend!.changePercent).toBe(20);
+  });
+
+  it('returns stable when rate change is exactly -20% (strict < threshold)', () => {
+    // Validates the strict inequality: rateChange of -20.0 is NOT < -20, so direction = 'stable'.
+    const pBase = now - windowMs * 2;
+    const rBase = now - windowMs;
+    const mkEvt = (id: string, ts: number) => ({
+      id,
+      kind: 'ActionAllowed' as const,
+      timestamp: ts,
+      fingerprint: 'fp',
+      actionType: 'file.delete',
+    });
+    const allEvents = [
+      ...Array.from({ length: 10 }, (_, i) => mkEvt(`p${i}`, pBase + i * 1000)),
+      ...Array.from({ length: 9 }, (_, i) => mkEvt(`r${i}`, rBase + i * 1000)),
+      mkEvt('r9', now),
+    ];
+    // prev: 5/10 = 0.5 rate; recent: 4/10 = 0.4 rate → rateChange = -20.0 (not < -20) → stable
+    const failures: ViolationRecord[] = [
+      ...Array.from({ length: 5 }, (_, i) =>
+        makeViolation({
+          eventId: `pf${i}`,
+          actionType: 'file.delete',
+          timestamp: pBase + i * 1000,
+        })
+      ),
+      ...Array.from({ length: 4 }, (_, i) =>
+        makeViolation({
+          eventId: `rf${i}`,
+          actionType: 'file.delete',
+          timestamp: rBase + i * 1000,
+        })
+      ),
+    ];
+    const result = computeFailureRateTrends(failures, allEvents, windowMs);
+    const trend = result.find((t) => t.key === 'file.delete');
+    expect(trend).toBeDefined();
+    expect(trend!.direction).toBe('stable');
+    expect(trend!.changePercent).toBe(-20);
   });
 });
