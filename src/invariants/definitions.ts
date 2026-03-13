@@ -92,6 +92,17 @@ export const CREDENTIAL_BASENAME_PATTERNS = ['.npmrc', '.pypirc', '.netrc', '.cu
 /** Matches .env files: .env, .env.local, .env.production, etc. */
 const ENV_FILE_REGEX = /(?:^|[\\/])\.env(?:\.\w+)?$/i;
 
+/** npm lifecycle scripts that auto-execute during install/publish/pack operations. */
+const LIFECYCLE_SCRIPTS = [
+  'preinstall',
+  'postinstall',
+  'prepare',
+  'prepublishOnly',
+  'prepack',
+  'postpack',
+  'install',
+];
+
 /** Returns true if the given path targets a well-known credential file location. */
 export function isCredentialPath(filePath: string): boolean {
   const lower = filePath.toLowerCase();
@@ -357,17 +368,10 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       }
 
       // Lifecycle scripts are especially dangerous — they auto-execute
-      const LIFECYCLE_SCRIPTS = [
-        'preinstall',
-        'postinstall',
-        'prepare',
-        'prepublishOnly',
-        'prepack',
-        'postpack',
-        'install',
-      ];
-
-      const detectedLifecycle = LIFECYCLE_SCRIPTS.filter((script) => diff.includes(script));
+      const detectedLifecycle = LIFECYCLE_SCRIPTS.filter((script) => {
+        const keyPattern = new RegExp(`["']${script}["']\\s*:`);
+        return keyPattern.test(diff);
+      });
 
       if (detectedLifecycle.length > 0) {
         return {

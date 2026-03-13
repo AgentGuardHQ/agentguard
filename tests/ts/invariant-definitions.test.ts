@@ -844,6 +844,7 @@ describe('buildSystemState', () => {
       currentTarget: 'src/index.ts',
       currentCommand: 'npm test',
       currentActionType: 'file.write',
+      fileContentDiff: '"scripts": { "test": "vitest" }',
     });
     expect(state.modifiedFiles).toEqual(['a.ts', 'b.ts']);
     expect(state.targetBranch).toBe('main');
@@ -852,6 +853,7 @@ describe('buildSystemState', () => {
     expect(state.currentTarget).toBe('src/index.ts');
     expect(state.currentCommand).toBe('npm test');
     expect(state.currentActionType).toBe('file.write');
+    expect(state.fileContentDiff).toBe('"scripts": { "test": "vitest" }');
   });
 
   it('computes filesAffected from modifiedFiles when not specified', () => {
