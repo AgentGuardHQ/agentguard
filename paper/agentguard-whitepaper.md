@@ -337,7 +337,7 @@ interface SystemState {
 
 ### 6.2 Default System Invariants
 
-The reference implementation ships with six default invariants:
+The reference implementation ships with ten default invariants:
 
 | ID | Name | Severity | Condition |
 |----|------|----------|-----------|
@@ -346,9 +346,13 @@ The reference implementation ships with six default invariants:
 | `blast-radius-limit` | Blast Radius Limit | 3 (medium) | At most 20 files modified per operation |
 | `test-before-push` | Tests Before Push | 3 (medium) | Tests must pass before any push |
 | `no-force-push` | No Force Push | 4 (high) | Force push is forbidden |
+| `no-skill-modification` | No Skill Modification | 4 (high) | Agent skill files (`.claude/skills/`) must not be modified by governed actions |
+| `no-scheduled-task-modification` | No Scheduled Task Modification | 5 (critical) | Agents must not modify scheduled task definitions (`.claude/scheduled-tasks/`) directly |
+| `no-credential-file-creation` | No Credential File Creation | 5 (critical) | Agents must not create or overwrite well-known credential files (SSH keys, cloud configs, auth tokens) |
+| `no-package-script-injection` | No Package Script Injection | 4 (high) | Modifications to `package.json` scripts are flagged as potential supply chain attack vectors |
 | `lockfile-integrity` | Lockfile Integrity | 2 (low) | Lockfile must update when manifest changes |
 
-> *Implementation: `src/agentguard/invariants/definitions.ts:30-145` --- `DEFAULT_INVARIANTS` array.*
+> *Implementation: `src/invariants/definitions.ts:130-421` --- `DEFAULT_INVARIANTS` array.*
 
 ### 6.3 Severity-Based Intervention
 
@@ -361,7 +365,7 @@ Each invariant has a severity level (1-5). When invariants are violated, the max
 | >= 3 | `ROLLBACK` | Action is blocked; system suggests reversal |
 | < 3 | `TEST_ONLY` | Action is allowed but flagged for testing |
 
-> *Implementation: `src/agentguard/core/engine.ts:57-67` --- `selectIntervention()` function.*
+> *Implementation: `src/kernel/decision.ts` --- `selectIntervention()` function.*
 
 ### 6.4 Invariant Checking Pipeline
 
@@ -371,7 +375,7 @@ The `checkAllInvariants()` function iterates through all registered invariants a
 2. Emits an `INVARIANT_VIOLATION` canonical event with full metadata (invariant name, severity, description)
 3. Adds the violation to the evidence pack
 
-> *Implementation: `src/agentguard/invariants/checker.ts:23-60` --- `checkAllInvariants()` function.*
+> *Implementation: `src/invariants/checker.ts` --- `checkAllInvariants()` function.*
 > *See diagram: `paper/diagrams/invariant-enforcement.md`*
 
 ---
@@ -460,8 +464,8 @@ AgentGuard is a TypeScript implementation of the execution governance architectu
 | RTA Decision Engine | `src/agentguard/core/engine.ts` | `createEngine()`, `evaluate()` |
 | Policy Evaluation | `src/agentguard/policies/evaluator.ts` | `evaluate()`, `matchAction()`, `matchScope()` |
 | Policy Loading & Validation | `src/agentguard/policies/loader.ts` | `loadPolicies()`, `validatePolicy()` |
-| System Invariants | `src/agentguard/invariants/definitions.ts` | `DEFAULT_INVARIANTS` (6 invariants) |
-| Invariant Checking | `src/agentguard/invariants/checker.ts` | `checkAllInvariants()`, `buildSystemState()` |
+| System Invariants | `src/invariants/definitions.ts` | `DEFAULT_INVARIANTS` (10 invariants) |
+| Invariant Checking | `src/invariants/checker.ts` | `checkAllInvariants()`, `buildSystemState()` |
 | Evidence Packs | `src/agentguard/evidence/pack.ts` | `createEvidencePack()` |
 | Escalation Monitor | `src/agentguard/monitor.ts` | `createMonitor()`, `ESCALATION` (4 levels) |
 | Reference Monitor | `src/domain/reference-monitor.ts` | `authorize()`, `getTrail()`, `authorizeBatch()` |
