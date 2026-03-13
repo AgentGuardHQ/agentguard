@@ -111,16 +111,12 @@ export function extractDomain(url: string): string | null {
 export function extractUrlFromCommand(command: string): string | null {
   if (!command || typeof command !== 'string') return null;
 
-  // Match curl/wget followed by flags and a URL
-  const urlPattern =
-    /\b(?:curl|wget)\s+(?:(?:-[a-zA-Z]+\s+)*(?:"[^"]*"\s+)*)*(?:['"]?(https?:\/\/[^\s'"]+)['"]?)/;
-  const match = command.match(urlPattern);
-  if (match) return match[1];
+  // Verify this is a curl/wget command (simple linear check)
+  if (!/\b(?:curl|wget)\b/.test(command)) return null;
 
-  // Fallback: find any http(s) URL in the command
-  const genericUrlPattern = /https?:\/\/[^\s'"]+/;
-  const genericMatch = command.match(genericUrlPattern);
-  return genericMatch ? genericMatch[0] : null;
+  // Extract the first https?:// URL (linear pattern, no nested quantifiers)
+  const urlMatch = command.match(/https?:\/\/[^\s'"]+/);
+  return urlMatch ? urlMatch[0] : null;
 }
 
 /** Matches .env files: .env, .env.local, .env.production, etc. */
