@@ -321,7 +321,6 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
   },
 
   {
-
     id: 'no-package-script-injection',
     name: 'No Package Script Injection',
     description:
@@ -387,7 +386,11 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
         holds: false,
         expected: 'No script modifications in package.json',
         actual: 'package.json scripts section modified',
+      };
+    },
+  },
 
+  {
     id: 'no-permission-escalation',
     name: 'No Permission Escalation',
     description:
@@ -470,7 +473,6 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
         actual: holds
           ? 'No permission escalation detected'
           : `Permission escalation detected (${violations.join('; ')})`,
-
       };
     },
   },
