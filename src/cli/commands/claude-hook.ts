@@ -4,6 +4,7 @@
 // Always exits 0 — hooks must never fail.
 // Supports both JSONL (default) and SQLite storage backends via --store flag or AGENTGUARD_STORE env var.
 
+import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import type { ClaudeCodeHookPayload } from '../../adapters/claude-code.js';
 
@@ -65,7 +66,7 @@ async function handlePreToolUse(payload: ClaudeCodeHookPayload, cliArgs: string[
   }
 
   // Generate run ID
-  const runId = `hook_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const runId = `hook_${Date.now()}_${randomUUID().replace(/-/g, '').slice(0, 8)}`;
 
   // Resolve storage backend from CLI args (e.g. --store sqlite) or AGENTGUARD_STORE env var
   const storageConfig = resolveStorageConfig(cliArgs);
@@ -95,6 +96,15 @@ async function handlePreToolUse(payload: ClaudeCodeHookPayload, cliArgs: string[
       Boolean
     ) as import('../../kernel/decisions/types.js').DecisionSink[],
   });
+
+  // Record session in the sessions table (SQLite only).
+  // Uses session_id from Claude Code so multiple hook invocations share one session row.
+  const sessionKey = normalizedPayload.session_id || runId;
+  if (storage?.sessions) {
+    storage.sessions.start(sessionKey, 'claude-hook', {
+      storageBackend: storageConfig.backend,
+    });
+  }
 
   const result = await processClaudeCodeHook(kernel, normalizedPayload);
   kernel.shutdown();
