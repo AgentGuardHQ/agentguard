@@ -59,7 +59,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Canonical Action Representation (23 types, 8 classes) | Implemented | `src/core/actions.ts` |
 | Action Authorization Boundary (AAB) | Implemented (2 bypass vectors) | `src/kernel/aab.ts` |
 | Policy Evaluator (two-phase deny/allow) | Implemented | `src/policy/evaluator.ts` |
-| 9 Built-in Invariants | Fully Implemented | `src/invariants/definitions.ts`, `src/invariants/checker.ts` |
+| 10 Built-in Invariants | Fully Implemented | `src/invariants/definitions.ts`, `src/invariants/checker.ts` |
 | Event Model (49 event kinds) | Comprehensive | `src/events/schema.ts` |
 | JSONL Persistence | Implemented | `src/events/jsonl.ts` |
 | Simulation Engine (3 simulators + impact forecast) | Fully Implemented | `src/kernel/simulation/` |
@@ -104,7 +104,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Canonical Action Representation | Implemented | Production |
 | AAB Reference Monitor | Implemented | 1 bypass vector to close (missing-adapter fixed) |
 | Policy Evaluator | Implemented | Production |
-| 9 Built-in Invariants | Fully Implemented | Production |
+| 10 Built-in Invariants | Fully Implemented | Production |
 | Event Model (49 kinds) | Comprehensive | Production |
 | Simulation & Forecasting | Fully Implemented | Production |
 | Escalation State Machine | Implemented | Functional (events persisted as StateChanged) |
@@ -252,14 +252,14 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 
 ### Phase 6.5 — Invariant Expansion `NEXT`
 
-> **Theme:** Close invariant coverage gaps. The current 9 invariants leave large classes of agent behavior ungoverned.
+> **Theme:** Close invariant coverage gaps. Expand beyond the current 10 invariants to cover more classes of agent behavior.
 
 The `SystemState` interface in `src/invariants/definitions.ts` is the bottleneck for invariant expansion — it needs to become a richer context object with action-specific fields.
 
 - [ ] CI/CD config modification invariant (severity 5) — block writes to `.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`, `.circleci/config.yml`
 - [ ] Network egress governance invariant (severity 4) — deny HTTP requests to non-allowlisted domains (extend `SystemState` with `isNetworkRequest`, `requestUrl`, `requestDomain`)
 - [x] Credential file creation invariant (severity 5) — inspect `currentTarget` for SSH keys, `.netrc`, `~/.aws/credentials`, Docker config (closes gap where `no-secret-exposure` misses new file creation)
-- [ ] Package.json script injection invariant (severity 4) — flag `package.json` modifications that alter `scripts` entries
+- [x] Package.json script injection invariant (severity 4) — flag `package.json` modifications that alter `scripts` entries (`no-package-script-injection`)
 - [ ] Large single-file write invariant (severity 3) — enforce per-file size limit (extend `SystemState` with `writeSizeBytes`)
 - [ ] Docker/container config modification invariant (severity 3) — protect `Dockerfile`, `docker-compose.yml`, `.dockerignore`
 - [ ] Database migration safety invariant (severity 3) — flag writes to migration directories containing destructive DDL
@@ -446,7 +446,7 @@ The pre-execution simulation system is the most mature advanced feature and a ke
 
 AgentGuard is built for contributors. Here are the best places to start:
 
-- **Write an invariant pack** — Define domain-specific invariants in `src/invariants/community/`. See `src/invariants/definitions.ts` for the 9 built-in invariants as a reference.
+- **Write an invariant pack** — Define domain-specific invariants in `src/invariants/community/`. See `src/invariants/definitions.ts` for the 10 built-in invariants as a reference.
 - **Create a policy pack** — Ship a reusable policy YAML in `policies/`. See `agentguard.yaml` for the format and `src/policy/pack-loader.ts` for the pack loading contract.
 - **Build an adapter** — Add support for a new agent framework in `src/adapters/`. Follow the pattern in `src/adapters/claude-code.ts`.
 - **Add a renderer** — Create a custom governance output renderer implementing the `GovernanceRenderer` interface in `src/renderers/types.ts`.
