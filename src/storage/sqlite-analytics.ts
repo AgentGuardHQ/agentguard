@@ -157,17 +157,25 @@ export function queryViolationRateOverTime(
 /**
  * Session duration and action count — per-session summary statistics.
  * Computes duration from MIN/MAX timestamps, counts total events and denials.
+ * Uses a single LEFT JOIN query to avoid per-row round trips to the decisions table.
  */
 export function querySessionStats(db: Database.Database): SessionSummary[] {
   const rows = db
     .prepare(
       `SELECT
-         run_id,
-         MIN(timestamp) as started_at,
-         MAX(timestamp) as ended_at,
-         COUNT(*) as action_count
-       FROM events
-       GROUP BY run_id
+         e.run_id,
+         MIN(e.timestamp) as started_at,
+         MAX(e.timestamp) as ended_at,
+         COUNT(*) as action_count,
+         COALESCE(d.denial_count, 0) as denial_count
+       FROM events e
+       LEFT JOIN (
+         SELECT run_id, COUNT(*) as denial_count
+         FROM decisions
+         WHERE outcome = 'deny'
+         GROUP BY run_id
+       ) d ON e.run_id = d.run_id
+       GROUP BY e.run_id
        ORDER BY started_at DESC`
     )
     .all() as {
@@ -175,12 +183,8 @@ export function querySessionStats(db: Database.Database): SessionSummary[] {
     started_at: number;
     ended_at: number;
     action_count: number;
+    denial_count: number;
   }[];
-
-  // Batch-fetch denial counts per session
-  const denialStmt = db.prepare(
-    `SELECT COUNT(*) as cnt FROM decisions WHERE run_id = ? AND outcome = 'deny'`
-  );
 
   return rows.map((r) => ({
     sessionId: r.run_id,
@@ -188,6 +192,6 @@ export function querySessionStats(db: Database.Database): SessionSummary[] {
     endedAt: r.ended_at,
     durationMs: r.ended_at - r.started_at,
     actionCount: r.action_count,
-    denialCount: (denialStmt.get(r.run_id) as { cnt: number }).cnt,
+    denialCount: r.denial_count,
   }));
 }
