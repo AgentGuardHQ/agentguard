@@ -120,7 +120,7 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   // Record session start in the sessions table (SQLite only)
   const simCount = simulators.all().length;
   if (storage.sessions) {
-    storage.sessions.start(runId, "guard", {
+    storage.sessions.start(runId, 'guard', {
       policyFile: policyName,
       dryRun: options.dryRun,
       storageBackend: storeConfig.backend,

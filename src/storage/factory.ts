@@ -19,7 +19,7 @@ export interface StorageBundle {
   /** The raw better-sqlite3 Database instance, if using SQLite. Cast to Database.Database to use. */
   readonly db?: unknown;
   /** Session lifecycle tracker (SQLite only — undefined for JSONL/Firestore) */
-  readonly sessions?: import("./sqlite-session.js").SessionTracker;
+  readonly sessions?: import('./sqlite-session.js').SessionTracker;
 }
 
 /** Create a storage bundle based on configuration */
