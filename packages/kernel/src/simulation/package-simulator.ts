@@ -121,8 +121,15 @@ export function createPackageSimulator(): ActionSimulator {
       let blastRadius = 0;
       let riskLevel: 'low' | 'medium' | 'high' = 'low';
 
-      // Try npm install --dry-run to preview changes
-      if (/\bnpm\s+(install|i)\b/.test(command)) {
+      // Check for global installs first (always medium+ risk, skip dry-run)
+      const isGlobal = /\s-g\b|\s--global\b/.test(command);
+      if (isGlobal) {
+        riskLevel = 'medium';
+        predictedChanges.push('Global package installation');
+        details.globalInstall = true;
+        blastRadius = 10;
+      } else if (/\bnpm\s+(install|i)\b/.test(command)) {
+        // Try npm install --dry-run to preview changes (local installs only)
         const args = parseNpmInstallArgs(command);
         try {
           const output = execFileSync('npm', ['install', '--dry-run', ...args], {
@@ -159,13 +166,6 @@ export function createPackageSimulator(): ActionSimulator {
         riskLevel = 'high';
       } else if (blastRadius > 10) {
         riskLevel = 'medium';
-      }
-
-      // Check for global installs (always medium+ risk)
-      if (/\s-g\b|\s--global\b/.test(command)) {
-        riskLevel = riskLevel === 'high' ? 'high' : 'medium';
-        predictedChanges.push('Global package installation');
-        details.globalInstall = true;
       }
 
       return {
