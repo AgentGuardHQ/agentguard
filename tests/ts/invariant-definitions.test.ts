@@ -841,6 +841,133 @@ describe('large-file-write', () => {
   });
 });
 
+describe('no-cicd-config-modification', () => {
+  const inv = findInvariant('no-cicd-config-modification');
+
+  it('holds when target is a normal source file', () => {
+    const result = inv.check({ currentTarget: 'src/index.ts' });
+    expect(result.holds).toBe(true);
+  });
+
+  it('fails when currentTarget is a GitHub workflow file', () => {
+    const result = inv.check({ currentTarget: '.github/workflows/ci.yml' });
+    expect(result.holds).toBe(false);
+    expect(result.actual).toContain('target');
+  });
+
+  it('fails for .yaml extension in GitHub workflows', () => {
+    const result = inv.check({ currentTarget: '.github/workflows/deploy.yaml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentTarget is .gitlab-ci.yml', () => {
+    const result = inv.check({ currentTarget: '.gitlab-ci.yml' });
+    expect(result.holds).toBe(false);
+    expect(result.actual).toContain('target');
+  });
+
+  it('fails when currentTarget is Jenkinsfile', () => {
+    const result = inv.check({ currentTarget: 'Jenkinsfile' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentTarget is .travis.yml', () => {
+    const result = inv.check({ currentTarget: '.travis.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentTarget is azure-pipelines.yml', () => {
+    const result = inv.check({ currentTarget: 'azure-pipelines.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentTarget is .circleci/config.yml', () => {
+    const result = inv.check({ currentTarget: '.circleci/config.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentTarget is .buildkite/pipeline.yml', () => {
+    const result = inv.check({ currentTarget: '.buildkite/pipeline.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when currentCommand references CI/CD config', () => {
+    const result = inv.check({ currentCommand: 'rm .github/workflows/ci.yml' });
+    expect(result.holds).toBe(false);
+    expect(result.actual).toContain('command');
+  });
+
+  it('fails when currentCommand references Jenkinsfile', () => {
+    const result = inv.check({ currentCommand: 'cat Jenkinsfile' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('fails when modifiedFiles includes CI/CD config files', () => {
+    const result = inv.check({
+      modifiedFiles: ['src/index.ts', '.github/workflows/test.yml'],
+    });
+    expect(result.holds).toBe(false);
+    expect(result.actual).toContain('modified');
+  });
+
+  it('handles Windows backslash paths for GitHub workflows', () => {
+    const result = inv.check({ currentTarget: '.github\\workflows\\ci.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('handles Windows backslash paths for CircleCI', () => {
+    const result = inv.check({ currentTarget: '.circleci\\config.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('handles Windows backslash paths for Buildkite', () => {
+    const result = inv.check({ currentTarget: '.buildkite\\pipeline.yml' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('holds with empty state', () => {
+    const result = inv.check({});
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds for non-CI/CD files in .github directory', () => {
+    const result = inv.check({ currentTarget: '.github/CODEOWNERS' });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds for files with similar names that are not CI/CD configs', () => {
+    const result = inv.check({ currentTarget: 'src/jenkins-helper.ts' });
+    expect(result.holds).toBe(true);
+  });
+
+  it('detects all three violation vectors simultaneously', () => {
+    const result = inv.check({
+      currentTarget: '.github/workflows/ci.yml',
+      currentCommand: 'cat .gitlab-ci.yml',
+      modifiedFiles: ['.travis.yml'],
+    });
+    expect(result.holds).toBe(false);
+    expect(result.actual).toContain('target');
+    expect(result.actual).toContain('command');
+    expect(result.actual).toContain('modified');
+  });
+
+  it('has severity 5 (highest — DENY intervention)', () => {
+    expect(inv.severity).toBe(5);
+  });
+
+  it('detects nested Jenkinsfile paths', () => {
+    const result = inv.check({ currentTarget: 'project/Jenkinsfile' });
+    expect(result.holds).toBe(false);
+  });
+
+  it('detects nested .gitlab-ci.yml paths', () => {
+    const result = inv.check({ currentTarget: 'subproject/.gitlab-ci.yml' });
+    expect(result.holds).toBe(false);
+  });
+});
+
+
 describe('lockfile-integrity', () => {
   const inv = findInvariant('lockfile-integrity');
 
