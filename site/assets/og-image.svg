@@ -58,8 +58,7 @@
   </g>
 
   <!-- Wordmark -->
-  <text x="530" y="285" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="56" font-weight="400" fill="#F8FAFC">Agent</text>
-  <text x="815" y="285" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="56" font-weight="700" fill="#22C55E">Guard</text>
+  <text x="530" y="285" font-family="'JetBrains Mono', 'SF Mono', monospace" font-size="56" font-weight="400" fill="#F8FAFC">Agent<tspan font-weight="700" fill="#22C55E">Guard</tspan></text>
 
   <!-- Tagline -->
   <text x="530" y="330" font-family="'IBM Plex Sans', 'Segoe UI', sans-serif" font-size="22" font-weight="400" fill="#94A3B8">Governed Action Runtime for AI Coding Agents</text>
