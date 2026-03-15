@@ -233,7 +233,11 @@ function renderPlanTextOutput(planResult: PlanSimulationResult): void {
   for (const step of planResult.steps) {
     const label = step.label || step.intent.action;
     const icon = step.result ? color('●', RISK_COLORS[step.result.riskLevel] || 'white') : dim('○');
-    const risk = step.result ? ` (${step.result.riskLevel})` : ' (no simulator)';
+    const risk = step.result
+      ? ` (${step.result.riskLevel})`
+      : step.simulatorError
+        ? ` (error: ${step.simulatorError})`
+        : ' (no simulator)';
     process.stderr.write(`    ${icon} ${dim(`[${step.index}]`)} ${label}${dim(risk)}\n`);
   }
   process.stderr.write('\n');
@@ -376,6 +380,19 @@ function loadPlanFile(
       } else {
         process.stderr.write(
           `  ${color('Error:', 'red')} Plan file must contain a non-empty JSON array.\n`
+        );
+      }
+      return null;
+    }
+
+    if (!parsed.every((e) => typeof e === 'object' && e !== null)) {
+      if (jsonOutput) {
+        process.stdout.write(
+          JSON.stringify({ error: 'Plan file entries must all be objects' }) + '\n'
+        );
+      } else {
+        process.stderr.write(
+          `  ${color('Error:', 'red')} Plan file entries must all be objects.\n`
         );
       }
       return null;

@@ -77,6 +77,8 @@ export interface PlanStepResult {
   result: SimulationResult | null;
   /** Per-step impact forecast (null if no simulation was run) */
   forecast: ImpactForecast | null;
+  /** Simulator error message if the simulator threw (null otherwise) */
+  simulatorError: string | null;
 }
 
 /** Interaction detected between two plan steps */

@@ -45,6 +45,7 @@ export async function simulatePlan(
         intent: step.intent,
         result: null,
         forecast: null,
+        simulatorError: null,
       });
       continue;
     }
@@ -60,8 +61,9 @@ export async function simulatePlan(
         intent: step.intent,
         result,
         forecast,
+        simulatorError: null,
       });
-    } catch {
+    } catch (err) {
       // Non-fatal: simulator crash doesn't block the plan
       stepResults.push({
         index: i,
@@ -69,6 +71,7 @@ export async function simulatePlan(
         intent: step.intent,
         result: null,
         forecast: null,
+        simulatorError: err instanceof Error ? err.message : String(err),
       });
     }
   }
