@@ -88,6 +88,7 @@ describe('guard command kernel integration', () => {
           id: 'deny-all-writes',
           name: 'Deny All Writes',
           rules: [{ action: 'file.write', effect: 'deny', reason: 'Read-only mode' }],
+          // severity 5 maps to DENY (not ROLLBACK at 3), so the action is denied without execution
           severity: 5,
         },
       ],

@@ -203,7 +203,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
         allEvents.push(requestedEvent);
 
         // 2. Evaluate via monitor (AAB → policy → invariants → evidence)
-        const decision = monitor.process(rawAction, systemContext);
+        let decision = monitor.process(rawAction, systemContext);
 
         // 3. Create canonical action object for execution
         let action: CanonicalAction | null = null;
@@ -287,7 +287,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
 
             if (pauseApproved) {
               // Human approved — override decision to allowed and fall through to execution
-              Object.assign(decision, { allowed: true });
+              decision = { ...decision, allowed: true };
               // Continue to the ALLOWED path below (no return here)
             } else {
               // Denied (timeout, rejection, or no handler)
