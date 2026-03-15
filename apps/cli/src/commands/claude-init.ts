@@ -141,7 +141,23 @@ export async function claudeInit(args: string[] = []): Promise<void> {
   });
   settings.hooks.SessionStart.push({ hooks: sessionStartHooks });
 
-  // Stop — generate session viewer on session end
+  // Notification — auto-open session viewer when agent pauses for human input
+  if (!settings.hooks.Notification)
+    (settings.hooks as Record<string, unknown>).Notification = [];
+  (
+    (settings.hooks as Record<string, unknown>).Notification as SessionStartHookEntry[]
+  ).push({
+    hooks: [
+      {
+        type: 'command',
+        command: `${cli} claude-hook notify${storeSuffix}${dbPathSuffix}`,
+        timeout: 15000,
+        blocking: false,
+      },
+    ],
+  });
+
+  // Stop — generate session viewer HTML on session end (no browser open — Notification handles that)
   if (!settings.hooks.Stop) (settings.hooks as Record<string, unknown>).Stop = [];
   ((settings.hooks as Record<string, unknown>).Stop as SessionStartHookEntry[]).push({
     hooks: [
@@ -159,10 +175,13 @@ export async function claudeInit(args: string[] = []): Promise<void> {
   process.stderr.write(
     `  ${FG.green}✓${RESET}  Hooks installed in ${FG.cyan}${settingsLabel}${RESET}\n`
   );
-  process.stderr.write(`  ${DIM}SessionStart: auto-build + status check${RESET}\n`);
-  process.stderr.write(`  ${DIM}PreToolUse:   governance enforcement (all tools)${RESET}\n`);
-  process.stderr.write(`  ${DIM}PostToolUse:  error monitoring (Bash)${RESET}\n`);
-  process.stderr.write(`  ${DIM}Stop:         session viewer generation${RESET}\n`);
+  process.stderr.write(`  ${DIM}SessionStart:  auto-build + status check${RESET}\n`);
+  process.stderr.write(`  ${DIM}PreToolUse:    governance enforcement (all tools)${RESET}\n`);
+  process.stderr.write(`  ${DIM}PostToolUse:   error monitoring (Bash)${RESET}\n`);
+  process.stderr.write(
+    `  ${DIM}Notification:  auto-open session viewer on agent pause${RESET}\n`
+  );
+  process.stderr.write(`  ${DIM}Stop:          session viewer HTML archival${RESET}\n`);
   if (storeBackend) {
     process.stderr.write(`  ${DIM}Storage:     ${storeBackend}${RESET}\n`);
   }
@@ -256,6 +275,19 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
   );
   if (((settings.hooks as Record<string, unknown>).SessionStart as HookEntry[]).length === 0) {
     delete (settings.hooks as Record<string, unknown>).SessionStart;
+  }
+
+  // Remove Notification hook
+  const notifHooks =
+    ((settings.hooks as Record<string, unknown>)?.Notification as HookEntry[]) || [];
+  (settings.hooks as Record<string, unknown>).Notification = filterByCommand(
+    notifHooks,
+    HOOK_MARKER
+  );
+  if (
+    ((settings.hooks as Record<string, unknown>).Notification as HookEntry[]).length === 0
+  ) {
+    delete (settings.hooks as Record<string, unknown>).Notification;
   }
 
   // Remove Stop hook
@@ -427,8 +459,16 @@ function showProtectionSummary(policyGenerated: boolean): void {
 function hasAgentGuardHook(settings: Settings): boolean {
   const preToolUse = settings?.hooks?.PreToolUse || [];
   const postToolUse = settings?.hooks?.PostToolUse || [];
+  const notifHooks = (
+    (settings?.hooks as Record<string, unknown>)?.Notification || []
+  ) as HookEntry[];
   const stopHooks = ((settings?.hooks as Record<string, unknown>)?.Stop || []) as HookEntry[];
-  const allEntries = [...preToolUse, ...postToolUse, ...stopHooks] as HookEntry[];
+  const allEntries = [
+    ...preToolUse,
+    ...postToolUse,
+    ...notifHooks,
+    ...stopHooks,
+  ] as HookEntry[];
   return allEntries.some((entry) => {
     const hooks = entry.hooks || [];
     return hooks.some((h) => h.command && h.command.includes(HOOK_MARKER));

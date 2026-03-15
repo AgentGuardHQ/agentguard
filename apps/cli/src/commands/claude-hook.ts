@@ -1,6 +1,8 @@
-// AgentGuard Claude Code hook — PreToolUse governance + PostToolUse error monitoring.
+// AgentGuard Claude Code hook — PreToolUse governance + PostToolUse error monitoring + Notification session viewer.
 // PreToolUse: routes actions through the kernel for policy/invariant enforcement.
 // PostToolUse: reports Bash stderr errors (informational only).
+// Notification: auto-opens the session viewer when the agent pauses for human input.
+// Stop: generates session viewer HTML (no browser open — Notification handles that).
 // Always exits 0 — hooks must never fail.
 // Supports both JSONL (default) and SQLite storage backends via --store flag or AGENTGUARD_STORE env var.
 
@@ -20,9 +22,17 @@ function resolveCliCommand(): string {
 
 export async function claudeHook(hookType?: string, extraArgs: string[] = []): Promise<void> {
   try {
-    // Stop hook has no stdin payload — it fires when the session ends
+    // Stop hook has no stdin payload — generates session viewer HTML quietly (no browser open)
     if (hookType === 'stop') {
       await handleStop(extraArgs);
+      process.exit(0);
+      return;
+    }
+
+    // Notification hook — fires when the agent pauses for human input.
+    // Auto-opens the session viewer in the browser so the user can review governance decisions.
+    if (hookType === 'notify') {
+      await handleNotification(extraArgs);
       process.exit(0);
       return;
     }
@@ -211,13 +221,27 @@ function generateSessionViewerQuietly(cliArgs: string[]): void {
   }
 }
 
-async function handleStop(cliArgs: string[]): Promise<void> {
-  // On session end, generate the session viewer HTML and auto-open in the browser
+async function handleNotification(cliArgs: string[]): Promise<void> {
+  // Agent paused for human input — open the session viewer in the browser.
+  // This gives the user a visual overview of governance decisions from the agent's turn.
   try {
     const { sessionViewer } = await import('./session-viewer.js');
     const { resolveStorageConfig } = await import('@red-codes/storage');
     const storageConfig = resolveStorageConfig(cliArgs);
     await sessionViewer(['--last', ...cliArgs], storageConfig);
+  } catch {
+    // Non-fatal — viewer generation is best-effort
+  }
+}
+
+async function handleStop(cliArgs: string[]): Promise<void> {
+  // On session end, generate the session viewer HTML quietly (no browser open).
+  // The Notification hook already opened the browser when the agent last paused.
+  try {
+    const { sessionViewer } = await import('./session-viewer.js');
+    const { resolveStorageConfig } = await import('@red-codes/storage');
+    const storageConfig = resolveStorageConfig(cliArgs);
+    await sessionViewer(['--last', '--no-open', ...cliArgs], storageConfig);
   } catch {
     // Non-fatal — viewer generation is best-effort
   }
