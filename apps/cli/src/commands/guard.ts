@@ -30,6 +30,12 @@ import { createTracer } from '@red-codes/telemetry';
 import { createWebhookTraceBackend } from '@red-codes/storage';
 import { createTelemetryClient } from '@red-codes/telemetry-client';
 import type { TelemetryClient } from '@red-codes/telemetry-client';
+import {
+  createGovernanceTelemetryBridge,
+  createSessionMetricsCollector,
+  createBypassDetector,
+} from '@red-codes/telemetry';
+import type { DecisionSink } from '@red-codes/core';
 
 export interface GuardOptions {
   /** Single policy path (backwards compatible) */
@@ -110,6 +116,25 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
         })
       : undefined;
 
+  // Initialize telemetry client + bridge (non-blocking, never affects guard operation)
+  let telemetryClient: TelemetryClient | null = null;
+  let telemetryBridge: DecisionSink | null = null;
+  try {
+    telemetryClient = await createTelemetryClient({
+      serverUrl: process.env.AGENTGUARD_TELEMETRY_SERVER,
+    });
+    telemetryClient.start();
+    telemetryBridge = createGovernanceTelemetryBridge({
+      client: telemetryClient,
+      runtime: 'claude-code',
+      environment: detectEnvironment(),
+      sessionMetrics: createSessionMetricsCollector(),
+      bypassDetector: createBypassDetector(),
+    });
+  } catch {
+    // Telemetry initialization failure is silently ignored
+  }
+
   // Build kernel config
   const kernelConfig: KernelConfig = {
     runId,
@@ -118,23 +143,12 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     dryRun: options.dryRun ?? false,
     adapters: options.dryRun ? undefined : createLiveRegistry(),
     sinks: [eventSink],
-    decisionSinks: [decisionSink, telemetrySink],
+    decisionSinks: [decisionSink, telemetrySink, telemetryBridge].filter(Boolean) as DecisionSink[],
     simulators: simulators.all().length > 0 ? simulators : undefined,
     tracer,
   };
 
   const kernel = createKernel(kernelConfig);
-
-  // Initialize telemetry client (non-blocking, never affects guard operation)
-  let telemetryClient: TelemetryClient | null = null;
-  try {
-    telemetryClient = await createTelemetryClient({
-      serverUrl: process.env.AGENTGUARD_TELEMETRY_SERVER,
-    });
-    telemetryClient.start();
-  } catch {
-    // Telemetry initialization failure is silently ignored
-  }
 
   // Emit PolicyComposed event when multiple policies are composed
   if (useComposition) {
@@ -189,7 +203,7 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     process.stderr.write(`  ${'\x1b[2m'}Press Ctrl+C to stop.${'\x1b[0m'}\n\n`);
   }
 
-  return processStdin(kernel, renderers, storage, telemetryClient);
+  return processStdin(kernel, renderers, storage, telemetryClient, telemetryBridge);
 }
 
 /** Detect execution environment */
@@ -203,7 +217,8 @@ async function processStdin(
   kernel: ReturnType<typeof createKernel>,
   renderers: RendererRegistry,
   storage: StorageBundle,
-  telemetryClient: TelemetryClient | null
+  telemetryClient: TelemetryClient | null,
+  telemetryBridge: DecisionSink | null
 ): Promise<number> {
   const startTime = Date.now();
   let totalActions = 0;
@@ -226,30 +241,12 @@ async function processStdin(
 
         try {
           const rawAction = JSON.parse(trimmed) as RawAgentAction;
-          const proposeStart = Date.now();
           const result = await kernel.propose(rawAction);
-          const latencyMs = Date.now() - proposeStart;
 
           totalActions++;
           if (result.allowed) allowedCount++;
           else deniedCount++;
           violationCount += result.decision.violations.length;
-
-          // Track telemetry event (non-blocking, errors swallowed)
-          try {
-            if (telemetryClient) {
-              telemetryClient.track({
-                runtime: 'claude-code',
-                environment: detectEnvironment(),
-                event_type: result.allowed ? 'execution_allowed' : 'policy_denied',
-                policy: result.decision.decision.reason ?? 'default',
-                result: result.allowed ? 'allowed' : 'denied',
-                latency_ms: latencyMs,
-              });
-            }
-          } catch {
-            // Telemetry must never affect guard operation
-          }
 
           // Dispatch to all registered renderers
           renderers.notifyActionResult(result);
@@ -288,8 +285,9 @@ async function processStdin(
     const shutdown = () => {
       kernel.shutdown();
 
-      // Stop telemetry client (flushes remaining events)
+      // Flush telemetry bridge (emits session summary), then stop client
       try {
+        telemetryBridge?.flush?.();
         telemetryClient?.stop();
       } catch {
         // Ignore

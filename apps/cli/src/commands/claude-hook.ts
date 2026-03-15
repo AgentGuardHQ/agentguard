@@ -100,6 +100,24 @@ async function handlePreToolUse(payload: ClaudeCodeHookPayload, cliArgs: string[
     });
   }
 
+  // Initialize telemetry bridge for enriched governance telemetry (non-blocking)
+  let telemetryBridge: import('@red-codes/core').DecisionSink | undefined;
+  try {
+    const { createTelemetryClient } = await import('@red-codes/telemetry-client');
+    const { createGovernanceTelemetryBridge } = await import('@red-codes/telemetry');
+    const client = await createTelemetryClient({
+      serverUrl: process.env.AGENTGUARD_TELEMETRY_SERVER,
+    });
+    client.start();
+    telemetryBridge = createGovernanceTelemetryBridge({
+      client,
+      runtime: 'claude-code',
+      environment: process.env.CI ? 'ci' : 'local',
+    });
+  } catch {
+    // Telemetry initialization failure is non-fatal
+  }
+
   // Build kernel — dryRun: true = evaluate policies/invariants only (no adapter execution).
   // Claude Code handles actual tool execution; the hook only governs (allow/deny).
   // Events and decision records are still emitted and persisted to the configured storage backend.
@@ -108,7 +126,7 @@ async function handlePreToolUse(payload: ClaudeCodeHookPayload, cliArgs: string[
     policyDefs,
     dryRun: true,
     sinks: eventSink ? [eventSink] : [],
-    decisionSinks: [decisionSink, telemetrySink].filter(
+    decisionSinks: [decisionSink, telemetrySink, telemetryBridge].filter(
       Boolean
     ) as import('@red-codes/core').DecisionSink[],
     tracer,

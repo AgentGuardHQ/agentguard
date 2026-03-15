@@ -10,10 +10,34 @@ export interface TelemetryPayloadEvent {
   readonly version: string;
   readonly runtime: 'claude-code' | 'copilot' | 'ci' | 'unknown';
   readonly environment: 'local' | 'ci' | 'container';
-  readonly event_type: 'guard_triggered' | 'policy_denied' | 'execution_allowed' | 'error';
+  readonly event_type:
+    | 'guard_triggered'
+    | 'policy_denied'
+    | 'execution_allowed'
+    | 'error'
+    | 'session_summary'
+    | 'bypass_detected';
   readonly policy: string;
   readonly result: 'allowed' | 'denied' | 'error';
   readonly latency_ms: number;
+}
+
+/** Enriched telemetry event with strategic governance fields */
+export interface EnrichedTelemetryEvent extends TelemetryPayloadEvent {
+  readonly action_type?: string;
+  readonly target_type?: string;
+  readonly target_hash?: string;
+  readonly args_classification?: string;
+  readonly destructive?: boolean;
+  readonly policy_id?: string;
+  readonly policy_severity?: number;
+  readonly invariant_violations?: string[];
+  readonly escalation_level?: number;
+  readonly blast_radius?: number;
+  readonly risk_level?: string;
+  readonly session_action_index?: number;
+  readonly bypass_pattern?: string;
+  readonly bypass_confidence?: number;
 }
 
 /** Trackable event fields (auto-filled fields omitted) */

@@ -290,6 +290,9 @@ importers:
       '@red-codes/core':
         specifier: workspace:*
         version: link:../core
+      '@red-codes/telemetry-client':
+        specifier: workspace:*
+        version: link:../telemetry-client
 
   packages/telemetry-client:
     dependencies:
