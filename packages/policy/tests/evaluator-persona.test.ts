@@ -54,6 +54,7 @@ describe('policy evaluator — persona conditions', () => {
           conditions: { persona: { trustTier: ['untrusted'] } },
           reason: 'Untrusted cannot push',
         },
+        { action: 'git.push', effect: 'allow', reason: 'Trusted agents may push' },
       ],
     });
     const result = evaluate(intent, [policy]);
@@ -70,6 +71,7 @@ describe('policy evaluator — persona conditions', () => {
           conditions: { persona: { trustTier: ['untrusted'] } },
           reason: 'Should not match without persona',
         },
+        { action: 'git.push', effect: 'allow', reason: 'Default allow for known action' },
       ],
     });
     const result = evaluate(intent, [policy]);
@@ -124,6 +126,7 @@ describe('policy evaluator — persona conditions', () => {
           conditions: { persona: { trustTier: ['untrusted'], role: ['ci'] } },
           reason: 'Must match both',
         },
+        { action: 'git.push', effect: 'allow', reason: 'Partial match does not block' },
       ],
     });
     // trustTier matches but role doesn't → should NOT match
