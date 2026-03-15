@@ -272,31 +272,83 @@ export async function sessionViewer(
 
   // --last with hook-based runs: auto-merge recent runs for a useful view
   const isLastMode = !targetArg || targetArg === '--last';
-  const shouldMerge =
-    mergeCount > 0 || (isLastMode && !useSqlite && listRunsJsonl()[0]?.startsWith('hook_'));
 
-  if (shouldMerge && !useSqlite) {
-    const runs = listRunsJsonl();
-    if (runs.length === 0) {
-      process.stderr.write('\n  \x1b[2mNo runs recorded yet.\x1b[0m\n');
-      process.stderr.write('  Run \x1b[1magentguard guard\x1b[0m to start recording.\n\n');
-      return 1;
+  // Detect hook-based runs for auto-merge (both JSONL and SQLite)
+  let autoMergeHooks = false;
+  if (isLastMode && mergeCount === 0) {
+    if (useSqlite) {
+      const storage = await openSqliteDb(storageConfig);
+      if (storage) {
+        const { getLatestRunId: peekLatest } = await import('@red-codes/storage');
+        const db = storage.db as import('better-sqlite3').Database;
+        const latest = peekLatest(db);
+        autoMergeHooks = !!latest && latest.startsWith('hook_');
+        storage.close();
+      }
+    } else {
+      autoMergeHooks = !!listRunsJsonl()[0]?.startsWith('hook_');
     }
-    const count = mergeCount > 0 ? mergeCount : Math.min(runs.length, 50);
-    const runsToMerge = runs.slice(0, count);
+  }
 
-    eventList = [];
-    decisionList = [];
-    for (const runId of runsToMerge) {
-      eventList.push(...loadEventsJsonl(runId));
-      decisionList.push(...loadDecisionsJsonl(runId));
+  const shouldMerge = mergeCount > 0 || autoMergeHooks;
+
+  if (shouldMerge) {
+    if (useSqlite) {
+      // SQLite merge path
+      const storage = await openSqliteDb(storageConfig);
+      if (!storage) return 1;
+      const { listRunIds, loadRunEvents, loadRunDecisions } = await import('@red-codes/storage');
+      const db = storage.db as import('better-sqlite3').Database;
+      const runs = listRunIds(db);
+      if (runs.length === 0) {
+        storage.close();
+        process.stderr.write('\n  \x1b[2mNo runs recorded yet.\x1b[0m\n');
+        process.stderr.write('  Run \x1b[1magentguard guard\x1b[0m to start recording.\n\n');
+        return 1;
+      }
+      const count = mergeCount > 0 ? mergeCount : Math.min(runs.length, 50);
+      const runsToMerge = runs.slice(0, count);
+
+      eventList = [];
+      decisionList = [];
+      for (const runId of runsToMerge) {
+        eventList.push(...loadRunEvents(db, runId));
+        decisionList.push(...loadRunDecisions(db, runId));
+      }
+      storage.close();
+
+      eventList.sort((a, b) => a.timestamp - b.timestamp);
+      decisionList.sort((a, b) => a.timestamp - b.timestamp);
+
+      sessionLabel = `session_merged_${runsToMerge.length}_runs`;
+      process.stderr.write(
+        `  Merging ${runsToMerge.length} recent runs into a single view...\n`
+      );
+    } else {
+      // JSONL merge path
+      const runs = listRunsJsonl();
+      if (runs.length === 0) {
+        process.stderr.write('\n  \x1b[2mNo runs recorded yet.\x1b[0m\n');
+        process.stderr.write('  Run \x1b[1magentguard guard\x1b[0m to start recording.\n\n');
+        return 1;
+      }
+      const count = mergeCount > 0 ? mergeCount : Math.min(runs.length, 50);
+      const runsToMerge = runs.slice(0, count);
+
+      eventList = [];
+      decisionList = [];
+      for (const runId of runsToMerge) {
+        eventList.push(...loadEventsJsonl(runId));
+        decisionList.push(...loadDecisionsJsonl(runId));
+      }
+      eventList.sort((a, b) => a.timestamp - b.timestamp);
+      decisionList.sort((a, b) => a.timestamp - b.timestamp);
+
+      sessionLabel = `session_merged_${runsToMerge.length}_runs`;
+      process.stderr.write(
+        `  Merging ${runsToMerge.length} recent runs into a single view...\n`
+      );
     }
-    // Sort by timestamp
-    eventList.sort((a, b) => a.timestamp - b.timestamp);
-    decisionList.sort((a, b) => a.timestamp - b.timestamp);
-
-    sessionLabel = `session_merged_${runsToMerge.length}_runs`;
-    process.stderr.write(`  Merging ${runsToMerge.length} recent runs into a single view...\n`);
   } else {
     // Single run mode
     let targetRunId: string | undefined;
