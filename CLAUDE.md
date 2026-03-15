@@ -265,6 +265,7 @@ Each workspace package maps to a single architectural concept:
 - `agentguard export <runId>` — Export a governance session to a portable JSONL file
 - `agentguard import <file>` — Import a governance session from a portable JSONL file
 - `agentguard replay` — Replay a governance session timeline
+- `agentguard session-viewer [runId]` — Generate interactive HTML dashboard (auto-opens on session end; `--share` for cloud sharing; `--merge-recent <n>` to combine runs)
 - `agentguard plugin list|install|remove|search` — Manage plugins
 - `agentguard simulate <action-json>` — Simulate an action and display predicted impact without executing
 - `agentguard ci-check <session-file>` — CI governance verification (check a session for violations)

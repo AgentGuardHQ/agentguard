@@ -202,15 +202,12 @@ function generateSessionViewerQuietly(cliArgs: string[]): void {
 }
 
 async function handleStop(cliArgs: string[]): Promise<void> {
-  // On session end, generate the session viewer HTML and suggest opening it
+  // On session end, generate the session viewer HTML and auto-open in the browser
   try {
     const { sessionViewer } = await import('./session-viewer.js');
     const { resolveStorageConfig } = await import('@red-codes/storage');
     const storageConfig = resolveStorageConfig(cliArgs);
     await sessionViewer(['--last', ...cliArgs], storageConfig);
-    process.stderr.write(
-      '  \x1b[36m\u2139\x1b[0m  Session viewer ready. Run \x1b[1magentguard session-viewer --last\x1b[0m to open in browser.\n\n'
-    );
   } catch {
     // Non-fatal — viewer generation is best-effort
   }
