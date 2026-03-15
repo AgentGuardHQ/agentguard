@@ -39,6 +39,18 @@
         ]
       }
     ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node apps/cli/dist/bin.js claude-hook notify --store sqlite",
+            "timeout": 15000,
+            "blocking": false
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
