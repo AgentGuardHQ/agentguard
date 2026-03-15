@@ -1272,6 +1272,21 @@ rules:
               <p class="text-muted text-xs mt-3">Requires <a href="https://github.com/AgentGuardHQ/agent-guard" class="text-cta hover:underline">building from source</a>. Generates <span class="text-text font-mono">.claude/skills/</span>, agent prompts, and <span class="text-text font-mono">agentguard-swarm.yaml</span> config.</p>
             </div>
           </div>
+
+          <!-- Post-Setup card -->
+          <div class="reveal bg-surface border border-border rounded-xl p-5 mt-4">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              <h3 class="font-mono font-semibold text-yellow-400 text-xs uppercase tracking-wider">Post-Setup — Required</h3>
+            </div>
+            <p class="text-muted text-sm mb-3">Scaffolding generates the files, but agents still need to be configured in <strong class="text-text">Claude Desktop</strong> before they can run:</p>
+            <ol class="text-muted text-sm space-y-2 list-decimal list-inside">
+              <li><strong class="text-text">Create scheduled tasks</strong> — Register each agent as a scheduled task in Claude Desktop using the cron schedules from the agent manifest.</li>
+              <li><strong class="text-text">Set <span class="font-mono text-cta">worktree: true</span></strong> — Enable worktree isolation so parallel agents get their own git worktree and don't conflict on file writes or git state.</li>
+              <li><strong class="text-text">Bypass permissions manually</strong> — Agents run unattended with no human to approve prompts. Pre-approve the required tool permissions (file, shell, git) in Claude Desktop for each agent.</li>
+            </ol>
+            <p class="text-muted text-xs mt-3">AgentGuard's governance policy + invariant system enforces safety boundaries even with permissions bypassed.</p>
+          </div>
         </div>
       </div>
     </section>

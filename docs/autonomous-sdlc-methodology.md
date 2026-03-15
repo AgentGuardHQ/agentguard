@@ -104,6 +104,16 @@ Each agent's prompt includes a critical autonomy directive:
 
 > "This is an unattended scheduled task. No human is present. NEVER pause to ask for clarification. Default to the safest option."
 
+### Claude Desktop Configuration
+
+Scaffolding generates the files, but each agent must also be configured in **Claude Desktop** to run autonomously:
+
+1. **Create scheduled tasks** — Register each agent as a scheduled task in Claude Desktop using the cron schedules from the agent manifest. Point the task at the agent's prompt file (e.g., `.claude/prompts/coder-agent.md`).
+
+2. **Set `worktree: true`** — Enable worktree isolation for every scheduled task. Each agent run gets its own isolated git worktree, preventing parallel agents from conflicting on file writes, git index locks, and branch state. Without this, concurrent agents will corrupt each other's working directory.
+
+3. **Bypass permissions manually** — Since agents run unattended with no human to approve tool-use prompts, you must pre-approve the required permissions (file read/write, shell execution, git operations) for each agent in Claude Desktop. AgentGuard's governance policy and invariant system provide a second layer of defense, but Claude Desktop's permission gates must be resolved before the agent can start.
+
 ---
 
 ## 3. Governance as Execution Boundary

@@ -44,7 +44,33 @@ agentguard init swarm
 #   agentguard.yaml         — governance policy (if missing)
 ```
 
-Then register the agents as scheduled tasks in your Claude Code environment. The scaffolder outputs the full agent manifest with cron schedules.
+### Claude Desktop Setup
+
+After scaffolding, each agent must be registered as a **scheduled task** in Claude Desktop. The scaffolder outputs the full agent manifest with cron schedules — but you still need to configure three things manually:
+
+#### 1. Create scheduled tasks in Claude Desktop
+
+Open Claude Desktop and create a scheduled task for each agent you want to run. Use the cron schedule from the agent manifest and point the task at the agent's prompt file (e.g., `.claude/prompts/coder-agent.md`).
+
+#### 2. Enable worktree isolation
+
+In each scheduled task's configuration, set **worktree to `true`**. This gives each agent run an isolated git worktree so parallel agents don't interfere with each other's file changes or git state.
+
+```json
+{
+  "task": "coder-agent",
+  "schedule": "0 */2 * * *",
+  "worktree": true
+}
+```
+
+Without worktree isolation, concurrent agents will conflict on file writes, git index locks, and branch state.
+
+#### 3. Bypass permissions manually
+
+Scheduled agents run **unattended** — there is no human to approve tool-use permission prompts. You must manually pre-approve the necessary permissions for each agent before it can run autonomously. In Claude Desktop, configure the agent's permissions to allow the tools it needs (file read/write, shell execution, git operations) without interactive confirmation.
+
+> **Important:** Review the governance policy (`agentguard.yaml`) before granting broad permissions. AgentGuard's invariant system acts as a second layer of defense, but the policy should be tuned to your project's risk tolerance.
 
 ## Agents
 
