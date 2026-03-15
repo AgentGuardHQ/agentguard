@@ -189,7 +189,21 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     process.stderr.write(`  ${'\x1b[2m'}Press Ctrl+C to stop.${'\x1b[0m'}\n\n`);
   }
 
-  return processStdin(kernel, renderers, storage, telemetryClient);
+  return processStdin(kernel, renderers, storage, telemetryClient, storeConfig);
+}
+
+/** Auto-open session viewer in browser after run completes */
+async function openSessionViewer(storeConfig: StorageConfig): Promise<void> {
+  try {
+    const { sessionViewer } = await import('./session-viewer.js');
+    const storeArgs: string[] = [];
+    if (storeConfig.backend === 'sqlite') {
+      storeArgs.push('--store', 'sqlite');
+    }
+    await sessionViewer(['--last', ...storeArgs], storeConfig);
+  } catch {
+    // Non-fatal — viewer generation is best-effort
+  }
 }
 
 /** Detect execution environment */
@@ -203,7 +217,8 @@ async function processStdin(
   kernel: ReturnType<typeof createKernel>,
   renderers: RendererRegistry,
   storage: StorageBundle,
-  telemetryClient: TelemetryClient | null
+  telemetryClient: TelemetryClient | null,
+  storeConfig: StorageConfig
 ): Promise<number> {
   const startTime = Date.now();
   let totalActions = 0;
@@ -318,14 +333,16 @@ async function processStdin(
       storage.close();
     };
 
-    process.stdin.on('end', () => {
+    process.stdin.on('end', async () => {
       shutdown();
+      await openSessionViewer(storeConfig);
       resolvePromise(0);
     });
 
-    process.on('SIGINT', () => {
+    process.on('SIGINT', async () => {
       shutdown();
       process.stderr.write('\n  \x1b[33mAgentGuard stopped.\x1b[0m\n\n');
+      await openSessionViewer(storeConfig);
       resolvePromise(0);
     });
   });

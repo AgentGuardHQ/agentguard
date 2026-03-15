@@ -148,10 +148,14 @@ function uploadToServer(
 // ---------------------------------------------------------------------------
 
 function openInBrowser(filePath: string): void {
-  const cmd =
-    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
   try {
-    execSync(`${cmd} "${filePath}"`, { stdio: 'ignore' });
+    if (process.platform === 'win32') {
+      // Windows `start` treats the first quoted arg as a window title — pass empty title first
+      execSync(`start "" "${filePath}"`, { stdio: 'ignore' });
+    } else {
+      const cmd = process.platform === 'darwin' ? 'open' : 'xdg-open';
+      execSync(`${cmd} "${filePath}"`, { stdio: 'ignore' });
+    }
   } catch {
     // Silently fail — file path is printed to stderr regardless
   }
