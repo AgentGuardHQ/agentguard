@@ -147,17 +147,19 @@ export function buildWorkspaceGraph(root: string): WorkspaceNode[] {
   const nodes: WorkspaceNode[] = [];
   const workspaceNames = new Set<string>();
 
-  // First pass: collect all workspace package names
+  // First pass: collect all workspace package names, caching parsed manifests
+  const manifests = new Map<string, PackageManifest | null>();
   for (const dir of workspaceDirs) {
     const pkg = readJsonSafe<PackageManifest>(join(root, dir, 'package.json'));
+    manifests.set(dir, pkg);
     if (pkg?.name) {
       workspaceNames.add(pkg.name);
     }
   }
 
-  // Second pass: build nodes with workspace-internal dependencies
+  // Second pass: build nodes with workspace-internal dependencies (uses cached manifests)
   for (const dir of workspaceDirs) {
-    const pkg = readJsonSafe<PackageManifest>(join(root, dir, 'package.json'));
+    const pkg = manifests.get(dir);
     if (!pkg?.name) continue;
 
     const allDeps = {
@@ -268,7 +270,7 @@ export function createDependencyGraphSimulator(): ActionSimulator {
       return isPackageJsonWrite(intent);
     },
 
-    async simulate(intent: NormalizedIntent): Promise<SimulationResult> {
+    async simulate(intent: NormalizedIntent, _context: Record<string, unknown>): Promise<SimulationResult> {
       const start = Date.now();
       const target = intent.target || '';
       const predictedChanges: string[] = [];
