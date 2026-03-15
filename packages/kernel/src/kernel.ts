@@ -39,7 +39,16 @@ import { checkAllInvariants, buildSystemState } from '@red-codes/invariants';
 import { DEFAULT_INVARIANTS } from '@red-codes/invariants';
 import type { SimulatorRegistry, ImpactForecast } from './simulation/types.js';
 import { buildImpactForecast } from './simulation/forecast.js';
-import type { Tracer } from '@red-codes/telemetry';
+/** Minimal tracer interface (previously from @red-codes/telemetry, now inlined). */
+interface TraceSpan {
+  setAttribute(key: string, value: string | number | boolean): void;
+  end(): void;
+  endWithError(message: string): void;
+}
+interface Tracer {
+  startSpan(name: string, label: string): TraceSpan;
+  shutdown(): void;
+}
 
 export interface KernelResult {
   allowed: boolean;

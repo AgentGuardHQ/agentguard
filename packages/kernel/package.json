@@ -25,7 +25,6 @@
     "@red-codes/core": "workspace:*",
     "@red-codes/events": "workspace:*",
     "@red-codes/policy": "workspace:*",
-    "@red-codes/invariants": "workspace:*",
-    "@red-codes/telemetry": "workspace:*"
+    "@red-codes/invariants": "workspace:*"
   }
 }

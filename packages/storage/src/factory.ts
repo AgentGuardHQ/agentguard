@@ -5,8 +5,6 @@ import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
 import { createJsonlSink } from '@red-codes/events';
 import { createDecisionJsonlSink } from '@red-codes/events';
-import { createWebhookEventSink, createWebhookDecisionSink } from './webhook-sink.js';
-import type { WebhookConfig } from './webhook-sink.js';
 import type { EventSink } from '@red-codes/core';
 import type { DecisionSink } from '@red-codes/core';
 import type { StorageConfig } from './types.js';
@@ -20,7 +18,7 @@ export interface StorageBundle {
   close(): void;
   /** The raw better-sqlite3 Database instance, if using SQLite. Cast to Database.Database to use. */
   readonly db?: unknown;
-  /** Session lifecycle tracker (SQLite only — undefined for JSONL/Firestore) */
+  /** Session lifecycle tracker (SQLite only — undefined for JSONL) */
   readonly sessions?: import('./sqlite-session.js').SessionTracker;
 }
 
@@ -28,12 +26,6 @@ export interface StorageBundle {
 export async function createStorageBundle(config: StorageConfig): Promise<StorageBundle> {
   if (config.backend === 'sqlite') {
     return createSqliteBundle(config);
-  }
-  if (config.backend === 'firestore') {
-    return createFirestoreBundle(config);
-  }
-  if (config.backend === 'webhook') {
-    return createWebhookBundle(config);
   }
   return createJsonlBundle(config);
 }
@@ -104,84 +96,6 @@ async function createSqliteBundle(config: StorageConfig): Promise<StorageBundle>
   };
 }
 
-async function createFirestoreBundle(config: StorageConfig): Promise<StorageBundle> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let Firestore: any;
-  try {
-    const mod = await (Function('return import("@google-cloud/firestore")')() as Promise<
-      Record<string, unknown>
-    >);
-    Firestore = mod.Firestore ?? (mod.default as Record<string, unknown>)?.Firestore ?? mod.default;
-  } catch {
-    throw new Error(
-      'Firestore backend requires @google-cloud/firestore. Install it with: npm install @google-cloud/firestore'
-    );
-  }
-
-  const { createFirestoreEventSink, createFirestoreDecisionSink } =
-    await import('./firestore-sink.js');
-
-  const projectId = config.firestoreProjectId ?? process.env.GCLOUD_PROJECT ?? undefined;
-  const db = new Firestore(projectId ? { projectId } : {});
-
-  return {
-    createEventSink(runId: string): EventSink {
-      return createFirestoreEventSink(db, runId);
-    },
-    createDecisionSink(runId: string): DecisionSink {
-      return createFirestoreDecisionSink(db, runId);
-    },
-    close(): void {
-      // Firestore client manages its own connection lifecycle
-    },
-    db,
-  };
-}
-
-function createWebhookBundle(config: StorageConfig): StorageBundle {
-  const url = config.webhookUrl ?? process.env.AGENTGUARD_WEBHOOK_URL;
-  if (!url) {
-    throw new Error(
-      'Webhook backend requires a URL. Set --webhook-url <url> or AGENTGUARD_WEBHOOK_URL env var.'
-    );
-  }
-
-  const headers: Record<string, string> = { ...config.webhookHeaders };
-  const envAuth = process.env.AGENTGUARD_WEBHOOK_AUTH;
-  if (envAuth && !headers['Authorization']) {
-    headers['Authorization'] = envAuth;
-  }
-
-  const webhookConfig: WebhookConfig = {
-    url,
-    headers,
-    batchSize: config.webhookBatchSize,
-    flushIntervalMs: config.webhookFlushIntervalMs,
-  };
-
-  // Track sinks so close() can flush them all
-  const sinks: Array<{ close?: () => void; flush?: () => void }> = [];
-
-  return {
-    createEventSink(runId: string): EventSink {
-      const sink = createWebhookEventSink(webhookConfig, runId);
-      sinks.push(sink);
-      return sink;
-    },
-    createDecisionSink(runId: string): DecisionSink {
-      const sink = createWebhookDecisionSink(webhookConfig, runId);
-      sinks.push(sink);
-      return sink;
-    },
-    close(): void {
-      for (const sink of sinks) {
-        sink.close?.();
-        sink.flush?.();
-      }
-    },
-  };
-}
-
 /**
  * Resolve the SQLite database path from config, with home-dir default.
  *
@@ -216,14 +130,7 @@ export function resolveStorageConfig(args: string[]): StorageConfig {
   const envStore = process.env.AGENTGUARD_STORE;
 
   const raw = storeArg !== undefined ? storeArg : envStore;
-  const backend =
-    raw === 'sqlite'
-      ? 'sqlite'
-      : raw === 'firestore'
-        ? 'firestore'
-        : raw === 'webhook'
-          ? 'webhook'
-          : 'jsonl';
+  const backend = raw === 'sqlite' ? 'sqlite' : 'jsonl';
 
   const dirIdx = args.findIndex((a) => a === '--dir' || a === '-d');
   const baseDir = dirIdx !== -1 ? args[dirIdx + 1] : undefined;
@@ -233,9 +140,5 @@ export function resolveStorageConfig(args: string[]): StorageConfig {
   const dbPathArg = dbPathIdx !== -1 ? args[dbPathIdx + 1] : undefined;
   const dbPath = dbPathArg ?? process.env.AGENTGUARD_DB_PATH ?? undefined;
 
-  // --webhook-url flag or AGENTGUARD_WEBHOOK_URL env var for webhook endpoint
-  const webhookUrlIdx = args.findIndex((a) => a === '--webhook-url');
-  const webhookUrl = webhookUrlIdx !== -1 ? args[webhookUrlIdx + 1] : undefined;
-
-  return { backend, baseDir, dbPath, webhookUrl };
+  return { backend, baseDir, dbPath };
 }
