@@ -337,7 +337,9 @@ interface SystemState {
 
 ### 6.2 Default System Invariants
 
-The reference implementation ships with six default invariants:
+The reference implementation ships with 20 default invariants spanning six categories: secret protection, branch safety, blast radius control, supply chain integrity, governance self-protection, and environmental enforcement.
+
+**Core safety invariants:**
 
 | ID | Name | Severity | Condition |
 |----|------|----------|-----------|
@@ -348,7 +350,36 @@ The reference implementation ships with six default invariants:
 | `no-force-push` | No Force Push | 4 (high) | Force push is forbidden |
 | `lockfile-integrity` | Lockfile Integrity | 2 (low) | Lockfile must update when manifest changes |
 
-> *Implementation: `packages/invariants/src/definitions.ts` --- `DEFAULT_INVARIANTS` array (10 invariants).*
+**Agent containment invariants:**
+
+| ID | Severity | Condition |
+|----|----------|-----------|
+| `no-skill-modification` | 5 (critical) | Agent cannot modify its own skill definitions |
+| `no-scheduled-task-modification` | 5 (critical) | Agent cannot modify scheduled task configurations |
+| `no-credential-file-creation` | 4 (high) | Agent cannot create credential or key files |
+| `no-governance-self-modification` | 5 (critical) | Agent cannot modify governance policy or invariant source |
+| `no-permission-escalation` | 4 (high) | Agent cannot escalate its own permissions |
+
+**Supply chain and infrastructure invariants:**
+
+| ID | Severity | Condition |
+|----|----------|-----------|
+| `no-package-script-injection` | 4 (high) | No injection of scripts into package.json |
+| `no-cicd-config-modification` | 3 (medium) | CI/CD configuration files are protected |
+| `no-container-config-modification` | 3 (medium) | Container configuration files are protected |
+| `no-env-var-modification` | 3 (medium) | Environment variable files are protected |
+| `no-destructive-migration` | 4 (high) | Database migrations cannot contain destructive operations |
+
+**Operational safety invariants:**
+
+| ID | Severity | Condition |
+|----|----------|-----------|
+| `recursive-operation-guard` | 3 (medium) | Detects recursive or self-referential operations |
+| `large-file-write` | 2 (low) | Flags writes exceeding size thresholds |
+| `transitive-effect-analysis` | 2 (low) | Analyzes cascading effects of file modifications |
+| `no-network-egress` | 3 (medium) | Blocks unauthorized outbound network requests |
+
+> *Implementation: `packages/invariants/src/definitions.ts` --- `DEFAULT_INVARIANTS` array (20 invariants).*
 
 ### 6.3 Severity-Based Intervention
 
@@ -429,14 +460,18 @@ The monitor tracks statistics per-agent and per-invariant, enabling targeted ana
 
 ### 7.3 Canonical Event Model
 
-All system activity is captured as immutable canonical events. The event model defines 30+ event kinds across 6 categories:
+All system activity is captured as immutable canonical events. The event model defines 49 event kinds across 10 categories:
 
-- **Governance**: `POLICY_DENIED`, `UNAUTHORIZED_ACTION`, `INVARIANT_VIOLATION`, `BLAST_RADIUS_EXCEEDED`, `EVIDENCE_PACK_GENERATED`
-- **Actions**: `ACTION_REQUESTED`, `ACTION_ALLOWED`, `ACTION_DENIED`, `ACTION_ESCALATED`
-- **Pipeline**: `PIPELINE_STARTED`, `STAGE_COMPLETED`, `STAGE_FAILED`, `FILE_SCOPE_VIOLATION`
-- **Developer Signals**: `FILE_SAVED`, `TEST_COMPLETED`, `BUILD_COMPLETED`, `COMMIT_CREATED`
-- **Ingestion**: `ERROR_OBSERVED`, `BUG_CLASSIFIED`
-- **Session**: `RUN_STARTED`, `RUN_ENDED`, `CHECKPOINT_REACHED`
+- **Governance** (6): `POLICY_DENIED`, `UNAUTHORIZED_ACTION`, `INVARIANT_VIOLATION`, `BLAST_RADIUS_EXCEEDED`, `MERGE_GUARD_FAILURE`, `EVIDENCE_PACK_GENERATED`
+- **Reference Monitor** (6): `ACTION_REQUESTED`, `ACTION_ALLOWED`, `ACTION_DENIED`, `ACTION_ESCALATED`, `ACTION_EXECUTED`, `ACTION_FAILED`
+- **Decision & Simulation** (2): `DECISION_RECORDED`, `SIMULATION_COMPLETED`
+- **Policy Composition** (2): `POLICY_COMPOSED`, `POLICY_TRACE_RECORDED`
+- **Pipeline** (6): `PIPELINE_STARTED`, `STAGE_COMPLETED`, `STAGE_FAILED`, `PIPELINE_COMPLETED`, `PIPELINE_FAILED`, `FILE_SCOPE_VIOLATION`
+- **Session** (4): `RUN_STARTED`, `RUN_ENDED`, `CHECKPOINT_REACHED`, `STATE_CHANGED`
+- **Developer Signals** (7): `FILE_SAVED`, `TEST_COMPLETED`, `BUILD_COMPLETED`, `COMMIT_CREATED`, `CODE_REVIEWED`, `DEPLOY_COMPLETED`, `LINT_COMPLETED`
+- **Agent Liveness** (3): `HEARTBEAT_EMITTED`, `HEARTBEAT_MISSED`, `AGENT_UNRESPONSIVE`
+- **Ingestion** (4): `ERROR_OBSERVED`, `BUG_CLASSIFIED`, `ACTIVITY_RECORDED`, `EVOLUTION_TRIGGERED`
+- **Battle Lifecycle** (9): `ENCOUNTER_STARTED`, `MOVE_USED`, `DAMAGE_DEALT`, `HEALING_APPLIED`, `PASSIVE_ACTIVATED`, `BUGMON_FAINTED`, `CACHE_ATTEMPTED`, `CACHE_SUCCESS`, `BATTLE_ENDED`
 
 Events are immutable, fingerprinted for deduplication, and stored in an append-only event store that supports query, replay, and filtering.
 
@@ -460,7 +495,7 @@ AgentGuard is a TypeScript implementation of the execution governance architectu
 | RTA Decision Engine | `packages/kernel/src/decision.ts` | `createEngine()`, `evaluate()`, `INTERVENTION` |
 | Policy Evaluation | `packages/policy/src/evaluator.ts` | `evaluate()`, `matchAction()`, `matchScope()` |
 | Policy Loading & Validation | `packages/policy/src/loader.ts` | `loadPolicies()`, `validatePolicy()` |
-| System Invariants | `packages/invariants/src/definitions.ts` | `DEFAULT_INVARIANTS` (10 invariants) |
+| System Invariants | `packages/invariants/src/definitions.ts` | `DEFAULT_INVARIANTS` (20 invariants) |
 | Invariant Checking | `packages/invariants/src/checker.ts` | `checkAllInvariants()`, `buildSystemState()` |
 | Evidence Packs | `packages/kernel/src/evidence.ts` | `createEvidencePack()`, `ExplainableEvidencePack` |
 | Escalation Monitor | `packages/kernel/src/monitor.ts` | `createMonitor()`, `ESCALATION` (4 levels) |
@@ -468,14 +503,14 @@ AgentGuard is a TypeScript implementation of the execution governance architectu
 | Blast Radius Engine | `packages/kernel/src/blast-radius.ts` | Weighted blast radius computation |
 | Governed Action Kernel | `packages/kernel/src/kernel.ts` | `propose()`, lifecycle orchestration |
 | Impact Simulation | `packages/kernel/src/simulation/` | Pre-execution impact simulation (filesystem, git, package) |
-| Storage Backend | `packages/storage/src/` | SQLite + Firestore event/decision persistence |
+| Storage Backend | `packages/storage/src/` | SQLite event/decision persistence |
 
 ### 8.3 Code Characteristics
 
 - **Pure domain logic**: Core governance components (kernel, policy evaluator, invariant checker) have zero DOM dependencies and minimal Node.js-specific API usage.
 - **Deterministic**: All evaluation functions are pure --- same input always produces same output.
-- **Modular architecture**: The governance runtime spans kernel, policy, invariants, events, and adapters across `packages/` and `apps/`, with optional storage backends (SQLite, Firestore).
-- **Fully tested**: 77 TypeScript test files (vitest) and 14 JavaScript test files cover policy evaluation, invariant checking, evidence generation, escalation logic, storage backends, and CLI commands.
+- **Modular architecture**: The governance runtime spans kernel, policy, invariants, events, and adapters across `packages/` and `apps/`, with an optional SQLite storage backend.
+- **Fully tested**: 105 TypeScript test files (vitest) and 14 JavaScript test files cover policy evaluation, invariant checking, evidence generation, escalation logic, storage backends, CLI commands, MCP server, plugins, renderers, and simulation.
 
 ### 8.4 Multi-Agent Pipeline
 
@@ -591,7 +626,7 @@ agent-guard/
       actions.ts            # 23 canonical action types across 8 classes
       types.ts              # Shared TypeScript type definitions
     events/src/             # @red-codes/events — Canonical event model
-      schema.ts             # Event kinds, factory, validation
+      schema.ts             # 49 event kinds, factory, validation
       bus.ts                # Typed EventBus
       store.ts              # In-memory event store
       jsonl.ts              # JSONL event persistence
@@ -600,7 +635,7 @@ agent-guard/
       loader.ts             # Policy validation + loading
       composer.ts           # Policy composition (multi-file merging)
     invariants/src/         # @red-codes/invariants — Invariant system
-      definitions.ts        # 10 built-in invariant definitions
+      definitions.ts        # 20 built-in invariant definitions
       checker.ts            # Invariant evaluation engine
     kernel/src/             # @red-codes/kernel — Governed action kernel
       kernel.ts             # Orchestrator (propose → evaluate → execute → emit)
@@ -611,13 +646,13 @@ agent-guard/
       blast-radius.ts       # Weighted blast radius computation
       simulation/           # Pre-execution impact simulation
     adapters/src/           # @red-codes/adapters — Execution adapters (file, shell, git)
-    analytics/src/          # @red-codes/analytics — Cross-session violation analytics
-    storage/src/            # @red-codes/storage — SQLite + Firestore backends (opt-in)
-    telemetry/src/          # @red-codes/telemetry — Runtime telemetry
+    storage/src/            # @red-codes/storage — SQLite backend (opt-in)
     plugins/src/            # @red-codes/plugins — Plugin ecosystem
     renderers/src/          # @red-codes/renderers — Renderer plugin system
+    swarm/src/              # @red-codes/swarm — Agent swarm templates
   apps/
     cli/src/                # @red-codes/agentguard — CLI (published npm package)
+    mcp-server/src/         # @red-codes/agentguard-mcp — MCP governance server
     vscode-extension/src/   # agentguard-vscode — VS Code extension
   policy/                   # Policy configuration (JSON)
   policies/                 # Policy packs (YAML)
