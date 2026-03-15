@@ -2,7 +2,8 @@
   <img src="site/assets/logo-wordmark.svg" alt="AgentGuard" width="320">
 </p>
 
-<p align="center"><strong>Governed action runtime for AI coding agents.</strong></p>
+<p align="center"><strong>Governed action runtime for AI coding agents.</strong><br>
+<em>Ships with a 26-agent autonomous development swarm.</em></p>
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -239,6 +240,33 @@ The kernel runs in evaluation-only mode (`dryRun: true`) — it checks policies 
 
 See [Hook Architecture](docs/hook-architecture.md) for the full design, configuration options, and debugging guide.
 
+## Agent Swarm
+
+AgentGuard ships with a **26-agent autonomous development swarm** — the same one that builds AgentGuard itself. One command scaffolds the entire pipeline into your repo:
+
+```bash
+agentguard init swarm
+```
+
+This installs 39 skill definitions, governance hooks, and a configurable swarm manifest. Agents handle implementation, code review, CI triage, security audits, planning, docs sync, and more — all under full governance policy enforcement.
+
+```
+ROADMAP.md (you write strategy)
+    │
+    ├── Planning Agent (daily) ─── reads roadmap, sets priorities
+    ├── Coder Agent (2-hourly) ─── picks issues, implements, creates PRs
+    ├── Code Review Agent (2h) ─── reviews PRs for quality
+    ├── CI Triage Agent (hourly) ─ fixes failing CI
+    ├── PR Merger Agent (2h) ───── auto-merges when gates pass
+    ├── Security Audit (weekly) ── dependency + code scanning
+    ├── Recovery Controller (2h) ─ self-healing, detects unhealthy state
+    └── ... 19 more agents across 5 tiers
+```
+
+Select which tiers to enable (core, governance, ops, quality, marketing), override cron schedules, and set behavioral thresholds in `agentguard-swarm.yaml`.
+
+Full documentation: [packages/swarm/README.md](packages/swarm/README.md)
+
 ## Event Trail
 
 Every action proposal, decision, and execution is recorded as JSONL:
@@ -321,6 +349,7 @@ pnpm test               # Run all tests (turbo test)
 | [AgentGuard Spec](docs/agentguard.md) | Governance runtime specification |
 | [Architecture](docs/unified-architecture.md) | Governed action kernel model |
 | [Hook Architecture](docs/hook-architecture.md) | Claude Code hook integration design |
+| [Agent Swarm](packages/swarm/README.md) | 26-agent autonomous development swarm |
 | [Roadmap](ROADMAP.md) | Technical roadmap and next steps |
 | [Event Model](docs/event-model.md) | Canonical event schema |
 | [Plugin API](docs/plugin-api.md) | Event sources and extension points |
