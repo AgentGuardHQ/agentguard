@@ -58,6 +58,7 @@ const COMMANDS: Record<string, CommandHelp> = {
         flag: '--db-path <path>',
         description: 'SQLite database path (default: ~/.agentguard/agentguard.db)',
       },
+      { flag: '--no-open', description: 'Do not auto-open session viewer in browser after run' },
     ],
     examples: [
       'agentguard guard',
@@ -412,6 +413,7 @@ async function main() {
       const dryRun = flags.includes('--dry-run');
       const verbose = flags.includes('--verbose') || flags.includes('-v');
       const trace = flags.includes('--trace') || flags.includes('-t');
+      const noOpen = flags.includes('--no-open');
 
       const { guard } = await import('./commands/guard.js');
       const storageConfig = resolveStorageConfig(flags);
@@ -423,6 +425,7 @@ async function main() {
         trace,
         stdin: true,
         store: storageConfig,
+        noOpen,
       });
       process.exit(code);
       break;

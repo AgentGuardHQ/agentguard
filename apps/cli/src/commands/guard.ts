@@ -45,6 +45,8 @@ export interface GuardOptions {
   renderers?: RendererRegistry;
   /** Storage backend config */
   store?: StorageConfig;
+  /** Skip auto-opening session viewer in browser after run */
+  noOpen?: boolean;
 }
 
 export async function guard(_args: string[], options: GuardOptions = {}): Promise<number> {
@@ -189,7 +191,10 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     process.stderr.write(`  ${'\x1b[2m'}Press Ctrl+C to stop.${'\x1b[0m'}\n\n`);
   }
 
-  return processStdin(kernel, renderers, storage, telemetryClient);
+  return processStdin(kernel, renderers, storage, telemetryClient, {
+    noOpen: options.noOpen,
+    storeConfig,
+  });
 }
 
 /** Detect execution environment */
@@ -203,7 +208,8 @@ async function processStdin(
   kernel: ReturnType<typeof createKernel>,
   renderers: RendererRegistry,
   storage: StorageBundle,
-  telemetryClient: TelemetryClient | null
+  telemetryClient: TelemetryClient | null,
+  viewerOpts: { noOpen?: boolean; storeConfig: StorageConfig }
 ): Promise<number> {
   const startTime = Date.now();
   let totalActions = 0;
@@ -318,15 +324,40 @@ async function processStdin(
       storage.close();
     };
 
-    process.stdin.on('end', () => {
+    process.stdin.on('end', async () => {
       shutdown();
+      await openSessionViewer(viewerOpts);
       resolvePromise(0);
     });
 
-    process.on('SIGINT', () => {
+    process.on('SIGINT', async () => {
       shutdown();
       process.stderr.write('\n  \x1b[33mAgentGuard stopped.\x1b[0m\n\n');
+      await openSessionViewer(viewerOpts);
       resolvePromise(0);
     });
   });
+}
+
+async function openSessionViewer(opts: {
+  noOpen?: boolean;
+  storeConfig: StorageConfig;
+}): Promise<void> {
+  if (opts.noOpen) return;
+  try {
+    const { sessionViewer } = await import('./session-viewer.js');
+    const viewerArgs = ['--last'];
+    if (opts.storeConfig.backend === 'sqlite') {
+      viewerArgs.push('--store', 'sqlite');
+      if (opts.storeConfig.dbPath) {
+        viewerArgs.push('--db-path', opts.storeConfig.dbPath);
+      }
+    }
+    await sessionViewer(viewerArgs, opts.storeConfig);
+  } catch (err) {
+    // Non-fatal — session viewer is best-effort
+    process.stderr.write(
+      `  \x1b[2mSession viewer: ${err instanceof Error ? err.message : String(err)}\x1b[0m\n`
+    );
+  }
 }

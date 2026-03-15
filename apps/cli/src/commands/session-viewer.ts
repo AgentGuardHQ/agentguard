@@ -5,7 +5,7 @@
 import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { request } from 'node:https';
 import { request as httpRequest } from 'node:http';
 import { getEventFilePath, getDecisionFilePath } from '@red-codes/events';
@@ -150,12 +150,13 @@ function uploadToServer(
 function openInBrowser(filePath: string): void {
   try {
     if (process.platform === 'darwin') {
-      execSync(`open "${filePath}"`, { stdio: 'ignore' });
+      execFileSync('open', [filePath], { stdio: 'ignore' });
     } else if (process.platform === 'win32') {
-      // Windows `start` treats the first quoted arg as a window title — pass an empty title first.
-      execSync(`start "" "${filePath}"`, { stdio: 'ignore' });
+      // 'start' is a cmd.exe built-in — must invoke via cmd /c.
+      // First arg after 'start' is the window title (empty), second is the path.
+      execFileSync('cmd', ['/c', 'start', '""', filePath], { stdio: 'ignore' });
     } else {
-      execSync(`xdg-open "${filePath}"`, { stdio: 'ignore' });
+      execFileSync('xdg-open', [filePath], { stdio: 'ignore' });
     }
   } catch {
     // Silently fail — file path is printed to stderr regardless
