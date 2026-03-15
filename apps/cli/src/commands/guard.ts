@@ -45,6 +45,13 @@ export interface GuardOptions {
 }
 
 export async function guard(_args: string[], options: GuardOptions = {}): Promise<number> {
+  // Buffer stdin immediately — async setup below can cause a race where piped
+  // input arrives (and EOF fires) before processStdin() attaches 'data' handlers.
+  // resume() switches stdin to flowing mode so Node.js buffers chunks in memory.
+  if (!process.stdin.isTTY) {
+    process.stdin.resume();
+  }
+
   // Resolve policies — use composition if multiple paths provided
   const explicitPaths = options.policies ?? (options.policy ? [options.policy] : undefined);
   const useComposition = explicitPaths && explicitPaths.length > 1;
@@ -232,7 +239,7 @@ async function processStdin(
       }
     });
 
-    const shutdown = () => {
+    const shutdown = async () => {
       kernel.shutdown();
 
       // Record session end in the sessions table (SQLite only)
@@ -259,13 +266,13 @@ async function processStdin(
     };
 
     process.stdin.on('end', async () => {
-      shutdown();
+      await shutdown();
       await openSessionViewer(viewerOpts);
       resolvePromise(0);
     });
 
     process.on('SIGINT', async () => {
-      shutdown();
+      await shutdown();
       process.stderr.write('\n  \x1b[33mAgentGuard stopped.\x1b[0m\n\n');
       await openSessionViewer(viewerOpts);
       resolvePromise(0);

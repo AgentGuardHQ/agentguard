@@ -28,7 +28,7 @@ export interface YamlPolicyDef {
 }
 
 interface YamlRule {
-  action?: string;
+  action?: string | string[];
   effect?: string;
   target?: string;
   branches?: string[];
@@ -147,9 +147,11 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
   let currentRule: YamlRule | null = null;
   let inRules = false;
   let inBranches = false;
+  let inActionArray = false;
   let inExtends = false;
   let inTopLevelPersona = false;
   let inRulePersona = false;
+  let ruleStartIndent = 0;
 
   for (const rawLine of lines) {
     const line = rawLine.replace(/\r$/, '');
@@ -236,18 +238,36 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
 
     // Inside rules array
     if (inRules) {
+      // Continuation of action array (must check before new-rule detection)
+      if (inActionArray && trimmed.startsWith('- ') && currentRule && indent > ruleStartIndent) {
+        if (!Array.isArray(currentRule.action)) {
+          currentRule.action = [];
+        }
+        (currentRule.action as string[]).push(trimQuotes(trimmed.slice(2).trim()));
+        continue;
+      }
+
       // New rule entry (- action: ...)
       if (trimmed.startsWith('- ')) {
+        inActionArray = false;
         if (currentRule) rules.push(currentRule);
         currentRule = {};
         inBranches = false;
         inRulePersona = false;
+        ruleStartIndent = indent;
 
         const rest = trimmed.slice(2).trim();
         const colonIdx = rest.indexOf(':');
         if (colonIdx !== -1) {
           const key = rest.slice(0, colonIdx).trim();
           const val = rest.slice(colonIdx + 1).trim();
+
+          if (key === 'action' && !val) {
+            inActionArray = true;
+            currentRule.action = [];
+            continue;
+          }
+
           applyRuleField(currentRule, key, val);
         }
         continue;
@@ -275,10 +295,17 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
       // Rule property
       if (currentRule) {
         inBranches = false;
+        inActionArray = false;
         const colonIdx = trimmed.indexOf(':');
         if (colonIdx !== -1) {
           const key = trimmed.slice(0, colonIdx).trim();
           const val = trimmed.slice(colonIdx + 1).trim();
+
+          if (key === 'action' && !val) {
+            inActionArray = true;
+            currentRule.action = [];
+            continue;
+          }
 
           if (key === 'branches' && !val) {
             inBranches = true;
@@ -306,9 +333,15 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
 
 function applyRuleField(rule: YamlRule, key: string, val: string): void {
   switch (key) {
-    case 'action':
-      rule.action = trimQuotes(val);
+    case 'action': {
+      const arr = parseInlineArray(val);
+      if (arr.length > 0) {
+        rule.action = arr;
+      } else {
+        rule.action = trimQuotes(val);
+      }
       break;
+    }
     case 'effect':
       rule.effect = trimQuotes(val);
       break;
@@ -363,8 +396,15 @@ function convertRule(yamlRule: YamlRule): PolicyRule {
     hasConditions = true;
   }
 
+  let action: string | string[];
+  if (Array.isArray(yamlRule.action)) {
+    action = yamlRule.action.length > 0 ? yamlRule.action : '*';
+  } else {
+    action = yamlRule.action || '*';
+  }
+
   return {
-    action: yamlRule.action || '*',
+    action,
     effect: (yamlRule.effect as 'allow' | 'deny') || 'deny',
     conditions: hasConditions ? conditions : undefined,
     reason: yamlRule.reason,

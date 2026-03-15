@@ -95,6 +95,53 @@ rules:
     expect(result.rules).toHaveLength(1);
   });
 
+  it('parses multi-line action array', () => {
+    const yaml = `
+rules:
+  - action:
+      - test.run
+      - test.run.unit
+      - test.run.integration
+    effect: allow
+    reason: Testing is encouraged
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(1);
+    expect(result.rules![0].action).toEqual(['test.run', 'test.run.unit', 'test.run.integration']);
+    expect(result.rules![0].effect).toBe('allow');
+    expect(result.rules![0].reason).toBe('Testing is encouraged');
+  });
+
+  it('parses inline action array', () => {
+    const yaml = `
+rules:
+  - action: [test.run, test.run.unit]
+    effect: allow
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(1);
+    expect(result.rules![0].action).toEqual(['test.run', 'test.run.unit']);
+  });
+
+  it('parses multi-line action array followed by other rules', () => {
+    const yaml = `
+rules:
+  - action:
+      - test.run
+      - test.run.unit
+    effect: allow
+  - action: git.push
+    effect: deny
+    reason: No pushing
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(2);
+    expect(result.rules![0].action).toEqual(['test.run', 'test.run.unit']);
+    expect(result.rules![0].effect).toBe('allow');
+    expect(result.rules![1].action).toBe('git.push');
+    expect(result.rules![1].effect).toBe('deny');
+  });
+
   it('handles quoted values', () => {
     const yaml = `
 id: "quoted-id"
@@ -142,6 +189,23 @@ rules:
     expect(policy.id).toBe('fallback-id');
     expect(policy.name).toBe('YAML Policy');
     expect(policy.severity).toBe(3);
+  });
+
+  it('converts multi-line action array to PolicyRule', () => {
+    const yaml = `
+rules:
+  - action:
+      - test.run
+      - test.run.unit
+      - test.run.integration
+    effect: allow
+    reason: Testing is encouraged
+`;
+    const policy = loadYamlPolicy(yaml);
+    expect(policy.rules).toHaveLength(1);
+    expect(policy.rules[0].action).toEqual(['test.run', 'test.run.unit', 'test.run.integration']);
+    expect(policy.rules[0].effect).toBe('allow');
+    expect(policy.rules[0].reason).toBe('Testing is encouraged');
   });
 
   it('converts branches to conditions', () => {
