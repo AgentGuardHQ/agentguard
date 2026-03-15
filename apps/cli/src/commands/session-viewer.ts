@@ -6,6 +6,8 @@ import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
+import { request } from 'node:https';
+import { request as httpRequest } from 'node:http';
 import { getEventFilePath, getDecisionFilePath } from '@red-codes/events';
 import { buildReplaySession } from '@red-codes/kernel';
 import type { DomainEvent } from '@red-codes/core';
@@ -86,6 +88,62 @@ async function openSqliteDb(storageConfig: StorageConfig) {
 }
 
 // ---------------------------------------------------------------------------
+// Cloud sharing
+// ---------------------------------------------------------------------------
+
+const DEFAULT_SERVER_URL = process.env.AGENTGUARD_SERVER_URL || 'http://localhost:3001';
+
+function uploadToServer(
+  serverUrl: string,
+  sessionId: string,
+  html: string,
+  apiKey?: string,
+): Promise<{ viewerUrl: string }> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`/api/v1/sessions/${encodeURIComponent(sessionId)}/viewer`, serverUrl);
+    const isHttps = url.protocol === 'https:';
+    const reqFn = isHttps ? request : httpRequest;
+
+    const body = JSON.stringify({ html });
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Content-Length': String(Buffer.byteLength(body)),
+    };
+    if (apiKey) {
+      headers['x-api-key'] = apiKey;
+    }
+
+    const req = reqFn(
+      {
+        hostname: url.hostname,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname,
+        method: 'POST',
+        headers,
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: Buffer) => {
+          data += chunk.toString();
+        });
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            const parsed = JSON.parse(data) as { viewer_url?: string };
+            const viewerUrl = `${serverUrl}${parsed.viewer_url || `/v/sessions/${sessionId}`}`;
+            resolve({ viewerUrl });
+          } else {
+            reject(new Error(`Server responded with ${res.statusCode}: ${data}`));
+          }
+        });
+      },
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Browser opening
 // ---------------------------------------------------------------------------
 
@@ -112,6 +170,21 @@ export async function sessionViewer(
   storageConfig?: StorageConfig,
 ): Promise<number> {
   const noOpen = args.includes('--no-open');
+  const share = args.includes('--share');
+
+  // Parse --server <url> flag
+  let serverUrl = DEFAULT_SERVER_URL;
+  const serverIdx = args.indexOf('--server');
+  if (serverIdx !== -1 && args[serverIdx + 1]) {
+    serverUrl = args[serverIdx + 1];
+  }
+
+  // Parse --api-key <key> flag (or use env var)
+  let apiKey = process.env.AGENTGUARD_API_KEY;
+  const apiKeyIdx = args.indexOf('--api-key');
+  if (apiKeyIdx !== -1 && args[apiKeyIdx + 1]) {
+    apiKey = args[apiKeyIdx + 1];
+  }
 
   // Parse --merge-recent <n> flag (combine N most recent runs into one view)
   let mergeCount = 0;
@@ -123,9 +196,12 @@ export async function sessionViewer(
   const filteredArgs = args.filter(
     (a) =>
       a !== '--no-open' &&
+      a !== '--share' &&
       a !== '--store' &&
       a !== '--db-path' &&
       a !== '--merge-recent' &&
+      a !== '--server' &&
+      a !== '--api-key' &&
       a !== 'sqlite' &&
       a !== 'jsonl',
   );
@@ -283,6 +359,25 @@ export async function sessionViewer(
   writeFileSync(outFile, html, 'utf8');
 
   process.stderr.write(`\n  \x1b[32m✓\x1b[0m Session viewer written to: ${outFile}\n`);
+
+  // Upload to server if --share flag is set
+  if (share) {
+    process.stderr.write(`  Uploading to ${serverUrl}...\n`);
+    try {
+      const { viewerUrl } = await uploadToServer(serverUrl, sessionLabel, html, apiKey);
+      process.stderr.write(`\n  \x1b[32m✓\x1b[0m Shared! View at:\n`);
+      process.stderr.write(`  \x1b[1m\x1b[36m${viewerUrl}\x1b[0m\n\n`);
+
+      if (!noOpen) {
+        openInBrowser(viewerUrl);
+      }
+      return 0;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`  \x1b[31mError sharing:\x1b[0m ${msg}\n`);
+      process.stderr.write(`  \x1b[2mFalling back to local file.\x1b[0m\n\n`);
+    }
+  }
 
   if (!noOpen) {
     process.stderr.write('  Opening in browser...\n\n');
