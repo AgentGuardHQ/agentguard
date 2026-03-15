@@ -12,9 +12,7 @@
     { "path": "../../packages/policy" },
     { "path": "../../packages/invariants" },
     { "path": "../../packages/kernel" },
-    { "path": "../../packages/analytics" },
     { "path": "../../packages/storage" },
-    { "path": "../../packages/adapters" },
-    { "path": "../../packages/telemetry" }
+    { "path": "../../packages/adapters" }
   ]
 }

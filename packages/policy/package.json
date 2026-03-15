@@ -24,7 +24,6 @@
     "@red-codes/core": "workspace:*"
   },
   "devDependencies": {
-    "@red-codes/events": "workspace:*",
-    "@red-codes/analytics": "workspace:*"
+    "@red-codes/events": "workspace:*"
   }
 }

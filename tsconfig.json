@@ -14,14 +14,10 @@
     { "path": "packages/kernel" },
     { "path": "packages/adapters" },
     { "path": "packages/storage" },
-    { "path": "packages/analytics" },
-    { "path": "packages/telemetry" },
     { "path": "packages/plugins" },
     { "path": "packages/renderers" },
     { "path": "packages/swarm" },
     { "path": "apps/cli" },
-    { "path": "apps/telemetry-server" },
-    { "path": "apps/agentguardhq" },
     { "path": "apps/mcp-server" }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@red-codes/storage",
   "version": "0.1.0",
-  "description": "Storage backends for AgentGuard (SQLite, Firestore, JSONL)",
+  "description": "Storage backends for AgentGuard (SQLite + JSONL)",
   "type": "module",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
@@ -22,10 +22,7 @@
   },
   "dependencies": {
     "@red-codes/core": "workspace:*",
-    "@red-codes/events": "workspace:*",
-    "@red-codes/kernel": "workspace:*",
-    "@red-codes/analytics": "workspace:*",
-    "@red-codes/telemetry": "workspace:*"
+    "@red-codes/events": "workspace:*"
   },
   "optionalDependencies": {
     "better-sqlite3": "^12.6.2"
