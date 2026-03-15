@@ -24,3 +24,5 @@ logs/*
 **/logs/runtime-events.jsonl
 # Hook-generated event counters (redundant with governance DB)
 .events.json
+# Benchmark output (uploaded as CI artifact, not tracked in git)
+**/bench-results.json

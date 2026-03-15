@@ -1,0 +1,77 @@
+name: Benchmark Regression Gate
+
+on:
+  pull_request:
+    paths:
+      - 'packages/kernel/src/**'
+      - 'packages/kernel/tests/benchmarks/**'
+      - 'packages/policy/src/**'
+      - 'packages/invariants/src/**'
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo build --filter=@red-codes/kernel...
+
+      - name: Run benchmarks
+        working-directory: packages/kernel
+        run: pnpm bench
+
+      - name: Check regression thresholds
+        working-directory: packages/kernel
+        run: |
+          node - <<'EOF'
+          import { readFileSync } from 'node:fs';
+
+          const results = JSON.parse(readFileSync('bench-results.json', 'utf8'));
+          const thresholds = {
+            'policy-evaluation': 1,    // p99 < 1ms
+            'invariant-checking': 2,   // p99 < 2ms
+            'kernel-loop': 50,         // p99 < 50ms (includes kernel init overhead)
+            'simulation': 10,          // p99 < 10ms per simulator call
+          };
+
+          let failed = false;
+
+          for (const file of results.files ?? []) {
+            for (const group of file.groups ?? []) {
+              for (const bench of group.benchmarks ?? []) {
+                const p99Ms = bench.p99 ?? bench.mean ?? 0; // already in ms
+                const name = bench.name ?? '';
+                const suiteName = group.fullName ?? '';
+
+                for (const [key, limitMs] of Object.entries(thresholds)) {
+                  if (name.toLowerCase().includes(key) || suiteName.toLowerCase().includes(key)) {
+                    if (p99Ms > limitMs) {
+                      console.error(`REGRESSION: "${name}" p99=${p99Ms.toFixed(3)}ms exceeds ${limitMs}ms threshold`);
+                      failed = true;
+                    } else {
+                      console.log(`OK: "${name}" p99=${p99Ms.toFixed(3)}ms (limit: ${limitMs}ms)`);
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          if (failed) process.exit(1);
+          console.log('\nAll benchmarks within thresholds.');
+          EOF
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results-${{ github.sha }}
+          path: packages/kernel/bench-results.json
+          retention-days: 30

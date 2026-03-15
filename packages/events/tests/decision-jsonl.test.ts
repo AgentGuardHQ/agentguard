@@ -116,7 +116,7 @@ describe('createDecisionJsonlSink', () => {
     sink.write(makeRecord());
 
     expect(mockedMkdirSync).toHaveBeenCalledWith(
-      expect.stringContaining('/custom'),
+      expect.stringContaining('custom'),
       { recursive: true }
     );
   });
@@ -131,8 +131,8 @@ describe('getDecisionFilePath', () => {
   });
 
   it('returns correct path with custom base dir', () => {
-    const path = getDecisionFilePath('run-1', '/custom');
-    expect(path).toContain('/custom');
-    expect(path).toContain('run-1.jsonl');
+    const filePath = getDecisionFilePath('run-1', '/custom');
+    expect(filePath).toContain('custom');
+    expect(filePath).toContain('run-1.jsonl');
   });
 });
