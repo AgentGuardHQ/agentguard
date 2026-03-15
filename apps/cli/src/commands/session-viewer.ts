@@ -379,6 +379,7 @@ export async function sessionViewer(
     }
   }
 
+
   if (!noOpen) {
     process.stderr.write('  Opening in browser...\n\n');
     openInBrowser(outFile);
