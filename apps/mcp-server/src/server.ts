@@ -15,10 +15,6 @@ async function resolveDataSource(): Promise<DataSource> {
   const config = resolveConfig();
 
   switch (config.backend) {
-    case 'firestore': {
-      const { createFirestoreDataSource } = await import('./backends/firestore.js');
-      return createFirestoreDataSource(config);
-    }
     case 'remote': {
       const { createRemoteDataSource } = await import('./backends/remote.js');
       return createRemoteDataSource(config);
