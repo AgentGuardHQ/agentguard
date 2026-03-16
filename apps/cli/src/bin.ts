@@ -566,9 +566,37 @@ async function main() {
     }
 
     case 'telemetry': {
-      console.log(
-        'Telemetry management is available in AgentGuard Cloud. Visit https://agentguard.dev'
-      );
+      const sub = args[1];
+      const { loadIdentity: load, saveIdentity: save, generateIdentity: gen, resolveMode: resolve } = await import('@red-codes/telemetry-client');
+      if (sub === 'on') {
+        const verified = args.includes('--verified');
+        let identity = load();
+        if (!identity) {
+          identity = gen(verified ? 'verified' : 'anonymous');
+        }
+        identity = { ...identity, mode: verified ? 'verified' : 'anonymous', noticed: true };
+        save(identity);
+        console.log(`Telemetry ${verified ? 'verified' : 'anonymous'} mode enabled.`);
+      } else if (sub === 'off') {
+        const identity = load();
+        if (identity) {
+          save({ ...identity, mode: 'off' });
+        }
+        console.log('Telemetry disabled.');
+      } else if (sub === 'status') {
+        const identity = load();
+        const mode = resolve(identity);
+        console.log(`Mode: ${mode}`);
+        console.log(`Install ID: ${identity?.install_id ?? 'none'}`);
+        console.log(`Enrolled: ${identity?.enrollment_token ? 'yes' : 'no'}`);
+        console.log(`Server: ${identity?.server_url ?? 'default'}`);
+      } else {
+        console.log('Usage: agentguard telemetry [on|off|status]');
+        console.log('  on            Enable anonymous telemetry');
+        console.log('  on --verified Enable verified telemetry');
+        console.log('  off           Disable telemetry');
+        console.log('  status        Show current telemetry settings');
+      }
       break;
     }
 
