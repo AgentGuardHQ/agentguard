@@ -200,6 +200,7 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
             existing.minTs = Math.min(existing.minTs, event.timestamp);
             existing.maxTs = Math.max(existing.maxTs, event.timestamp);
             existing.eventCount++;
+            if (event.kind === 'InvariantViolation') existing.violationCount++;
           } else {
             runTimestamps.set(runId, {
               minTs: event.timestamp,
@@ -208,7 +209,7 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
               decisionCount: 0,
               allowCount: 0,
               denyCount: 0,
-              violationCount: 0,
+              violationCount: event.kind === 'InvariantViolation' ? 1 : 0,
             });
           }
         } catch {
@@ -256,6 +257,7 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
           fileDecisions++;
 
           // Update run timestamps for session reconstruction
+          const hasViolations = (record.invariants?.violations?.length ?? 0) > 0;
           const existing = runTimestamps.get(runId);
           if (existing) {
             existing.minTs = Math.min(existing.minTs, record.timestamp);
@@ -263,6 +265,7 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
             existing.decisionCount++;
             if (record.outcome === 'allow') existing.allowCount++;
             if (record.outcome === 'deny') existing.denyCount++;
+            if (hasViolations) existing.violationCount++;
           } else {
             runTimestamps.set(runId, {
               minTs: record.timestamp,
@@ -271,7 +274,7 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
               decisionCount: 1,
               allowCount: record.outcome === 'allow' ? 1 : 0,
               denyCount: record.outcome === 'deny' ? 1 : 0,
-              violationCount: 0,
+              violationCount: hasViolations ? 1 : 0,
             });
           }
         } catch {
@@ -291,34 +294,36 @@ export async function migrate(args: string[], storageConfig?: StorageConfig): Pr
   });
 
   // Execute imports
-  process.stderr.write('  Importing events...\n');
-  importEvents();
-  process.stderr.write('  Importing decisions...\n');
-  importDecisions();
+  try {
+    process.stderr.write('  Importing events...\n');
+    importEvents();
+    process.stderr.write('  Importing decisions...\n');
+    importDecisions();
 
-  // Reconstruct sessions from run timestamps
-  process.stderr.write('  Reconstructing sessions...\n');
-  const createSessions = db.transaction(() => {
-    for (const [runId, ts] of runTimestamps) {
-      const startedAt = new Date(ts.minTs).toISOString();
-      const endedAt = new Date(ts.maxTs).toISOString();
-      const data = JSON.stringify({
-        status: 'completed',
-        source: 'jsonl-migration',
-        totalActions: ts.eventCount + ts.decisionCount,
-        allowed: ts.allowCount,
-        denied: ts.denyCount,
-        violations: ts.violationCount,
-        durationMs: ts.maxTs - ts.minTs,
-      });
+    // Reconstruct sessions from run timestamps
+    process.stderr.write('  Reconstructing sessions...\n');
+    const createSessions = db.transaction(() => {
+      for (const [runId, ts] of runTimestamps) {
+        const startedAt = new Date(ts.minTs).toISOString();
+        const endedAt = new Date(ts.maxTs).toISOString();
+        const data = JSON.stringify({
+          status: 'completed',
+          source: 'jsonl-migration',
+          totalActions: ts.eventCount + ts.decisionCount,
+          allowed: ts.allowCount,
+          denied: ts.denyCount,
+          violations: ts.violationCount,
+          durationMs: ts.maxTs - ts.minTs,
+        });
 
-      insertSession.run(runId, startedAt, endedAt, 'migrate', null, data);
-      stats.sessionsCreated++;
-    }
-  });
-  createSessions();
-
-  storage.close();
+        insertSession.run(runId, startedAt, endedAt, 'migrate', null, data);
+        stats.sessionsCreated++;
+      }
+    });
+    createSessions();
+  } finally {
+    storage.close();
+  }
 
   // Report results
   process.stderr.write('\n  \x1b[32m✓ Migration complete\x1b[0m\n');

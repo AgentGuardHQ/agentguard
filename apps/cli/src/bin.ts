@@ -172,7 +172,10 @@ const COMMANDS: Record<string, CommandHelp> = {
     description: 'Bulk-import JSONL event/decision files into SQLite',
     usage: 'agentguard migrate [flags]',
     flags: [
-      { flag: '--dir, -d <path>', description: 'Base directory for JSONL data (default: .agentguard)' },
+      {
+        flag: '--dir, -d <path>',
+        description: 'Base directory for JSONL data (default: .agentguard)',
+      },
       { flag: '--dry-run', description: 'Preview what would be imported without writing' },
       { flag: '--verbose', description: 'Show per-file import details' },
       {
