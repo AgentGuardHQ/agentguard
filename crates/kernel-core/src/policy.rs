@@ -312,7 +312,7 @@ fn make_rule_eval(
         rule_index,
         rule: rule.clone(),
         action_matched,
-        conditions_matched: cond_result.map_or(false, |c| c.matched),
+        conditions_matched: cond_result.is_some_and(|c| c.matched),
         condition_details: match cond_result {
             Some(c) => ConditionDetails {
                 scope_matched: c.scope_matched,
