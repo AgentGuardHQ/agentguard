@@ -87,6 +87,8 @@ export function getConfigValue(config: AgentGuardConfig, key: string): unknown {
   return current;
 }
 
+const PROTOTYPE_POISON_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 /** Set a nested config value by dot-separated key path. */
 export function setConfigValue(config: AgentGuardConfig, key: string, value: string): void {
   const parts = key.split('.');
@@ -94,6 +96,7 @@ export function setConfigValue(config: AgentGuardConfig, key: string, value: str
 
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
+    if (PROTOTYPE_POISON_KEYS.has(part)) return;
     if (!(part in current) || typeof current[part] !== 'object' || current[part] === null) {
       current[part] = {};
     }
@@ -101,6 +104,7 @@ export function setConfigValue(config: AgentGuardConfig, key: string, value: str
   }
 
   const lastKey = parts[parts.length - 1];
+  if (PROTOTYPE_POISON_KEYS.has(lastKey)) return;
 
   // Type coercion for known boolean/number fields
   if (value === 'true') {
@@ -436,8 +440,8 @@ function formatYamlValue(value: unknown): string {
   if (typeof value === 'number') return String(value);
   if (typeof value === 'string') {
     // Quote strings with spaces or special characters
-    if (/[\s:#{}[\],&*?|>!'"%@`]/.test(value)) {
-      return `"${value.replace(/"/g, '\\"')}"`;
+    if (/[\s:#{}[\],&*?|>!'"%@`\\]/.test(value)) {
+      return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
     }
     return value;
   }
