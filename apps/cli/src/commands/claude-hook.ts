@@ -12,10 +12,12 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ClaudeCodeHookPayload } from '@red-codes/adapters';
+import { resolveMainRepoRoot } from '@red-codes/core';
 
 /** Resolve the CLI command — use local bin.js if in the agentguard dev repo, else bare `agentguard`. */
 function resolveCliCommand(): string {
-  const localBin = join(process.cwd(), 'apps', 'cli', 'dist', 'bin.js');
+  const mainRoot = resolveMainRepoRoot();
+  const localBin = join(mainRoot, 'apps', 'cli', 'dist', 'bin.js');
   if (existsSync(localBin)) return `node ${localBin}`;
   return 'agentguard';
 }

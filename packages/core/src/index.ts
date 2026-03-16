@@ -9,3 +9,4 @@ export * from './governance-data.js';
 export * from './persona.js';
 export * from './rtk.js';
 export * from './trust-store.js';
+export * from './repo-root.js';

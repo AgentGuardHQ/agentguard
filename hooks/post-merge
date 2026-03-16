@@ -3,7 +3,9 @@
 # Tracks merges for developer activity events
 # Install: cp hooks/post-merge .git/hooks/post-merge && chmod +x .git/hooks/post-merge
 
-EVENTS_FILE="$(git rev-parse --show-toplevel)/.events.json"
+# Use main repo root (not worktree root) so all worktrees share the same events file
+MAIN_ROOT="$(git worktree list --porcelain | head -1 | sed 's/^worktree //')"
+EVENTS_FILE="$MAIN_ROOT/.events.json"
 
 if [ ! -f "$EVENTS_FILE" ]; then
   echo '{"commits":0,"prs_merged":0,"bugs_fixed":0,"tests_passing":0,"refactors":0,"code_reviews":0,"conflicts_resolved":0,"ci_passes":0,"deploys":0,"docs_written":0}' > "$EVENTS_FILE"

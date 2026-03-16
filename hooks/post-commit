@@ -3,7 +3,9 @@
 # Tracks git commits for developer activity events
 # Install: cp hooks/post-commit .git/hooks/post-commit && chmod +x .git/hooks/post-commit
 
-EVENTS_FILE="$(git rev-parse --show-toplevel)/.events.json"
+# Use main repo root (not worktree root) so all worktrees share the same events file
+MAIN_ROOT="$(git worktree list --porcelain | head -1 | sed 's/^worktree //')"
+EVENTS_FILE="$MAIN_ROOT/.events.json"
 
 # Initialize events file if it doesn't exist
 if [ ! -f "$EVENTS_FILE" ]; then

@@ -3,7 +3,8 @@
 # Auto-stages telemetry files so governance data rides with every commit.
 # Without this, telemetry JSONL files accumulate as untracked forever.
 
-REPO_ROOT="$(git rev-parse --show-toplevel)"
+# Use main repo root (not worktree root) so governance files are centralized
+REPO_ROOT="$(git worktree list --porcelain | head -1 | sed 's/^worktree //')"
 
 # Stage consolidated telemetry log
 if [ -f "$REPO_ROOT/logs/runtime-events.jsonl" ]; then

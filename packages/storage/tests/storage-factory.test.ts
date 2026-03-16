@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { createStorageBundle, resolveStorageConfig, resolveSqlitePath } from '@red-codes/storage';
 import { DEFAULT_DB_FILENAME, DEFAULT_SQLITE_DB_PATH } from '@red-codes/storage';
 import type { DomainEvent } from '@red-codes/core';
+import { _resetRepoRootCache } from '@red-codes/core';
 
 function makeEvent(id: string): DomainEvent {
   return {
@@ -100,6 +101,7 @@ describe('resolveSqlitePath', () => {
     const origCwd = process.cwd();
     const tmpDir = mkdtempSync(join(tmpdir(), 'ag-resolve-'));
     process.chdir(tmpDir);
+    _resetRepoRootCache();
 
     // Create a repo-local .agentguard/agentguard.db
     mkdirSync(join(tmpDir, '.agentguard'), { recursive: true });
@@ -109,7 +111,8 @@ describe('resolveSqlitePath', () => {
 
     try {
       const result = resolveSqlitePath({ backend: 'sqlite' });
-      expect(result).toBe(join('.agentguard', DEFAULT_DB_FILENAME));
+      // resolveMainRepoRoot() falls back to cwd when not in a git repo
+      expect(result).toBe(join(tmpDir, '.agentguard', DEFAULT_DB_FILENAME));
 
       // Should have emitted a migration hint
       const output = stderrSpy.mock.calls.map((c) => String(c[0])).join('');
@@ -118,6 +121,7 @@ describe('resolveSqlitePath', () => {
     } finally {
       stderrSpy.mockRestore();
       process.chdir(origCwd);
+      _resetRepoRootCache();
       rmSync(tmpDir, { recursive: true, force: true });
     }
   });
