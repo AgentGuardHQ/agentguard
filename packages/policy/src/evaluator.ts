@@ -11,6 +11,41 @@ export interface PersonaCondition {
   tags?: string[];
 }
 
+/**
+ * Forecast-based policy condition — evaluates against impact forecast data
+ * attached to the intent. Allows predictive governance rules such as
+ * "deny if predicted test risk > 50" or "escalate if blast radius > 30".
+ *
+ * Each numeric field is a threshold: the condition matches when the intent's
+ * forecast value meets or exceeds the threshold. For riskLevel, the condition
+ * matches when the forecast risk level is included in the specified array.
+ */
+export interface ForecastCondition {
+  /** Match when predicted test risk score >= this value (0–100) */
+  testRiskScore?: number;
+  /** Match when predicted blast radius score >= this value */
+  blastRadiusScore?: number;
+  /** Match when predicted risk level is one of these */
+  riskLevel?: Array<'low' | 'medium' | 'high'>;
+  /** Match when predicted file count >= this value */
+  predictedFileCount?: number;
+  /** Match when predicted dependency count >= this value */
+  dependencyCount?: number;
+}
+
+/**
+ * Forecast data that can be attached to a NormalizedIntent for
+ * predictive policy evaluation. Mirrors the shape of ImpactForecast
+ * from the kernel simulation package without creating a dependency.
+ */
+export interface IntentForecast {
+  predictedFiles: string[];
+  dependenciesAffected: string[];
+  testRiskScore: number;
+  blastRadiusScore: number;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
 export interface PolicyRule {
   action: string | string[];
   effect: 'allow' | 'deny';
@@ -21,6 +56,7 @@ export interface PolicyRule {
     requireTests?: boolean;
     requireFormat?: boolean;
     persona?: PersonaCondition;
+    forecast?: ForecastCondition;
   };
   reason?: string;
   /** Optional intervention type override for deny rules. When set, the kernel uses this
@@ -46,6 +82,8 @@ export interface NormalizedIntent {
   filesAffected?: number;
   metadata?: Record<string, unknown>;
   persona?: AgentPersona;
+  /** Impact forecast data from simulation, used for predictive policy rules */
+  forecast?: IntentForecast;
   destructive: boolean;
 }
 
@@ -62,6 +100,7 @@ export interface RuleEvaluation {
     limitExceeded?: boolean;
     branchMatched?: boolean;
     personaMatched?: boolean;
+    forecastMatched?: boolean;
   };
   outcome: 'match' | 'no-match' | 'skipped';
 }
@@ -131,6 +170,7 @@ interface ConditionMatchResult {
   limitExceeded?: boolean;
   branchMatched?: boolean;
   personaMatched?: boolean;
+  forecastMatched?: boolean;
 }
 
 function matchPersonaCondition(
@@ -160,6 +200,49 @@ function matchPersonaCondition(
   return true;
 }
 
+function matchForecastCondition(
+  forecastCond: ForecastCondition,
+  forecast: IntentForecast | undefined
+): boolean {
+  if (!forecast) return false;
+
+  if (
+    forecastCond.testRiskScore !== undefined &&
+    forecast.testRiskScore < forecastCond.testRiskScore
+  ) {
+    return false;
+  }
+
+  if (
+    forecastCond.blastRadiusScore !== undefined &&
+    forecast.blastRadiusScore < forecastCond.blastRadiusScore
+  ) {
+    return false;
+  }
+
+  if (forecastCond.riskLevel && forecastCond.riskLevel.length > 0) {
+    if (!forecastCond.riskLevel.includes(forecast.riskLevel)) {
+      return false;
+    }
+  }
+
+  if (
+    forecastCond.predictedFileCount !== undefined &&
+    forecast.predictedFiles.length < forecastCond.predictedFileCount
+  ) {
+    return false;
+  }
+
+  if (
+    forecastCond.dependencyCount !== undefined &&
+    forecast.dependenciesAffected.length < forecastCond.dependencyCount
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 function matchConditions(
   conditions: PolicyRule['conditions'],
   intent: NormalizedIntent
@@ -184,6 +267,7 @@ function matchConditions(
   let limitExceeded: boolean | undefined;
   let branchMatched: boolean | undefined;
   let personaMatched: boolean | undefined;
+  let forecastMatched: boolean | undefined;
 
   if (conditions.limit !== undefined && intent.filesAffected !== undefined) {
     limitExceeded = intent.filesAffected > conditions.limit;
@@ -206,7 +290,21 @@ function matchConditions(
     }
   }
 
-  return { matched: true, scopeMatched, limitExceeded, branchMatched, personaMatched };
+  if (conditions.forecast) {
+    forecastMatched = matchForecastCondition(conditions.forecast, intent.forecast);
+    if (!forecastMatched) {
+      return {
+        matched: false,
+        scopeMatched,
+        limitExceeded,
+        branchMatched,
+        personaMatched,
+        forecastMatched,
+      };
+    }
+  }
+
+  return { matched: true, scopeMatched, limitExceeded, branchMatched, personaMatched, forecastMatched };
 }
 
 function ruleKey(policyId: string, ruleIndex: number): string {
@@ -234,6 +332,7 @@ function createRuleEval(
           limitExceeded: conditionResult.limitExceeded,
           branchMatched: conditionResult.branchMatched,
           personaMatched: conditionResult.personaMatched,
+          forecastMatched: conditionResult.forecastMatched,
         }
       : {},
     outcome,
@@ -411,4 +510,4 @@ export function evaluate(
   };
 }
 
-export { matchAction, matchScope, matchPersonaCondition };
+export { matchAction, matchScope, matchPersonaCondition, matchForecastCondition };
