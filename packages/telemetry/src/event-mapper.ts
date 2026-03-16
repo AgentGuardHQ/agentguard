@@ -1,0 +1,204 @@
+// Event Mapper — converts DomainEvent and GovernanceDecisionRecord to AgentEvent.
+// AgentEvent is the wire format sent to the cloud telemetry API.
+
+import type { DomainEvent, EventKind, GovernanceDecisionRecord } from '@red-codes/core';
+
+// ---------------------------------------------------------------------------
+// AgentEvent — cloud telemetry wire format (defined locally, not imported)
+// ---------------------------------------------------------------------------
+
+export interface AgentEvent {
+  eventId?: string;
+  agentId: string;
+  timestamp?: string;
+  eventType:
+    | 'tool_call'
+    | 'decision'
+    | 'error'
+    | 'policy_evaluation'
+    | 'context_snapshot'
+    | 'approval_request'
+    | 'approval_response';
+  action: string;
+  resource?: string;
+  outcome?: 'success' | 'failure' | 'denied' | 'escalated' | 'pending';
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
+  metadata?: Record<string, unknown>;
+  policyVersion?: string;
+  sessionId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Kind → eventType mapping
+// ---------------------------------------------------------------------------
+
+const KIND_TO_EVENT_TYPE: Partial<Record<EventKind, AgentEvent['eventType']>> = {
+  ActionRequested: 'tool_call',
+  ActionExecuted: 'tool_call',
+  ActionFailed: 'tool_call',
+  ActionAllowed: 'decision',
+  ActionDenied: 'decision',
+  ActionEscalated: 'decision',
+  DecisionRecorded: 'decision',
+  SimulationCompleted: 'policy_evaluation',
+  PolicyDenied: 'policy_evaluation',
+  InvariantViolation: 'policy_evaluation',
+  PolicyTraceRecorded: 'policy_evaluation',
+};
+
+// ---------------------------------------------------------------------------
+// Kind → outcome mapping
+// ---------------------------------------------------------------------------
+
+const KIND_TO_OUTCOME: Partial<Record<EventKind, AgentEvent['outcome']>> = {
+  ActionAllowed: 'success',
+  ActionDenied: 'denied',
+  ActionEscalated: 'escalated',
+  ActionExecuted: 'success',
+  ActionFailed: 'failure',
+};
+
+// ---------------------------------------------------------------------------
+// Risk level resolution
+// ---------------------------------------------------------------------------
+
+function resolveRiskLevel(
+  simulationRiskLevel?: string,
+  escalationLevel?: number
+): AgentEvent['riskLevel'] {
+  // escalationLevel >= 3 promotes to critical regardless of simulation
+  if (escalationLevel !== undefined && escalationLevel >= 3) {
+    return 'critical';
+  }
+
+  if (
+    simulationRiskLevel === 'low' ||
+    simulationRiskLevel === 'medium' ||
+    simulationRiskLevel === 'high'
+  ) {
+    return simulationRiskLevel;
+  }
+
+  return 'low';
+}
+
+// ---------------------------------------------------------------------------
+// mapDomainEventToAgentEvent
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a DomainEvent to an AgentEvent for cloud telemetry.
+ *
+ * Extracts actionType, target, agentId, and other fields from the
+ * DomainEvent's dynamic payload (indexed signature on DomainEvent).
+ */
+export function mapDomainEventToAgentEvent(event: DomainEvent): AgentEvent {
+  const eventType = KIND_TO_EVENT_TYPE[event.kind] ?? 'tool_call';
+  const outcome = KIND_TO_OUTCOME[event.kind];
+
+  const actionType = (event['actionType'] as string | undefined) ?? event.kind;
+  const target = (event['target'] as string | undefined) ?? '';
+  const agentId = (event['agentId'] as string | undefined) ?? 'unknown';
+
+  const simulationRiskLevel =
+    (event['riskLevel'] as string | undefined) ??
+    (event['simulation'] as { riskLevel?: string } | undefined)?.riskLevel;
+  const escalationLevel = (event['monitor'] as { escalationLevel?: number } | undefined)
+    ?.escalationLevel;
+
+  const riskLevel = resolveRiskLevel(simulationRiskLevel, escalationLevel);
+
+  const agentEvent: AgentEvent = {
+    eventId: event.id,
+    agentId,
+    timestamp: new Date(event.timestamp).toISOString(),
+    eventType,
+    action: actionType,
+    resource: target || undefined,
+    riskLevel,
+  };
+
+  if (outcome !== undefined) {
+    agentEvent.outcome = outcome;
+  }
+
+  // Attach metadata if present
+  const metadata = event['metadata'] as Record<string, unknown> | undefined;
+  if (metadata !== undefined) {
+    agentEvent.metadata = metadata;
+  }
+
+  return agentEvent;
+}
+
+// ---------------------------------------------------------------------------
+// mapDecisionToAgentEvent
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a GovernanceDecisionRecord to an AgentEvent for cloud telemetry.
+ *
+ * Richer than DomainEvent mapping because decision records carry full
+ * governance context (policy, invariants, simulation, monitor state).
+ */
+export function mapDecisionToAgentEvent(record: GovernanceDecisionRecord): AgentEvent {
+  const outcome: AgentEvent['outcome'] = record.outcome === 'deny' ? 'denied' : 'success';
+
+  const simulationRiskLevel = record.simulation?.riskLevel;
+  const escalationLevel = record.monitor?.escalationLevel;
+  const riskLevel = resolveRiskLevel(simulationRiskLevel, escalationLevel);
+
+  const agentEvent: AgentEvent = {
+    eventId: record.recordId,
+    agentId: record.action.agent,
+    timestamp: new Date(record.timestamp).toISOString(),
+    eventType: 'decision',
+    action: record.action.type,
+    resource: record.action.target || undefined,
+    outcome,
+    riskLevel,
+    sessionId: record.runId,
+  };
+
+  // Policy version from matchedPolicyId
+  if (record.policy.matchedPolicyId) {
+    agentEvent.policyVersion = record.policy.matchedPolicyId;
+  }
+
+  // Build metadata with governance context
+  const metadata: Record<string, unknown> = {
+    reason: record.reason,
+    destructive: record.action.destructive,
+    invariantsHold: record.invariants.allHold,
+  };
+
+  if (record.invariants.violations.length > 0) {
+    metadata.violations = record.invariants.violations;
+  }
+
+  if (record.intervention) {
+    metadata.intervention = record.intervention;
+  }
+
+  if (record.simulation) {
+    metadata.simulation = {
+      blastRadius: record.simulation.blastRadius,
+      riskLevel: record.simulation.riskLevel,
+      simulatorId: record.simulation.simulatorId,
+    };
+  }
+
+  if (record.execution.executed) {
+    metadata.execution = {
+      success: record.execution.success,
+      durationMs: record.execution.durationMs,
+    };
+    if (record.execution.error) {
+      metadata.executionError = record.execution.error;
+    }
+  }
+
+  agentEvent.metadata = metadata;
+
+  return agentEvent;
+}
