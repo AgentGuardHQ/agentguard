@@ -18,6 +18,22 @@ const command = args[0];
 const wantsHelp = args.includes('--help') || args.includes('-h');
 
 const COMMANDS: Record<string, CommandHelp> = {
+  learn: {
+    name: 'agentguard learn',
+    description: 'Analyze denial patterns and suggest policy improvements',
+    usage: 'agentguard learn [flags]',
+    flags: [
+      { flag: '--write-rules', description: 'Write governance hints to .claude/rules/' },
+      { flag: '--store <backend>', description: 'Storage backend (sqlite)' },
+      { flag: '--db-path <path>', description: 'SQLite database path' },
+      { flag: '--json', description: 'Output as JSON' },
+    ],
+    examples: [
+      'agentguard learn',
+      'agentguard learn --write-rules',
+      'agentguard learn --json',
+    ],
+  },
   adoption: {
     name: 'agentguard adoption',
     description: 'Analyze what percentage of agent tool calls go through governance',
@@ -435,6 +451,17 @@ const COMMANDS: Record<string, CommandHelp> = {
 
 async function main() {
   switch (command) {
+    case 'learn': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS.learn));
+        break;
+      }
+      const { learn: learnCmd } = await import('./commands/learn.js');
+      const code = await learnCmd(args.slice(1));
+      process.exit(code);
+      break;
+    }
+
     case 'adoption': {
       if (wantsHelp) {
         console.log(formatHelp(COMMANDS.adoption));
@@ -807,6 +834,7 @@ function printHelp(): void {
     agentguard events [runId]                 Show raw event stream for a run
     agentguard analytics                      Analyze violation patterns across sessions
     agentguard adoption                       Analyze % of tool calls going through governance
+    agentguard learn                          Analyze denial patterns and suggest policy improvements
 
   \x1b[1mTraces:\x1b[0m
     agentguard traces --last                  Show policy traces for most recent run
