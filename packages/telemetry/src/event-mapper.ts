@@ -64,7 +64,7 @@ const KIND_TO_OUTCOME: Partial<Record<EventKind, AgentEvent['outcome']>> = {
 
 function resolveRiskLevel(
   simulationRiskLevel?: string,
-  escalationLevel?: number,
+  escalationLevel?: number
 ): AgentEvent['riskLevel'] {
   // escalationLevel >= 3 promotes to critical regardless of simulation
   if (escalationLevel !== undefined && escalationLevel >= 3) {
@@ -100,7 +100,8 @@ export function mapDomainEventToAgentEvent(event: DomainEvent): AgentEvent {
   const target = (event['target'] as string | undefined) ?? '';
   const agentId = (event['agentId'] as string | undefined) ?? 'unknown';
 
-  const simulationRiskLevel = (event['riskLevel'] as string | undefined) ??
+  const simulationRiskLevel =
+    (event['riskLevel'] as string | undefined) ??
     (event['simulation'] as { riskLevel?: string } | undefined)?.riskLevel;
   const escalationLevel = (event['monitor'] as { escalationLevel?: number } | undefined)
     ?.escalationLevel;

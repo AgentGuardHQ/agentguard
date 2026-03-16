@@ -24,7 +24,7 @@ function makeDomainEvent(overrides: Partial<DomainEvent> = {}): DomainEvent {
 }
 
 function makeDecisionRecord(
-  overrides: Partial<GovernanceDecisionRecord> = {},
+  overrides: Partial<GovernanceDecisionRecord> = {}
 ): GovernanceDecisionRecord {
   return {
     recordId: 'dec-001',
@@ -144,7 +144,7 @@ describe('CloudSinkBundle', () => {
 
     // Find the /v1/events call
     const eventsCall = fetchMock.mock.calls.find(
-      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events'),
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events')
     );
     expect(eventsCall).toBeDefined();
 
@@ -188,7 +188,7 @@ describe('CloudSinkBundle', () => {
     bundle.stop();
 
     const eventsCall = fetchMock.mock.calls.find(
-      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events'),
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events')
     );
     expect(eventsCall).toBeDefined();
 
@@ -231,7 +231,7 @@ describe('CloudSinkBundle', () => {
     bundle.stop();
 
     const eventsCall = fetchMock.mock.calls.find(
-      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events'),
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events')
     );
     expect(eventsCall).toBeDefined();
 

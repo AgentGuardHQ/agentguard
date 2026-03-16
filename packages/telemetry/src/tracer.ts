@@ -72,7 +72,7 @@ export interface Tracer {
     kind: TracepointKind,
     name: string,
     parentSpanId?: string,
-    attributes?: SpanAttributes,
+    attributes?: SpanAttributes
   ): SpanHandle;
 
   /** Register a new trace backend. */
@@ -128,7 +128,7 @@ export function createTracer(config: TracerConfig = {}): Tracer {
       kind: TracepointKind,
       name: string,
       parentSpanId?: string,
-      attributes?: SpanAttributes,
+      attributes?: SpanAttributes
     ): SpanHandle {
       // Zero-cost path: return no-op handle when tracing is disabled
       if (!isEnabled()) {

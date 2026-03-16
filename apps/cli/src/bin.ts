@@ -567,7 +567,12 @@ async function main() {
 
     case 'telemetry': {
       const sub = args[1];
-      const { loadIdentity: load, saveIdentity: save, generateIdentity: gen, resolveMode: resolve } = await import('@red-codes/telemetry-client');
+      const {
+        loadIdentity: load,
+        saveIdentity: save,
+        generateIdentity: gen,
+        resolveMode: resolve,
+      } = await import('@red-codes/telemetry-client');
       if (sub === 'on') {
         const verified = args.includes('--verified');
         let identity = load();

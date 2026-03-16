@@ -18,7 +18,9 @@ function stripResource(resource: string | undefined): string | undefined {
  * same hash, but different installs produce different hashes.
  */
 function hashAgentId(installId: string, agentId: string): string {
-  return createHash('sha256').update(installId + agentId).digest('hex');
+  return createHash('sha256')
+    .update(installId + agentId)
+    .digest('hex');
 }
 
 /**

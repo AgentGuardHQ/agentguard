@@ -25,7 +25,9 @@ function makeEvent(overrides: Partial<AgentEvent> = {}): AgentEvent {
 }
 
 function expectedHash(installId: string, agentId: string): string {
-  return createHash('sha256').update(installId + agentId).digest('hex');
+  return createHash('sha256')
+    .update(installId + agentId)
+    .digest('hex');
 }
 
 // ---------------------------------------------------------------------------

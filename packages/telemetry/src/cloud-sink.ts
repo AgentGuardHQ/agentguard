@@ -1,7 +1,12 @@
 // CloudSinkBundle — EventSink + DecisionSink for cloud telemetry API.
 
 import { homedir } from 'node:os';
-import type { DomainEvent, DecisionSink, EventSink, GovernanceDecisionRecord } from '@red-codes/core';
+import type {
+  DomainEvent,
+  DecisionSink,
+  EventSink,
+  GovernanceDecisionRecord,
+} from '@red-codes/core';
 import { anonymizeEvent } from './anonymize.js';
 import { createAgentEventQueue } from './agent-event-queue.js';
 import { createAgentEventSender } from './agent-event-sender.js';

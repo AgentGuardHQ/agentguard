@@ -106,9 +106,10 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   const telemetryMode = resolveMode(identity);
   const cloudSinks = await createCloudSinks({
     mode: telemetryMode,
-    serverUrl: process.env.AGENTGUARD_TELEMETRY_URL
-      ?? identity?.server_url
-      ?? 'https://agentguard-cloud.vercel.app',
+    serverUrl:
+      process.env.AGENTGUARD_TELEMETRY_URL ??
+      identity?.server_url ??
+      'https://agentguard-cloud.vercel.app',
     runId,
     agentId: 'cli',
     installId: identity?.install_id,
@@ -120,9 +121,10 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
       if (!identity || !identity.noticed) {
         process.stderr.write(
           '\n  \x1b[2mAgentGuard can send anonymous usage data to improve the project.\n' +
-          '  Run `agentguard telemetry on` to opt in, or set AGENTGUARD_TELEMETRY=off to suppress this message.\x1b[0m\n\n'
+            '  Run `agentguard telemetry on` to opt in, or set AGENTGUARD_TELEMETRY=off to suppress this message.\x1b[0m\n\n'
         );
-        const { saveIdentity: save, generateIdentity: gen } = await import('@red-codes/telemetry-client');
+        const { saveIdentity: save, generateIdentity: gen } =
+          await import('@red-codes/telemetry-client');
         const updated = identity ?? gen('off');
         save({ ...updated, mode: 'off', noticed: true });
       }

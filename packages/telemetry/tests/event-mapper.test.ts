@@ -6,7 +6,9 @@ import { mapDomainEventToAgentEvent, mapDecisionToAgentEvent } from '../src/even
 // Helpers — minimal valid DomainEvent and GovernanceDecisionRecord factories
 // ---------------------------------------------------------------------------
 
-function makeDomainEvent(overrides: Partial<DomainEvent> & { kind: DomainEvent['kind'] }): DomainEvent {
+function makeDomainEvent(
+  overrides: Partial<DomainEvent> & { kind: DomainEvent['kind'] }
+): DomainEvent {
   return {
     id: 'evt_1',
     kind: overrides.kind,
@@ -17,7 +19,7 @@ function makeDomainEvent(overrides: Partial<DomainEvent> & { kind: DomainEvent['
 }
 
 function makeDecisionRecord(
-  overrides: Partial<GovernanceDecisionRecord> = {},
+  overrides: Partial<GovernanceDecisionRecord> = {}
 ): GovernanceDecisionRecord {
   return {
     recordId: 'dec_1',
