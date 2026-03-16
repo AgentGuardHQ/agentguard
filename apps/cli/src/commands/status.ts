@@ -61,6 +61,20 @@ export async function status(args: string[]): Promise<number> {
   // Policy
   printCheck(checks.policy.ok, 'Policy file', checks.policy.detail);
 
+  // Policy trust (informational — does not affect exit code)
+  const policyTrustCheck = await checkPolicyTrust();
+  const policyTrustIcon = policyTrustCheck.ok ? `${FG.green}✓${RESET}` : `${DIM}○${RESET}`;
+  process.stderr.write(
+    `  ${policyTrustIcon}  Policy trust ${DIM}${policyTrustCheck.detail}${RESET}\n`,
+  );
+
+  // Denial insights (informational — does not affect exit code)
+  const denialInsightsCheck = await checkDenialInsights();
+  const denialInsightsIcon = `${DIM}○${RESET}`;
+  process.stderr.write(
+    `  ${denialInsightsIcon}  Denial insights ${DIM}${denialInsightsCheck.detail}${RESET}\n`,
+  );
+
   // Directories
   printCheck(checks.dirs.ok, 'Event directories', checks.dirs.detail);
 
@@ -185,4 +199,65 @@ function checkDirsExist(): { ok: boolean; detail: string } {
     return { ok: true, detail: '(.agentguard/)' };
   }
   return { ok: false, detail: `(missing: ${missing.join(', ')})` };
+}
+
+async function checkPolicyTrust(): Promise<{ ok: boolean; detail: string }> {
+  const policyPath = findDefaultPolicy();
+  if (!policyPath) {
+    return { ok: false, detail: '(no policy to check)' };
+  }
+
+  try {
+    const { verifyPolicyTrust } = await import('@red-codes/policy');
+    const result = await verifyPolicyTrust(policyPath);
+    switch (result.status) {
+      case 'trusted':
+        return { ok: true, detail: '(trusted)' };
+      case 'untrusted':
+        return { ok: false, detail: '(untrusted — run "agentguard trust")' };
+      case 'content_changed':
+        return { ok: false, detail: '(content changed since trusted — run "agentguard trust")' };
+    }
+  } catch {
+    return { ok: false, detail: '(trust check unavailable)' };
+  }
+}
+
+async function checkDenialInsights(): Promise<{ detail: string }> {
+  try {
+    const { resolveSqlitePath } = await import('@red-codes/storage');
+    const { existsSync: fsExists } = await import('node:fs');
+
+    const dbPath = resolveSqlitePath({ backend: 'sqlite' });
+    if (!fsExists(dbPath)) {
+      return { detail: '(no session history yet)' };
+    }
+
+    const BetterSqlite = await import('better-sqlite3');
+    const Database = BetterSqlite.default ?? BetterSqlite;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = new (Database as any)(dbPath, { readonly: true });
+
+    try {
+      const { queryEventsByKindAcrossRuns } = await import('@red-codes/storage');
+      const denials = queryEventsByKindAcrossRuns(db, 'ActionDenied', { sessionLimit: 10 });
+
+      if (denials.length === 0) {
+        return { detail: '(no denials in recent sessions)' };
+      }
+
+      const sessionIds = new Set(denials.map((e) => e.runId));
+      return {
+        detail: `(${denials.length} denial${denials.length !== 1 ? 's' : ''} across ${sessionIds.size} session${sessionIds.size !== 1 ? 's' : ''} — run "agentguard learn")`,
+      };
+    } finally {
+      try {
+        db.close();
+      } catch {
+        // ignore close errors
+      }
+    }
+  } catch {
+    return { detail: '(no session history yet)' };
+  }
 }
