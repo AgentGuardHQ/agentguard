@@ -116,4 +116,30 @@ describe('trust-store', () => {
       expect(detectCiPlatform()).toBeNull();
     });
   });
+
+  describe('isCiTrustOverride', () => {
+    it('returns true when env var is set and a CI platform is detected', async () => {
+      vi.stubEnv('AGENTGUARD_TRUST_PROJECT_POLICY', '1');
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      const { isCiTrustOverride } = await load();
+      expect(isCiTrustOverride()).toBe(true);
+    });
+
+    it('returns false when env var is set but no CI platform is detected', async () => {
+      vi.stubEnv('AGENTGUARD_TRUST_PROJECT_POLICY', '1');
+      const { isCiTrustOverride } = await load();
+      expect(isCiTrustOverride()).toBe(false);
+    });
+
+    it('returns false when CI platform is detected but env var is not set', async () => {
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      const { isCiTrustOverride } = await load();
+      expect(isCiTrustOverride()).toBe(false);
+    });
+
+    it('returns false when neither env var nor CI platform is present', async () => {
+      const { isCiTrustOverride } = await load();
+      expect(isCiTrustOverride()).toBe(false);
+    });
+  });
 });
