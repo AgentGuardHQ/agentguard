@@ -9,6 +9,7 @@ import { resolveExtends, mergePolicies } from '@red-codes/policy';
 import type { LoadedPolicy } from '@red-codes/policy';
 import type { CompositionSource, CompositionResult } from '@red-codes/policy';
 import { composePolicies, describeComposition } from '@red-codes/policy';
+import { resolveMainRepoRoot } from '@red-codes/core';
 
 const DEFAULT_POLICY_CANDIDATES = [
   'agentguard.yaml',
@@ -24,9 +25,21 @@ const USER_POLICY_CANDIDATES = [
 ];
 
 export function findDefaultPolicy(): string | null {
+  // Check cwd first (worktree-local policies take precedence)
   for (const name of DEFAULT_POLICY_CANDIDATES) {
     if (existsSync(name)) return name;
   }
+
+  // Fall back to main repo root (shared policy, if we're in a worktree)
+  const mainRoot = resolveMainRepoRoot();
+  const cwd = process.cwd();
+  if (mainRoot !== cwd) {
+    for (const name of DEFAULT_POLICY_CANDIDATES) {
+      const mainRootPath = join(mainRoot, name);
+      if (existsSync(mainRootPath)) return mainRootPath;
+    }
+  }
+
   return null;
 }
 

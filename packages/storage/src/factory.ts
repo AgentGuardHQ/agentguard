@@ -8,6 +8,7 @@ import type { DecisionSink } from '@red-codes/core';
 import type { StorageConfig } from './types.js';
 import { DEFAULT_BASE_DIR, DEFAULT_DB_FILENAME, DEFAULT_SQLITE_DB_PATH } from './types.js';
 import { join } from 'node:path';
+import { resolveMainRepoRoot } from '@red-codes/core';
 
 /** Bundled storage objects returned by the factory */
 export interface StorageBundle {
@@ -88,8 +89,9 @@ export function resolveSqlitePath(config: StorageConfig): string {
   // Explicit baseDir means user chose a custom location
   if (config.baseDir) return join(config.baseDir, DEFAULT_DB_FILENAME);
 
-  // Check for repo-local DB (backward compat) — use it if it exists, but hint migration
-  const repoLocal = join(DEFAULT_BASE_DIR, DEFAULT_DB_FILENAME);
+  // Check for repo-local DB (backward compat) — use main repo root so worktrees share one DB
+  const mainRoot = resolveMainRepoRoot();
+  const repoLocal = join(mainRoot, DEFAULT_BASE_DIR, DEFAULT_DB_FILENAME);
   if (existsSync(repoLocal)) {
     process.stderr.write(
       `[agentguard] Using repo-local SQLite database at ${repoLocal}\n` +

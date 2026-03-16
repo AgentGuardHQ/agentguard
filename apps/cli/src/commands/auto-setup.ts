@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
 import { claudeInit } from './claude-init.js';
+import { resolveMainRepoRoot } from '@red-codes/core';
 
 const HOOK_MARKER = 'claude-hook';
 
@@ -104,7 +105,7 @@ export function detectExistingHooks(cwd: string = process.cwd()): boolean {
 export async function autoSetup(args: string[] = []): Promise<AutoSetupResult> {
   const quiet = args.includes('--quiet') || args.includes('-q');
   const dryRun = args.includes('--dry-run');
-  const cwd = process.cwd();
+  const cwd = resolveMainRepoRoot();
 
   const result: AutoSetupResult = {
     detected: false,

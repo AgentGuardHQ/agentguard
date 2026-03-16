@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
+import { resolveMainRepoRoot } from '@red-codes/core';
 
 const HOOK_MARKER = 'claude-hook';
 const BUILD_MARKER = 'apps/cli/dist/bin.js';
@@ -12,8 +13,9 @@ const LOCAL_BIN = 'node apps/cli/dist/bin.js';
 
 /** Detect if we're in the agentguard development repo (local dev) vs. globally installed. */
 function resolveCliPrefix(): { cli: string; isLocal: boolean } {
-  // If apps/cli/src/bin.ts exists, we're in the agentguard source repo
-  const localMarker = join(process.cwd(), 'apps', 'cli', 'src', 'bin.ts');
+  // If apps/cli/src/bin.ts exists, we're in the agentguard source repo (works in worktrees too)
+  const mainRoot = resolveMainRepoRoot();
+  const localMarker = join(mainRoot, 'apps', 'cli', 'src', 'bin.ts');
   if (existsSync(localMarker)) {
     return { cli: LOCAL_BIN, isLocal: true };
   }
@@ -223,10 +225,11 @@ export async function claudeInit(args: string[] = []): Promise<void> {
     }
   }
 
-  // Ensure telemetry directories exist
+  // Ensure telemetry directories exist (use main repo root so worktrees share them)
+  const repoRoot = resolveMainRepoRoot();
   const dirs = ['.agentguard/events', '.agentguard/decisions', 'logs'];
   for (const dir of dirs) {
-    const dirPath = join(process.cwd(), dir);
+    const dirPath = join(repoRoot, dir);
     if (!existsSync(dirPath)) {
       mkdirSync(dirPath, { recursive: true });
     }
@@ -427,14 +430,15 @@ const POLICY_CANDIDATES = [
 ];
 
 function generateStarterPolicy(): boolean {
-  // Check if any policy file already exists
+  // Check if any policy file already exists (check main repo root for worktree support)
+  const repoRoot = resolveMainRepoRoot();
   for (const candidate of POLICY_CANDIDATES) {
-    if (existsSync(join(process.cwd(), candidate))) {
+    if (existsSync(join(repoRoot, candidate))) {
       return false;
     }
   }
 
-  const policyPath = join(process.cwd(), 'agentguard.yaml');
+  const policyPath = join(repoRoot, 'agentguard.yaml');
   writeFileSync(policyPath, STARTER_POLICY, 'utf8');
   process.stderr.write(
     `  ${FG.green}✓${RESET}  Policy created: ${FG.cyan}agentguard.yaml${RESET}\n`
