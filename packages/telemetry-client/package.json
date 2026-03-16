@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "echo \"No tests yet\"",
+    "test": "vitest run",
     "lint": "eslint src/",
     "ts:check": "tsc --noEmit",
     "clean": "rm -rf dist"

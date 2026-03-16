@@ -134,6 +134,49 @@ describe('AgentEventSender', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it('includes X-API-Key header when apiKey is configured', async () => {
+    const e1 = makeEvent({ action: 'file.read' });
+    const queue = createMockQueue([e1]);
+
+    fetchMock.mockResolvedValue({ ok: true, status: 202 });
+
+    const sender = createAgentEventSender({
+      serverUrl: 'https://api.example.com',
+      queue,
+      batchSize: 10,
+      apiKey: 'ag_test-key-123',
+      retryDelayMs: 1,
+    });
+
+    await sender.flush();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers['X-API-Key']).toBe('ag_test-key-123');
+    expect(options.headers['Content-Type']).toBe('application/json');
+  });
+
+  it('omits X-API-Key header when apiKey is not configured', async () => {
+    const e1 = makeEvent({ action: 'file.read' });
+    const queue = createMockQueue([e1]);
+
+    fetchMock.mockResolvedValue({ ok: true, status: 202 });
+
+    const sender = createAgentEventSender({
+      serverUrl: 'https://api.example.com',
+      queue,
+      batchSize: 10,
+      retryDelayMs: 1,
+    });
+
+    await sender.flush();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers['X-API-Key']).toBeUndefined();
+    expect(options.headers['Content-Type']).toBe('application/json');
+  });
+
   it('swallows network errors without throwing', async () => {
     const e1 = makeEvent({ action: 'file.read' });
     const queue = createMockQueue([e1]);

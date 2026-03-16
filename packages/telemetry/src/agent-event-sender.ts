@@ -11,6 +11,7 @@ export interface AgentEventSenderConfig {
   serverUrl: string;
   queue: AgentEventQueue;
   batchSize: number;
+  apiKey?: string;
   maxRetries?: number; // default 3
   retryDelayMs?: number; // default 1000
 }
@@ -55,9 +56,13 @@ export function createAgentEventSender(config: AgentEventSenderConfig): AgentEve
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (config.apiKey) {
+          headers['X-API-Key'] = config.apiKey;
+        }
         const response = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body,
           signal: AbortSignal.timeout(10_000),
         });
