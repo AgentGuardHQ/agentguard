@@ -203,6 +203,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
         allEvents.push(requestedEvent);
 
         // 2. Evaluate via monitor (AAB → policy → invariants → evidence)
+        // `let` because the PAUSE-approved path reassigns: decision = { ...decision, allowed: true }
         let decision = monitor.process(rawAction, systemContext);
 
         // 3. Create canonical action object for execution
@@ -248,7 +249,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               },
             });
             allEvents.push(escalatedEvent);
-            sinkEvent(escalatedEvent);
+            // escalatedEvent flushed via sinkEvents(allEvents) at path end
 
             let pauseApproved = false;
             let pauseReason = 'No pause handler — auto-denied';
@@ -352,7 +353,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               },
             });
             allEvents.push(escalatedEvent);
-            sinkEvent(escalatedEvent);
+            // escalatedEvent flushed via sinkEvents(allEvents) at path end
 
             // Capture pre-execution snapshot
             let snapshotId: string | null = null;
@@ -439,13 +440,19 @@ export function createKernel(config: KernelConfig = {}): Kernel {
             allEvents.push(executedEvent);
             sinkEvents(allEvents);
 
-            const decisionRecord = buildDecisionRecord({
-              runId,
-              decision: { ...decision, allowed: true },
-              execution,
-              executionDurationMs,
-              simulation: null,
-            });
+            const decisionRecord = {
+              ...buildDecisionRecord({
+                runId,
+                decision,
+                execution,
+                executionDurationMs,
+                simulation: null,
+              }),
+              // Use 'rollback' outcome so audit consumers reading decision records
+              // directly from JSONL/SQLite see the correct governance disposition —
+              // the policy denied this action; it executed under rollback safety net.
+              outcome: 'rollback' as const,
+            };
             sinkDecision(decisionRecord);
 
             const decisionEvent = createEvent(DECISION_RECORDED, {
