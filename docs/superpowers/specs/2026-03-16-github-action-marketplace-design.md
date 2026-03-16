@@ -104,7 +104,7 @@ The action detects the scenario automatically: if `session-file` is set, use it.
 
 ### Known Limitations
 
-- **Fork PRs:** The default `GITHUB_TOKEN` on `pull_request` from forks has read-only permissions. PR comment posting will silently skip on fork PRs (the CI check still runs and reports via annotations).
+- **Fork PRs:** The default `GITHUB_TOKEN` on `pull_request` from forks has read-only permissions. PR comment posting will emit a `::warning::` annotation and skip on fork PRs (the CI check still runs and reports via annotations).
 - **OS support:** v1 targets `ubuntu-latest` only. `macos-latest` and `windows-latest` are untested.
 
 ## Internal Flow
@@ -349,6 +349,8 @@ jobs:
         run: |
           cp -r apps/github-action/* target/
           cd target
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Release ${{ steps.version.outputs.version }}"
 
@@ -357,7 +359,8 @@ jobs:
           cd target
           git tag "${{ steps.version.outputs.version }}"
           git tag -f v1
-          git push origin main --tags --force
+          git push origin main
+          git push origin --tags --force
 ```
 
 ### Requirements
