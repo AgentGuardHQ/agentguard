@@ -101,9 +101,10 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
   const eventSink = storage.createEventSink(runId);
   const decisionSink = storage.createDecisionSink(runId);
 
-  // Cloud telemetry — opt-in, defaults to off
+  // Cloud telemetry — anonymous by default
   const identity = loadIdentity();
   const telemetryMode = resolveMode(identity);
+  const apiKey = process.env.AGENTGUARD_API_KEY ?? identity?.enrollment_token;
   const cloudSinks = await createCloudSinks({
     mode: telemetryMode,
     serverUrl:
@@ -113,21 +114,20 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     runId,
     agentId: 'cli',
     installId: identity?.install_id,
+    apiKey,
   });
 
   // First-run telemetry notice
-  if (telemetryMode === 'off') {
+  if (!identity || !identity.noticed) {
     try {
-      if (!identity || !identity.noticed) {
-        process.stderr.write(
-          '\n  \x1b[2mAgentGuard can send anonymous usage data to improve the project.\n' +
-            '  Run `agentguard telemetry on` to opt in, or set AGENTGUARD_TELEMETRY=off to suppress this message.\x1b[0m\n\n'
-        );
-        const { saveIdentity: save, generateIdentity: gen } =
-          await import('@red-codes/telemetry-client');
-        const updated = identity ?? gen('off');
-        save({ ...updated, mode: 'off', noticed: true });
-      }
+      process.stderr.write(
+        '\n  \x1b[2mAgentGuard sends anonymous usage data to help improve the product.\n' +
+          '  Run `agentguard telemetry off` to disable.\x1b[0m\n\n'
+      );
+      const { saveIdentity: save, generateIdentity: gen } =
+        await import('@red-codes/telemetry-client');
+      const updated = identity ?? gen('anonymous');
+      save({ ...updated, noticed: true });
     } catch {
       // Non-fatal
     }

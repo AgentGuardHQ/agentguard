@@ -66,7 +66,7 @@ export function resolveMode(identity?: TelemetryIdentity | null): TelemetryMode 
   if (identity) {
     return identity.mode;
   }
-  return 'off';
+  return 'anonymous';
 }
 
 /** Get the default identity file path */

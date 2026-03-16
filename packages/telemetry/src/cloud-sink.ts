@@ -26,6 +26,7 @@ export interface CloudSinkConfig {
   serverUrl: string;
   runId: string;
   agentId: string;
+  apiKey?: string;
   installId?: string;
   queueDir?: string;
   flushIntervalMs?: number;
@@ -84,7 +85,7 @@ export async function createCloudSinks(config: CloudSinkConfig): Promise<CloudSi
 
   let sender: AgentEventSender;
   try {
-    sender = createAgentEventSender({ serverUrl, queue, batchSize });
+    sender = createAgentEventSender({ serverUrl, queue, batchSize, apiKey: config.apiKey });
   } catch {
     return createNoopBundle();
   }
@@ -136,9 +137,13 @@ export async function createCloudSinks(config: CloudSinkConfig): Promise<CloudSi
 
   function registerRun(): void {
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (config.apiKey) {
+        headers['X-API-Key'] = config.apiKey;
+      }
       fetch(`${serverUrl}/v1/runs`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ agentId, sessionId: runId }),
         signal: AbortSignal.timeout(5_000),
       }).catch(() => {

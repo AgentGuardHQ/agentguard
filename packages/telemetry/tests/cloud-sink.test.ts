@@ -206,7 +206,84 @@ describe('CloudSinkBundle', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 4. DecisionSink.write maps GovernanceDecisionRecord
+  // 4. API key passthrough
+  // -------------------------------------------------------------------------
+
+  it('passes apiKey as X-API-Key header to event sender', async () => {
+    const config: CloudSinkConfig = {
+      mode: 'anonymous',
+      serverUrl: 'https://api.example.com',
+      runId: 'run-key',
+      agentId: 'agent-1',
+      installId: 'install-xyz',
+      apiKey: 'ag_my-secret-key',
+      queueDir: tmpDir,
+      batchSize: 50,
+    };
+
+    const bundle = await createCloudSinks(config);
+    bundle.eventSink.write(makeDomainEvent());
+    await bundle.flush();
+    bundle.stop();
+
+    const eventsCall = fetchMock.mock.calls.find(
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events')
+    );
+    expect(eventsCall).toBeDefined();
+    expect(eventsCall![1].headers['X-API-Key']).toBe('ag_my-secret-key');
+  });
+
+  it('passes apiKey as X-API-Key header in registerRun', async () => {
+    const config: CloudSinkConfig = {
+      mode: 'anonymous',
+      serverUrl: 'https://api.example.com',
+      runId: 'run-key-reg',
+      agentId: 'agent-1',
+      installId: 'install-xyz',
+      apiKey: 'ag_my-secret-key',
+      queueDir: tmpDir,
+      batchSize: 50,
+    };
+
+    const bundle = await createCloudSinks(config);
+    bundle.registerRun();
+    bundle.stop();
+
+    // registerRun is fire-and-forget, give it a tick
+    await new Promise((r) => setTimeout(r, 50));
+
+    const runsCall = fetchMock.mock.calls.find(
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/runs')
+    );
+    expect(runsCall).toBeDefined();
+    expect(runsCall![1].headers['X-API-Key']).toBe('ag_my-secret-key');
+  });
+
+  it('omits X-API-Key header when apiKey is not provided', async () => {
+    const config: CloudSinkConfig = {
+      mode: 'anonymous',
+      serverUrl: 'https://api.example.com',
+      runId: 'run-no-key',
+      agentId: 'agent-1',
+      installId: 'install-xyz',
+      queueDir: tmpDir,
+      batchSize: 50,
+    };
+
+    const bundle = await createCloudSinks(config);
+    bundle.eventSink.write(makeDomainEvent());
+    await bundle.flush();
+    bundle.stop();
+
+    const eventsCall = fetchMock.mock.calls.find(
+      ([url]: [string]) => typeof url === 'string' && url.includes('/v1/events')
+    );
+    expect(eventsCall).toBeDefined();
+    expect(eventsCall![1].headers['X-API-Key']).toBeUndefined();
+  });
+
+  // -------------------------------------------------------------------------
+  // 5. DecisionSink.write maps GovernanceDecisionRecord
   // -------------------------------------------------------------------------
 
   it('handles decisionSink.write for GovernanceDecisionRecord', async () => {
