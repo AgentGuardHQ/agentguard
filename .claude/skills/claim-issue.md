@@ -37,7 +37,22 @@ Map the task type label to a branch prefix:
 | `task:documentation` | `agent/docs/issue-<N>` |
 | (default) | `agent/task/issue-<N>` |
 
-### 3. Create Working Branch
+### 3. Worktree Safety Check
+
+**CRITICAL:** Before any branch operations, verify you are in a git worktree — NOT the main working directory. Run:
+
+```bash
+MAIN_ROOT=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+CURRENT_ROOT=$(git rev-parse --show-toplevel)
+if [ "$MAIN_ROOT" = "$CURRENT_ROOT" ]; then
+  echo "FATAL: You are in the MAIN working directory, not a worktree. STOP — do not create or switch branches here."
+  exit 1
+fi
+```
+
+If this check fails, **STOP immediately**. Do not proceed. You must be running in a worktree (e.g., `.claude/worktrees/<name>/`).
+
+### 4. Create Working Branch
 
 ```bash
 git checkout -b agent/<type>/issue-<ISSUE_NUMBER>
@@ -49,7 +64,7 @@ If the branch already exists (from a previous attempt):
 git checkout agent/<type>/issue-<ISSUE_NUMBER>
 ```
 
-### 4. Verify Branch
+### 5. Verify Branch
 
 ```bash
 git branch --show-current
@@ -57,7 +72,7 @@ git branch --show-current
 
 Confirm the output matches the expected branch name.
 
-### 5. Post Start Comment
+### 6. Post Start Comment
 
 ```bash
 gh issue comment <ISSUE_NUMBER> --body "**AgentGuard Agent** — work started.
