@@ -304,7 +304,14 @@ function matchConditions(
     }
   }
 
-  return { matched: true, scopeMatched, limitExceeded, branchMatched, personaMatched, forecastMatched };
+  return {
+    matched: true,
+    scopeMatched,
+    limitExceeded,
+    branchMatched,
+    personaMatched,
+    forecastMatched,
+  };
 }
 
 function ruleKey(policyId: string, ruleIndex: number): string {
