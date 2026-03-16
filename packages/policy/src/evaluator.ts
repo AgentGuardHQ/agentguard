@@ -25,7 +25,7 @@ export interface PolicyRule {
   reason?: string;
   /** Optional intervention type override for deny rules. When set, the kernel uses this
    *  instead of the severity-based default (e.g., `intervention: 'pause'` or `'rollback'`). */
-  intervention?: 'pause' | 'rollback' | 'deny';
+  intervention?: 'pause' | 'rollback' | 'deny' | 'modify';
 }
 
 export interface LoadedPolicy {
@@ -84,7 +84,7 @@ export interface EvalResult {
   /** Detailed evaluation trace — which rules were checked, which matched, and why */
   trace?: PolicyEvaluationTrace;
   /** Policy-specified intervention override (from the matched deny rule, if any) */
-  policyIntervention?: 'pause' | 'rollback' | 'deny';
+  policyIntervention?: 'pause' | 'rollback' | 'deny' | 'modify';
 }
 
 /** Options for the policy evaluator */
