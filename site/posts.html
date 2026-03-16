@@ -224,6 +224,8 @@
       .card-lift:hover { transform: none; }
       #main-nav { transition: none; }
       .mobile-menu { transition: none; }
+      .post-card { transition: none; }
+      .post-card:hover { transform: none; }
     }
 
     /* Post card hover */
@@ -631,8 +633,11 @@
       }
 
       fetch(POSTS_URL)
-        .then(function (r) { return r.json(); })
-        .then(function (data) { renderPosts(data.posts); })
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status);
+          return r.json();
+        })
+        .then(function (data) { renderPosts(Array.isArray(data.posts) ? data.posts : []); })
         .catch(function () { renderEmptyState(); });
 
     }());
