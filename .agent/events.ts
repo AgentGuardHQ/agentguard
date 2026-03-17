@@ -8,69 +8,6 @@
  * Source: domain/events.js
  */
 
-// --- Ingestion & Classification ---
-
-/** Raw error captured from stderr, test output, or linter */
-export type ErrorObserved = 'ErrorObserved';
-// Required: message
-// Optional: source, errorType, file, line, severity, fingerprint, bugEvent
-
-/** Error classified into a BugEvent with severity and species mapping */
-export type BugClassified = 'BugClassified';
-// Required: severity, speciesId
-// Optional: fingerprint, name
-
-// --- Battle Lifecycle ---
-
-/** Battle encounter initiated */
-export type EncounterStarted = 'ENCOUNTER_STARTED';
-// Required: enemy
-// Optional: playerLevel
-
-/** A move was executed in battle */
-export type MoveUsed = 'MOVE_USED';
-// Required: move, attacker
-// Optional: defender
-
-/** Damage was inflicted on a target */
-export type DamageDealt = 'DAMAGE_DEALT';
-// Required: amount, target
-// Optional: effectiveness
-
-/** HP was restored to a target */
-export type HealingApplied = 'HEALING_APPLIED';
-// Required: amount, target
-
-/** A passive ability was triggered */
-export type PassiveActivated = 'PASSIVE_ACTIVATED';
-// Required: passive, owner
-
-/** An AgentGuard entity was defeated (HP reached 0) */
-export type BugmonFainted = 'BUGMON_FAINTED';
-// Required: bugmon
-
-/** A cache (catch) attempt was initiated */
-export type CacheAttempted = 'CACHE_ATTEMPTED';
-// Required: target
-
-/** A cache attempt succeeded */
-export type CacheSuccess = 'CACHE_SUCCESS';
-// Required: target
-
-/** Battle concluded with a result */
-export type BattleEnded = 'BATTLE_ENDED';
-// Required: result
-
-// --- Progression ---
-
-/** Developer activity was tracked (commit, PR, etc.) */
-export type ActivityRecorded = 'ActivityRecorded';
-// Required: activity
-
-/** An AgentGuard species evolved into a new form */
-export type EvolutionTriggered = 'EvolutionTriggered';
-// Required: from, to
-
 // --- Session ---
 
 /** Game state machine transitioned */
@@ -164,19 +101,6 @@ export type LintCompleted = 'LintCompleted';
 // --- Union Type ---
 
 export type EventKind =
-  | ErrorObserved
-  | BugClassified
-  | EncounterStarted
-  | MoveUsed
-  | DamageDealt
-  | HealingApplied
-  | PassiveActivated
-  | BugmonFainted
-  | CacheAttempted
-  | CacheSuccess
-  | BattleEnded
-  | ActivityRecorded
-  | EvolutionTriggered
   | StateChanged
   | RunStarted
   | RunEnded

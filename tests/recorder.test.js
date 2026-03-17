@@ -8,70 +8,40 @@ suite('Session Recorder', () => {
     const recorder = createRecorder('npm', ['test']);
     assert.ok(recorder.sessionId, 'recorder has sessionId');
     assert.strictEqual(typeof recorder.record, 'function');
-    assert.strictEqual(typeof recorder.recordError, 'function');
-    assert.strictEqual(typeof recorder.recordEncounter, 'function');
-    assert.strictEqual(typeof recorder.recordBattle, 'function');
-    assert.strictEqual(typeof recorder.recordBoss, 'function');
+    assert.strictEqual(typeof recorder.recordTest, 'function');
+    assert.strictEqual(typeof recorder.recordFileModified, 'function');
     assert.strictEqual(typeof recorder.end, 'function');
     recorder.end(0);
   });
 
-  test('recordError creates an ErrorObserved event', () => {
+  test('recordTest creates a TestCompleted event', () => {
     const recorder = createRecorder('npm', ['test']);
-    recorder.recordError(
-      { message: 'ReferenceError: x is not defined', type: 'undefined-reference', severity: 2 },
-      { file: 'app.js', line: 42 }
-    );
-    recorder.end(1);
-
-    const session = loadSession(recorder.sessionId);
-    assert.ok(session, 'session exists');
-    assert.strictEqual(session.events.length, 1);
-    assert.strictEqual(session.events[0].kind, 'ErrorObserved');
-    assert.strictEqual(session.events[0].file, 'app.js');
-    assert.strictEqual(session.events[0].line, 42);
-  });
-
-  test('recordEncounter creates an ENCOUNTER_STARTED event', () => {
-    const recorder = createRecorder('node', ['server.js']);
-    recorder.recordEncounter(
-      { id: 1, name: 'NullPointer', type: 'backend', hp: 30 },
-      { message: 'Cannot read property of null' }
-    );
+    recorder.recordTest('pass', { suite: 'unit', duration: 100 });
     recorder.end(0);
 
     const session = loadSession(recorder.sessionId);
     assert.strictEqual(session.events.length, 1);
-    assert.strictEqual(session.events[0].kind, 'ENCOUNTER_STARTED');
-    assert.strictEqual(session.events[0].monster.name, 'NullPointer');
+    assert.strictEqual(session.events[0].kind, 'TestCompleted');
+    assert.strictEqual(session.events[0].result, 'pass');
   });
 
-  test('recordBattle creates a BATTLE_ENDED event', () => {
+  test('recordFileModified creates a FileSaved event', () => {
     const recorder = createRecorder('npm', ['test']);
-    recorder.recordBattle('victory', { cached: true });
+    recorder.recordFileModified('src/main.js');
     recorder.end(0);
 
     const session = loadSession(recorder.sessionId);
     assert.strictEqual(session.events.length, 1);
-    assert.strictEqual(session.events[0].kind, 'BATTLE_ENDED');
-    assert.strictEqual(session.events[0].result, 'victory');
+    assert.strictEqual(session.events[0].kind, 'FileSaved');
+    assert.strictEqual(session.events[0].file, 'src/main.js');
   });
 
-  test('end produces summary with counts', () => {
+  test('end produces summary with exit code', () => {
     const recorder = createRecorder('npm', ['test']);
-    recorder.recordError({ message: 'err', type: 'unknown', severity: 3 }, null);
-    recorder.recordEncounter(
-      { id: 1, name: 'NullPointer', type: 'backend', hp: 30 },
-      { message: 'err' }
-    );
-    recorder.recordBattle('victory');
-    recorder.recordBoss({ id: 'boss1', name: 'TestBoss', type: 'testing' });
+    recorder.recordTest('pass');
     recorder.end(1);
 
     const session = loadSession(recorder.sessionId);
-    assert.strictEqual(session.summary.errorsObserved, 1);
-    assert.strictEqual(session.summary.bugsDefeated, 1);
-    assert.strictEqual(session.summary.bossesEncountered, 1);
     assert.strictEqual(session.summary.exitCode, 1);
   });
 });

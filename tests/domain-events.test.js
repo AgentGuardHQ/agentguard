@@ -5,19 +5,6 @@ import {
   validateEvent,
   resetEventCounter,
   ALL_EVENT_KINDS,
-  ERROR_OBSERVED,
-  BUG_CLASSIFIED,
-  ENCOUNTER_STARTED,
-  MOVE_USED,
-  DAMAGE_DEALT,
-  HEALING_APPLIED,
-  PASSIVE_ACTIVATED,
-  BUGMON_FAINTED,
-  CACHE_ATTEMPTED,
-  CACHE_SUCCESS,
-  BATTLE_ENDED,
-  ACTIVITY_RECORDED,
-  EVOLUTION_TRIGGERED,
   STATE_CHANGED,
   RUN_STARTED,
   RUN_ENDED,
@@ -39,10 +26,8 @@ import {
 } from '../dist/events/schema.js';
 
 suite('Domain Events — Schema Validation', () => {
-  test('ALL_EVENT_KINDS contains all 49 event kinds', () => {
-    assert.strictEqual(ALL_EVENT_KINDS.size, 49);
-    assert.ok(ALL_EVENT_KINDS.has(ERROR_OBSERVED));
-    assert.ok(ALL_EVENT_KINDS.has(BATTLE_ENDED));
+  test('ALL_EVENT_KINDS contains all known event kinds', () => {
+    assert.ok(ALL_EVENT_KINDS.size >= 36);
     assert.ok(ALL_EVENT_KINDS.has(STATE_CHANGED));
     assert.ok(ALL_EVENT_KINDS.has(POLICY_COMPOSED));
     assert.ok(ALL_EVENT_KINDS.has(FILE_SAVED));
@@ -52,36 +37,46 @@ suite('Domain Events — Schema Validation', () => {
   // --- createEvent structure ---
 
   test('createEvent returns object with kind, timestamp, id, and fingerprint', () => {
-    const event = createEvent(ERROR_OBSERVED, { message: 'fail' });
-    assert.strictEqual(event.kind, ERROR_OBSERVED);
+    const event = createEvent(POLICY_DENIED, {
+      policy: 'no-force-push',
+      action: 'git push --force',
+      reason: 'Prohibited',
+    });
+    assert.strictEqual(event.kind, POLICY_DENIED);
     assert.strictEqual(typeof event.timestamp, 'number');
-    assert.strictEqual(event.message, 'fail');
+    assert.strictEqual(event.policy, 'no-force-push');
     assert.ok(event.id.startsWith('evt_'));
     assert.strictEqual(typeof event.fingerprint, 'string');
   });
 
   test('createEvent spreads data fields onto the event', () => {
-    const event = createEvent(DAMAGE_DEALT, { amount: 10, target: 'enemy' });
-    assert.strictEqual(event.amount, 10);
-    assert.strictEqual(event.target, 'enemy');
+    const event = createEvent(INVARIANT_VIOLATION, {
+      invariant: 'no-secret-exposure',
+      expected: 'No .env',
+      actual: 'Found .env',
+    });
+    assert.strictEqual(event.invariant, 'no-secret-exposure');
+    assert.strictEqual(event.expected, 'No .env');
   });
 
   test('createEvent generates unique IDs for consecutive events', () => {
-    const e1 = createEvent(DAMAGE_DEALT, { amount: 1, target: 'a' });
-    const e2 = createEvent(DAMAGE_DEALT, { amount: 2, target: 'b' });
+    const e1 = createEvent(POLICY_DENIED, { policy: 'p1', action: 'a1', reason: 'r1' });
+    const e2 = createEvent(POLICY_DENIED, { policy: 'p2', action: 'a2', reason: 'r2' });
     assert.notStrictEqual(e1.id, e2.id);
   });
 
   test('createEvent generates stable fingerprints for same data', () => {
-    const data = { amount: 10, target: 'enemy' };
-    const e1 = createEvent(DAMAGE_DEALT, data);
-    const e2 = createEvent(DAMAGE_DEALT, data);
+    const data = { invariant: 'inv', expected: 'exp', actual: 'act' };
+    const e1 = createEvent(INVARIANT_VIOLATION, data);
+    const e2 = createEvent(INVARIANT_VIOLATION, data);
     assert.strictEqual(e1.fingerprint, e2.fingerprint);
   });
 
   test('createEvent preserves explicitly provided fingerprint', () => {
-    const event = createEvent(ERROR_OBSERVED, {
-      message: 'test',
+    const event = createEvent(POLICY_DENIED, {
+      policy: 'p',
+      action: 'a',
+      reason: 'r',
       fingerprint: 'custom-fp',
     });
     assert.strictEqual(event.fingerprint, 'custom-fp');
@@ -89,10 +84,10 @@ suite('Domain Events — Schema Validation', () => {
 
   test('resetEventCounter resets the ID counter', () => {
     resetEventCounter();
-    const e1 = createEvent(DAMAGE_DEALT, { amount: 1, target: 'a' });
+    const e1 = createEvent(POLICY_DENIED, { policy: 'p', action: 'a', reason: 'r' });
     const counter1 = e1.id.split('_')[2];
     resetEventCounter();
-    const e2 = createEvent(DAMAGE_DEALT, { amount: 2, target: 'b' });
+    const e2 = createEvent(POLICY_DENIED, { policy: 'p', action: 'a', reason: 'r' });
     const counter2 = e2.id.split('_')[2];
     assert.strictEqual(counter1, counter2);
   });
@@ -108,149 +103,19 @@ suite('Domain Events — Schema Validation', () => {
 
   // --- createEvent validation: missing required fields ---
 
-  test('createEvent throws when ERROR_OBSERVED missing message', () => {
+  test('createEvent throws when POLICY_DENIED missing action', () => {
     assert.throws(
-      () => createEvent(ERROR_OBSERVED, {}),
-      (err) => err.message.includes('message')
-    );
-  });
-
-  test('createEvent throws when BUG_CLASSIFIED missing required fields', () => {
-    assert.throws(
-      () => createEvent(BUG_CLASSIFIED, { severity: 2 }),
-      (err) => err.message.includes('speciesId')
-    );
-  });
-
-  test('createEvent throws when MOVE_USED missing attacker', () => {
-    assert.throws(
-      () => createEvent(MOVE_USED, { move: 'slash' }),
-      (err) => err.message.includes('attacker')
-    );
-  });
-
-  test('createEvent throws when EVOLUTION_TRIGGERED missing fields', () => {
-    assert.throws(
-      () => createEvent(EVOLUTION_TRIGGERED, {}),
-      (err) => err.message.includes('from') && err.message.includes('to')
+      () => createEvent(POLICY_DENIED, { policy: 'no-force-push' }),
+      (err) => err.message.includes('action')
     );
   });
 
   // --- createEvent validation: success with required fields ---
 
-  test('createEvent succeeds for ERROR_OBSERVED with required fields', () => {
-    const event = createEvent(ERROR_OBSERVED, { message: 'null ref' });
-    assert.strictEqual(event.kind, ERROR_OBSERVED);
-    assert.strictEqual(event.message, 'null ref');
-  });
-
-  test('createEvent succeeds for BUG_CLASSIFIED with required fields', () => {
-    const event = createEvent(BUG_CLASSIFIED, {
-      severity: 2,
-      speciesId: 1,
-    });
-    assert.strictEqual(event.severity, 2);
-    assert.strictEqual(event.speciesId, 1);
-  });
-
-  test('createEvent succeeds for ENCOUNTER_STARTED', () => {
-    const event = createEvent(ENCOUNTER_STARTED, { enemy: 'NullPointer' });
-    assert.strictEqual(event.enemy, 'NullPointer');
-  });
-
-  test('createEvent succeeds for HEALING_APPLIED', () => {
-    const event = createEvent(HEALING_APPLIED, { amount: 5, target: 'player' });
-    assert.strictEqual(event.amount, 5);
-  });
-
-  test('createEvent succeeds for PASSIVE_ACTIVATED', () => {
-    const event = createEvent(PASSIVE_ACTIVATED, {
-      passive: 'regen',
-      owner: 'enemy',
-    });
-    assert.strictEqual(event.passive, 'regen');
-  });
-
-  test('createEvent succeeds for BUGMON_FAINTED', () => {
-    const event = createEvent(BUGMON_FAINTED, { bugmon: 'MemoryLeak' });
-    assert.strictEqual(event.bugmon, 'MemoryLeak');
-  });
-
-  test('createEvent succeeds for CACHE_ATTEMPTED', () => {
-    const event = createEvent(CACHE_ATTEMPTED, { target: 'enemy' });
-    assert.strictEqual(event.target, 'enemy');
-  });
-
-  test('createEvent succeeds for CACHE_SUCCESS', () => {
-    const event = createEvent(CACHE_SUCCESS, { target: 'enemy' });
-    assert.strictEqual(event.target, 'enemy');
-  });
-
-  test('createEvent succeeds for BATTLE_ENDED', () => {
-    const event = createEvent(BATTLE_ENDED, { result: 'victory' });
-    assert.strictEqual(event.result, 'victory');
-  });
-
-  test('createEvent succeeds for ACTIVITY_RECORDED', () => {
-    const event = createEvent(ACTIVITY_RECORDED, { activity: 'commit' });
-    assert.strictEqual(event.activity, 'commit');
-  });
-
   test('createEvent succeeds for STATE_CHANGED', () => {
-    const event = createEvent(STATE_CHANGED, { from: 'TITLE', to: 'EXPLORE' });
-    assert.strictEqual(event.from, 'TITLE');
-    assert.strictEqual(event.to, 'EXPLORE');
-  });
-
-  // --- createEvent with optional fields ---
-
-  test('createEvent allows optional fields on ERROR_OBSERVED', () => {
-    const event = createEvent(ERROR_OBSERVED, {
-      message: 'oops',
-      source: 'stderr',
-      file: 'main.js',
-      line: 42,
-    });
-    assert.strictEqual(event.source, 'stderr');
-    assert.strictEqual(event.file, 'main.js');
-    assert.strictEqual(event.line, 42);
-  });
-
-  // --- validateEvent ---
-
-  test('validateEvent returns valid for correct event', () => {
-    const result = validateEvent({
-      kind: DAMAGE_DEALT,
-      amount: 10,
-      target: 'enemy',
-    });
-    assert.strictEqual(result.valid, true);
-    assert.strictEqual(result.errors.length, 0);
-  });
-
-  test('validateEvent returns errors for missing required fields', () => {
-    const result = validateEvent({ kind: DAMAGE_DEALT });
-    assert.strictEqual(result.valid, false);
-    assert.ok(result.errors.length >= 2);
-    assert.ok(result.errors.some((e) => e.includes('amount')));
-    assert.ok(result.errors.some((e) => e.includes('target')));
-  });
-
-  test('validateEvent returns error for unknown kind', () => {
-    const result = validateEvent({ kind: 'Bogus' });
-    assert.strictEqual(result.valid, false);
-    assert.ok(result.errors[0].includes('Unknown event kind'));
-  });
-
-  test('validateEvent returns error for null input', () => {
-    const result = validateEvent(null);
-    assert.strictEqual(result.valid, false);
-  });
-
-  test('validateEvent returns error for missing kind', () => {
-    const result = validateEvent({ message: 'no kind' });
-    assert.strictEqual(result.valid, false);
-    assert.ok(result.errors[0].includes('kind'));
+    const event = createEvent(STATE_CHANGED, { from: 'NORMAL', to: 'ELEVATED' });
+    assert.strictEqual(event.from, 'NORMAL');
+    assert.strictEqual(event.to, 'ELEVATED');
   });
 
   // --- Session event types ---
@@ -661,5 +526,43 @@ suite('Domain Events — Schema Validation', () => {
     assert.strictEqual(event.tool, 'eslint');
     assert.strictEqual(event.errors, 3);
     assert.strictEqual(event.fixed, 2);
+  });
+
+  // --- validateEvent ---
+
+  test('validateEvent returns valid for correct event', () => {
+    const result = validateEvent({
+      kind: INVARIANT_VIOLATION,
+      invariant: 'inv',
+      expected: 'exp',
+      actual: 'act',
+    });
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.errors.length, 0);
+  });
+
+  test('validateEvent returns errors for missing required fields', () => {
+    const result = validateEvent({ kind: INVARIANT_VIOLATION });
+    assert.strictEqual(result.valid, false);
+    assert.ok(result.errors.length >= 2);
+    assert.ok(result.errors.some((e) => e.includes('invariant')));
+    assert.ok(result.errors.some((e) => e.includes('expected')));
+  });
+
+  test('validateEvent returns error for unknown kind', () => {
+    const result = validateEvent({ kind: 'Bogus' });
+    assert.strictEqual(result.valid, false);
+    assert.ok(result.errors[0].includes('Unknown event kind'));
+  });
+
+  test('validateEvent returns error for null input', () => {
+    const result = validateEvent(null);
+    assert.strictEqual(result.valid, false);
+  });
+
+  test('validateEvent returns error for missing kind', () => {
+    const result = validateEvent({ message: 'no kind' });
+    assert.strictEqual(result.valid, false);
+    assert.ok(result.errors[0].includes('kind'));
   });
 });

@@ -348,10 +348,7 @@ packages/
 ├── telemetry/src/          # @red-codes/telemetry — Runtime telemetry and logging
 ├── plugins/src/            # @red-codes/plugins — Plugin ecosystem (discovery, registry, sandboxing)
 ├── renderers/src/          # @red-codes/renderers — Renderer plugin system (TUI renderer)
-├── runtime/src/            # @red-codes/runtime — Agent runtime (placeholder)
-├── sentinel01/src/         # @red-codes/sentinel01 — Robotics/edge module (placeholder)
 ├── swarm/src/              # @red-codes/swarm — Shareable agent swarm templates
-├── adapter-openclaw/src/   # @red-codes/adapter-openclaw — OpenClaw adapter (placeholder)
 └── telemetry-client/src/   # @red-codes/telemetry-client — Telemetry client (identity, signing, queue, sender)
 
 apps/

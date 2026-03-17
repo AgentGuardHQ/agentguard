@@ -55,9 +55,6 @@ packages/
 ├── plugins/       @red-codes/plugins — Plugin ecosystem (discovery, registry, validation, sandboxing)
 ├── renderers/     @red-codes/renderers — Renderer plugin system (registry, TUI renderer)
 ├── swarm/         @red-codes/swarm — Shareable agent swarm templates
-├── runtime/       @red-codes/runtime — Agent runtime (placeholder)
-├── sentinel01/    @red-codes/sentinel01 — Robotics/edge module (placeholder)
-├── adapter-openclaw/ @red-codes/adapter-openclaw — OpenClaw adapter (placeholder)
 └── telemetry-client/ @red-codes/telemetry-client — Telemetry client (identity, signing, queue, sender)
 
 apps/

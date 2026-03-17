@@ -91,7 +91,7 @@ describe('replay CLI functions', () => {
         startedAt: '2024-01-01T00:00:00Z',
         events: [
           { kind: 'RunStarted', timestamp: 1000 },
-          { kind: 'ErrorObserved', timestamp: 2000, message: 'Something broke' },
+          { kind: 'PolicyDenied', timestamp: 2000, policy: 'no-push', action: 'push', reason: 'denied' },
         ],
       } as never);
       await replay(['sess-1']);
@@ -116,20 +116,15 @@ describe('replay CLI functions', () => {
         id: 'sess-1',
         startedAt: '2024-01-01T00:00:00Z',
         events: [
-          { kind: 'ErrorObserved', timestamp: 1000, message: 'err' },
-          {
-            kind: 'ENCOUNTER_STARTED',
-            timestamp: 2000,
-            monster: { name: 'Bug', type: 'fire', hp: 10 },
-          },
-          { kind: 'BATTLE_ENDED', timestamp: 3000, result: 'victory' },
+          { kind: 'PolicyDenied', timestamp: 1000, policy: 'p1', action: 'a1', reason: 'r1' },
+          { kind: 'PolicyDenied', timestamp: 2000, policy: 'no-push', action: 'push', reason: 'denied' },
+          { kind: 'InvariantViolation', timestamp: 3000, invariant: 'inv', expected: 'e', actual: 'a' },
         ],
         summary: { duration: 3000 },
       } as never);
       await replay(['sess-1', '--stats']);
       expect(stdoutOutput).toContain('Session Stats');
-      expect(stdoutOutput).toContain('Errors');
-      expect(stdoutOutput).toContain('Encounters');
+      expect(stdoutOutput).toContain('Denials');
     });
   });
 
@@ -140,12 +135,12 @@ describe('replay CLI functions', () => {
         startedAt: '2024-01-01T00:00:00Z',
         events: [
           { kind: 'RunStarted', timestamp: 1000 },
-          { kind: 'ErrorObserved', timestamp: 2000, message: 'err' },
+          { kind: 'PolicyDenied', timestamp: 2000, policy: 'p', action: 'a', reason: 'r' },
           { kind: 'RunEnded', timestamp: 3000 },
         ],
       } as never);
-      await replay(['sess-1', '--filter', 'ErrorObserved']);
-      expect(stdoutOutput).toContain('Error observed');
+      await replay(['sess-1', '--filter', 'PolicyDenied']);
+      expect(stdoutOutput).toContain('Policy denied');
       // RunStarted should be filtered out
     });
 

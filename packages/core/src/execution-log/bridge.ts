@@ -29,7 +29,6 @@ import {
 const DOMAIN_TO_EXECUTION_KIND: Record<string, string> = {
   ActionExecuted: AGENT_EDIT_FILE,
   ActionFailed: RUNTIME_EXCEPTION,
-  ErrorObserved: RUNTIME_EXCEPTION,
   TestCompleted: TEST_SUITE_PASSED,
   BuildCompleted: BUILD_SUCCEEDED,
   DeployCompleted: DEPLOYMENT_SUCCEEDED,
@@ -72,7 +71,6 @@ function inferSource(event: DomainEvent): EventSource {
   if (kind === 'PolicyDenied' || kind === 'InvariantViolation' || kind === 'BlastRadiusExceeded') {
     return 'governance';
   }
-  if (kind === 'ErrorObserved') return 'runtime';
   return 'cli';
 }
 

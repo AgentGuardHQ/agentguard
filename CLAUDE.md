@@ -13,7 +13,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - SQLite event persistence for audit trail and replay (JSONL export still supported)
 - Claude Code adapter for PreToolUse/PostToolUse hooks
-- **pnpm monorepo** with Turbo orchestration: 13 packages under `packages/`, 3 apps under `apps/`
+- **pnpm monorepo** with Turbo orchestration: 10 packages under `packages/`, 3 apps under `apps/`
 - Each package compiles independently via `tsc`; CLI bundle via `esbuild` in `apps/cli`
 - Scoped npm packages: `@red-codes/*` for workspace modules, `@red-codes/agentguard` for published CLI
 - CLI has runtime dependencies (`chokidar`, `commander`, `pino`); optional `better-sqlite3` for SQLite storage backend
@@ -116,7 +116,6 @@ packages/
 │   ├── sqlite-sink.ts          # SQLite event/decision sink
 │   ├── sqlite-store.ts         # SQLite event store implementation
 │   └── types.ts                # Storage type definitions
-├── runtime/src/                # @red-codes/runtime — Agent runtime (placeholder)
 ├── telemetry/src/              # @red-codes/telemetry — Runtime telemetry and logging
 ├── telemetry-client/src/       # @red-codes/telemetry-client — Telemetry client (identity, signing, queue, sender)
 └── swarm/src/                  # @red-codes/swarm — Shareable agent swarm templates
@@ -262,8 +261,6 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **Dev activity**: `FileSaved`, `TestCompleted`, `BuildCompleted`, `CommitCreated`, `CodeReviewed`, `DeployCompleted`, `LintCompleted`
 - **Token Optimization**: `TokenOptimizationApplied`
 - **Heartbeat**: `HeartbeatEmitted`, `HeartbeatMissed`, `AgentUnresponsive`
-- **Battle lifecycle**: `ENCOUNTER_STARTED`, `MOVE_USED`, `DAMAGE_DEALT`, `HEALING_APPLIED`, `PASSIVE_ACTIVATED`, `BUGMON_FAINTED`, `CACHE_ATTEMPTED`, `CACHE_SUCCESS`, `BATTLE_ENDED`
-- **Ingestion**: `ErrorObserved`, `BugClassified`, `ActivityRecorded`, `EvolutionTriggered`
 
 ### Action Classes & Types
 23 canonical action types across 8 classes, defined in `packages/core/src/actions.ts`:
