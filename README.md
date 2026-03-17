@@ -27,10 +27,11 @@ agent proposes action  →  policy evaluated  →  invariants checked  →  allo
 npm install -g @red-codes/agentguard
 
 # 2. (Optional) Install RTK for 60-90% token savings
-# macOS/Linux:
-curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/main/install.sh | bash
-# Or via Homebrew:
-brew install rtk-ai/tap/rtk
+# Homebrew (macOS/Linux):
+brew install rtk
+# Quick install (macOS/Linux):
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+# Windows: download from https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)
 
 # 3. Set up Claude Code hooks
 agentguard claude-init
