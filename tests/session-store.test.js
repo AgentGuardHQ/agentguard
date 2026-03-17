@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { test, suite } from './run.js';
 import { createSession, loadSession, listSessions } from '../dist/cli/session-store.js';
-import { createEvent, ERROR_OBSERVED } from '../dist/events/schema.js';
+import { createEvent, POLICY_DENIED } from '../dist/events/schema.js';
 
 suite('Session Store', () => {
   let sessionId = null;
@@ -42,16 +42,17 @@ suite('Session Store', () => {
 
   test('append adds events to the session', () => {
     const session = createSession({ command: 'test-append' });
-    const event = createEvent(ERROR_OBSERVED, {
-      message: 'TypeError: null is not an object',
-      severity: 3,
+    const event = createEvent(POLICY_DENIED, {
+      policy: 'no-force-push',
+      action: 'git push --force',
+      reason: 'Force push prohibited',
     });
     session.append(event);
     session.end();
 
     const loaded = loadSession(session.id);
     assert.strictEqual(loaded.events.length, 1);
-    assert.strictEqual(loaded.events[0].kind, 'ErrorObserved');
-    assert.strictEqual(loaded.events[0].message, 'TypeError: null is not an object');
+    assert.strictEqual(loaded.events[0].kind, 'PolicyDenied');
+    assert.strictEqual(loaded.events[0].policy, 'no-force-push');
   });
 });

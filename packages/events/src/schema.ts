@@ -6,24 +6,6 @@ import type { EventKind, EventSchema, DomainEvent, ValidationResult } from '@red
 import { simpleHash } from '@red-codes/core';
 
 // --- Event Kinds ---
-// Ingestion pipeline
-export const ERROR_OBSERVED: EventKind = 'ErrorObserved';
-export const BUG_CLASSIFIED: EventKind = 'BugClassified';
-
-// Battle lifecycle — values match existing battle-core.js event strings
-export const ENCOUNTER_STARTED: EventKind = 'ENCOUNTER_STARTED';
-export const MOVE_USED: EventKind = 'MOVE_USED';
-export const DAMAGE_DEALT: EventKind = 'DAMAGE_DEALT';
-export const HEALING_APPLIED: EventKind = 'HEALING_APPLIED';
-export const PASSIVE_ACTIVATED: EventKind = 'PASSIVE_ACTIVATED';
-export const BUGMON_FAINTED: EventKind = 'BUGMON_FAINTED';
-export const CACHE_ATTEMPTED: EventKind = 'CACHE_ATTEMPTED';
-export const CACHE_SUCCESS: EventKind = 'CACHE_SUCCESS';
-export const BATTLE_ENDED: EventKind = 'BATTLE_ENDED';
-
-// Progression
-export const ACTIVITY_RECORDED: EventKind = 'ActivityRecorded';
-export const EVOLUTION_TRIGGERED: EventKind = 'EvolutionTriggered';
 
 // Session
 export const STATE_CHANGED: EventKind = 'StateChanged';
@@ -106,58 +88,6 @@ export const IDE_SOCKET_ACCESS_BLOCKED: EventKind = 'IdeSocketAccessBlocked';
 
 // --- Event Schemas ---
 const EVENT_SCHEMAS: Record<string, EventSchema> = {
-  [ERROR_OBSERVED]: {
-    required: ['message'],
-    optional: ['source', 'errorType', 'file', 'line', 'severity', 'fingerprint', 'bugEvent'],
-  },
-  [BUG_CLASSIFIED]: {
-    required: ['severity', 'speciesId'],
-    optional: ['fingerprint', 'name'],
-  },
-  [ENCOUNTER_STARTED]: {
-    required: ['enemy'],
-    optional: ['playerLevel'],
-  },
-  [MOVE_USED]: {
-    required: ['move', 'attacker'],
-    optional: ['defender'],
-  },
-  [DAMAGE_DEALT]: {
-    required: ['amount', 'target'],
-    optional: ['effectiveness'],
-  },
-  [HEALING_APPLIED]: {
-    required: ['amount', 'target'],
-    optional: [],
-  },
-  [PASSIVE_ACTIVATED]: {
-    required: ['passive', 'owner'],
-    optional: [],
-  },
-  [BUGMON_FAINTED]: {
-    required: ['bugmon'],
-    optional: [],
-  },
-  [CACHE_ATTEMPTED]: {
-    required: ['target'],
-    optional: [],
-  },
-  [CACHE_SUCCESS]: {
-    required: ['target'],
-    optional: [],
-  },
-  [BATTLE_ENDED]: {
-    required: ['result'],
-    optional: [],
-  },
-  [ACTIVITY_RECORDED]: {
-    required: ['activity'],
-    optional: [],
-  },
-  [EVOLUTION_TRIGGERED]: {
-    required: ['from', 'to'],
-    optional: [],
-  },
   [STATE_CHANGED]: {
     required: ['from', 'to'],
     optional: [

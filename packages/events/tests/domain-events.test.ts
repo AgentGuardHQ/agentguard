@@ -4,11 +4,9 @@ import {
   validateEvent,
   resetEventCounter,
   ALL_EVENT_KINDS,
-  ERROR_OBSERVED,
-  MOVE_USED,
-  BATTLE_ENDED,
   INVARIANT_VIOLATION,
   PIPELINE_STARTED,
+  POLICY_DENIED,
 } from '@red-codes/events';
 
 describe('domain/events', () => {
@@ -17,17 +15,29 @@ describe('domain/events', () => {
   });
 
   describe('createEvent', () => {
-    it('creates a valid ErrorObserved event', () => {
-      const event = createEvent(ERROR_OBSERVED, { message: 'TypeError: x is not defined' });
-      expect(event.kind).toBe('ErrorObserved');
+    it('creates a valid PolicyDenied event', () => {
+      const event = createEvent(POLICY_DENIED, {
+        policy: 'no-force-push',
+        action: 'git push --force',
+        reason: 'Force push prohibited',
+      });
+      expect(event.kind).toBe('PolicyDenied');
       expect(event.id).toMatch(/^evt_\d+_1$/);
       expect(event.timestamp).toBeTypeOf('number');
       expect(event.fingerprint).toBeTypeOf('string');
     });
 
     it('assigns unique IDs via monotonic counter', () => {
-      const e1 = createEvent(ERROR_OBSERVED, { message: 'err1' });
-      const e2 = createEvent(ERROR_OBSERVED, { message: 'err2' });
+      const e1 = createEvent(POLICY_DENIED, {
+        policy: 'p1',
+        action: 'a1',
+        reason: 'r1',
+      });
+      const e2 = createEvent(POLICY_DENIED, {
+        policy: 'p2',
+        action: 'a2',
+        reason: 'r2',
+      });
       expect(e1.id).not.toBe(e2.id);
     });
 
@@ -37,19 +47,19 @@ describe('domain/events', () => {
     });
 
     it('throws when required fields are missing', () => {
-      expect(() => createEvent(ERROR_OBSERVED, {})).toThrow('missing required field: message');
+      expect(() => createEvent(POLICY_DENIED, {})).toThrow('missing required field: policy');
     });
 
     it('generates deterministic fingerprints for same kind+data', () => {
-      const e1 = createEvent(MOVE_USED, { move: 'segfault', attacker: 'NullPointer' });
+      const data = {
+        invariant: 'no-secret-exposure',
+        expected: 'No sensitive files',
+        actual: 'Found .env',
+      };
+      const e1 = createEvent(INVARIANT_VIOLATION, data);
       resetEventCounter();
-      const e2 = createEvent(MOVE_USED, { move: 'segfault', attacker: 'NullPointer' });
+      const e2 = createEvent(INVARIANT_VIOLATION, data);
       expect(e1.fingerprint).toBe(e2.fingerprint);
-    });
-
-    it('creates battle events', () => {
-      const event = createEvent(BATTLE_ENDED, { result: 'win' });
-      expect(event.kind).toBe('BATTLE_ENDED');
     });
 
     it('creates governance events', () => {
@@ -73,8 +83,10 @@ describe('domain/events', () => {
   describe('validateEvent', () => {
     it('validates a well-formed event', () => {
       const result = validateEvent({
-        kind: ERROR_OBSERVED,
-        message: 'test error',
+        kind: POLICY_DENIED,
+        policy: 'no-force-push',
+        action: 'git push --force',
+        reason: 'Force push prohibited',
         timestamp: Date.now(),
       });
       expect(result.valid).toBe(true);
@@ -98,7 +110,7 @@ describe('domain/events', () => {
     });
 
     it('reports missing required fields', () => {
-      const result = validateEvent({ kind: MOVE_USED });
+      const result = validateEvent({ kind: POLICY_DENIED });
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(2);
     });
@@ -106,10 +118,10 @@ describe('domain/events', () => {
 
   describe('ALL_EVENT_KINDS', () => {
     it('contains all known event kinds', () => {
-      expect(ALL_EVENT_KINDS.size).toBeGreaterThan(30);
-      expect(ALL_EVENT_KINDS.has('ErrorObserved')).toBe(true);
-      expect(ALL_EVENT_KINDS.has('BATTLE_ENDED')).toBe(true);
+      expect(ALL_EVENT_KINDS.size).toBeGreaterThan(20);
       expect(ALL_EVENT_KINDS.has('InvariantViolation')).toBe(true);
+      expect(ALL_EVENT_KINDS.has('PolicyDenied')).toBe(true);
+      expect(ALL_EVENT_KINDS.has('ActionRequested')).toBe(true);
     });
   });
 });

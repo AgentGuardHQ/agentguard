@@ -156,22 +156,6 @@ export interface ValidationResult {
 
 /** All canonical event kind constants */
 export type EventKind =
-  // Ingestion pipeline
-  | 'ErrorObserved'
-  | 'BugClassified'
-  // Battle lifecycle
-  | 'ENCOUNTER_STARTED'
-  | 'MOVE_USED'
-  | 'DAMAGE_DEALT'
-  | 'HEALING_APPLIED'
-  | 'PASSIVE_ACTIVATED'
-  | 'BUGMON_FAINTED'
-  | 'CACHE_ATTEMPTED'
-  | 'CACHE_SUCCESS'
-  | 'BATTLE_ENDED'
-  // Progression
-  | 'ActivityRecorded'
-  | 'EvolutionTriggered'
   // Session
   | 'StateChanged'
   | 'RunStarted'

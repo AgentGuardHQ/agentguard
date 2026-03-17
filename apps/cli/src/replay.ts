@@ -20,21 +20,17 @@ interface EventDisplay {
 }
 
 const EVENT_DISPLAY: Record<string, EventDisplay> = {
-  ErrorObserved: { icon: '!', label: 'Error observed', color: 'red' },
-  BugClassified: { icon: '?', label: 'Bug classified', color: 'yellow' },
-  ENCOUNTER_STARTED: { icon: '*', label: 'Encounter started', color: 'magenta' },
-  MOVE_USED: { icon: '>', label: 'Move used', color: 'white' },
-  DAMAGE_DEALT: { icon: '#', label: 'Damage dealt', color: 'red' },
-  HEALING_APPLIED: { icon: '+', label: 'Healing applied', color: 'green' },
-  PASSIVE_ACTIVATED: { icon: '~', label: 'Passive activated', color: 'cyan' },
-  BUGMON_FAINTED: { icon: 'x', label: 'Fainted', color: 'red' },
-  BATTLE_ENDED: { icon: 'v', label: 'Battle ended', color: 'green' },
   TestCompleted: { icon: 'T', label: 'Test completed', color: 'green' },
   FileSaved: { icon: 'F', label: 'File modified', color: 'blue' },
   RunStarted: { icon: '>', label: 'Run started', color: 'cyan' },
   RunEnded: { icon: '<', label: 'Run ended', color: 'cyan' },
   PolicyDenied: { icon: '!', label: 'Policy denied', color: 'red' },
   InvariantViolation: { icon: '!', label: 'Invariant violation', color: 'red' },
+  ActionRequested: { icon: '?', label: 'Action requested', color: 'yellow' },
+  ActionAllowed: { icon: '+', label: 'Action allowed', color: 'green' },
+  ActionDenied: { icon: 'x', label: 'Action denied', color: 'red' },
+  ActionExecuted: { icon: '*', label: 'Action executed', color: 'green' },
+  ActionFailed: { icon: '#', label: 'Action failed', color: 'red' },
 };
 
 const DEFAULT_DISPLAY: EventDisplay = { icon: '.', label: 'Event', color: 'gray' };
@@ -42,18 +38,9 @@ const DEFAULT_DISPLAY: EventDisplay = { icon: '.', label: 'Event', color: 'gray'
 interface ReplayEvent {
   kind: string;
   timestamp: number;
-  isBoss?: boolean;
-  boss?: { name?: string };
-  monster?: { name?: string; type?: string; hp?: number };
-  enemy?: string;
   result?: string;
-  monsterName?: string;
   message?: string;
-  attacker?: string;
-  move?: string;
-  amount?: number;
   target?: string;
-  bugmon?: string;
   suite?: string;
   file?: string;
   policy?: string;
@@ -61,6 +48,7 @@ interface ReplayEvent {
   invariant?: string;
   expected?: string;
   actual?: string;
+  actionType?: string;
   [key: string]: unknown;
 }
 
@@ -257,11 +245,11 @@ function renderSessionList(): void {
     const cmd = s.command ? dim(` ${s.command}`) : '';
     const status = s.endedAt ? color('done', 'green') : color('active', 'yellow');
 
-    const bugs = (s.summary?.bugsDefeated as number) ?? 0;
-    const bosses = (s.summary?.bossesEncountered as number) ?? 0;
+    const denials = (s.summary?.denials as number) ?? 0;
+    const violations = (s.summary?.violations as number) ?? 0;
     const summaryParts: string[] = [];
-    if (bugs > 0) summaryParts.push(`${bugs} defeated`);
-    if (bosses > 0) summaryParts.push(`${bosses} bosses`);
+    if (denials > 0) summaryParts.push(`${denials} denials`);
+    if (violations > 0) summaryParts.push(`${violations} violations`);
     const summaryStr = summaryParts.length > 0 ? dim(` (${summaryParts.join(', ')})`) : '';
 
     lines.push(`  ${bold(s.id)}  ${dim(date)}  ${events}${summaryStr}  [${status}]`);
@@ -383,12 +371,8 @@ function renderSessionStats(session: SessionData): void {
     counts[e.kind] = (counts[e.kind] || 0) + 1;
   }
 
-  const errors = counts['ErrorObserved'] || 0;
-  const encounters = counts['ENCOUNTER_STARTED'] || 0;
-  const battles = counts['BATTLE_ENDED'] || 0;
-  const victories = events.filter(
-    (e) => e.kind === 'BATTLE_ENDED' && e.result === 'victory'
-  ).length;
+  const denials = (counts['PolicyDenied'] || 0) + (counts['ActionDenied'] || 0);
+  const violations = counts['InvariantViolation'] || 0;
 
   const lines: string[] = [];
   lines.push('');
@@ -400,9 +384,8 @@ function renderSessionStats(session: SessionData): void {
   lines.push(`  Events:      ${bold(String(events.length))}`);
   if (session.seed !== undefined && session.seed !== null)
     lines.push(`  Seed:        ${bold(String(session.seed))}`);
-  lines.push(`  Errors:      ${bold(color(String(errors), errors > 0 ? 'red' : 'green'))}`);
-  lines.push(`  Encounters:  ${bold(String(encounters))}`);
-  lines.push(`  Battles:     ${bold(String(battles))} (${victories} won)`);
+  lines.push(`  Denials:     ${bold(color(String(denials), denials > 0 ? 'red' : 'green'))}`);
+  lines.push(`  Violations:  ${bold(color(String(violations), violations > 0 ? 'red' : 'green'))}`);
   lines.push('');
 
   if (Object.keys(counts).length > 0) {
@@ -411,15 +394,6 @@ function renderSessionStats(session: SessionData): void {
     for (const [kind, count] of sorted) {
       const display = EVENT_DISPLAY[kind] || DEFAULT_DISPLAY;
       lines.push(`    ${color(display.icon, display.color)} ${display.label.padEnd(22)} ${count}`);
-    }
-  }
-
-  const bosses = events.filter((e) => e.isBoss);
-  if (bosses.length > 0) {
-    lines.push('');
-    lines.push(bold(color('  Bosses encountered:', 'red')));
-    for (const b of bosses) {
-      lines.push(`    ${color('*', 'red')} ${b.boss?.name || b.enemy}`);
     }
   }
 
@@ -439,22 +413,6 @@ function formatElapsed(ms: number): string {
 
 function getEventDetail(event: ReplayEvent): string {
   switch (event.kind) {
-    case 'ErrorObserved':
-      return event.message ? truncate(event.message, 60) : '';
-    case 'ENCOUNTER_STARTED':
-      if (event.isBoss) return `Boss: ${event.boss?.name || event.enemy}`;
-      return event.monster
-        ? `${event.monster.name} [${event.monster.type}] HP:${event.monster.hp}`
-        : event.enemy || '';
-    case 'BATTLE_ENDED':
-      if (event.result === 'resolved') return `${event.monsterName || 'Bug'} resolved`;
-      return event.result || '';
-    case 'MOVE_USED':
-      return `${event.attacker} used ${event.move}`;
-    case 'DAMAGE_DEALT':
-      return `${event.amount} damage to ${event.target}`;
-    case 'BUGMON_FAINTED':
-      return event.bugmon || '';
     case 'TestCompleted':
       return `${event.result}${event.suite ? ` (${event.suite})` : ''}`;
     case 'FileSaved':
@@ -463,6 +421,12 @@ function getEventDetail(event: ReplayEvent): string {
       return `${event.policy}: ${event.reason}`;
     case 'InvariantViolation':
       return `${event.invariant}: expected ${event.expected}, got ${event.actual}`;
+    case 'ActionRequested':
+    case 'ActionAllowed':
+    case 'ActionDenied':
+    case 'ActionExecuted':
+    case 'ActionFailed':
+      return `${event.actionType || ''} ${event.target || ''}`.trim();
     default:
       return '';
   }
@@ -470,31 +434,25 @@ function getEventDetail(event: ReplayEvent): string {
 
 function isWarningEvent(event: ReplayEvent): boolean {
   return (
-    event.kind === 'ErrorObserved' ||
     event.kind === 'PolicyDenied' ||
     event.kind === 'InvariantViolation' ||
-    (event.kind === 'TestCompleted' && event.result === 'fail') ||
-    event.kind === 'BUGMON_FAINTED'
+    event.kind === 'ActionDenied' ||
+    event.kind === 'ActionFailed' ||
+    (event.kind === 'TestCompleted' && event.result === 'fail')
   );
 }
 
 function renderInlineSummary(lines: string[], events: ReplayEvent[]): void {
-  const errors = events.filter((e) => e.kind === 'ErrorObserved').length;
-  const encounters = events.filter((e) => e.kind === 'ENCOUNTER_STARTED').length;
-  const resolved = events.filter(
-    (e) => e.kind === 'BATTLE_ENDED' && (e.result === 'victory' || e.result === 'resolved')
+  const denials = events.filter(
+    (e) => e.kind === 'PolicyDenied' || e.kind === 'ActionDenied'
   ).length;
+  const violations = events.filter((e) => e.kind === 'InvariantViolation').length;
 
   const parts: string[] = [];
   parts.push(`${events.length} events`);
-  if (errors > 0) parts.push(color(`${errors} errors`, 'red'));
-  if (encounters > 0) parts.push(`${encounters} encounters`);
-  if (resolved > 0) parts.push(color(`${resolved} defeated`, 'green'));
+  if (denials > 0) parts.push(color(`${denials} denials`, 'red'));
+  if (violations > 0) parts.push(color(`${violations} violations`, 'red'));
   lines.push(`  ${parts.join('  |  ')}`);
-}
-
-function truncate(str: string, max: number): string {
-  return str.length > max ? str.slice(0, max - 3) + '...' : str;
 }
 
 function waitForKeypress(): Promise<boolean> {
