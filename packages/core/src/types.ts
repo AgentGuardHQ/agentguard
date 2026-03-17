@@ -229,7 +229,9 @@ export type EventKind =
   | 'AdoptionAnalyzed'
   | 'AdoptionAnalysisFailed'
   // Denial Learning
-  | 'DenialPatternDetected';
+  | 'DenialPatternDetected'
+  // Environmental Enforcement
+  | 'IdeSocketAccessBlocked';
 
 /** Event schema definition — required and optional field names */
 export interface EventSchema {

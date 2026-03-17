@@ -97,6 +97,9 @@ export const INVARIANT_CREDENTIAL_BASENAME_PATTERNS: string[] =
 export const INVARIANT_CONTAINER_CONFIG_BASENAMES: string[] =
   invariantPatternsData.containerConfigBasenames;
 export const INVARIANT_LIFECYCLE_SCRIPTS: string[] = invariantPatternsData.lifecycleScripts;
+export const INVARIANT_IDE_SOCKET_ENV_VARS: string[] = invariantPatternsData.ideSocketEnvVars;
+export const INVARIANT_IDE_SOCKET_PATH_PATTERNS: string[] =
+  invariantPatternsData.ideSocketPathPatterns;
 export const INVARIANT_ENV_FILE_REGEX_SOURCE: string = invariantPatternsData.envFileRegex;
 export const INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE: string =
   invariantPatternsData.dockerfileSuffixRegex;

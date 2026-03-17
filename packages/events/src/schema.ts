@@ -97,6 +97,9 @@ export const ADOPTION_ANALYSIS_FAILED: EventKind = 'AdoptionAnalysisFailed';
 // Denial Learning
 export const DENIAL_PATTERN_DETECTED: EventKind = 'DenialPatternDetected';
 
+// Environmental Enforcement
+export const IDE_SOCKET_ACCESS_BLOCKED: EventKind = 'IdeSocketAccessBlocked';
+
 // --- Event Schemas ---
 const EVENT_SCHEMAS: Record<string, EventSchema> = {
   [ERROR_OBSERVED]: {
@@ -332,6 +335,10 @@ const EVENT_SCHEMAS: Record<string, EventSchema> = {
   [DENIAL_PATTERN_DETECTED]: {
     required: ['actionType', 'occurrences', 'confidence'],
     optional: ['invariant', 'policyRule', 'suggestion', 'resolution'],
+  },
+  [IDE_SOCKET_ACCESS_BLOCKED]: {
+    required: ['socketPattern', 'source'],
+    optional: ['envVar', 'command', 'socketPath', 'ide', 'metadata'],
   },
 };
 
