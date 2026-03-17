@@ -2,11 +2,7 @@
 // Wraps the session store and provides high-level recording methods.
 
 import { createSession } from './session-store.js';
-import {
-  createEvent,
-  TEST_COMPLETED,
-  FILE_SAVED,
-} from '@red-codes/events';
+import { createEvent, TEST_COMPLETED, FILE_SAVED } from '@red-codes/events';
 import type { DomainEvent } from '@red-codes/core';
 
 export interface Recorder {
