@@ -59,12 +59,12 @@ describe('PreToolUse denial output', () => {
       })
     );
     await claudeHook('pre');
-    expect(process.exit).toHaveBeenCalledWith(0);
+    expect(process.exit).toHaveBeenCalledWith(2);
     const output = getStdoutOutput();
     expect(output).toBeTruthy();
     const parsed = JSON.parse(output);
-    expect(parsed).toHaveProperty('error');
-    expect(parsed.error).toContain('DENIED');
+    expect(parsed).toHaveProperty('hookSpecificOutput');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny');
   });
 
   it('includes violation names in denial output when invariants fire', async () => {
@@ -79,7 +79,7 @@ describe('PreToolUse denial output', () => {
     const output = getStdoutOutput();
     expect(output).toBeTruthy();
     const parsed = JSON.parse(output);
-    expect(parsed.error).toContain('DENIED');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny');
   });
 
   it('denies force push and outputs structured error', async () => {
@@ -94,7 +94,8 @@ describe('PreToolUse denial output', () => {
     const output = getStdoutOutput();
     expect(output).toBeTruthy();
     const parsed = JSON.parse(output);
-    expect(parsed).toHaveProperty('error');
+    expect(parsed).toHaveProperty('hookSpecificOutput');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny');
   });
 
   it('allows benign Read action with no stdout output', async () => {
