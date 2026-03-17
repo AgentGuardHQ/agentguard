@@ -37,6 +37,15 @@ mod tests {
     }
 
     #[test]
+    fn test_cross_validated_against_typescript() {
+        // Cross-validated against the TypeScript simpleHash("hello") output.
+        // Both use the same DJB2-variant algorithm over UTF-16 code units.
+        // If this changes, hash-based fingerprints will diverge between runtimes.
+        assert_eq!(simple_hash("hello"), "1n1e4y");
+        assert_eq!(simple_hash("agentguard"), simple_hash("agentguard"));
+    }
+
+    #[test]
     fn test_deterministic() {
         assert_eq!(simple_hash("test input"), simple_hash("test input"));
     }

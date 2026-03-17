@@ -225,6 +225,9 @@ fn match_conditions(
     let mut branch_matched = None;
 
     if let Some(limit) = cond.limit {
+        // When files_affected is None (unknown file count), the limit check is
+        // silently skipped — matching TypeScript evaluator behavior. An action with
+        // unknown file count bypasses file-count-based deny rules.
         if let Some(files) = intent.files_affected {
             limit_exceeded = Some(files as f64 > limit);
             if limit_exceeded == Some(true) {

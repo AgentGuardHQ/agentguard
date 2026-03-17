@@ -4,6 +4,12 @@ use std::collections::HashMap;
 use std::sync::LazyLock;
 
 // --- Embedded JSON data (compile-time) ---
+//
+// NOTE: These include_str! paths are relative to this file's location within the monorepo
+// layout (crates/kernel-core/src/ → packages/core/src/data/). If either the crates/ or
+// packages/ directory is ever relocated, these paths will fail at compile time. This is
+// an intentional tight coupling — the Rust crate is designed to be built from within the
+// AgentGuard monorepo root only.
 
 const TOOL_ACTION_MAP_JSON: &str =
     include_str!("../../../packages/core/src/data/tool-action-map.json");

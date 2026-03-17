@@ -87,6 +87,8 @@ impl ActionType {
             Self::HttpRequest => ActionClass::Http,
             Self::DeployTrigger => ActionClass::Deploy,
             Self::InfraApply | Self::InfraDestroy => ActionClass::Infra,
+            // Unknown inherits Shell class — intentional parity with the TypeScript
+            // implementation where unrecognized tool calls are normalized to shell.exec.
             Self::Unknown => ActionClass::Shell,
         }
     }
