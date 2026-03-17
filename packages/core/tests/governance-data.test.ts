@@ -21,6 +21,8 @@ import {
   INVARIANT_LIFECYCLE_SCRIPTS,
   INVARIANT_ENV_FILE_REGEX_SOURCE,
   INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE,
+  INVARIANT_IDE_CONTEXT_ENV_VARS,
+  INVARIANT_IDE_SOCKET_PATH_PATTERNS,
   INVARIANT_METADATA,
 } from '../src/governance-data.js';
 
@@ -159,9 +161,21 @@ describe('governance-data loader', () => {
       expect(() => new RegExp(INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE)).not.toThrow();
     });
 
-    it('exports invariant metadata for all 19 invariants', () => {
+    it('exports IDE socket env vars', () => {
+      expect(Array.isArray(INVARIANT_IDE_CONTEXT_ENV_VARS)).toBe(true);
+      expect(INVARIANT_IDE_CONTEXT_ENV_VARS.length).toBeGreaterThan(0);
+      expect(INVARIANT_IDE_CONTEXT_ENV_VARS).toContain('VSCODE_IPC_HOOK');
+    });
+
+    it('exports IDE socket path patterns', () => {
+      expect(Array.isArray(INVARIANT_IDE_SOCKET_PATH_PATTERNS)).toBe(true);
+      expect(INVARIANT_IDE_SOCKET_PATH_PATTERNS.length).toBeGreaterThan(0);
+      expect(INVARIANT_IDE_SOCKET_PATH_PATTERNS).toContain('vscode-ipc-');
+    });
+
+    it('exports invariant metadata for all 20 invariants', () => {
       expect(Array.isArray(INVARIANT_METADATA)).toBe(true);
-      expect(INVARIANT_METADATA.length).toBe(19);
+      expect(INVARIANT_METADATA.length).toBe(20);
       for (const inv of INVARIANT_METADATA) {
         expect(typeof inv.id).toBe('string');
         expect(typeof inv.name).toBe('string');

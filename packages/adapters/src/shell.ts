@@ -4,6 +4,7 @@
 
 import { exec } from 'node:child_process';
 import type { CanonicalAction } from '@red-codes/core';
+import { INVARIANT_IDE_CONTEXT_ENV_VARS } from '@red-codes/core';
 
 const DEFAULT_TIMEOUT = 30_000;
 const MAX_BUFFER = 1024 * 1024; // 1MB
@@ -48,6 +49,8 @@ export const DEFAULT_STRIPPED_CREDENTIALS: readonly string[] = [
   // NPM
   'NPM_TOKEN',
   'NPM_AUTH_TOKEN',
+  // IDE IPC sockets — prevent governance escape via host IDE manipulation
+  ...INVARIANT_IDE_CONTEXT_ENV_VARS,
   // Generic secrets
   'API_KEY',
   'SECRET_KEY',
@@ -58,6 +61,13 @@ export const DEFAULT_STRIPPED_CREDENTIALS: readonly string[] = [
   'REDIS_URL',
   'REDIS_PASSWORD',
 ];
+
+/**
+ * IDE socket environment variables stripped before spawning child processes.
+ * These represent IPC paths that agents should not have access to in governed sessions.
+ * Sourced from @red-codes/core governance data (invariant-patterns.json).
+ */
+export const DEFAULT_STRIPPED_IDE_SOCKETS: readonly string[] = INVARIANT_IDE_CONTEXT_ENV_VARS;
 
 /** Configuration for the shell adapter. */
 export interface ShellAdapterOptions {
@@ -83,6 +93,8 @@ export interface ShellResult {
   exitCode: number;
   /** Names of environment variables that were stripped before execution. */
   strippedCredentials?: string[];
+  /** Names of IDE socket environment variables that were stripped before execution. */
+  strippedIdeSockets?: string[];
   /** The original command before rtk rewrite (present only when rtk rewrote the command). */
   originalCommand?: string;
 }
@@ -94,14 +106,15 @@ export interface ShellResult {
 export function sanitizeEnvironment(
   env: Record<string, string | undefined>,
   options: CredentialStrippingOptions = {}
-): { env: Record<string, string | undefined>; stripped: string[] } {
+): { env: Record<string, string | undefined>; stripped: string[]; strippedIdeSockets: string[] } {
   const { enabled = true, additional = [], preserve = [] } = options;
 
   if (!enabled) {
-    return { env, stripped: [] };
+    return { env, stripped: [], strippedIdeSockets: [] };
   }
 
   const preserveSet = new Set(preserve.map((v) => v.toUpperCase()));
+  const ideSocketSet = new Set(INVARIANT_IDE_CONTEXT_ENV_VARS.map((v) => v.toUpperCase()));
   const toStrip = new Set<string>();
 
   for (const name of DEFAULT_STRIPPED_CREDENTIALS) {
@@ -117,16 +130,22 @@ export function sanitizeEnvironment(
 
   const sanitized = { ...env };
   const stripped: string[] = [];
+  const strippedIdeSockets: string[] = [];
 
   for (const name of toStrip) {
     if (name in sanitized && sanitized[name] !== undefined) {
       delete sanitized[name];
-      stripped.push(name);
+      if (ideSocketSet.has(name.toUpperCase())) {
+        strippedIdeSockets.push(name);
+      } else {
+        stripped.push(name);
+      }
     }
   }
 
   stripped.sort();
-  return { env: sanitized, stripped };
+  strippedIdeSockets.sort();
+  return { env: sanitized, stripped, strippedIdeSockets };
 }
 
 /**
@@ -176,10 +195,11 @@ export function createShellAdapter(
       }
     }
 
-    const { env: sanitizedEnv, stripped } = sanitizeEnvironment(
-      process.env as Record<string, string | undefined>,
-      credentialOptions
-    );
+    const {
+      env: sanitizedEnv,
+      stripped,
+      strippedIdeSockets,
+    } = sanitizeEnvironment(process.env as Record<string, string | undefined>, credentialOptions);
 
     return new Promise((resolve, reject) => {
       exec(
@@ -196,6 +216,7 @@ export function createShellAdapter(
             stderr: stderr.toString(),
             exitCode: error ? (error.code ?? 1) : 0,
             strippedCredentials: stripped.length > 0 ? stripped : undefined,
+            strippedIdeSockets: strippedIdeSockets.length > 0 ? strippedIdeSockets : undefined,
             originalCommand,
           });
         }

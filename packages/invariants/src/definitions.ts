@@ -10,6 +10,7 @@ import {
   INVARIANT_LIFECYCLE_SCRIPTS,
   INVARIANT_ENV_FILE_REGEX_SOURCE,
   INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE,
+  INVARIANT_IDE_SOCKET_PATH_PATTERNS,
 } from '@red-codes/core';
 
 export interface InvariantCheckResult {
@@ -75,6 +76,26 @@ export const CREDENTIAL_BASENAME_PATTERNS: string[] = INVARIANT_CREDENTIAL_BASEN
 
 /** Matches .env files: .env, .env.local, .env.production, etc. */
 const ENV_FILE_REGEX = new RegExp(INVARIANT_ENV_FILE_REGEX_SOURCE, 'i');
+
+/** IDE socket path patterns (lowercased for case-insensitive matching).
+ * Sourced from @red-codes/core governance data. */
+const IDE_SOCKET_PATH_PATTERNS: string[] = INVARIANT_IDE_SOCKET_PATH_PATTERNS.map((p) =>
+  p.toLowerCase()
+);
+
+/** Identify the IDE from a matched socket pattern. */
+function identifyIde(pattern: string): string {
+  if (pattern.includes('vscode') || pattern.includes('.vscode-server')) return 'VS Code';
+  if (pattern.includes('cursor')) return 'Cursor';
+  if (pattern.includes('jetbrains') || pattern.includes('intellij') || pattern.includes('idea'))
+    return 'JetBrains';
+  if (pattern.includes('clion')) return 'CLion';
+  if (pattern.includes('pycharm')) return 'PyCharm';
+  if (pattern.includes('webstorm')) return 'WebStorm';
+  if (pattern.includes('goland')) return 'GoLand';
+  if (pattern.includes('rider')) return 'Rider';
+  return 'Unknown';
+}
 
 /** Shell profile file basenames (case-insensitive) that establish persistent environment changes. */
 const SHELL_PROFILE_BASENAMES = [
@@ -1329,6 +1350,41 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
         actual: allowed
           ? `Network egress to ${domain} allowed (matches allowlist)`
           : `Network egress to ${domain} denied (not in allowlist: ${allowlist.join(', ')})`,
+      };
+    },
+  },
+
+  {
+    id: 'no-ide-socket-access',
+    name: 'No IDE Socket Access',
+    description:
+      'Blocks agent access to IDE inter-process communication sockets (VS Code, JetBrains, Cursor) — prevents governance escape via host IDE manipulation',
+    severity: 4,
+    check(state) {
+      const target = (state.currentTarget || '').toLowerCase();
+      const command = (state.currentCommand || '').toLowerCase();
+
+      // Check file targets and shell commands for IDE socket path patterns
+      const textToCheck = target || command;
+      if (!textToCheck) {
+        return { holds: true, expected: 'N/A', actual: 'No target or command to check' };
+      }
+
+      for (const pattern of IDE_SOCKET_PATH_PATTERNS) {
+        if (textToCheck.includes(pattern)) {
+          const ide = identifyIde(pattern);
+          return {
+            holds: false,
+            expected: 'Agent must not access IDE IPC sockets',
+            actual: `IDE socket access detected: pattern "${pattern}" matched in ${target ? 'target' : 'command'} (IDE: ${ide})`,
+          };
+        }
+      }
+
+      return {
+        holds: true,
+        expected: 'Agent must not access IDE IPC sockets',
+        actual: 'No IDE socket access detected',
       };
     },
   },

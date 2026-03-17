@@ -97,6 +97,13 @@ export const ADOPTION_ANALYSIS_FAILED: EventKind = 'AdoptionAnalysisFailed';
 // Denial Learning
 export const DENIAL_PATTERN_DETECTED: EventKind = 'DenialPatternDetected';
 
+// Environmental Enforcement
+// TODO(issue-225): Reserved for future direct emission from the shell adapter when IDE
+// context variables are stripped. Currently the kernel emits InvariantViolation when the
+// no-ide-socket-access invariant fires. This event kind will be emitted directly once the
+// adapter-level event emission pipeline is wired up.
+export const IDE_SOCKET_ACCESS_BLOCKED: EventKind = 'IdeSocketAccessBlocked';
+
 // --- Event Schemas ---
 const EVENT_SCHEMAS: Record<string, EventSchema> = {
   [ERROR_OBSERVED]: {
@@ -332,6 +339,10 @@ const EVENT_SCHEMAS: Record<string, EventSchema> = {
   [DENIAL_PATTERN_DETECTED]: {
     required: ['actionType', 'occurrences', 'confidence'],
     optional: ['invariant', 'policyRule', 'suggestion', 'resolution'],
+  },
+  [IDE_SOCKET_ACCESS_BLOCKED]: {
+    required: ['socketPattern', 'source'],
+    optional: ['envVar', 'command', 'socketPath', 'ide', 'metadata'],
   },
 };
 

@@ -229,7 +229,10 @@ export type EventKind =
   | 'AdoptionAnalyzed'
   | 'AdoptionAnalysisFailed'
   // Denial Learning
-  | 'DenialPatternDetected';
+  | 'DenialPatternDetected'
+  // Environmental Enforcement
+  // TODO(issue-225): Reserved for future direct emission; currently InvariantViolation is emitted instead.
+  | 'IdeSocketAccessBlocked';
 
 /** Event schema definition — required and optional field names */
 export interface EventSchema {
