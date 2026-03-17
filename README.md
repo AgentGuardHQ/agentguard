@@ -8,7 +8,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![npm](https://img.shields.io/npm/v/@red-codes/agentguard.svg)](https://www.npmjs.com/package/@red-codes/agentguard)
-[![Website](https://img.shields.io/badge/Website-AgentGuardHQ.github.io/agent--guard-22C55E?style=flat&logo=github)](https://agentguardhq.github.io/agent-guard/)
+[![Website](https://img.shields.io/badge/Website-AgentGuardHQ.github.io/agentguard-22C55E?style=flat&logo=github)](https://agentguardhq.github.io/agentguard/)
 
 ---
 
@@ -355,8 +355,8 @@ Work has started on a Rust implementation of the governance kernel in `crates/ke
 ## Run Locally
 
 ```bash
-git clone https://github.com/AgentGuardHQ/agent-guard.git
-cd agent-guard
+git clone https://github.com/AgentGuardHQ/agentguard.git
+cd agentguard
 pnpm install            # Install dependencies
 pnpm build              # Build all packages (turbo build)
 pnpm test               # Run all tests (turbo test)
