@@ -33,6 +33,32 @@ export function resolveAgentIdentity(sessionId?: string): string {
   return `claude-code:${simpleHash(sessionId.trim())}`;
 }
 
+/**
+ * Normalize file paths for policy matching.
+ * Claude Code sends absolute paths (e.g. C:\Users\...\project\.env).
+ * Policy rules use relative paths (e.g. .env, .github/workflows/).
+ * Convert absolute paths to relative (from cwd) so rules match correctly.
+ */
+function normalizeFilePath(filePath: string | undefined): string | undefined {
+  if (!filePath) return filePath;
+
+  // Normalize Windows backslashes to forward slashes
+  const normalized = filePath.replace(/\\/g, '/');
+
+  const isAbsolute = normalized.startsWith('/') || /^[a-zA-Z]:\//.test(normalized);
+  if (!isAbsolute) return normalized;
+
+  // Convert to relative path from cwd
+  const cwd = process.cwd().replace(/\\/g, '/');
+  if (normalized.startsWith(cwd + '/')) {
+    return normalized.slice(cwd.length + 1);
+  }
+
+  // Fallback: use basename so .env still matches regardless of full path
+  const lastSlash = normalized.lastIndexOf('/');
+  return lastSlash >= 0 ? normalized.slice(lastSlash + 1) : normalized;
+}
+
 export function normalizeClaudeCodeAction(
   payload: ClaudeCodeHookPayload,
   persona?: AgentPersona
@@ -48,7 +74,7 @@ export function normalizeClaudeCodeAction(
     case 'Write':
       baseAction = {
         tool: 'Write',
-        file: input.file_path as string | undefined,
+        file: normalizeFilePath(input.file_path as string | undefined),
         content: input.content as string | undefined,
         agent,
         metadata: { hook: payload.hook, sessionId: payload.session_id },
@@ -58,7 +84,7 @@ export function normalizeClaudeCodeAction(
     case 'Edit':
       baseAction = {
         tool: 'Edit',
-        file: input.file_path as string | undefined,
+        file: normalizeFilePath(input.file_path as string | undefined),
         content: input.new_string as string | undefined,
         agent,
         metadata: {
@@ -72,7 +98,7 @@ export function normalizeClaudeCodeAction(
     case 'Read':
       baseAction = {
         tool: 'Read',
-        file: input.file_path as string | undefined,
+        file: normalizeFilePath(input.file_path as string | undefined),
         agent,
         metadata: { hook: payload.hook, sessionId: payload.session_id },
       };
