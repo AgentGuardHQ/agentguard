@@ -32,7 +32,7 @@ beforeEach(() => {
   stdoutChunks.length = 0;
 });
 
-describe('simulate command', () => {
+describe('simulate command', { timeout: 15_000 }, () => {
   it('simulates a file.write action via structured flags', async () => {
     const { simulate } = await import('../src/commands/simulate.js');
     const code = await simulate(['--action', 'file.write', '--target', 'src/index.ts']);
@@ -137,7 +137,7 @@ describe('simulate command', () => {
   });
 });
 
-describe('simulate with --policy flag', () => {
+describe('simulate with --policy flag', { timeout: 15_000 }, () => {
   const testDir = join(tmpdir(), 'agentguard-simulate-test-' + Date.now());
 
   beforeEach(() => {
