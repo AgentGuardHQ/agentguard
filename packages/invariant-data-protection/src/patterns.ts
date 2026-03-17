@@ -113,8 +113,7 @@ export const ANTHROPIC_KEY_PATTERN = /sk-ant-[a-zA-Z0-9\-]{90,}/;
 export const GOOGLE_API_KEY_PATTERN = /AIza[0-9A-Za-z_-]{35}/;
 
 /** JWT Token (three base64url-encoded segments) */
-export const JWT_TOKEN_PATTERN =
-  /eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/;
+export const JWT_TOKEN_PATTERN = /eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/;
 
 /** All secret patterns with labels and optional context for violation messages */
 export const SECRET_PATTERNS: readonly SecretPatternDef[] = [
@@ -221,8 +220,7 @@ export function classifyCredentialShape(value: string): EntropyMatch | null {
   if (entropy < ENTROPY_THRESHOLD && !prefixMatch) return null;
 
   // Heuristic scoring
-  const hasMixedCase =
-    /[A-Z]/.test(value) && /[a-z]/.test(value);
+  const hasMixedCase = /[A-Z]/.test(value) && /[a-z]/.test(value);
   const hasDigits = /\d/.test(value);
   const hasSpecial = /[_\-/+=.:@!#$%&*]/.test(value);
   const noSpaces = !value.includes(' ');

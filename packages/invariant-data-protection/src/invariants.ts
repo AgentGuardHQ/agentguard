@@ -65,7 +65,7 @@ function detectByEntropy(content: string): string | null {
 }
 
 /**
- * Data protection invariants — 4 invariants for PII, secrets, entropy detection,
+ * Data protection invariants — 3 invariants for PII, secrets (with entropy detection),
  * and batch limits.
  */
 export const DATA_PROTECTION_INVARIANTS: AgentGuardInvariant[] = [
