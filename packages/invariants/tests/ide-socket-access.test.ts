@@ -144,13 +144,13 @@ describe('no-ide-socket-access invariant', () => {
     expect(result.actual).toContain('Cursor');
   });
 
-  // Generic .sock pattern
-  it('denies access to generic .sock files', () => {
+  // Generic .sock files are allowed — only IDE-specific patterns are blocked
+  it('allows access to generic non-IDE .sock files', () => {
     const state: SystemState = {
       currentTarget: '/tmp/some-editor.sock',
     };
     const result = inv.check(state);
-    expect(result.holds).toBe(false);
+    expect(result.holds).toBe(true);
   });
 
   // Case insensitivity
