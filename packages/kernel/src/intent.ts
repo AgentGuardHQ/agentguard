@@ -42,12 +42,16 @@ function matchPattern(pattern: string, filePath: string): boolean {
   const normalizedPath = filePath.replace(/\\/g, '/');
   const normalizedPattern = pattern.replace(/\\/g, '/');
 
-  // Convert glob to regex
+  // Convert glob to regex.
+  // Order: protect glob wildcards first, escape all remaining regex special chars, then
+  // restore wildcards as their regex equivalents. This prevents regex injection from
+  // user-supplied patterns that contain characters like (, ), [, ], +, ?, ^, $, |, \.
   const regexStr = normalizedPattern
-    .replace(/\./g, '\\.')
-    .replace(/\*\*/g, '{{GLOBSTAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\{\{GLOBSTAR\}\}/g, '.*');
+    .replace(/\*\*/g, '\x00GLOBSTAR\x00')
+    .replace(/\*/g, '\x00GLOB\x00')
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\x00GLOBSTAR\x00/g, '.*')
+    .replace(/\x00GLOB\x00/g, '[^/]*');
 
   const regex = new RegExp(`^${regexStr}$`);
   return regex.test(normalizedPath);
