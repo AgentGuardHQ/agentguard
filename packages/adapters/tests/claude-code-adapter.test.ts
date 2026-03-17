@@ -344,7 +344,9 @@ describe('formatHookResponse', () => {
       agent: 'test',
     });
     const response = formatHookResponse(result);
-    expect(response).toContain('DENIED');
-    expect(JSON.parse(response)).toHaveProperty('error');
+    const parsed = JSON.parse(response);
+    expect(parsed).toHaveProperty('hookSpecificOutput');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny');
+    expect(parsed.hookSpecificOutput.permissionDecisionReason).toContain('Destructive command');
   });
 });
