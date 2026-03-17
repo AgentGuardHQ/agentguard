@@ -187,6 +187,6 @@ mod tests {
     fn test_escalation_config_loads() {
         assert_eq!(ESCALATION_CONFIG.defaults.denial_threshold, 5);
         assert_eq!(ESCALATION_CONFIG.defaults.violation_threshold, 3);
-        assert_eq!(ESCALATION_CONFIG.defaults.window_size, 10);
+        assert_eq!(ESCALATION_CONFIG.defaults.window_size, 300000);
     }
 }
