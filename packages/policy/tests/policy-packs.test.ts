@@ -692,7 +692,7 @@ describe('policy packs — extends integration', () => {
       expect(packPath).not.toBeNull();
       const pack = loadPackFile(packPath!);
       expect(pack).not.toBeNull();
-      expect(pack!.id).toContain(name.replace('-', '-'));
+      expect(pack!.id).toContain(name);
     }
   );
 });
