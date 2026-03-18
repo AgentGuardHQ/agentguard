@@ -431,6 +431,27 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard config keys',
     ],
   },
+  'pr-check': {
+    name: 'agentguard pr-check',
+    description: 'Pre-merge policy validation — check PR changes against governance policy',
+    usage: 'agentguard pr-check [flags]',
+    flags: [
+      { flag: '--pr, -n <number>', description: 'PR number (auto-detected if omitted)' },
+      { flag: '--policy, -p <file>', description: 'Policy file (YAML/JSON)' },
+      { flag: '--branch, -b <name>', description: 'Branch name for branch-scoped rules' },
+      { flag: '--json', description: 'Output as JSON' },
+      { flag: '--warn-only', description: 'Report violations without failing (exit 0)' },
+      { flag: '--post-comment', description: 'Post results as a PR comment' },
+    ],
+    examples: [
+      'agentguard pr-check',
+      'agentguard pr-check --pr 42',
+      'agentguard pr-check --pr 42 --policy agentguard.yaml',
+      'agentguard pr-check --warn-only --json',
+      'agentguard pr-check --post-comment',
+      'agentguard pr-check --pr 42 --branch main',
+    ],
+  },
   trust: {
     name: 'agentguard trust',
     description: 'Trust a project-local policy file after risk review',
@@ -814,6 +835,17 @@ async function main() {
       break;
     }
 
+    case 'pr-check': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS['pr-check']));
+        break;
+      }
+      const { prCheck: prCheckCmd } = await import('./commands/pr-check.js');
+      const code = await prCheckCmd(args.slice(1));
+      process.exit(code);
+      break;
+    }
+
     case 'trust': {
       if (wantsHelp) {
         console.log(formatHelp(COMMANDS.trust));
@@ -995,6 +1027,10 @@ function printHelp(): void {
   \x1b[1mCI/CD:\x1b[0m
     agentguard ci-check <session>             Verify governance session in CI
     agentguard ci-check --last                Check most recent run locally
+    agentguard pr-check                       Pre-merge policy check (auto-detect PR)
+    agentguard pr-check --pr <number>         Check a specific PR
+    agentguard pr-check --warn-only           Warn without blocking
+    agentguard pr-check --post-comment        Post results as PR comment
 
 
   \x1b[1mIntegration:\x1b[0m
