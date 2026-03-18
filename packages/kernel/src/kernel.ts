@@ -599,7 +599,6 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                       filesAffected: decision.intent.filesAffected || systemContext.filesAffected,
                       targetBranch:
                         decision.intent.branch || (systemContext.targetBranch as string),
-                      postExecution: true,
                     });
 
                     const postExecCheck = checkAllInvariants(
