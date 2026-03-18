@@ -180,6 +180,28 @@ Control via environment variable: `AGENTGUARD_RTK_ENABLED=true` (default) or `fa
 
 AgentGuard tracks repeated denials and invariant violations. If an agent repeatedly attempts blocked actions, the runtime escalates to lockdown — all actions denied until a human intervenes. See [escalation state machine](docs/unified-architecture.md) for the full detail.
 
+## Performance
+
+Governance overhead is measured per component using [vitest bench](https://vitest.dev/guide/features.html#benchmarking). All numbers below are p99 latencies from the benchmark suite (`pnpm bench`).
+
+| Component | p99 Latency | Description |
+|-----------|-------------|-------------|
+| **Policy evaluation** | < 30µs | Single action against a mixed deny/allow policy |
+| **Invariant check (single)** | < 10µs | One invariant against system state |
+| **Invariant suite (21 checks)** | < 300µs | All 21 built-in invariants, clean state |
+| **Simulation (filesystem)** | < 100µs | File write/delete impact prediction |
+| **Simulation (git)** | < 50µs | Branch delete, push impact prediction |
+| **Full kernel loop** | < 5ms | End-to-end: propose → normalize → evaluate → emit |
+
+**Key takeaway:** The full governance pipeline adds < 5ms of overhead per agent action. Policy evaluation and invariant checking are sub-millisecond. These numbers are enforced by a CI regression gate that fails if any p99 exceeds 50ms.
+
+Run benchmarks locally:
+
+```bash
+pnpm bench                    # Run all benchmarks (77 cases across 4 suites)
+pnpm bench:report             # Generate markdown report from results
+```
+
 ## CLI
 
 Install globally: `npm install -g @red-codes/agentguard`

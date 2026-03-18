@@ -247,7 +247,7 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 - [x] Expand destructive command patterns in `packages/kernel/src/aab.ts` (expanded from 10 to 87 patterns covering sudo, pkill, docker, systemctl, database commands, and more)
 - [ ] Enforce intervention types beyond DENY (implement PAUSE and ROLLBACK behaviors in kernel execution)
 - [x] Governance self-modification invariant — agents must not modify `agentguard.yaml`, `.agentguard/`, or `policies/` (`no-governance-self-modification` invariant, severity 5)
-- [ ] Performance benchmark suite — formal latency measurement (p50/p95/p99) per action type for policy evaluation, invariant checking, and simulation overhead. Publish results as a marketing asset and regression gate in CI
+- [x] Performance benchmark suite — formal latency measurement (p50/p95/p99) per action type for policy evaluation, invariant checking, and simulation overhead. Publish results as a marketing asset and regression gate in CI
 
 ### Phase 6.5 — Invariant Expansion `STABLE`
 
