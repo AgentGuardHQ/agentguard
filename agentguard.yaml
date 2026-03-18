@@ -67,6 +67,17 @@ rules:
     requireFormat: true
     reason: Run pnpm format:fix before committing — all files must pass Prettier
 
+  # Hook self-modification protection — prevent agent from altering its own governance hooks
+  - action: file.write
+    effect: deny
+    target: ".claude/settings.json"
+    reason: Agent must not modify its own hook configuration
+
+  - action: file.write
+    effect: deny
+    target: ".claude/settings.local.json"
+    reason: Agent must not modify its own hook configuration
+
   # ─── Allowed operations ──────────────────────────────────────────────
   # With default-deny enabled, actions without an explicit allow rule are
   # denied. The rules below cover standard development workflows.
