@@ -2,6 +2,14 @@
 
 Generate a weekly content calendar with ready-to-post drafts for LinkedIn, Twitter/X, and blog posts based on recent project activity, releases, and milestones. Publish the content pack as a GitHub issue for human review before posting. Designed for weekly scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="marketing-content"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

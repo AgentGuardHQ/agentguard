@@ -2,6 +2,14 @@
 
 Detect unresolved review comments on agent-authored PRs, make code changes to address the feedback, validate changes against governance policy, and reply to each thread. Keeps agent PRs moving toward merge without requiring human re-implementation. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="respond-to-pr-reviews"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

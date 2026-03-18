@@ -2,6 +2,14 @@
 
 Analyze the full issue backlog, open PRs, ROADMAP phases, governance risk data, and recent activity to produce a prioritized sprint plan. Apply priority labels to unlabeled issues so the Coder Agent picks the right work next. Designed for daily scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="sprint-planning"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

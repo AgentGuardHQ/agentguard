@@ -2,6 +2,14 @@
 
 Run the complete build, type-check, test, lint, format, and coverage verification suite. This is the comprehensive "is everything OK?" check for the AgentGuard codebase.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="full-test"
+```
+
 ## Steps
 
 Run these in sequence. If any step fails, stop and analyze before proceeding.

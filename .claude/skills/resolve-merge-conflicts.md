@@ -2,6 +2,14 @@
 
 Detect open PR branches with merge conflicts against main, rebase them, and auto-resolve trivial conflicts. For complex conflicts, post a diagnostic comment listing the conflicting files and ask the human to intervene. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="resolve-merge-conflicts"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

@@ -4,6 +4,14 @@ Expand ROADMAP items into GitHub issues. Cross-reference against open issues to 
 
 **Scope**: ROADMAP expansion ONLY. Code annotation scanning (TODO/FIXME/HACK) is handled by the Repo Hygiene Agent — do NOT scan annotations here to avoid duplicate issue creation.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="backlog-steward"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

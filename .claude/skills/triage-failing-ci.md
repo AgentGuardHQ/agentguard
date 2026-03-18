@@ -2,6 +2,14 @@
 
 Diagnose failed CI runs on open PR branches, check governance logs for related denials, apply minimal fixes, and push them. Keeps the pipeline unblocked so reviews and merges aren't stalled by lint errors, type mismatches, or broken tests.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="triage-failing-ci"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

@@ -2,6 +2,14 @@
 
 Track roadmap phase completion, validate milestone criteria, detect phase transition readiness, and prevent endless backlog expansion. This agent ensures the swarm converges toward roadmap goals rather than creating unbounded work. Designed for daily scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="progress-controller"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

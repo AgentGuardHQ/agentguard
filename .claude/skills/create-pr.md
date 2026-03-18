@@ -2,6 +2,14 @@
 
 Create a pull request with a governance telemetry summary, risk assessment, and decision records. Pushes the branch, reads governance event data, runs pre-push simulation, generates a structured PR body, and updates the issue status.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="create-pr"
+```
+
 ## Prerequisites
 
 All tests must pass — run `run-tests` first.

@@ -2,6 +2,14 @@
 
 Claim a discovered GitHub issue for the current agent session. Updates labels, creates a working branch, and posts a start comment.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="claim-issue"
+```
+
 ## Prerequisites
 
 Run `discover-next-issue` first to identify the issue number.

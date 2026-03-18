@@ -2,6 +2,14 @@
 
 Analyze the effectiveness of governance policies and invariants. Identify rules that never trigger, detect policy gaps, assess invariant coverage, recommend policy packs, and suggest governance evolution. This is the Governance Agent's unique capability — focused on policy quality, not operational telemetry (which is the Observability Agent's domain). Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="policy-effectiveness-review"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

@@ -2,6 +2,14 @@
 
 Detect unhealthy swarm conditions and execute remediation playbooks to drive the autonomous SDLC back to a healthy state. This is the self-healing layer — the Kubernetes controller-manager equivalent for the agent swarm. Designed for periodic scheduled execution (every 4 hours).
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="recovery-controller"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

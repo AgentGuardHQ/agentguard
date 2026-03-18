@@ -2,6 +2,14 @@
 
 Execute the implementation work described in the claimed GitHub issue. Reads the issue for requirements, respects file scope, validates changes against governance policy via simulation, follows coding conventions, and commits changes.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="implement-issue"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

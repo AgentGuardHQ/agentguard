@@ -2,6 +2,14 @@
 
 Run security audits on project dependencies, check for known vulnerabilities, identify outdated packages, and review Dependabot alerts. Creates a high-priority issue if critical or high-severity vulnerabilities are found. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="dependency-security-audit"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance. Also requires `npm` and `gh` CLI.

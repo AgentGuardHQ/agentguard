@@ -2,6 +2,14 @@
 
 Validate the integrity of the autonomous SDLC infrastructure: skill files, governance hooks, CI workflows, GitHub labels, and build toolchain. Identifies gaps and creates issues for infrastructure problems. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="sdlc-pipeline-health"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

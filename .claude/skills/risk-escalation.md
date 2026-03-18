@@ -2,6 +2,14 @@
 
 Assess cumulative swarm risk across multiple dimensions, gate dangerous operations, and escalate to human notification when autonomy should be reduced. This agent is the circuit breaker — it decides when the swarm should slow down or stop. Designed for periodic scheduled execution (every 4 hours).
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="risk-escalation"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

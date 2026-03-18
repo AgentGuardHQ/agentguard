@@ -2,6 +2,14 @@
 
 Review open PRs for architectural concerns: module boundary violations, dependency direction, cross-layer coupling, and consistency with the unified architecture. Complements the `review-open-prs` skill with deeper structural analysis. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="architecture-review"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

@@ -2,6 +2,14 @@
 
 Analyze runtime telemetry, governance event patterns, decision records, risk score trends, CI pipeline trends, and build metrics to surface operational health signals. Detect anomalies, regressions, and trends that other agents cannot see. Publish an Observability Report. Designed for daily scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="observability-review"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.
