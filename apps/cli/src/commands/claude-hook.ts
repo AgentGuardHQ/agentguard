@@ -127,12 +127,13 @@ async function handlePreToolUse(
     }
   }
 
-  // Load policy (fail-open: empty policy if none found)
+  // Load policy — when policies are loaded, default-deny applies (fail-closed).
+  // When no policy file is found, default-deny is disabled (fail-open).
   let policyDefs: unknown[] = [];
   try {
     policyDefs = loadPolicyDefs(undefined, targetPath);
   } catch (policyErr) {
-    // Policy loading failure is non-fatal — continue with no policy (allow all)
+    // Policy loading failure is non-fatal — continue with no policy (fail-open)
     process.stderr.write(
       `agentguard: warning — no policy loaded (${policyErr instanceof Error ? policyErr.message : 'unknown error'}). All actions will be allowed.\n`
     );
@@ -158,11 +159,14 @@ async function handlePreToolUse(
   // Build kernel — dryRun: true = evaluate policies/invariants only (no adapter execution).
   // Claude Code handles actual tool execution; the hook only governs (allow/deny).
   // Events and decision records are still emitted and persisted to the configured storage backend.
+  //
+  // Default-deny: when policies are loaded, unknown actions are denied (fail-closed).
+  // When no policies exist, fail-open to avoid blocking users who haven't configured governance.
   const kernel = createKernel({
     runId,
     policyDefs,
     dryRun: true,
-    evaluateOptions: { defaultDeny: false },
+    evaluateOptions: { defaultDeny: policyDefs.length > 0 },
     sinks: eventSink ? [eventSink] : [],
     decisionSinks: [decisionSink].filter(Boolean) as import('@red-codes/core').DecisionSink[],
   });
