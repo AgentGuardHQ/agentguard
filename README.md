@@ -450,7 +450,6 @@ packages/
 ├── invariant-data-protection/src/ # @red-codes/invariant-data-protection — Data protection invariant plugin
 ├── kernel/src/             # @red-codes/kernel — Governed action kernel (orchestrator, AAB, decisions, simulation)
 ├── adapters/src/           # @red-codes/adapters — Execution adapters (file, shell, git, claude-code)
-├── analytics/src/          # @red-codes/analytics — Cross-session violation analytics
 ├── storage/src/            # @red-codes/storage — SQLite storage backend (opt-in)
 ├── telemetry/src/          # @red-codes/telemetry — Runtime telemetry and logging
 ├── plugins/src/            # @red-codes/plugins — Plugin ecosystem (discovery, registry, sandboxing)
@@ -468,7 +467,6 @@ apps/
 │   ├── extension.ts        # Sidebar panels, file watcher, notifications
 │   ├── providers/          # Tree data providers (run status, run history, recent events)
 │   └── services/           # Event reader, notification formatter, diagnostics, violation mapper
-└── telemetry-server/src/   # @red-codes/telemetry-server — Telemetry ingestion server (enrollment, batch ingest, rate limiting)
 
 crates/
 └── kernel-core/            # Rust kernel (in development)

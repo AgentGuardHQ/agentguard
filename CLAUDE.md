@@ -17,7 +17,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 - Each package compiles independently via `tsc`; CLI bundle via `esbuild` in `apps/cli`
 - Scoped npm packages: `@red-codes/*` for workspace modules, `@red-codes/agentguard` for published CLI
 - CLI has runtime dependencies (`chokidar`, `commander`, `pino`); optional `better-sqlite3` for SQLite storage backend
-- Analytics, telemetry, and Firestore packages have been removed from this repo (out of scope for the OSS kernel)
+- Firestore package has been removed from this repo (out of scope for the OSS kernel)
 - Build tooling: Turbo + tsc + esbuild + vitest (dev dependencies only)
 
 ## Quick Start
@@ -144,7 +144,7 @@ apps/
 │   ├── session-store.ts        # Session management
 │   ├── file-event-store.ts     # File-based event persistence
 │   ├── evidence-summary.ts     # Evidence summary generator for PR reports
-│   └── commands/               # guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, policy-verify, claude-hook, claude-init, init, diff, evidence-pr, traces, session-viewer, status, analytics, auto-setup, config, audit-verify, demo, adoption, learn, migrate, trust
+│   └── commands/               # guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, policy-verify, claude-hook, claude-init, copilot-hook, copilot-init, cloud, init, diff, evidence-pr, traces, session-viewer, status, analytics, auto-setup, config, audit-verify, demo, adoption, learn, migrate, trust
 ├── mcp-server/src/             # @red-codes/mcp-server — MCP governance server
 │   ├── index.ts                # Entry point
 │   ├── server.ts               # MCP server implementation
@@ -158,7 +158,7 @@ apps/
 
 tests/
 └── *.test.js               # 14 JS test files (custom zero-dependency harness)
-# 132 TS test files (vitest) distributed across packages/ and apps/ directories
+# 138 TS test files (vitest) distributed across packages/ and apps/ directories
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
 docs/                       # System documentation (architecture, event model, specs)
@@ -259,6 +259,9 @@ Each workspace package maps to a single architectural concept:
 - `agentguard learn` — Interactive tutorials and learning paths
 - `agentguard migrate` — Migrate configuration between versions
 - `agentguard trust` — Manage policy and hook trust verification
+- `agentguard cloud connect|status|events|runs|summary|disconnect` — Cloud governance analytics
+- `agentguard copilot-hook` — Handle GitHub Copilot PreToolUse/PostToolUse hook events
+- `agentguard copilot-init` — Set up GitHub Copilot hook integration
 
 ### Event Model
 The canonical event model is the architectural spine. Event kinds defined in `packages/events/src/schema.ts`:
@@ -276,6 +279,7 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **Integrity & Trust**: `HookIntegrityVerified`, `HookIntegrityFailed`, `PolicyTrustVerified`, `PolicyTrustDenied`
 - **Adoption Analytics**: `AdoptionAnalyzed`, `AdoptionAnalysisFailed`
 - **Denial Learning**: `DenialPatternDetected`
+- **Intent Drift**: `IntentDriftDetected`
 - **Environmental Enforcement**: `IdeSocketAccessBlocked`
 
 ### Action Classes & Types
@@ -330,7 +334,7 @@ pnpm test --filter=@red-codes/kernel  # Test a single package
 **Test structure:**
 - **Vitest workspace** (`vitest.workspace.ts`): orchestrates tests across all packages
 - **JS tests** (`tests/*.test.js`): 14 files using a custom zero-dependency harness (`tests/run.js` with `node:assert`)
-- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): 132 files using vitest
+- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): 138 files using vitest
 - **Coverage areas**: adapters, kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline, conformance), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate, policy-verify, diff, evidence-pr, traces, plugin, auto-setup, config), decision records, domain models, events, evidence packs, evidence summary, execution log, export-import roundtrip, impact forecast, invariants, notification formatter, plugins (discovery, registry, sandbox, validation), policy evaluation (including composer, pack loader, policy packs, evaluation trace, forecast conditions), renderers, replay (engine, comparator, processor), simulation, SQLite storage (migrations, session, sink, store, factory), swarm (scaffolder), TUI renderer, violation mapper, VS Code event reader, YAML loading
 
 ## CI/CD & Automation
