@@ -2,6 +2,14 @@
 
 Ensure the AgentGuard kernel is active and intercepting all tool calls before any development work begins. This skill MUST be invoked as the first step in any autonomous workflow.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="start-governance-runtime"
+```
+
 ## Steps
 
 ### 0. Build the CLI

@@ -2,6 +2,14 @@
 
 Ensure the local `main` branch is up-to-date with the remote before starting any work. This prevents agents from operating on stale code when the scheduler creates a worktree from `main`.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="sync-main"
+```
+
 ## Steps
 
 ### 1. Fetch and Merge Remote Main

@@ -2,6 +2,14 @@
 
 Analyze patterns in failed PRs, CI regressions, review feedback, merge conflicts, and rollbacks to extract actionable heuristics. Publish a retrospective report with lessons learned and recommendations for improving swarm effectiveness. Designed for weekly scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="retrospective"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

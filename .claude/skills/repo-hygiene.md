@@ -2,6 +2,14 @@
 
 Run nightly repository hygiene: detect stale issues, identify already-solved issues, surface undiscovered work from code annotations, and suggest backlog improvements. Creates or updates a hygiene report issue. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="repo-hygiene"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance. Requires `gh` CLI authenticated.

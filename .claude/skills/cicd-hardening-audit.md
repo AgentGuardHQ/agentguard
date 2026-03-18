@@ -2,6 +2,14 @@
 
 Audit CI/CD pipeline configuration for security hardening, best practices, and governance integration. Verify that all workflows enforce required checks, use pinned action versions, have proper permissions, and integrate with AgentGuard governance. Designed for weekly scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="cicd-hardening-audit"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

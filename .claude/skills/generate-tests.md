@@ -2,6 +2,14 @@
 
 Analyze untested source modules, generate test files following existing vitest patterns, and create a PR. Transforms the Test Agent from observer to actor. Designed for periodic scheduled execution after `test-health-review` identifies coverage gaps.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="generate-tests"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

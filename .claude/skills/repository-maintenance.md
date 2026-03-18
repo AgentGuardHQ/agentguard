@@ -2,6 +2,14 @@
 
 Consolidated housekeeping skill that scans for code annotations, detects stale/solved issues, manages abandoned PRs and branches, and cross-references findings against existing issues and the ROADMAP. Uses governance analytics to prioritize findings by risk. Replaces the overlapping concerns of `backlog-steward`, `repo-hygiene`, and `stale-branch-janitor` in a single scheduled pass. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="repository-maintenance"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

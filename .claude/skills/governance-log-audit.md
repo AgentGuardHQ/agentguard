@@ -2,6 +2,14 @@
 
 Analyze governance event logs for cross-session trends, escalation trajectory, risk score progression, and per-agent governance compliance. Uses the AgentGuard analytics engine for aggregation and decision records for rich outcome analysis. Focuses on historical pattern analysis and compliance reporting — leave real-time anomaly detection to the Observability Agent, and policy quality analysis to `policy-effectiveness-review`. Creates an issue if actionable findings exist. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="governance-log-audit"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

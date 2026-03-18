@@ -2,6 +2,14 @@
 
 Publish a release after human approval. Creates a GitHub Release (which triggers the `publish.yml` workflow for npm publication), posts release notes, and closes the tracking issue. Only run after `release-prepare` and human approval.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="release-publish"
+```
+
 ## Prerequisites
 
 - Run `start-governance-runtime` first. All release operations must be governed.

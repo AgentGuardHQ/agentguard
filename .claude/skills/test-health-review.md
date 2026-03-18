@@ -2,6 +2,14 @@
 
 Evaluate the health, coverage, and reliability of the test suite. Run both test tracks (JS + TypeScript), analyze coverage, detect regressions, identify untested code, and assess test quality. Publish a Test Health Report. Designed for daily scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="test-health-review"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

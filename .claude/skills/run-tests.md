@@ -2,6 +2,14 @@
 
 Run the complete build, test, and verification suite. Every step must pass before creating a pull request.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="run-tests"
+```
+
 ## Prerequisites
 
 Run `implement-issue` first. Changes must be committed.

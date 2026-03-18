@@ -2,6 +2,14 @@
 
 Prepare a new release: validate the codebase, assess governance readiness, generate a changelog from merged PRs, bump the version, and create a release-candidate issue for human approval. Designed for manual invocation when the maintainer decides to release.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="release-prepare"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All release operations must be governed.

@@ -2,6 +2,14 @@
 
 Evaluate whether the autonomous SDLC is building the right things. Audit roadmap alignment, phase progress, issue quality, value drift, and feature completeness. Publish a Product Health Report. Designed for daily scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="product-health-review"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

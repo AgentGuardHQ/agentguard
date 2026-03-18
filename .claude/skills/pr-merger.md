@@ -2,6 +2,14 @@
 
 Auto-merge pull requests that have passed all quality gates: CI passing, no merge conflicts, reviews approved or no changes requested, and all threads resolved. Designed for periodic scheduled execution as the final step in the autonomous SDLC pipeline.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="pr-merger"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

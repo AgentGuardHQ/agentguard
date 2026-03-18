@@ -2,6 +2,14 @@
 
 Perform static security analysis on the AgentGuard source code: scan for hardcoded secrets, unsafe patterns, path traversal risks, and input validation gaps. Complements `dependency-security-audit` which focuses on dependencies. Creates an issue if vulnerabilities are found. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="security-code-scan"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance.

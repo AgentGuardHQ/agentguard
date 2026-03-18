@@ -2,6 +2,14 @@
 
 Parse the project `roadmap.md` file and expand active milestones into GitHub issues with labels, dependencies, and enforced issue format. Deduplicates against existing open issues. Designed for manual invocation when the maintainer updates the roadmap.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="roadmap-expand"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance. Requires `gh` CLI authenticated.

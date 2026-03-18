@@ -2,6 +2,14 @@
 
 Find the next GitHub issue to work on from the project's issue queue. Issues are selected by the `status:pending` label, sorted by priority, and assessed for governance risk level. Escalation context is checked to avoid high-risk work during elevated governance states.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="discover-next-issue"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

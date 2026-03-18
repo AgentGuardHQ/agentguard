@@ -2,6 +2,14 @@
 
 Scan for stale remote branches and abandoned PRs (no activity in 7+ days). Warn newly stale PRs with a comment and label, auto-close previously warned PRs that remain inactive. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="stale-branch-janitor"
+```
+
 ## Prerequisites
 
 Run `start-governance-runtime` first. All scheduled skills must operate under governance. Requires `gh` CLI authenticated with repo access.

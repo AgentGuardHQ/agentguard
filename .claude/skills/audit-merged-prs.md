@@ -2,6 +2,14 @@
 
 Audit pull requests merged in the last 7 days for risks that may have been overlooked — unresolved review comments, dismissed change requests, bypassed CI, or governance violations. Creates a consolidated risk report as a GitHub issue. Designed for weekly scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="audit-merged-prs"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.

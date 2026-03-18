@@ -2,6 +2,14 @@
 
 Detect documentation drift between the codebase and project documentation files. If drift is found, create a branch with fixes and open a pull request. Designed for periodic scheduled execution.
 
+## Agent Identity
+
+Set agent name for cloud telemetry:
+
+```bash
+export AGENTGUARD_AGENT_NAME="scheduled-docs-sync"
+```
+
 ## Autonomy Directive
 
 This skill runs as an **unattended scheduled task**. No human is present to answer questions.
