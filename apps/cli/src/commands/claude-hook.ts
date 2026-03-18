@@ -8,7 +8,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { execSync, spawn } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +26,9 @@ interface SessionState extends Record<string, unknown> {
 }
 
 function sessionStatePath(sessionId: string): string {
-  return join(tmpdir(), `agentguard-session-${sessionId}.state.json`);
+  // Use a dedicated subdirectory rather than flat tmpdir to reduce path
+  // predictability on shared systems (e.g. multi-user CI machines).
+  return join(tmpdir(), 'agentguard', `session-${sessionId}.json`);
 }
 
 function readSessionState(sessionId: string | undefined): SessionState {
@@ -41,6 +43,7 @@ function readSessionState(sessionId: string | undefined): SessionState {
 function writeSessionState(sessionId: string | undefined, patch: Partial<SessionState>): void {
   const key = sessionId || String(process.ppid) || 'default';
   try {
+    mkdirSync(join(tmpdir(), 'agentguard'), { recursive: true });
     const current = readSessionState(key);
     writeFileSync(sessionStatePath(key), JSON.stringify({ ...current, ...patch }));
   } catch {

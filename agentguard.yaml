@@ -143,5 +143,20 @@ rules:
     effect: allow
     reason: HTTP requests allowed by default
 
+# ─── Actions intentionally omitted (denied by default-deny) ────────────────
+# The following action types have no explicit allow rule and are therefore
+# denied when this policy is loaded (default-deny is active whenever at least
+# one policy file is present):
+#
+#   npm.publish         — package publication requires explicit release workflow
+#   git.branch.delete   — branch deletion is a destructive, shared-history action
+#   git.reset           — history rewrite must be an intentional human action
+#   git.force-push      — denied explicitly above; listed here for completeness
+#   infra.apply         — infrastructure changes require explicit authorization
+#   deploy.trigger      — denied explicitly above; listed here for completeness
+#
+# To allow any of these, add an explicit `effect: allow` rule above.
+# ──────────────────────────────────────────────────────────────────────────
+
 telemetry:
   enabled: true
