@@ -137,7 +137,9 @@ function cloudStatus(): number {
 
   if (!config.cloud) {
     process.stderr.write(`  ${DIM}Status:${RESET}    ${FG.yellow}not connected${RESET}\n`);
-    process.stderr.write(`\n  ${DIM}Run "agentguard cloud connect <api-key>" to connect.${RESET}\n`);
+    process.stderr.write(
+      `\n  ${DIM}Run "agentguard cloud connect <api-key>" to connect.${RESET}\n`
+    );
     process.stderr.write('\n');
     return 0;
   }
