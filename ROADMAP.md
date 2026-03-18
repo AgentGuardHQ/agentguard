@@ -60,7 +60,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Action Authorization Boundary (AAB) | Implemented (2 bypass vectors) | `packages/kernel/src/aab.ts` |
 | Policy Evaluator (two-phase deny/allow) | Implemented | `packages/policy/src/evaluator.ts` |
 | 21 Built-in Invariants | Fully Implemented | `packages/invariants/src/definitions.ts`, `packages/invariants/src/checker.ts` |
-| Event Model (45 event kinds) | Comprehensive | `packages/events/src/schema.ts` |
+| Event Model (46 event kinds) | Comprehensive | `packages/events/src/schema.ts` |
 | SQLite Persistence | Implemented | `packages/storage/src/sqlite-store.ts` |
 | Simulation Engine (3 simulators + impact forecast) | Fully Implemented | `packages/kernel/src/simulation/` |
 | Blast Radius Computation | Implemented | `packages/kernel/src/blast-radius.ts` |
@@ -104,7 +104,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 | AAB Reference Monitor | Implemented | 1 bypass vector to close (missing-adapter fixed) |
 | Policy Evaluator | Implemented | Production |
 | 21 Built-in Invariants | Fully Implemented | Production |
-| Event Model (45 kinds) | Comprehensive | Production |
+| Event Model (46 kinds) | Comprehensive | Production |
 | Simulation & Forecasting | Fully Implemented | Production |
 | Escalation State Machine | Implemented | Functional (events persisted as StateChanged) |
 | Plugin Sandbox | Implemented | Application-level only |

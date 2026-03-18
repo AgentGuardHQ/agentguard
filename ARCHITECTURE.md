@@ -50,7 +50,6 @@ packages/
 ├── invariant-data-protection/ @red-codes/invariant-data-protection — Data protection invariant plugin
 ├── kernel/        @red-codes/kernel — Governed action kernel (orchestrate, normalize, decide, escalate)
 ├── adapters/      @red-codes/adapters — Execution adapters (file, shell, git, claude-code, copilot-cli)
-├── analytics/     @red-codes/analytics — Cross-session violation analytics
 ├── storage/       @red-codes/storage — SQLite storage backend (opt-in)
 ├── telemetry/     @red-codes/telemetry — Runtime telemetry and logging
 ├── plugins/       @red-codes/plugins — Plugin ecosystem (discovery, registry, validation, sandboxing)
@@ -61,8 +60,7 @@ packages/
 apps/
 ├── cli/           @red-codes/agentguard — CLI entry point and commands (published npm package)
 ├── mcp-server/    @red-codes/mcp-server — MCP governance server (14 governance tools)
-├── vscode-extension/  agentguard-vscode — VS Code extension (sidebar panels, notifications, diagnostics)
-└── telemetry-server/  @red-codes/telemetry-server — Telemetry ingestion server (enrollment, batch ingest)
+└── vscode-extension/  agentguard-vscode — VS Code extension (sidebar panels, notifications, diagnostics)
 
 policies/          Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
 ```
@@ -78,8 +76,7 @@ Package boundaries enforce these dependency rules via `package.json` workspace d
 - **@red-codes/adapters** may import from core, kernel only
 - **@red-codes/plugins** may import from core only
 - **@red-codes/renderers** may import from core, kernel, plugins only
-- **@red-codes/analytics** may import from core only
-- **@red-codes/storage** may import from core, events, kernel, analytics, telemetry only
+- **@red-codes/storage** may import from core, events, kernel, telemetry only
 - **@red-codes/agentguard** (cli) may import from all workspace packages
 - **@red-codes/telemetry** may import from core only
 - **@red-codes/core** has no project imports (leaf layer)
