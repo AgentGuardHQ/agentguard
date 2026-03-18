@@ -622,40 +622,120 @@ Key references:
 ```
 agent-guard/
   packages/
-    core/src/               # @red-codes/core — Shared utilities
-      actions.ts            # 23 canonical action types across 8 classes
-      types.ts              # Shared TypeScript type definitions
-    events/src/             # @red-codes/events — Canonical event model
-      schema.ts             # 49 event kinds, factory, validation
-      bus.ts                # Typed EventBus
-      store.ts              # In-memory event store
-      jsonl.ts              # JSONL event persistence
-    policy/src/             # @red-codes/policy — Policy system
-      evaluator.ts          # Rule matching engine
-      loader.ts             # Policy validation + loading
-      composer.ts           # Policy composition (multi-file merging)
-    invariants/src/         # @red-codes/invariants — Invariant system
-      definitions.ts        # 20 built-in invariant definitions
-      checker.ts            # Invariant evaluation engine
-    kernel/src/             # @red-codes/kernel — Governed action kernel
-      kernel.ts             # Orchestrator (propose → evaluate → execute → emit)
-      aab.ts                # Action Authorization Boundary (normalization)
-      decision.ts           # Runtime assurance engine (RTA)
-      monitor.ts            # Escalation state machine
-      evidence.ts           # Evidence pack generation
-      blast-radius.ts       # Weighted blast radius computation
-      simulation/           # Pre-execution impact simulation
-    adapters/src/           # @red-codes/adapters — Execution adapters (file, shell, git)
-    storage/src/            # @red-codes/storage — SQLite backend (opt-in)
-    plugins/src/            # @red-codes/plugins — Plugin ecosystem
-    renderers/src/          # @red-codes/renderers — Renderer plugin system
-    swarm/src/              # @red-codes/swarm — Agent swarm templates
+    core/src/                       # @red-codes/core — Shared utilities
+      actions.ts                    # 23 canonical action types across 8 classes
+      types.ts                      # Shared TypeScript type definitions
+      governance-data.ts            # Governance data loader (typed access to shared JSON data)
+      data/                         # JSON governance data (actions, blast-radius, patterns)
+      hash.ts                       # Content hashing utilities
+      rtk.ts                        # RTK token optimization integration
+      adapters.ts                   # Adapter registry interface
+      rng.ts                        # Seeded random number generator
+      trust-store.ts                # Trust store for policy and hook verification
+      persona.ts                    # Agent persona definitions
+      execution-log/                # Execution audit log (bridge, event-log, projections, schema)
+    events/src/                     # @red-codes/events — Canonical event model
+      schema.ts                     # 46 event kinds, factory, validation
+      bus.ts                        # Typed EventBus
+      store.ts                      # In-memory event store
+      session-context.ts            # Session context tracking
+    policy/src/                     # @red-codes/policy — Policy system
+      evaluator.ts                  # Rule matching engine
+      loader.ts                     # Policy validation + loading
+      composer.ts                   # Policy composition (multi-file merging)
+      pack-loader.ts                # Policy pack loader (community policy sets)
+      yaml-loader.ts                # YAML policy parser
+      policy-trust.ts               # Policy trust verification
+    invariants/src/                 # @red-codes/invariants — Invariant system
+      definitions.ts                # 21 built-in invariant definitions
+      checker.ts                    # Invariant evaluation engine
+    kernel/src/                     # @red-codes/kernel — Governed action kernel
+      kernel.ts                     # Orchestrator (propose → evaluate → execute → emit)
+      aab.ts                        # Action Authorization Boundary (normalization)
+      decision.ts                   # Runtime assurance engine (RTA)
+      monitor.ts                    # Escalation state machine
+      evidence.ts                   # Evidence pack generation
+      blast-radius.ts               # Weighted blast radius computation
+      contract.ts                   # Kernel contract definitions
+      heartbeat.ts                  # Agent heartbeat monitor
+      intent.ts                     # Intent tracking
+      enforcement-audit.ts          # Enforcement audit trail
+      replay-comparator.ts          # Replay outcome comparison
+      replay-engine.ts              # Deterministic replay engine
+      replay-processor.ts           # Replay event processor
+      decisions/                    # Typed decision records (factory, types)
+      simulation/                   # Pre-execution impact simulation
+        filesystem-simulator.ts     # File system impact simulation
+        git-simulator.ts            # Git operation simulation
+        package-simulator.ts        # Package change simulation
+        plan-simulator.ts           # Plan simulation
+        dependency-graph-simulator.ts # Dependency graph simulation
+        forecast.ts                 # Impact forecast builder
+        registry.ts                 # Simulator registry
+    adapters/src/                   # @red-codes/adapters — Execution adapters
+      registry.ts                   # Adapter registry (action class → handler)
+      file.ts                       # File action handler
+      shell.ts                      # Shell action handler
+      git.ts                        # Git action handler
+      claude-code.ts                # Claude Code hook adapter
+      copilot-cli.ts                # Copilot CLI adapter
+      hook-integrity.ts             # Hook integrity verification
+    storage/src/                    # @red-codes/storage — SQLite backend (opt-in)
+      sqlite-store.ts               # SQLite event store implementation
+      sqlite-sink.ts                # SQLite event/decision sink
+      sqlite-session.ts             # SQLite session lifecycle
+      migrations.ts                 # Schema migrations (version-based)
+      adoption-analytics.ts         # Adoption analytics engine
+      denial-learner.ts             # Denial pattern learning
+      factory.ts                    # Storage bundle factory
+    plugins/src/                    # @red-codes/plugins — Plugin ecosystem
+      discovery.ts                  # Plugin discovery mechanism
+      registry.ts                   # Plugin registry
+      sandbox.ts                    # Plugin sandboxing
+      simulator-loader.ts           # Simulator plugin loader
+      validator.ts                  # Plugin validation
+    renderers/src/                  # @red-codes/renderers — Renderer plugin system
+      registry.ts                   # Renderer registry
+      tui-renderer.ts               # TUI renderer implementation
+      tui-formatters.ts             # TUI formatting helpers
+    swarm/src/                      # @red-codes/swarm — Agent swarm templates
+      config.ts                     # Swarm configuration
+      manifest.ts                   # Swarm manifest parsing
+      scaffolder.ts                 # Swarm scaffolding
+    telemetry/src/                  # @red-codes/telemetry — Runtime telemetry and logging
+      cloud-sink.ts                 # Cloud telemetry sink
+      event-mapper.ts               # Event mapping
+      agent-event-queue.ts          # Agent event queue
+      agent-event-sender.ts         # Agent event sender
+      tracer.ts                     # Distributed tracing
+    telemetry-client/src/           # @red-codes/telemetry-client — Telemetry client
+      client.ts                     # Telemetry client
+      identity.ts                   # Identity management
+      signing.ts                    # Payload signing
+      queue.ts                      # Queue abstraction
+      sender.ts                     # Telemetry sender
+    invariant-data-protection/src/  # @red-codes/invariant-data-protection — Data protection plugin
+      invariants.ts                 # Data protection invariant definitions
+      patterns.ts                   # Data protection patterns
   apps/
-    cli/src/                # @red-codes/agentguard — CLI (published npm package)
-    mcp-server/src/         # @red-codes/agentguard-mcp — MCP governance server
-    vscode-extension/src/   # agentguard-vscode — VS Code extension
-  policy/                   # Policy configuration (JSON)
-  policies/                 # Policy packs (YAML)
-  paper/                    # This research artifact
-  examples/                 # Example governance scenarios
+    cli/src/                        # @red-codes/agentguard — CLI (published npm package)
+      bin.ts                        # CLI entry point
+      tui.ts                        # TUI renderer (terminal action stream)
+      commands/                     # 30+ CLI commands (guard, inspect, replay, simulate, ...)
+    mcp-server/src/                 # @red-codes/mcp-server — MCP governance server
+      server.ts                     # MCP server implementation
+      tools/                        # Governance MCP tools (governance, policy, monitoring, analytics)
+      backends/                     # Storage backends (local, remote)
+    vscode-extension/src/           # agentguard-vscode — VS Code extension
+      extension.ts                  # Extension entry point
+      providers/                    # Tree data providers (run status, history, events)
+      services/                     # Event reader, notifications, diagnostics, violation mapper
+  tests/                            # JS test files (custom zero-dependency harness)
+  policy/                           # Policy configuration (JSON)
+  policies/                         # Policy packs (YAML: ci-safe, enterprise, hipaa, soc2, ...)
+  templates/                        # Policy templates (ci-only, development, permissive, strict)
+  paper/                            # This research artifact
+  examples/                         # Example governance scenarios
+  docs/                             # System documentation (architecture, event model, specs)
+  scripts/                          # Build and utility scripts
 ```
