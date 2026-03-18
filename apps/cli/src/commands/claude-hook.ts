@@ -8,48 +8,14 @@
 
 import { randomUUID } from 'node:crypto';
 import { execSync, spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import type { ClaudeCodeHookPayload } from '@red-codes/adapters';
 import { resolveMainRepoRoot } from '@red-codes/core';
+import { computeDefaultDeny } from '../hook-utils.js';
+import { readSessionState, writeSessionState } from '../session-state.js';
 
-// --- Session state: persist formatPass/testsPass across hook invocations ----
-// Each Claude Code session is stateless per hook call. We bridge this by writing
-// a small JSON file keyed by session_id so format/test results from one call are
-// visible to subsequent PreToolUse governance checks in the same session.
-
-interface SessionState extends Record<string, unknown> {
-  formatPass?: boolean;
-  testsPass?: boolean;
-}
-
-function sessionStatePath(sessionId: string): string {
-  // Use a dedicated subdirectory rather than flat tmpdir to reduce path
-  // predictability on shared systems (e.g. multi-user CI machines).
-  return join(tmpdir(), 'agentguard', `session-${sessionId}.json`);
-}
-
-function readSessionState(sessionId: string | undefined): SessionState {
-  const key = sessionId || String(process.ppid) || 'default';
-  try {
-    return JSON.parse(readFileSync(sessionStatePath(key), 'utf8')) as SessionState;
-  } catch {
-    return {};
-  }
-}
-
-function writeSessionState(sessionId: string | undefined, patch: Partial<SessionState>): void {
-  const key = sessionId || String(process.ppid) || 'default';
-  try {
-    mkdirSync(join(tmpdir(), 'agentguard'), { recursive: true });
-    const current = readSessionState(key);
-    writeFileSync(sessionStatePath(key), JSON.stringify({ ...current, ...patch }));
-  } catch {
-    // Non-fatal — state tracking is best-effort
-  }
-}
 
 /** Resolve the CLI command — use local bin.js if in the agentguard dev repo, else bare `agentguard`. */
 function resolveCliCommand(): string {
@@ -203,7 +169,7 @@ async function handlePreToolUse(
     runId,
     policyDefs,
     dryRun: true,
-    evaluateOptions: { defaultDeny: policyDefs.length > 0 },
+    evaluateOptions: { defaultDeny: computeDefaultDeny(policyDefs) },
     sinks: eventSink ? [eventSink] : [],
     decisionSinks: [decisionSink].filter(Boolean) as import('@red-codes/core').DecisionSink[],
   });

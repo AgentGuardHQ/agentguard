@@ -7,6 +7,8 @@
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import type { CopilotCliHookPayload } from '@red-codes/adapters';
+import { computeDefaultDeny } from '../hook-utils.js';
+import { readSessionState } from '../session-state.js';
 
 export async function copilotHook(hookType?: string, extraArgs: string[] = []): Promise<void> {
   try {
@@ -100,7 +102,7 @@ async function handlePreToolUse(
     runId,
     policyDefs,
     dryRun: true,
-    evaluateOptions: { defaultDeny: policyDefs.length > 0 },
+    evaluateOptions: { defaultDeny: computeDefaultDeny(policyDefs) },
     sinks: eventSink ? [eventSink] : [],
     decisionSinks: [decisionSink].filter(Boolean) as import('@red-codes/core').DecisionSink[],
   });
@@ -118,7 +120,8 @@ async function handlePreToolUse(
   const envPersona = readPersonaFromEnv();
   const resolvedPersona = envPersona ? resolvePersona(undefined, envPersona) : undefined;
 
-  const result = await processCopilotCliHook(kernel, payload, {}, resolvedPersona);
+  const sessionState = readSessionState(payload.sessionId);
+  const result = await processCopilotCliHook(kernel, payload, sessionState, resolvedPersona);
   kernel.shutdown();
 
   // Close storage (important for SQLite to flush WAL)
