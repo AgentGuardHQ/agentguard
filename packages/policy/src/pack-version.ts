@@ -99,7 +99,7 @@ export function satisfiesRange(version: string, range: string): boolean {
  */
 export function checkCompatibility(
   packAgentguardVersion: string,
-  currentVersion: string,
+  currentVersion: string
 ): CompatibilityResult {
   const current = parseSemver(currentVersion);
   if (!current) {

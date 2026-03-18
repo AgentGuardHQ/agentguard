@@ -130,7 +130,7 @@ export function loadPackFile(filePath: string): LoadedPolicy | null {
 export function resolveExtends(
   extends_: string[],
   baseDir: string,
-  options?: PackLoadOptions,
+  options?: PackLoadOptions
 ): PackResolutionResult {
   const policies: LoadedPolicy[] = [];
   const errors: string[] = [];
@@ -164,27 +164,22 @@ export function resolveExtends(
         if (!satisfiesRange(pack.version, versionConstraint)) {
           warnings.push(
             `Pack "${pack.id}" version ${pack.version} does not satisfy ` +
-              `pinned constraint ${versionConstraint} (from "${rawRef}")`,
+              `pinned constraint ${versionConstraint} (from "${rawRef}")`
           );
         }
       } else {
         warnings.push(
           `Pack "${pack.id}" has no version field but version pin ` +
-            `${versionConstraint} was requested (from "${rawRef}")`,
+            `${versionConstraint} was requested (from "${rawRef}")`
         );
       }
     }
 
     // Check AgentGuard version compatibility
     if (pack.agentguardVersion && options?.currentAgentguardVersion) {
-      const compat = checkCompatibility(
-        pack.agentguardVersion,
-        options.currentAgentguardVersion,
-      );
+      const compat = checkCompatibility(pack.agentguardVersion, options.currentAgentguardVersion);
       if (!compat.compatible) {
-        errors.push(
-          `Pack "${pack.id}" is incompatible: ${compat.reason}`,
-        );
+        errors.push(`Pack "${pack.id}" is incompatible: ${compat.reason}`);
         continue;
       }
     }
@@ -210,7 +205,7 @@ export function resolveExtends(
  */
 export function mergePolicies(
   localPolicy: LoadedPolicy,
-  packPolicies: LoadedPolicy[],
+  packPolicies: LoadedPolicy[]
 ): LoadedPolicy[] {
   // Pack policies come first (lower precedence in evaluation order)
   // Local policy comes last (highest precedence)
