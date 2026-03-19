@@ -312,11 +312,15 @@ function matchConditions(
     }
   }
 
-  if (conditions.branches && intent.branch) {
-    branchMatched = conditions.branches.includes(intent.branch);
-    if (branchMatched) {
-      return { matched: true, scopeMatched, limitExceeded, branchMatched };
+  if (conditions.branches) {
+    if (intent.branch) {
+      branchMatched = conditions.branches.includes(intent.branch);
+      // Branch is known: only apply the rule when it's in the protected list.
+      // If the branch is explicitly known and not in the list, the condition is not met.
+      return { matched: branchMatched, scopeMatched, limitExceeded, branchMatched };
     }
+    // Branch unknown (not resolved from command): fail-closed — treat as potentially protected.
+    branchMatched = undefined;
   }
 
   if (conditions.persona) {
