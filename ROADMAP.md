@@ -10,6 +10,8 @@ This is not a library. Not middleware. Not a research framework. It is a **manda
 
 **The core thesis:** Once autonomous agents start modifying production systems, organizations must answer one question — *"What prevents the agent from destroying production?"* Prompt alignment cannot solve that. Only deterministic execution governance can.
 
+**Engineering thesis:** The enforcement boundary must achieve sub-millisecond latency (p50 < 0.25ms) with zero network or disk I/O dependencies. The governance layer must be invisible during operation yet impenetrable during a violation.
+
 ### The Advisory → Mandatory Shift
 
 The roadmap represents a fundamental architectural evolution:
@@ -267,11 +269,99 @@ The `SystemState` interface in `packages/invariants/src/definitions.ts` is the b
 - [x] Recursive operation guard (severity 2) — flag `find -exec`, `xargs` combined with write/delete operations (`recursive-operation-guard` invariant)
 - [x] Transitive effect analysis (severity 4) — when an agent writes a script or config file, analyze content for downstream effects that would violate policy (e.g., a Python script containing `open('.env').read()` or a shell script with `curl` exfiltration). Closes the creative circumvention gap where agents bypass direct restrictions via indirect file creation
 
+### Kernel Evolution Sprint (KE-1 through KE-6, 60 days) `NEXT`
+
+> **Theme:** Transform the enforcement kernel from advisory heuristics to a sub-millisecond Execution Firewall with algorithmic determinism.
+
+This sprint implements the architectural upgrades required for AgentGuard to function as infrastructure-grade enforcement — comparable to kernel security modules and service mesh data planes. Each phase stabilizes before the next begins. Must complete before Phase 7.
+
+**Non-Negotiable Engineering Constraints:**
+- **Zero I/O Sync Path** — No network or disk I/O in the synchronous enforcement loop
+- **Algorithmic Determinism** — Replace regex-first logic with structured matchers (Tries, Bitmasks, Hash Sets)
+- **Asynchronous Telemetry** — Memory Queue → SQLite (WAL) → external consumers; telemetry failures never alter enforcement
+- **Zero-Allocation Hot Path** — Stack-allocated structs, fixed-size buffers, borrowed slices where possible
+- **No JSON in the Hot Path** — Compact internal contexts and bitmask flags for policy checks
+
+**Performance SLOs (enforced via CI regression gate):**
+
+| Metric | Target (p50) | Target (p95) | Target (p99) |
+|--------|-------------|-------------|-------------|
+| Context Normalization | 50 µs | 100 µs | 200 µs |
+| Sync Enforcement Hook | < 0.25 ms | < 0.75 ms | < 1.5 ms |
+| Cold-Start Latency | < 15 ms | < 25 ms | < 50 ms |
+| Memory Allocation (Hot) | 0 allocs | < 5 allocs | N/A |
+
+#### KE-1: Invariant Engine Evolution
+
+> Replace regex-based security with deterministic structured matchers.
+
+- [ ] Audit all regex usage in the enforcement path (`packages/kernel/src/aab.ts`, `packages/invariants/src/definitions.ts`, `packages/policy/src/evaluator.ts`)
+- [ ] Classify all patterns into EXACT, PREFIX, SUFFIX, PATH_PREFIX categories
+- [ ] Implement compiled matcher library: Trie (prefix/path), Hash Set (exact), Bitmask (flags)
+- [ ] Replace runtime regex scans with compiled matchers (target: 90%+ replacement)
+- [ ] Produce machine-readable reason codes for all match results
+- [ ] Benchmark: total evaluation p50 < 0.25ms
+
+#### KE-2: Canonical Action Normalization (ActionContext)
+
+> Formalize a vendor-neutral action representation that decouples the policy engine from provider-specific payloads.
+
+- [ ] Design `ActionContext` contract: actor identity (agent/session/worktree), action category, structured arguments
+- [ ] Build specialized adapter for Claude tool-calls → `ActionContext` mapping in `packages/adapters/src/claude-code.ts`
+- [ ] Ensure policy engine in `packages/policy/src/evaluator.ts` consumes only normalized `ActionContext`
+- [ ] Benchmark: context normalization in 50–100µs
+
+#### KE-3: Governance Event Envelope
+
+> Standardize all telemetry into a versioned, runtime-agnostic schema.
+
+- [ ] Design versioned `GovernanceEvent` envelope in `packages/events/src/schema.ts`: eventId, timestamp, policy version, decision codes, performance metrics (hook latency in µs)
+- [ ] Ensure schema is runtime-agnostic (Claude, Copilot, LangGraph all produce identical envelopes)
+- [ ] Migrate existing event model to envelope format (backward-compatible)
+- [ ] 100% of telemetry follows the versioned schema
+
+#### KE-4: Plane Separation (Evaluator / Emitter / Shipper)
+
+> Decouple enforcement from telemetry. The three planes must be failure-isolated.
+
+- [ ] **Evaluator** (Synchronous/Pure): Policy + invariant evaluation in `packages/kernel/src/kernel.ts`, returns decisions in constant time, zero I/O
+- [ ] **Emitter** (Non-blocking): In-memory ring buffer for event queuing, zero backpressure on Evaluator
+- [ ] **Shipper** (Background): Persistence to SQLite (WAL mode) + external consumers, crash-resilient via WAL replay
+- [ ] Enforce: no coupling between planes. Evaluator continues if Shipper fails
+- [ ] Enforce: telemetry failures never alter enforcement decisions
+
+#### KE-5: Semantic CLI Expansion
+
+> Replace string matching with AST-based shell command analysis for Copilot CLI and general shell governance.
+
+- [ ] Implement shell command normalization layer using AST parsing
+- [ ] Map parsed commands into `ActionContext` for semantic risk classification
+- [ ] Detect semantically equivalent dangerous commands (e.g., `rm -rf /` ≡ `find / -delete` ≡ `sh -c 'rm -rf /'`)
+- [ ] Implement semantic invariants: destructive file ops, privilege escalation (sudo/chmod), pipeline injection (curl | sh)
+- [ ] Shared policy evaluation across CLI tool-calls and agent tool-calls
+- [ ] Benchmark: CLI normalization + check < 1ms total
+
+#### KE-6: Control Plane Signals
+
+> Surface governance intelligence for external consumption and operator visibility.
+
+- [ ] Surface active policy versions per runtime
+- [ ] Decision history by identity (agent, session, user)
+- [ ] Violation statistics and pattern aggregation
+- [ ] Identity-based audit views (operator can answer: "What was blocked, by which policy, for which agent?")
+- [ ] Structured signal output format consumable by dashboards and analytics
+
+**Rust Decision Gate:** If GC pauses impact determinism or cold-start targets (>15ms) are not met after KE optimizations, prepare migration plan for Layer 0 Kernel to Rust. Phase 1 Rust types already complete in `crates/`.
+
+**Performance Regression Gate:** Execute `benchmark_suite` and compare against `baseline_metrics.json` before every merge to `main`. If p95 latency regresses by >10% or new heap allocations / synchronous I/O are detected in the Evaluator layer, the merge is blocked.
+
+---
+
 ### Phase 7 — Capability-Scoped Sessions & Intent Contracts `PLANNED`
 
 > **Theme:** Each governance run gets a bounded authority set. No capability, no effect. Declared intent becomes auditable against observed behavior.
 
-The `RunManifest` defines the session's authority boundary. The `IntentSpec` (a declarative contract of what the agent *should* do) enables a dual-ledger audit: compare declared plan vs. actual execution. This separation — declaration layer above, enforcement layer below — makes the audit trail meaningful beyond just allow/deny logs.
+Depends on: Phase 6 (default-deny) + KE-2 (ActionContext). The `RunManifest` defines the session's authority boundary. The `IntentSpec` (a declarative contract of what the agent *should* do) enables a dual-ledger audit: compare declared plan vs. actual execution. This separation — declaration layer above, enforcement layer below — makes the audit trail meaningful beyond just allow/deny logs.
 
 Prior art: Kubernetes Capability Primitives (KCP), OS capability-based security models.
 
@@ -296,7 +386,7 @@ Prior art: Kubernetes Capability Primitives (KCP), OS capability-based security 
 
 ### Phase 9 — Agent Integrations `PLANNED`
 
-> **Theme:** Govern any agent framework
+> **Theme:** Govern any agent framework. Depends on KE-2 (ActionContext provides vendor-neutral normalization for all adapters).
 
 - [ ] Framework-specific adapters (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK)
 - [ ] Agent SDK for programmatic governance integration
