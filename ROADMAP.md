@@ -383,6 +383,8 @@ Prior art: Kubernetes Capability Primitives (KCP), OS capability-based security 
 - [x] Policy validation CLI (`agentguard policy validate <file>`)
 - [x] Community policy packs (SOC2, HIPAA, engineering standards) (`policies/soc2/`, `policies/hipaa/`, `policies/engineering-standards/`)
 - [ ] Policy pack versioning and compatibility
+- [ ] **Policy provider interface** — Pluggable evaluation backends for non-hot-path policy types. The Evaluator plane stays pure (custom matchers, zero I/O, sub-ms). External providers (OPA/Rego, custom DSL, enterprise policy engines) evaluate business-rule policies via async or pre-cached paths. Provider results are cached in-memory; unreachable providers fall back to native rules. External providers can ADD restrictions but NEVER relax native rule decisions. OPA integration provides instant credibility with security teams using OPA in K8s/service-mesh stacks.
+- [ ] **Remediation mode in decision model** — Expand kernel decision responses beyond ALLOW/DENY/ESCALATE to include MODIFY (rewrite action to safe equivalent, e.g. add `--dry-run` flag) and SUGGEST (return recommended alternative with human-readable explanation). Example: `terraform destroy prod` → DENY + SUGGEST: "Run `terraform plan` in staging, or request approval." Remediation suggestions are surfaced to the agent runtime and logged in telemetry. Pattern: Validate → Diagnose → Repair → Enforce. This is the key differentiator vs hyperscaler guardrails that only binary block.
 
 ### Phase 9 — Agent Integrations `PLANNED`
 
