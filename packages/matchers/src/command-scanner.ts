@@ -108,7 +108,7 @@ export class CommandScanner {
    */
   static create(
     destructive: DestructivePatternInput[],
-    git: GitActionPatternInput[],
+    git: GitActionPatternInput[]
   ): CommandScanner {
     const keywords: string[] = [];
     const keywordEntries = new Map<string, KeywordEntry[]>();
@@ -264,7 +264,7 @@ export class CommandScanner {
    * of the first matched destructive pattern, or null if none matched.
    */
   getDestructiveDetails(
-    command: string,
+    command: string
   ): { description: string; riskLevel: 'high' | 'critical'; category: string } | null {
     const results = this.scanDestructive(command);
     if (results.length === 0) return null;
