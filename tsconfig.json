@@ -17,6 +17,7 @@
     { "path": "packages/plugins" },
     { "path": "packages/invariant-data-protection" },
     { "path": "packages/renderers" },
+    { "path": "packages/matchers" },
     { "path": "packages/swarm" },
     { "path": "apps/cli" },
     { "path": "apps/mcp-server" }

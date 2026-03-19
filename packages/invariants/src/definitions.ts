@@ -6,12 +6,10 @@ import {
   INVARIANT_SENSITIVE_FILE_PATTERNS,
   INVARIANT_CREDENTIAL_PATH_PATTERNS,
   INVARIANT_CREDENTIAL_BASENAME_PATTERNS,
-  INVARIANT_CONTAINER_CONFIG_BASENAMES,
   INVARIANT_LIFECYCLE_SCRIPTS,
-  INVARIANT_ENV_FILE_REGEX_SOURCE,
-  INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE,
   INVARIANT_IDE_SOCKET_PATH_PATTERNS,
 } from '@red-codes/core';
+import { PathMatcher } from '@red-codes/matchers';
 
 export interface InvariantCheckResult {
   holds: boolean;
@@ -74,8 +72,142 @@ export const CREDENTIAL_PATH_PATTERNS: string[] = INVARIANT_CREDENTIAL_PATH_PATT
 /** Exact basenames (case-insensitive) that are credential files at any depth. */
 export const CREDENTIAL_BASENAME_PATTERNS: string[] = INVARIANT_CREDENTIAL_BASENAME_PATTERNS;
 
-/** Matches .env files: .env, .env.local, .env.production, etc. */
-const ENV_FILE_REGEX = new RegExp(INVARIANT_ENV_FILE_REGEX_SOURCE, 'i');
+// ─── Precompiled PathMatcher instances ────────────────────────────────────────
+// These replace ad-hoc `.includes()`/`.endsWith()` chains with compiled
+// picomatch globs that are both faster and more expressive.
+
+/** Matches .env files at any depth: .env, .env.local, .env.production, etc. */
+const envFileMatcher = PathMatcher.create([
+  { glob: '**/.env', id: 'env-file', description: '.env file', severity: 5 },
+  { glob: '.env', id: 'env-root', description: '.env at root', severity: 5 },
+  { glob: '**/.env.*', id: 'env-variant', description: '.env variant', severity: 5 },
+  { glob: '.env.*', id: 'env-variant-root', description: '.env variant at root', severity: 5 },
+]);
+
+/** Matches well-known credential directory structures and specific files.
+ * All globs are lowercase — callers must lowercase the input path first. */
+const credentialPathMatcher = PathMatcher.create([
+  // SSH directory patterns
+  { glob: '**/.ssh/**', id: 'ssh-dir', description: 'SSH config directory', severity: 5 },
+  // AWS credential files
+  {
+    glob: '**/.aws/credentials',
+    id: 'aws-creds',
+    description: 'AWS credentials file',
+    severity: 5,
+  },
+  { glob: '**/.aws/config', id: 'aws-config', description: 'AWS config file', severity: 5 },
+  // Google Cloud
+  {
+    glob: '**/.config/gcloud/**',
+    id: 'gcloud-dir',
+    description: 'Google Cloud config directory',
+    severity: 5,
+  },
+  // Azure
+  { glob: '**/.azure/**', id: 'azure-dir', description: 'Azure config directory', severity: 5 },
+  // Docker auth
+  {
+    glob: '**/.docker/config.json',
+    id: 'docker-auth',
+    description: 'Docker auth config',
+    severity: 5,
+  },
+]);
+
+/** Matches credential file basenames at any depth (case-insensitive via caller lowercasing). */
+const credentialBasenameMatcher = PathMatcher.create([
+  { glob: '**/.npmrc', id: 'npmrc', description: 'npm credentials file', severity: 5 },
+  { glob: '.npmrc', id: 'npmrc-root', description: 'npm credentials file at root', severity: 5 },
+  { glob: '**/.pypirc', id: 'pypirc', description: 'PyPI credentials file', severity: 5 },
+  { glob: '.pypirc', id: 'pypirc-root', description: 'PyPI credentials file at root', severity: 5 },
+  { glob: '**/.netrc', id: 'netrc', description: 'netrc credentials file', severity: 5 },
+  { glob: '.netrc', id: 'netrc-root', description: 'netrc credentials file at root', severity: 5 },
+  { glob: '**/.curlrc', id: 'curlrc', description: 'curlrc credentials file', severity: 5 },
+  {
+    glob: '.curlrc',
+    id: 'curlrc-root',
+    description: 'curlrc credentials file at root',
+    severity: 5,
+  },
+]);
+
+/** Matches container configuration file basenames at any depth.
+ * All globs are lowercase — callers must lowercase the input path first. */
+const containerConfigMatcher = PathMatcher.create([
+  { glob: '**/dockerfile', id: 'dockerfile', description: 'Dockerfile', severity: 3 },
+  { glob: 'dockerfile', id: 'dockerfile-root', description: 'Dockerfile at root', severity: 3 },
+  {
+    glob: '**/docker-compose.yml',
+    id: 'compose-yml',
+    description: 'docker-compose.yml',
+    severity: 3,
+  },
+  {
+    glob: 'docker-compose.yml',
+    id: 'compose-yml-root',
+    description: 'docker-compose.yml at root',
+    severity: 3,
+  },
+  {
+    glob: '**/docker-compose.yaml',
+    id: 'compose-yaml',
+    description: 'docker-compose.yaml',
+    severity: 3,
+  },
+  {
+    glob: 'docker-compose.yaml',
+    id: 'compose-yaml-root',
+    description: 'docker-compose.yaml at root',
+    severity: 3,
+  },
+  { glob: '**/compose.yml', id: 'compose-short-yml', description: 'compose.yml', severity: 3 },
+  {
+    glob: 'compose.yml',
+    id: 'compose-short-yml-root',
+    description: 'compose.yml at root',
+    severity: 3,
+  },
+  { glob: '**/compose.yaml', id: 'compose-short-yaml', description: 'compose.yaml', severity: 3 },
+  {
+    glob: 'compose.yaml',
+    id: 'compose-short-yaml-root',
+    description: 'compose.yaml at root',
+    severity: 3,
+  },
+  { glob: '**/.dockerignore', id: 'dockerignore', description: '.dockerignore', severity: 3 },
+  {
+    glob: '.dockerignore',
+    id: 'dockerignore-root',
+    description: '.dockerignore at root',
+    severity: 3,
+  },
+  {
+    glob: '**/containerfile',
+    id: 'containerfile',
+    description: 'Containerfile (Podman)',
+    severity: 3,
+  },
+  {
+    glob: 'containerfile',
+    id: 'containerfile-root',
+    description: 'Containerfile at root',
+    severity: 3,
+  },
+  // *.dockerfile suffix pattern (e.g. app.dockerfile, prod.dockerfile)
+  {
+    glob: '**/*.dockerfile',
+    id: 'dockerfile-suffix',
+    description: '*.dockerfile variant',
+    severity: 3,
+  },
+  {
+    glob: '*.dockerfile',
+    id: 'dockerfile-suffix-root',
+    description: '*.dockerfile variant at root',
+    severity: 3,
+  },
+]);
 
 /** IDE socket path patterns (lowercased for case-insensitive matching).
  * Sourced from @red-codes/core governance data. */
@@ -159,26 +291,10 @@ const SENSITIVE_ENV_VAR_PATTERNS = [
   'db_pass',
 ];
 
-/** Container configuration file basenames (case-insensitive). */
-const CONTAINER_CONFIG_BASENAMES: string[] = INVARIANT_CONTAINER_CONFIG_BASENAMES;
-
-/** Matches *.dockerfile files (e.g., app.dockerfile, prod.dockerfile). */
-const DOCKERFILE_SUFFIX_REGEX = new RegExp(INVARIANT_DOCKERFILE_SUFFIX_REGEX_SOURCE, 'i');
-
 /** Returns true if the given path targets a container configuration file. */
 export function isContainerConfigPath(filePath: string): boolean {
-  const basename = filePath.split(/[\\/]/).pop() || '';
-  const lowerBase = basename.toLowerCase();
-
-  if (CONTAINER_CONFIG_BASENAMES.includes(lowerBase)) {
-    return true;
-  }
-
-  if (DOCKERFILE_SUFFIX_REGEX.test(basename)) {
-    return true;
-  }
-
-  return false;
+  // Lowercase the path for case-insensitive matching (PathMatcher globs are lowercase).
+  return containerConfigMatcher.matchAny(filePath.toLowerCase());
 }
 
 /** npm lifecycle scripts that auto-execute during install/publish/pack operations. */
@@ -264,22 +380,21 @@ const TRANSITIVE_SCRIPT_PATTERNS: { pattern: RegExp; label: string }[] = [
 ];
 
 export function isCredentialPath(filePath: string): boolean {
+  // Lowercase the path for case-insensitive matching (all matchers use lowercase globs).
   const lower = filePath.toLowerCase();
 
-  // Check directory-based patterns (substring match)
-  if (CREDENTIAL_PATH_PATTERNS.some((p) => lower.includes(p.toLowerCase()))) {
+  // Check directory-based credential patterns via PathMatcher
+  if (credentialPathMatcher.matchAny(lower)) {
     return true;
   }
 
-  // Check basename patterns
-  const basename = filePath.split(/[\\/]/).pop() || '';
-  const lowerBase = basename.toLowerCase();
-  if (CREDENTIAL_BASENAME_PATTERNS.some((p) => lowerBase === p)) {
+  // Check exact credential basenames via PathMatcher
+  if (credentialBasenameMatcher.matchAny(lower)) {
     return true;
   }
 
-  // Check .env file pattern
-  if (ENV_FILE_REGEX.test(filePath)) {
+  // Check .env file pattern via PathMatcher
+  if (envFileMatcher.matchAny(lower)) {
     return true;
   }
 

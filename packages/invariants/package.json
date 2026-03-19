@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@red-codes/core": "workspace:*",
-    "@red-codes/events": "workspace:*"
+    "@red-codes/events": "workspace:*",
+    "@red-codes/matchers": "workspace:*"
   }
 }

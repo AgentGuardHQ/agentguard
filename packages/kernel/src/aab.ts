@@ -2,13 +2,13 @@
 // The central gatekeeper in the Runtime Assurance Architecture.
 // Pure domain logic. No DOM, no Node.js-specific APIs.
 
-import type { DomainEvent, AgentPersona } from '@red-codes/core';
+import type { DomainEvent, AgentPersona, CompiledDestructivePattern } from '@red-codes/core';
 import {
   TOOL_ACTION_MAP_DATA,
-  getDestructivePatterns,
-  getGitActionPatterns,
+  DESTRUCTIVE_PATTERNS_DATA,
+  GIT_ACTION_PATTERNS_DATA,
 } from '@red-codes/core';
-import type { CompiledDestructivePattern } from '@red-codes/core';
+import { CommandScanner } from '@red-codes/matchers';
 import { evaluate } from '@red-codes/policy';
 import type {
   NormalizedIntent,
@@ -47,38 +47,59 @@ export interface AuthorizationResult {
 
 const TOOL_ACTION_MAP: Record<string, string> = TOOL_ACTION_MAP_DATA;
 
-const compiledGitPatterns = getGitActionPatterns();
+const scanner = CommandScanner.create(DESTRUCTIVE_PATTERNS_DATA, GIT_ACTION_PATTERNS_DATA);
+
+// Backward-compatible compiled patterns for consumers that import DESTRUCTIVE_PATTERNS directly.
+const DESTRUCTIVE_PATTERNS: DestructivePattern[] = DESTRUCTIVE_PATTERNS_DATA.map((p) => ({
+  pattern: new RegExp(p.pattern, p.flags),
+  description: p.description,
+  riskLevel: p.riskLevel,
+  category: p.category,
+}));
 
 function detectGitAction(command: string): string | null {
   if (!command || typeof command !== 'string') return null;
-
-  const trimmed = command.trim();
-
-  for (const entry of compiledGitPatterns) {
-    if (entry.patterns.some((p) => p.test(trimmed))) {
-      return entry.actionType;
-    }
-  }
-
-  return null;
+  const result = scanner.scanGitAction(command.trim());
+  return result ? result.actionType : null;
 }
 
 export type DestructiveRiskLevel = 'high' | 'critical';
 
 export type DestructivePattern = CompiledDestructivePattern;
 
-const DESTRUCTIVE_PATTERNS: DestructivePattern[] = getDestructivePatterns();
-
 function isDestructiveCommand(command: string): boolean {
   if (!command || typeof command !== 'string') return false;
+  return scanner.isDestructive(command);
+}
 
-  return DESTRUCTIVE_PATTERNS.some((p) => p.pattern.test(command));
+// Maps patternId → original data index for stable ordering in getDestructiveDetails.
+const PATTERN_INDEX_MAP = new Map<string, number>();
+for (let i = 0; i < DESTRUCTIVE_PATTERNS_DATA.length; i++) {
+  PATTERN_INDEX_MAP.set(`destructive:${DESTRUCTIVE_PATTERNS_DATA[i]!.category}:${i}`, i);
 }
 
 function getDestructiveDetails(command: string): DestructivePattern | null {
   if (!command || typeof command !== 'string') return null;
+  const results = scanner.scanDestructive(command);
+  if (results.length === 0) return null;
 
-  return DESTRUCTIVE_PATTERNS.find((p) => p.pattern.test(command)) ?? null;
+  // Pick the match with the lowest original pattern index (same order as old sequential scan).
+  let best = results[0]!;
+  let bestIdx = PATTERN_INDEX_MAP.get(best.patternId) ?? Infinity;
+  for (let i = 1; i < results.length; i++) {
+    const idx = PATTERN_INDEX_MAP.get(results[i]!.patternId) ?? Infinity;
+    if (idx < bestIdx) {
+      best = results[i]!;
+      bestIdx = idx;
+    }
+  }
+
+  return {
+    pattern: DESTRUCTIVE_PATTERNS[bestIdx]?.pattern ?? (/matched/ as RegExp),
+    description: best.description ?? '',
+    riskLevel: best.severity === 10 ? 'critical' : 'high',
+    category: best.category ?? '',
+  };
 }
 
 function extractBranch(command: string | undefined): string | null {
