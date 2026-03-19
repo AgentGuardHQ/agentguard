@@ -19,7 +19,7 @@ The full technical roadmap with per-item checkboxes lives in [`ROADMAP.md`](../R
 | 6 | Reference Monitor Hardening | IN PROGRESS |
 | 6.5 | Invariant Expansion | IN PROGRESS |
 | 7 | Capability-Scoped Sessions | PLANNED |
-| 8 | Policy Ecosystem | PLANNED |
+| 8 | Policy Ecosystem (+ Policy Providers, Remediation Mode) | PLANNED |
 | 9 | Multi-Framework Adapters | PLANNED |
 | 10 | Structured Storage | IN PROGRESS |
 | 11 | CI/CD Governance | PLANNED |
