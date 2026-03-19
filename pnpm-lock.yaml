@@ -201,6 +201,9 @@ importers:
       '@red-codes/invariants':
         specifier: workspace:*
         version: link:../invariants
+      '@red-codes/matchers':
+        specifier: workspace:*
+        version: link:../matchers
       '@red-codes/policy':
         specifier: workspace:*
         version: link:../policy
