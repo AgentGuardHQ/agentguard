@@ -205,6 +205,18 @@ importers:
         specifier: workspace:*
         version: link:../policy
 
+  packages/matchers:
+    dependencies:
+      '@tanishiking/aho-corasick':
+        specifier: ^0.0.1
+        version: 0.0.1
+      picomatch:
+        specifier: ^4.0.0
+        version: 4.0.3
+      re2js:
+        specifier: ^1.0.0
+        version: 1.2.2
+
   packages/plugins:
     dependencies:
       '@red-codes/core':
@@ -672,6 +684,9 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@tanishiking/aho-corasick@0.0.1':
+    resolution: {integrity: sha512-70Fy5dKDfoaKq9CaWVaSvheCmQ/M7BxNAlQJfL1qUqX5/cyUZpQvK8nGkGSAUtHs7yokOOlOR6+WlIr6GVJrjw==}
 
   '@types/better-sqlite3@7.6.13':
     resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
@@ -1454,6 +1469,9 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
+  re2js@1.2.2:
+    resolution: {integrity: sha512-xvy4uuynAZWg9SuHbg0lgQncOuK6wssLmbHs8L8+YRbWLKY8Pe1avaHjNaFLOjErq8Oh0HvwQRWqIOCRL7uDDw==}
+
   readable-stream@3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
@@ -2070,6 +2088,8 @@ snapshots:
     optional: true
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@tanishiking/aho-corasick@0.0.1': {}
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
@@ -2912,6 +2932,8 @@ snapshots:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
+
+  re2js@1.2.2: {}
 
   readable-stream@3.6.2:
     dependencies:
