@@ -1,0 +1,60 @@
+# RunManifest — CI-Only
+#
+# Minimal permissions for CI pipeline verification.
+# Read files, run tests, check types — no writes, no git mutations.
+#
+# Usage: agentguard guard --manifest manifest-ci-only.yaml
+# Docs:  https://docs.agentguard.dev/manifests
+
+sessionId: ci-session
+role: tester
+description: CI verification session — read and test only, no file writes or git mutations
+
+grants:
+  - permissions:
+      - read
+    actions:
+      - file.read
+    filePatterns:
+      - "**/*"
+
+  - permissions:
+      - execute
+    actions:
+      - test.run
+      - test.run.unit
+      - test.run.integration
+      - shell.exec
+    commandAllowlist:
+      - "npm test"
+      - "npm run test*"
+      - "npm run lint*"
+      - "pnpm test"
+      - "pnpm lint"
+      - "pnpm ts:check"
+      - "vitest run"
+      - "tsc --noEmit"
+
+scope:
+  allowedPaths:
+    - "**/*"
+  deniedPaths:
+    - ".env*"
+    - "**/.env*"
+    - "**/credentials*"
+  allowedCommands:
+    - "npm test"
+    - "npm run test*"
+    - "npm run lint*"
+    - "pnpm test"
+    - "pnpm lint"
+    - "pnpm ts:check"
+    - "vitest run"
+    - "tsc --noEmit"
+  maxBlastRadius: 0
+
+maxDurationMs: 1800000
+
+metadata:
+  template: ci-only
+  version: "1.0"

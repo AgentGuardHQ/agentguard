@@ -1,0 +1,39 @@
+# RunManifest — Read-Only Audit
+#
+# Grants read-only access for auditing and inspection.
+# No file writes, no git operations, no shell commands.
+#
+# Usage: agentguard guard --manifest manifest-read-only-audit.yaml
+# Docs:  https://docs.agentguard.dev/manifests
+
+sessionId: audit-session
+role: auditor
+description: Read-only audit session — inspect code and governance data without side effects
+
+grants:
+  - permissions:
+      - read
+    actions:
+      - file.read
+    filePatterns:
+      - "src/**"
+      - "packages/**"
+      - "apps/**"
+      - "tests/**"
+
+scope:
+  allowedPaths:
+    - "src/**"
+    - "packages/**"
+    - "apps/**"
+    - "tests/**"
+    - "docs/**"
+  deniedPaths:
+    - ".env*"
+    - "**/.env*"
+    - "**/credentials*"
+  maxBlastRadius: 0
+
+metadata:
+  template: read-only-audit
+  version: "1.0"

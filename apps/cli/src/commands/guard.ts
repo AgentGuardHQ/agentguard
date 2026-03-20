@@ -7,6 +7,7 @@ import { createKernel } from '@red-codes/kernel';
 import type { KernelConfig } from '@red-codes/kernel';
 import { createLiveRegistry } from '@red-codes/adapters';
 import { loadPolicyDefs, loadComposedPolicies, describeComposition } from '../policy-resolver.js';
+import { loadManifestFile } from '../manifest-loader.js';
 import { createSimulatorRegistry } from '@red-codes/kernel';
 import { createGitSimulator } from '@red-codes/kernel';
 import { createFilesystemSimulator } from '@red-codes/kernel';
@@ -34,6 +35,8 @@ export interface GuardOptions {
   policy?: string;
   /** Multiple policy paths for composition */
   policies?: string[];
+  /** Path to a RunManifest YAML file for declarative session configuration */
+  manifest?: string;
   dryRun?: boolean;
   verbose?: boolean;
   trace?: boolean;
@@ -140,6 +143,9 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     }
   }
 
+  // Load manifest if provided
+  const manifest = options.manifest ? loadManifestFile(options.manifest) : undefined;
+
   // Build kernel config
   const kernelConfig: KernelConfig = {
     runId,
@@ -150,6 +156,7 @@ export async function guard(_args: string[], options: GuardOptions = {}): Promis
     sinks: [eventSink, cloudSinks.eventSink],
     decisionSinks: [decisionSink, cloudSinks.decisionSink],
     simulators: simulators.all().length > 0 ? simulators : undefined,
+    manifest,
   };
 
   const kernel = createKernel(kernelConfig);
