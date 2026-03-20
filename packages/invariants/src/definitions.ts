@@ -229,6 +229,45 @@ function identifyIde(pattern: string): string {
   return 'Unknown';
 }
 
+/** Returns true if the shell command contains a stdout file redirect (>, >>).
+ * Ignores safe patterns: stderr redirects (2>/dev/null, 2>&1) and pipes.
+ *
+ * Known edge case: quoted strings containing `>` may produce false positives
+ * (e.g., `echo "hello > world"` is flagged as a redirect). This is intentional —
+ * for a security check, false positives are safer than false negatives. */
+export function hasFileRedirect(command: string): boolean {
+  // Strip safe stderr patterns before checking for output redirects
+  // Shell FDs are single digits (0=stdin, 1=stdout, 2=stderr).
+  // Using [0-9] instead of \d+ avoids ReDoS on long digit strings (CodeQL CWE-1333).
+  const stripped = command
+    .replace(/[0-9]>\/dev\/null/g, '')
+    .replace(/[0-9]>&[0-9]/g, '')
+    .replace(/&>\/dev\/null/g, '');
+  // Check for remaining > or >> (stdout file redirect)
+  return /(?:^|[^&\d])>/.test(stripped);
+}
+
+/** Action types that are always read-only — exempt from write-guard invariants.
+ * Read, Glob, and Grep tools all map to file.read; git.diff is structural comparison only. */
+const READ_ONLY_ACTIONS: string[] = ['file.read', 'git.diff'];
+
+/** Shell command basenames that perform read-only operations.
+ * Used by write-guard invariants to skip commands that cannot modify protected paths. */
+const READ_ONLY_CMDS: string[] = [
+  'ls',
+  'cat',
+  'head',
+  'tail',
+  'find',
+  'grep',
+  'rg',
+  'tree',
+  'stat',
+  'file',
+  'wc',
+  'diff',
+];
+
 /** Shell profile file basenames (case-insensitive) that establish persistent environment changes. */
 const SHELL_PROFILE_BASENAMES = [
   '.bashrc',
@@ -542,7 +581,6 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
     severity: 4,
     check(state) {
       const actionType = state.currentActionType || '';
-      const READ_ONLY_ACTIONS = ['file.read', 'git.diff'];
 
       // Skip read-only action types (Read, Glob, Grep tools all map to file.read)
       if (READ_ONLY_ACTIONS.includes(actionType)) {
@@ -553,21 +591,7 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       if (actionType === 'shell.exec') {
         const command = (state.currentCommand || '').trim();
         const baseCmd = command.split(/\s+/)[0]?.replace(/^.*\//, '') || '';
-        const READ_ONLY_CMDS = [
-          'ls',
-          'cat',
-          'head',
-          'tail',
-          'find',
-          'grep',
-          'rg',
-          'tree',
-          'stat',
-          'file',
-          'wc',
-          'diff',
-        ];
-        if (READ_ONLY_CMDS.includes(baseCmd) && !command.includes('>')) {
+        if (READ_ONLY_CMDS.includes(baseCmd) && !hasFileRedirect(command)) {
           return { holds: true, expected: 'N/A', actual: 'Read-only shell command' };
         }
       }
@@ -608,7 +632,6 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
     severity: 5,
     check(state) {
       const actionType = state.currentActionType || '';
-      const READ_ONLY_ACTIONS = ['file.read', 'git.diff'];
 
       // Skip read-only action types (Read, Glob, Grep tools all map to file.read)
       if (READ_ONLY_ACTIONS.includes(actionType)) {
@@ -619,21 +642,7 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       if (actionType === 'shell.exec') {
         const command = (state.currentCommand || '').trim();
         const baseCmd = command.split(/\s+/)[0]?.replace(/^.*\//, '') || '';
-        const READ_ONLY_CMDS = [
-          'ls',
-          'cat',
-          'head',
-          'tail',
-          'find',
-          'grep',
-          'rg',
-          'tree',
-          'stat',
-          'file',
-          'wc',
-          'diff',
-        ];
-        if (READ_ONLY_CMDS.includes(baseCmd) && !command.includes('>')) {
+        if (READ_ONLY_CMDS.includes(baseCmd) && !hasFileRedirect(command)) {
           return { holds: true, expected: 'N/A', actual: 'Read-only shell command' };
         }
       }
@@ -895,6 +904,22 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       'CI/CD pipeline configurations must not be modified by governed actions — prevents supply chain attacks via malicious build steps',
     severity: 5,
     check(state) {
+      const actionType = state.currentActionType || '';
+
+      // Skip read-only action types (Read, Glob, Grep tools all map to file.read)
+      if (READ_ONLY_ACTIONS.includes(actionType)) {
+        return { holds: true, expected: 'N/A', actual: `Action type ${actionType} is read-only` };
+      }
+
+      // For shell.exec, skip read-only commands (ls, cat, find, etc.)
+      if (actionType === 'shell.exec') {
+        const command = (state.currentCommand || '').trim();
+        const baseCmd = command.split(/\s+/)[0]?.replace(/^.*\//, '') || '';
+        if (READ_ONLY_CMDS.includes(baseCmd) && !hasFileRedirect(command)) {
+          return { holds: true, expected: 'N/A', actual: 'Read-only shell command' };
+        }
+      }
+
       const CICD_DIR_PATTERNS = [
         '.github/workflows/',
         '.github\\workflows\\',
@@ -1037,6 +1062,22 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       'Agents must not modify governance configuration (policy files, governance data, policy packs)',
     severity: 5,
     check(state) {
+      const actionType = state.currentActionType || '';
+
+      // Skip read-only action types (Read, Glob, Grep tools all map to file.read)
+      if (READ_ONLY_ACTIONS.includes(actionType)) {
+        return { holds: true, expected: 'N/A', actual: `Action type ${actionType} is read-only` };
+      }
+
+      // For shell.exec, skip read-only commands (ls, cat, find, etc.)
+      if (actionType === 'shell.exec') {
+        const command = (state.currentCommand || '').trim();
+        const baseCmd = command.split(/\s+/)[0]?.replace(/^.*\//, '') || '';
+        if (READ_ONLY_CMDS.includes(baseCmd) && !hasFileRedirect(command)) {
+          return { holds: true, expected: 'N/A', actual: 'Read-only shell command' };
+        }
+      }
+
       const GOVERNANCE_DIR_PATTERNS = ['.agentguard/', '.agentguard\\', 'policies/', 'policies\\'];
       const GOVERNANCE_FILE_BASENAMES = ['agentguard.yaml', 'agentguard.yml', '.agentguard.yaml'];
 
