@@ -90,11 +90,16 @@ const COMMANDS: Record<string, CommandHelp> = {
         description: 'SQLite database path (default: ~/.agentguard/agentguard.db)',
       },
       { flag: '--no-open', description: 'Do not auto-open session viewer in browser after run' },
+      {
+        flag: '--manifest <file>',
+        description: 'RunManifest YAML file for declarative session configuration',
+      },
     ],
     examples: [
       'agentguard guard',
       'agentguard guard --policy agentguard.yaml',
       'agentguard guard --policy base.yaml --policy overrides.yaml',
+      'agentguard guard --manifest session.yaml',
       'agentguard guard --dry-run',
       'echo \'{"tool":"Bash","command":"rm -rf /"}\' | agentguard guard',
     ],
@@ -565,11 +570,19 @@ async function main() {
       const trace = flags.includes('--trace') || flags.includes('-t');
       const noOpen = flags.includes('--no-open');
 
+      // Parse --manifest flag
+      let manifestPath: string | undefined;
+      const manifestIdx = flags.indexOf('--manifest');
+      if (manifestIdx !== -1 && flags[manifestIdx + 1]) {
+        manifestPath = flags[manifestIdx + 1];
+      }
+
       const { guard } = await import('./commands/guard.js');
       const storageConfig = resolveStorageConfig(flags);
       const code = await guard(args.slice(1), {
         policy: policyFiles.length === 1 ? policyFiles[0] : undefined,
         policies: policyFiles.length > 1 ? policyFiles : undefined,
+        manifest: manifestPath,
         dryRun,
         verbose,
         trace,

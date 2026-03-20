@@ -101,6 +101,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.0
         version: 7.6.13
+      yaml:
+        specifier: ^2.7.1
+        version: 2.8.2
 
   apps/mcp-server:
     dependencies:

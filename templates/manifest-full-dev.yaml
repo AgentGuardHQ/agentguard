@@ -1,0 +1,81 @@
+# RunManifest — Full Development
+#
+# Grants broad development permissions: file read/write, git operations,
+# shell commands, and test execution. Suitable for feature development
+# with standard guardrails (protected branches, blast radius limits).
+#
+# Usage: agentguard guard --manifest manifest-full-dev.yaml
+# Docs:  https://docs.agentguard.dev/manifests
+
+sessionId: dev-session
+role: builder
+description: Full development session — read, write, test, and commit with standard guardrails
+
+grants:
+  - permissions:
+      - read
+      - write
+    actions:
+      - "file.*"
+    filePatterns:
+      - "src/**"
+      - "packages/**"
+      - "apps/**"
+      - "tests/**"
+
+  - permissions:
+      - read
+      - execute
+    actions:
+      - "git.*"
+    branchPatterns:
+      - "feature/*"
+      - "fix/*"
+      - "agent/*"
+
+  - permissions:
+      - execute
+    actions:
+      - shell.exec
+    commandAllowlist:
+      - "npm test"
+      - "npm run *"
+      - "pnpm *"
+      - "node *"
+      - "tsc *"
+      - "vitest *"
+      - "eslint *"
+      - "prettier *"
+
+  - permissions:
+      - execute
+    actions:
+      - "test.*"
+
+scope:
+  allowedPaths:
+    - "src/**"
+    - "packages/**"
+    - "apps/**"
+    - "tests/**"
+    - "templates/**"
+  deniedPaths:
+    - ".env*"
+    - "**/.env*"
+    - "**/credentials*"
+    - "agentguard.yaml"
+  allowedBranches:
+    - "feature/*"
+    - "fix/*"
+    - "agent/*"
+  deniedBranches:
+    - main
+    - master
+    - production
+  maxBlastRadius: 15
+
+maxDurationMs: 3600000
+
+metadata:
+  template: full-dev
+  version: "1.0"
