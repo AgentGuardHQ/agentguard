@@ -237,9 +237,11 @@ function identifyIde(pattern: string): string {
  * for a security check, false positives are safer than false negatives. */
 export function hasFileRedirect(command: string): boolean {
   // Strip safe stderr patterns before checking for output redirects
+  // Shell FDs are single digits (0=stdin, 1=stdout, 2=stderr).
+  // Using [0-9] instead of \d+ avoids ReDoS on long digit strings (CodeQL CWE-1333).
   const stripped = command
-    .replace(/\d+>\/dev\/null/g, '')
-    .replace(/\d+>&\d+/g, '')
+    .replace(/[0-9]>\/dev\/null/g, '')
+    .replace(/[0-9]>&[0-9]/g, '')
     .replace(/&>\/dev\/null/g, '');
   // Check for remaining > or >> (stdout file redirect)
   return /(?:^|[^&\d])>/.test(stripped);
