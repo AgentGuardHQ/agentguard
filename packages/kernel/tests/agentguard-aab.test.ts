@@ -728,6 +728,31 @@ describe('agentguard/core/aab', () => {
       const intent = normalizeIntent(null);
       expect(intent.action).toBe('unknown');
     });
+
+    it('classifies MCP tools as mcp.call with extracted service name', () => {
+      const intent = normalizeIntent({
+        tool: 'mcp__scheduled-tasks__create_scheduled_task',
+      });
+      expect(intent.action).toBe('mcp.call');
+      expect(intent.target).toBe('scheduled-tasks');
+    });
+
+    it('extracts service name from MCP tools with nested namespaces', () => {
+      const intent = normalizeIntent({
+        tool: 'mcp__plugin_context7_context7__query-docs',
+      });
+      expect(intent.action).toBe('mcp.call');
+      expect(intent.target).toBe('plugin_context7_context7');
+    });
+
+    it('preserves explicit target for MCP tools over extracted service name', () => {
+      const intent = normalizeIntent({
+        tool: 'mcp__scheduled-tasks__create_scheduled_task',
+        target: 'explicit-target',
+      });
+      expect(intent.action).toBe('mcp.call');
+      expect(intent.target).toBe('explicit-target');
+    });
   });
 
   describe('authorize', () => {

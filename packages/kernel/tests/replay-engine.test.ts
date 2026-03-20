@@ -32,7 +32,7 @@ function ensureTestDir(): void {
 
 function cleanTestDir(): void {
   if (existsSync(TEST_BASE_DIR)) {
-    rmSync(TEST_BASE_DIR, { recursive: true, force: true });
+    rmSync(TEST_BASE_DIR, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
   }
 }
 

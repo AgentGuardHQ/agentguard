@@ -117,6 +117,16 @@ export function normalizeIntent(rawAction: RawAgentAction | null): NormalizedInt
   let action = TOOL_ACTION_MAP[tool] || (tool.startsWith('mcp__') ? 'mcp.call' : 'unknown');
   let target = rawAction.file || rawAction.target || '';
 
+  // For MCP tools, extract the service name from the tool name so policy
+  // rules with `target: "service-name"` can match.
+  // e.g. "mcp__scheduled-tasks__create_scheduled_task" → "scheduled-tasks"
+  if (action === 'mcp.call' && !target && tool.startsWith('mcp__')) {
+    const parts = tool.split('__');
+    if (parts.length >= 3) {
+      target = parts[1];
+    }
+  }
+
   if (action === 'shell.exec' && rawAction.command) {
     const gitAction = detectGitAction(rawAction.command);
     if (gitAction) {
