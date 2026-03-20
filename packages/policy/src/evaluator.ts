@@ -298,10 +298,15 @@ function matchConditions(
     }
   }
 
-  if (conditions.branches && intent.branch) {
-    branchMatched = new Set(conditions.branches).has(intent.branch);
-    if (branchMatched) {
-      return { matched: true, scopeMatched, limitExceeded, branchMatched };
+  if (conditions.branches) {
+    if (intent.branch) {
+      branchMatched = conditions.branches.includes(intent.branch);
+    } else {
+      // No branch detected — cannot confirm this targets a protected branch
+      branchMatched = false;
+    }
+    if (!branchMatched) {
+      return { matched: false, scopeMatched, limitExceeded, branchMatched };
     }
   }
 
