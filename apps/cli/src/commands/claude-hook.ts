@@ -9,7 +9,7 @@
 import { randomUUID } from 'node:crypto';
 import { execSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, parse as parsePath } from 'node:path';
+import { dirname, join, parse as parsePath } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { ClaudeCodeHookPayload } from '@red-codes/adapters';
 import type { LoadedPolicy } from '@red-codes/policy';
@@ -78,8 +78,10 @@ function loadProjectEnv(): void {
           if (process.env[key] !== undefined) continue; // env vars take precedence
           let value = trimmed.slice(eqIdx + 1).trim();
           // Strip surrounding quotes
-          if ((value.startsWith('"') && value.endsWith('"')) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
+          if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+          ) {
             value = value.slice(1, -1);
           }
           process.env[key] = value;
@@ -89,7 +91,7 @@ function loadProjectEnv(): void {
       }
       return; // Stop at the first .env found
     }
-    dir = require('node:path').dirname(dir);
+    dir = dirname(dir);
   }
 }
 
@@ -251,13 +253,18 @@ async function handlePreToolUse(
     const telemetryMode = resolveMode(identity);
     if (telemetryMode !== 'off') {
       const apiKey = process.env.AGENTGUARD_API_KEY ?? identity?.enrollment_token;
+      // Use Claude Code's session_id for cloud run grouping so multiple hook
+      // invocations within one session share a single governance run, rather
+      // than creating hundreds of orphan runs.  Fall back to the per-hook
+      // runId when no session_id is available (e.g. manual CLI usage).
+      const cloudSessionId = payload.session_id || runId;
       cloudSinks = await createCloudSinks({
         mode: telemetryMode,
         serverUrl:
           process.env.AGENTGUARD_TELEMETRY_URL ??
           identity?.server_url ??
           'https://telemetry.agentguard.dev',
-        runId,
+        runId: cloudSessionId,
         agentId: 'claude-code',
         installId: identity?.install_id,
         apiKey,
