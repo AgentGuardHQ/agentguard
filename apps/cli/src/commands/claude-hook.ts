@@ -78,8 +78,10 @@ function loadProjectEnv(): void {
           if (process.env[key] !== undefined) continue; // env vars take precedence
           let value = trimmed.slice(eqIdx + 1).trim();
           // Strip surrounding quotes
-          if ((value.startsWith('"') && value.endsWith('"')) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
+          if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+          ) {
             value = value.slice(1, -1);
           }
           process.env[key] = value;

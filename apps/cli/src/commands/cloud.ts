@@ -36,8 +36,11 @@ function readEnvVar(envPath: string, key: string): string | undefined {
   const pattern = new RegExp(`^${key}=(.+)$`, 'm');
   const match = readFileSync(envPath, 'utf8').match(pattern);
   let value = match?.[1]?.trim();
-  if (value && ((value.startsWith('"') && value.endsWith('"')) ||
-                (value.startsWith("'") && value.endsWith("'")))) {
+  if (
+    value &&
+    ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'")))
+  ) {
     value = value.slice(1, -1);
   }
   return value;
@@ -73,7 +76,11 @@ function removeCloudEnvVars(envPath: string): void {
   const filtered = lines.filter((line) => {
     const trimmed = line.trim();
     // Remove the vars and their comment header
-    if (trimmed === '# AgentGuard Cloud' || trimmed === '# AgentGuard Cloud (added by agentguard cloud login)') return false;
+    if (
+      trimmed === '# AgentGuard Cloud' ||
+      trimmed === '# AgentGuard Cloud (added by agentguard cloud login)'
+    )
+      return false;
     return !cloudKeys.some((k) => trimmed.startsWith(`${k}=`));
   });
   writeFileSync(envPath, filtered.join('\n').replace(/\n{3,}/g, '\n\n'), { mode: 0o600 });
@@ -228,7 +235,9 @@ function requireCloudConfig(): CloudConfig | null {
   const cloud = loadCloudConfig();
   if (!cloud) {
     process.stderr.write(`  ${FG.red}Error:${RESET} Not connected to AgentGuard Cloud.\n`);
-    process.stderr.write(`  ${DIM}Run "agentguard cloud login" or "agentguard cloud connect <api-key>" to connect.${RESET}\n`);
+    process.stderr.write(
+      `  ${DIM}Run "agentguard cloud login" or "agentguard cloud connect <api-key>" to connect.${RESET}\n`
+    );
     return null;
   }
   return cloud;
