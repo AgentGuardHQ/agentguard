@@ -1,73 +1,19 @@
-# Default AgentGuard policy — baseline guardrails for AI coding agents.
-# Drop this file in your repo root. The CLI picks it up automatically.
+# AgentGuard — self-governed with engineering-standards policy pack.
+# This project dogfoods its own governance system.
+#
+# The engineering-standards pack enforces:
+#   - Test-before-push
+#   - Format-before-push
+#   - No force push / git reset
+#   - Credential file protection
+#   - Safe dependency management
 
-id: default-policy
-name: Default Safety Policy
-description: Baseline guardrails for AI coding agents
-severity: 4
+extends:
+  - ./policies/engineering-standards
 
+# Project-specific overrides
 rules:
-  - action: git.push
-    effect: deny
-    branches: [main, master]
-    reason: Direct push to protected branch
-
-  - action: git.force-push
-    effect: deny
-    reason: Force push rewrites shared history
-
-  - action: file.write
-    effect: deny
-    target: .env
-    reason: Secrets files must not be modified
-
-  - action: file.write
-    effect: deny
-    target: ".claude/skills/"
-    reason: Agent skill files are protected from modification
-
-  - action: file.delete
-    effect: deny
-    target: ".claude/skills/"
-    reason: Agent skill files are protected from deletion
-
-  - action: shell.exec
-    effect: deny
-    target: rm -rf
-    reason: Destructive shell commands blocked
-
-  # Credential file protection
-  - action: file.write
-    effect: deny
-    target: ".npmrc"
-    reason: npm credentials file must not be modified by agents
-
-  - action: file.write
-    effect: deny
-    target: "id_rsa"
-    reason: SSH private keys must not be modified
-
-  - action: file.write
-    effect: deny
-    target: "id_ed25519"
-    reason: SSH private keys must not be modified
-
-  # Deployment and publish protection
-  - action: deploy.trigger
-    effect: deny
-    reason: Deploy actions require explicit authorization
-
-  - action: infra.destroy
-    effect: deny
-    reason: Infrastructure destruction requires explicit authorization
-
-  # Code quality — require formatting before commit
-  - action: git.commit
-    effect: deny
-    requireFormat: true
-    reason: Run pnpm format:fix before committing — all files must pass Prettier
-
-  # Hook self-modification protection — prevent agent from altering its own governance hooks
+  # Protect governance hooks from agent self-modification
   - action: file.write
     effect: deny
     target: ".claude/settings.json"
@@ -78,96 +24,20 @@ rules:
     target: ".claude/settings.local.json"
     reason: Agent must not modify its own hook configuration
 
-  # ─── Allowed operations ──────────────────────────────────────────────
-  # With default-deny enabled, actions without an explicit allow rule are
-  # denied. The rules below cover standard development workflows.
-
-  # Reading is always safe.
-  - action: file.read
-    effect: allow
-    reason: Reading is always safe
-
-  # File writes (subject to deny rules above for secrets/credentials).
+  # Protect policy file from agent modification
   - action: file.write
-    effect: allow
-    reason: File writes allowed by default
+    effect: deny
+    target: "agentguard.yaml"
+    reason: Governance policy must not be modified by agents
 
-  # File deletion (subject to deny rules above for skill files).
-  - action: file.delete
-    effect: allow
-    reason: File deletion allowed by default
+  # Block deploy/infra — this project uses GitHub Actions for releases
+  - action: deploy.trigger
+    effect: deny
+    reason: Deploys use GitHub Actions release workflow
 
-  # File move/rename.
-  - action: file.move
-    effect: allow
-    reason: File move allowed by default
-
-  # Shell commands (subject to deny rules above for rm -rf).
-  - action: shell.exec
-    effect: allow
-    reason: Shell execution allowed by default
-
-  # Git operations (subject to deny rules for protected branches).
-  - action: git.diff
-    effect: allow
-    reason: Viewing diffs is always safe
-
-  - action: git.commit
-    effect: allow
-    reason: Commits allowed by default
-
-  - action: git.push
-    effect: allow
-    reason: Pushes allowed to non-protected branches
-
-  - action: git.checkout
-    effect: allow
-    reason: Branch checkout allowed by default
-
-  - action: git.branch.create
-    effect: allow
-    reason: Branch creation allowed by default
-
-  - action: git.merge
-    effect: allow
-    reason: Merge allowed by default
-
-  # Testing is always encouraged.
-  - action:
-      - test.run
-      - test.run.unit
-      - test.run.integration
-    effect: allow
-    reason: Running tests is always safe
-
-  # Package management.
-  - action: npm.install
-    effect: allow
-    reason: Package installation allowed by default
-
-  - action: npm.script.run
-    effect: allow
-    reason: NPM script execution allowed by default
-
-  # HTTP requests.
-  - action: http.request
-    effect: allow
-    reason: HTTP requests allowed by default
-
-# ─── Actions intentionally omitted (denied by default-deny) ────────────────
-# The following action types have no explicit allow rule and are therefore
-# denied when this policy is loaded (default-deny is active whenever at least
-# one policy file is present):
-#
-#   npm.publish         — package publication requires explicit release workflow
-#   git.branch.delete   — branch deletion is a destructive, shared-history action
-#   git.reset           — history rewrite must be an intentional human action
-#   git.force-push      — denied explicitly above; listed here for completeness
-#   infra.apply         — infrastructure changes require explicit authorization
-#   deploy.trigger      — denied explicitly above; listed here for completeness
-#
-# To allow any of these, add an explicit `effect: allow` rule above.
-# ──────────────────────────────────────────────────────────────────────────
+  - action: infra.destroy
+    effect: deny
+    reason: No infrastructure to destroy
 
 telemetry:
   enabled: true
