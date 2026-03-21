@@ -2,7 +2,13 @@
 // The central gatekeeper in the Runtime Assurance Architecture.
 // Pure domain logic. No DOM, no Node.js-specific APIs.
 
-import type { DomainEvent, AgentPersona, CompiledDestructivePattern } from '@red-codes/core';
+import type {
+  DomainEvent,
+  AgentPersona,
+  CompiledDestructivePattern,
+  ActionContext,
+  ActionClass,
+} from '@red-codes/core';
 import {
   TOOL_ACTION_MAP_DATA,
   DESTRUCTIVE_PATTERNS_DATA,
@@ -108,6 +114,32 @@ function extractBranch(command: string | undefined): string | null {
   return match ? match[1] : null;
 }
 
+/** Valid action class prefixes derived from canonical action types. */
+const KNOWN_CLASSES = new Set<string>([
+  'file',
+  'test',
+  'git',
+  'shell',
+  'npm',
+  'http',
+  'deploy',
+  'infra',
+  'mcp',
+]);
+
+/**
+ * Derive the ActionClass from a canonical action type string.
+ * e.g., 'file.write' → 'file', 'git.push' → 'git', 'mcp.call' → 'shell' (fallback).
+ */
+function deriveActionClass(actionType: string): ActionClass {
+  const prefix = actionType.split('.')[0] || '';
+  if (KNOWN_CLASSES.has(prefix) && prefix !== 'mcp') {
+    return prefix as ActionClass;
+  }
+  // MCP calls and unknown types fall back to 'shell' as the closest class
+  return 'shell';
+}
+
 export function normalizeIntent(rawAction: RawAgentAction | null): NormalizedIntent {
   if (!rawAction || typeof rawAction !== 'object') {
     return { action: 'unknown', target: '', agent: 'unknown', destructive: false };
@@ -139,16 +171,42 @@ export function normalizeIntent(rawAction: RawAgentAction | null): NormalizedInt
     }
   }
 
+  const agent = rawAction.agent || 'unknown';
+  const branch = rawAction.branch || extractBranch(rawAction.command) || undefined;
+
+  // KE-2: Build vendor-neutral ActionContext
+  const context: ActionContext = {
+    actor: {
+      agentId: agent,
+      sessionId: (rawAction.metadata?.sessionId as string) || undefined,
+      worktree: (rawAction.metadata?.worktree as string) || undefined,
+    },
+    action: {
+      type: action,
+      category: deriveActionClass(action),
+      originalTool: tool || undefined,
+    },
+    args: {
+      target,
+      command: rawAction.command || undefined,
+      branch,
+    },
+    environment: rawAction.metadata?.timestamp
+      ? { timestamp: rawAction.metadata.timestamp as number }
+      : undefined,
+  };
+
   return {
     action,
     target,
-    agent: rawAction.agent || 'unknown',
-    branch: rawAction.branch || extractBranch(rawAction.command) || undefined,
+    agent,
+    branch,
     command: rawAction.command || undefined,
     filesAffected: rawAction.filesAffected || undefined,
     metadata: rawAction.metadata || undefined,
     persona: rawAction.persona || undefined,
     destructive: action === 'shell.exec' && isDestructiveCommand(rawAction.command || ''),
+    context,
   };
 }
 

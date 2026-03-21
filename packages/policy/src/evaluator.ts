@@ -1,7 +1,7 @@
 // Policy evaluator — matches actions against loaded policies.
 // Pure domain logic. No DOM, no Node.js-specific APIs.
 
-import type { AgentPersona } from '@red-codes/core';
+import type { AgentPersona, ActionContext, ActionClass } from '@red-codes/core';
 import { PolicyMatcher } from '@red-codes/matchers';
 
 export interface PersonaCondition {
@@ -71,6 +71,8 @@ export interface PolicyRule {
     requireFormat?: boolean;
     persona?: PersonaCondition;
     forecast?: ForecastCondition;
+    /** KE-2: Match against vendor-neutral ActionContext fields */
+    context?: ContextCondition;
   };
   reason?: string;
   /** Optional intervention type override for deny rules. When set, the kernel uses this
@@ -99,6 +101,22 @@ export interface LoadedPolicy {
   pack?: string;
 }
 
+/**
+ * Context-based policy condition (KE-2) — evaluates against the vendor-neutral
+ * ActionContext attached to the intent. Allows cross-runtime policy rules such as
+ * "deny if actor is from an untrusted worktree" or "allow only file actions".
+ */
+export interface ContextCondition {
+  /** Match when actor's agentId contains one of these substrings */
+  agentId?: string[];
+  /** Match when action category is one of these */
+  category?: ActionClass[];
+  /** Match when original tool name is one of these */
+  originalTool?: string[];
+  /** Match when running in a worktree (true) or not (false) */
+  inWorktree?: boolean;
+}
+
 export interface NormalizedIntent {
   action: string;
   target: string;
@@ -111,6 +129,8 @@ export interface NormalizedIntent {
   /** Impact forecast data from simulation, used for predictive policy rules */
   forecast?: IntentForecast;
   destructive: boolean;
+  /** KE-2: Vendor-neutral action context for cross-runtime policy evaluation */
+  context?: ActionContext;
 }
 
 /** Evaluation result for a single rule against an intent */
@@ -129,6 +149,8 @@ export interface RuleEvaluation {
     forecastMatched?: boolean;
     /** Actual vs. threshold values for each evaluated forecast field */
     forecastValues?: ForecastMatchValues;
+    /** KE-2: Whether the ActionContext condition matched */
+    contextMatched?: boolean;
   };
   outcome: 'match' | 'no-match' | 'skipped';
 }
@@ -183,6 +205,7 @@ interface ConditionMatchResult {
   personaMatched?: boolean;
   forecastMatched?: boolean;
   forecastValues?: ForecastMatchValues;
+  contextMatched?: boolean;
 }
 
 function matchPersonaCondition(
@@ -270,6 +293,33 @@ function matchForecastCondition(
   return { matched: true, values };
 }
 
+function matchContextCondition(
+  contextCond: ContextCondition,
+  context: ActionContext | undefined
+): boolean {
+  if (!context) return false;
+
+  if (contextCond.agentId && contextCond.agentId.length > 0) {
+    if (!contextCond.agentId.some((id) => context.actor.agentId.includes(id))) return false;
+  }
+
+  if (contextCond.category && contextCond.category.length > 0) {
+    if (!contextCond.category.includes(context.action.category)) return false;
+  }
+
+  if (contextCond.originalTool && contextCond.originalTool.length > 0) {
+    if (!context.action.originalTool) return false;
+    if (!contextCond.originalTool.includes(context.action.originalTool)) return false;
+  }
+
+  if (contextCond.inWorktree !== undefined) {
+    const isInWorktree = !!context.actor.worktree;
+    if (contextCond.inWorktree !== isInWorktree) return false;
+  }
+
+  return true;
+}
+
 function matchConditions(
   conditions: PolicyRule['conditions'],
   intent: NormalizedIntent
@@ -349,6 +399,23 @@ function matchConditions(
     }
   }
 
+  let contextMatched: boolean | undefined;
+  if (conditions.context) {
+    contextMatched = matchContextCondition(conditions.context, intent.context);
+    if (!contextMatched) {
+      return {
+        matched: false,
+        scopeMatched,
+        limitExceeded,
+        branchMatched,
+        personaMatched,
+        forecastMatched,
+        forecastValues,
+        contextMatched,
+      };
+    }
+  }
+
   return {
     matched: true,
     scopeMatched,
@@ -357,6 +424,7 @@ function matchConditions(
     personaMatched,
     forecastMatched,
     forecastValues,
+    contextMatched,
   };
 }
 
@@ -387,6 +455,7 @@ function createRuleEval(
           personaMatched: conditionResult.personaMatched,
           forecastMatched: conditionResult.forecastMatched,
           forecastValues: conditionResult.forecastValues,
+          contextMatched: conditionResult.contextMatched,
         }
       : {},
     outcome,
@@ -564,4 +633,10 @@ export function evaluate(
   };
 }
 
-export { matchAction, matchScope, matchPersonaCondition, matchForecastCondition };
+export {
+  matchAction,
+  matchScope,
+  matchPersonaCondition,
+  matchForecastCondition,
+  matchContextCondition,
+};

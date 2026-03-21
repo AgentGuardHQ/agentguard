@@ -62,6 +62,19 @@ function normalizeFilePath(filePath: string | undefined, projectRoot?: string): 
   return lastSlash >= 0 ? normalized.slice(lastSlash + 1) : normalized;
 }
 
+/**
+ * Detect if running inside a git worktree and return the worktree path.
+ * Returns undefined if not in a worktree or if detection fails.
+ */
+function detectWorktree(projectRoot?: string): string | undefined {
+  const root = projectRoot || process.cwd();
+  // Git worktrees typically live under .claude/worktrees/ or .git/worktrees/
+  const normalized = root.replace(/\\/g, '/');
+  const worktreeMatch = normalized.match(/[/\\]\.claude[/\\]worktrees[/\\]([^/\\]+)/);
+  if (worktreeMatch) return normalized;
+  return undefined;
+}
+
 export function normalizeClaudeCodeAction(
   payload: ClaudeCodeHookPayload,
   persona?: AgentPersona,
@@ -72,6 +85,10 @@ export function normalizeClaudeCodeAction(
   const envPersona = personaFromEnv();
   const resolvedPersona = persona || (envPersona as AgentPersona | undefined);
 
+  // KE-2: Capture context-enrichment fields for ActionContext construction in the AAB
+  const timestamp = Date.now();
+  const worktree = detectWorktree(projectRoot);
+
   let baseAction: RawAgentAction;
 
   switch (payload.tool_name) {
@@ -81,7 +98,7 @@ export function normalizeClaudeCodeAction(
         file: normalizeFilePath(input.file_path as string | undefined, projectRoot),
         content: input.content as string | undefined,
         agent,
-        metadata: { hook: payload.hook, sessionId: payload.session_id },
+        metadata: { hook: payload.hook, sessionId: payload.session_id, timestamp, worktree },
       };
       break;
 
@@ -95,6 +112,8 @@ export function normalizeClaudeCodeAction(
           hook: payload.hook,
           old_string: input.old_string,
           sessionId: payload.session_id,
+          timestamp,
+          worktree,
         },
       };
       break;
@@ -104,7 +123,7 @@ export function normalizeClaudeCodeAction(
         tool: 'Read',
         file: normalizeFilePath(input.file_path as string | undefined, projectRoot),
         agent,
-        metadata: { hook: payload.hook, sessionId: payload.session_id },
+        metadata: { hook: payload.hook, sessionId: payload.session_id, timestamp, worktree },
       };
       break;
 
@@ -120,6 +139,8 @@ export function normalizeClaudeCodeAction(
           timeout: input.timeout,
           description: input.description,
           sessionId: payload.session_id,
+          timestamp,
+          worktree,
         },
       };
       break;
@@ -130,7 +151,13 @@ export function normalizeClaudeCodeAction(
         tool: 'Glob',
         target: input.pattern as string | undefined,
         agent,
-        metadata: { hook: payload.hook, path: input.path, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          path: input.path,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -139,7 +166,13 @@ export function normalizeClaudeCodeAction(
         tool: 'Grep',
         target: input.pattern as string | undefined,
         agent,
-        metadata: { hook: payload.hook, path: input.path, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          path: input.path,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -148,7 +181,13 @@ export function normalizeClaudeCodeAction(
         tool: 'NotebookEdit',
         file: input.notebook_path as string | undefined,
         agent,
-        metadata: { hook: payload.hook, cell_id: input.cell_id, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          cell_id: input.cell_id,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -156,7 +195,13 @@ export function normalizeClaudeCodeAction(
       baseAction = {
         tool: 'TodoWrite',
         agent,
-        metadata: { hook: payload.hook, todos: input.todos, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          todos: input.todos,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -165,7 +210,13 @@ export function normalizeClaudeCodeAction(
         tool: 'WebFetch',
         target: input.url as string | undefined,
         agent,
-        metadata: { hook: payload.hook, prompt: input.prompt, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          prompt: input.prompt,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -174,7 +225,13 @@ export function normalizeClaudeCodeAction(
         tool: 'WebSearch',
         target: input.query as string | undefined,
         agent,
-        metadata: { hook: payload.hook, query: input.query, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          query: input.query,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -183,7 +240,13 @@ export function normalizeClaudeCodeAction(
         tool: 'Agent',
         target: (input.prompt as string | undefined)?.slice(0, 100),
         agent,
-        metadata: { hook: payload.hook, prompt: input.prompt, sessionId: payload.session_id },
+        metadata: {
+          hook: payload.hook,
+          prompt: input.prompt,
+          sessionId: payload.session_id,
+          timestamp,
+          worktree,
+        },
       };
       break;
 
@@ -197,6 +260,8 @@ export function normalizeClaudeCodeAction(
           skill: input.skill,
           args: input.args,
           sessionId: payload.session_id,
+          timestamp,
+          worktree,
         },
       };
       break;
@@ -205,7 +270,7 @@ export function normalizeClaudeCodeAction(
       baseAction = {
         tool: payload.tool_name,
         agent,
-        metadata: { hook: payload.hook, input, sessionId: payload.session_id },
+        metadata: { hook: payload.hook, input, sessionId: payload.session_id, timestamp, worktree },
       };
       break;
   }

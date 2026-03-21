@@ -350,3 +350,66 @@ describe('formatHookResponse', () => {
     expect(parsed.hookSpecificOutput.permissionDecisionReason).toContain('Destructive command');
   });
 });
+
+describe('KE-2: ActionContext enrichment in Claude Code adapter', () => {
+  it('includes timestamp in metadata for all tool types', () => {
+    const before = Date.now();
+    const payload: ClaudeCodeHookPayload = {
+      hook: 'PreToolUse',
+      tool_name: 'Write',
+      tool_input: { file_path: 'src/test.ts', content: 'hello' },
+      session_id: 'sess-ke2',
+    };
+    const action = normalizeClaudeCodeAction(payload);
+    const after = Date.now();
+
+    expect(action.metadata).toBeDefined();
+    expect(action.metadata!.timestamp).toBeGreaterThanOrEqual(before);
+    expect(action.metadata!.timestamp).toBeLessThanOrEqual(after);
+    expect(action.metadata!.sessionId).toBe('sess-ke2');
+  });
+
+  it('includes worktree in metadata when in a worktree directory', () => {
+    const worktreePath = '/project/.claude/worktrees/my-branch';
+    const payload: ClaudeCodeHookPayload = {
+      hook: 'PreToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'echo hello' },
+    };
+    const action = normalizeClaudeCodeAction(payload, undefined, worktreePath);
+
+    expect(action.metadata).toBeDefined();
+    expect(action.metadata!.worktree).toBe(worktreePath.replace(/\\/g, '/'));
+  });
+
+  it('sets worktree to undefined when not in a worktree directory', () => {
+    const payload: ClaudeCodeHookPayload = {
+      hook: 'PreToolUse',
+      tool_name: 'Read',
+      tool_input: { file_path: 'src/index.ts' },
+    };
+    const action = normalizeClaudeCodeAction(payload, undefined, '/normal/project');
+
+    expect(action.metadata).toBeDefined();
+    expect(action.metadata!.worktree).toBeUndefined();
+  });
+
+  it('enriches all tool types with timestamp and worktree', () => {
+    const tools = ['Write', 'Edit', 'Read', 'Bash', 'Glob', 'Grep', 'WebFetch', 'WebSearch', 'Agent', 'Skill', 'TodoWrite', 'NotebookEdit'];
+    const worktreePath = '/repo/.claude/worktrees/test';
+
+    for (const toolName of tools) {
+      const payload: ClaudeCodeHookPayload = {
+        hook: 'PreToolUse',
+        tool_name: toolName,
+        tool_input: toolName === 'Bash' ? { command: 'ls' } : { file_path: 'x' },
+        session_id: 'sess-all',
+      };
+      const action = normalizeClaudeCodeAction(payload, undefined, worktreePath);
+
+      expect(action.metadata?.timestamp, `${toolName} should have timestamp`).toBeDefined();
+      expect(typeof action.metadata?.timestamp).toBe('number');
+      expect(action.metadata?.sessionId, `${toolName} should have sessionId`).toBe('sess-all');
+    }
+  });
+});

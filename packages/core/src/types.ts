@@ -831,6 +831,88 @@ export interface AgentPersona {
   readonly tags?: readonly string[];
 }
 
+// ---------------------------------------------------------------------------
+// KE-2: ActionContext — Vendor-Neutral Action Representation
+// ---------------------------------------------------------------------------
+
+/**
+ * Actor identity — who is performing the action.
+ * Vendor-neutral: works for Claude Code, Copilot, LangGraph, or any runtime.
+ */
+export interface ActionActor {
+  /** Resolved agent identity (e.g., 'claude-code:abc123') */
+  readonly agentId: string;
+  /** Raw session identifier from the runtime */
+  readonly sessionId?: string;
+  /** Git worktree path if running in a worktree */
+  readonly worktree?: string;
+}
+
+/**
+ * Action classification — what kind of action is being performed.
+ * Maps provider-specific tool names to canonical action types.
+ */
+export interface ActionClassification {
+  /** Canonical action type (e.g., 'file.write', 'git.push', 'shell.exec') */
+  readonly type: string;
+  /** Action class category (file, git, shell, npm, etc.) */
+  readonly category: ActionClass;
+  /** Original tool name before normalization (e.g., 'Write', 'Bash') */
+  readonly originalTool?: string;
+}
+
+/**
+ * Structured action arguments — tool-agnostic representation of action parameters.
+ * Decouples policy evaluation from provider-specific payload shapes.
+ */
+export interface ActionArguments {
+  /** Primary target (file path, branch name, URL, command text, etc.) */
+  readonly target: string;
+  /** Shell command text (for shell.exec actions) */
+  readonly command?: string;
+  /** Git branch (for git actions) */
+  readonly branch?: string;
+}
+
+/**
+ * Environment snapshot captured at action time.
+ * Provides situational awareness for context-sensitive policy rules.
+ */
+export interface ActionEnvironment {
+  /** Working directory at action time */
+  readonly workingDirectory?: string;
+  /** Repository root path */
+  readonly repoRoot?: string;
+  /** Currently checked-out git branch */
+  readonly currentBranch?: string;
+  /** Timestamp (ms since epoch) when the action was captured */
+  readonly timestamp?: number;
+}
+
+/**
+ * ActionContext — the vendor-neutral action representation contract (KE-2).
+ *
+ * Decouples the policy engine from provider-specific payloads.
+ * All runtime adapters (Claude Code, Copilot, LangGraph) produce ActionContext
+ * through their normalization layer. The policy engine consumes only this contract.
+ *
+ * Structure:
+ * - actor: who is performing the action
+ * - action: what kind of action (canonical type + class)
+ * - args: structured, tool-agnostic arguments
+ * - environment: optional situational context
+ */
+export interface ActionContext {
+  /** Actor identity (agent, session, worktree) */
+  readonly actor: ActionActor;
+  /** Normalized action classification */
+  readonly action: ActionClassification;
+  /** Structured, tool-agnostic arguments */
+  readonly args: ActionArguments;
+  /** Environment snapshot at action time */
+  readonly environment?: ActionEnvironment;
+}
+
 /** Raw agent action before normalization */
 export interface RawAgentAction {
   readonly tool?: string;
@@ -853,6 +935,8 @@ export interface NormalizedIntent {
   readonly filesAffected?: number;
   readonly persona?: AgentPersona;
   readonly destructive: boolean;
+  /** KE-2: Vendor-neutral action context for cross-runtime policy evaluation */
+  readonly context?: ActionContext;
 }
 
 /** AAB authorization result */
