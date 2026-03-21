@@ -22,9 +22,7 @@ function assertWithinBoundary(target: string): string {
   const rel = relative(PROJECT_ROOT, resolved);
   // If rel starts with '..' or is absolute, the path escapes the boundary
   if (rel.startsWith('..') || isAbsolute(rel)) {
-    throw new Error(
-      `Path traversal blocked: "${target}" resolves outside project boundary`
-    );
+    throw new Error(`Path traversal blocked: "${target}" resolves outside project boundary`);
   }
   return resolved;
 }

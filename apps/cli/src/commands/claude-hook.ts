@@ -344,9 +344,7 @@ async function handlePreToolUse(
         shouldEnforce = true;
       } else {
         const reason = result.decision?.decision?.reason ?? 'Action denied by policy';
-        monitorWarnings.push(
-          `\u26A0 agentguard: policy denied \u2014 ${reason} (monitor mode)`
-        );
+        monitorWarnings.push(`\u26A0 agentguard: policy denied \u2014 ${reason} (monitor mode)`);
       }
     }
 

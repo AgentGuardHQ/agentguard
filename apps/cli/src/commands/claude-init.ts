@@ -490,21 +490,29 @@ function showProtectionSummary(
   process.stderr.write(`  ${FG.green}${BOLD}AgentGuard is active.${RESET}\n\n`);
 
   if (mode === 'monitor') {
-    process.stderr.write(`  ${BOLD}Mode: ${FG.yellow}monitor${RESET}${BOLD} — threats are logged, not blocked${RESET}\n\n`);
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.yellow}monitor${RESET}${BOLD} — threats are logged, not blocked${RESET}\n\n`
+    );
     process.stderr.write(`  ${BOLD}Monitoring for:${RESET}\n`);
     process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} push to main/master\n`);
     process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} force push\n`);
     process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} credential file creation\n`);
     process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} permission escalation\n`);
     process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} blast radius exceeded\n`);
-    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`);
+    process.stderr.write(
+      `  ${FG.red}■${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`
+    );
   } else {
-    process.stderr.write(`  ${BOLD}Mode: ${FG.red}enforce${RESET}${BOLD} — dangerous actions are blocked${RESET}\n\n`);
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.red}enforce${RESET}${BOLD} — dangerous actions are blocked${RESET}\n\n`
+    );
     process.stderr.write(`  ${BOLD}Enforcing:${RESET}\n`);
     process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} push to main/master\n`);
     process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} force push\n`);
     process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} writes to .env, credentials\n`);
-    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`);
+    process.stderr.write(
+      `  ${FG.red}■${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`
+    );
   }
   process.stderr.write(`  ${FG.blue}■${RESET} ${DIM}Track${RESET} all actions with audit trail\n`);
 

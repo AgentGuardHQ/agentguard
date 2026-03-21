@@ -295,14 +295,10 @@ export function buildModeConfig(policies: LoadedPolicy[], projectRoot?: string):
             config.packModes = packDef.invariantModes;
           }
         } catch {
-          process.stderr.write(
-            `  \x1b[33mWarning:\x1b[0m Failed to load pack "${policy.pack}"\n`
-          );
+          process.stderr.write(`  \x1b[33mWarning:\x1b[0m Failed to load pack "${policy.pack}"\n`);
         }
       } else {
-        process.stderr.write(
-          `  \x1b[33mWarning:\x1b[0m Pack "${policy.pack}" not found\n`
-        );
+        process.stderr.write(`  \x1b[33mWarning:\x1b[0m Pack "${policy.pack}" not found\n`);
       }
     }
   }
