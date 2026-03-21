@@ -84,7 +84,7 @@ agentguard cloud login
 |------------|---------|
 | **Policy enforcement** | YAML rules with deny / allow / escalate — drop `agentguard.yaml` in your repo |
 | **21 built-in invariants** | Secret exposure, protected branches, blast radius, path traversal, CI/CD config, package script injection, and more |
-| **46 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
+| **47 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
 | **Real-time cloud dashboard** | Telemetry streams to your team dashboard; opt-in, anonymous by default |
 | **Multi-tenant** | Team workspaces, GitHub/Google OAuth, SSO-ready |
 | **Live Office visualization** | 2D view of agents working in real time — share a link with your team |
@@ -218,7 +218,7 @@ rules:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, etc. (23 types across 8 classes) |
+| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (24 types across 9 classes) |
 | `effect` | `string` | `deny` or `allow` |
 | `target` | `string` | Glob pattern for file paths or command patterns |
 | `branches` | `string[]` | Git branch names this rule applies to |
@@ -269,7 +269,7 @@ AgentGuard Kernel
   2. Evaluate    — match policy rules (deny / allow / escalate)
   3. Check       — run 21 built-in invariants
   4. Execute     — run action via adapter (file, shell, git)
-  5. Emit        — 46 event kinds → SQLite audit trail + cloud telemetry
+  5. Emit        — 47 event kinds → SQLite audit trail + cloud telemetry
 ```
 
 **Storage:** SQLite audit trail at `.agentguard/`. Every decision is recorded and verifiable.

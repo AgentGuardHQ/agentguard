@@ -55,12 +55,13 @@ packages/
 ├── telemetry/     @red-codes/telemetry — Runtime telemetry and logging
 ├── plugins/       @red-codes/plugins — Plugin ecosystem (discovery, registry, validation, sandboxing)
 ├── renderers/     @red-codes/renderers — Renderer plugin system (registry, TUI renderer)
+├── sdk/           @red-codes/sdk — Agent SDK for programmatic governance integration
 ├── swarm/         @red-codes/swarm — Shareable agent swarm templates
 └── telemetry-client/ @red-codes/telemetry-client — Telemetry client (identity, signing, queue, sender)
 
 apps/
 ├── cli/           @red-codes/agentguard — CLI entry point and commands (published npm package)
-├── mcp-server/    @red-codes/mcp-server — MCP governance server (14 governance tools)
+├── mcp-server/    @red-codes/mcp-server — MCP governance server (15 governance tools)
 └── vscode-extension/  agentguard-vscode — VS Code extension (sidebar panels, notifications, diagnostics)
 
 policies/          Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
