@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgentGuard — Governed Action Runtime for AI Coding Agents</title>
-  <meta name="description" content="AgentGuard intercepts AI agent tool calls, enforces policies and invariants, and produces a verifiable execution trail. Deterministic governance for every action.">
+  <title>AgentGuard — Runtime Governance for AI Coding Agents</title>
+  <meta name="description" content="AgentGuard is a runtime governance layer for AI coding agents. Policy enforcement, 21 safety invariants, real-time cloud dashboard, and a tamper-resistant audit trail.">
 
   <!-- OpenGraph -->
-  <meta property="og:title" content="AgentGuard — Governed Action Runtime for AI Coding Agents">
-  <meta property="og:description" content="Deterministic governance layer between AI agent proposals and execution. Policy enforcement, 21 safety invariants, 87 destructive patterns, full audit trail.">
+  <meta property="og:title" content="AgentGuard — Runtime Governance for AI Coding Agents">
+  <meta property="og:description" content="Install in 30 seconds. Every tool call your AI agent makes passes through a deterministic governance kernel. 21 invariants. 46 event kinds. Cloud dashboard. Full audit trail.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://agentguardhq.github.io/agentguard/">
   <meta property="og:image" content="https://agentguardhq.github.io/agentguard/og-image.png">
@@ -256,6 +256,7 @@
         <a href="#invariants" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Invariants</a>
         <a href="#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
+        <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Dashboard</a>
         <a href="posts.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Newsletter</a>
         <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
         <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Get Started</a>
@@ -277,6 +278,7 @@
         <a href="#invariants" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Invariants</a>
         <a href="#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
+        <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Dashboard</a>
         <a href="posts.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Newsletter</a>
         <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
         <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors text-center cursor-pointer">Get Started</a>
@@ -309,10 +311,10 @@
             </a>
           </div>
           <h1 class="font-mono font-bold text-4xl sm:text-5xl lg:text-6xl leading-tight mb-6">
-            Governed Action Runtime for <span class="text-cta">AI Coding Agents</span>
+            Runtime Governance for <span class="text-cta">AI Coding Agents</span>
           </h1>
           <p class="text-muted text-lg leading-relaxed mb-8 max-w-xl">
-            Every tool call your AI agent makes &mdash; file writes, shell commands, git operations &mdash; passes through a deterministic governance kernel. 21 safety invariants. 87 destructive patterns. Full audit trail.
+            Every tool call your AI agent makes &mdash; file writes, shell commands, git operations &mdash; passes through a deterministic governance kernel. 21 safety invariants. 46 event kinds. Real-time cloud dashboard. Full audit trail.
           </p>
           <div class="flex flex-wrap gap-4">
             <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold px-6 py-3 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer">
@@ -361,7 +363,7 @@
             <div class="text-muted text-sm mt-1">Destructive Patterns</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="49">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="46">0</div>
             <div class="text-muted text-sm mt-1">Event Kinds</div>
           </div>
           <div class="reveal">
@@ -369,7 +371,7 @@
             <div class="text-muted text-sm mt-1">Action Types</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="20">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="21">0</div>
             <div class="text-muted text-sm mt-1">Invariants</div>
           </div>
           <div class="reveal">
@@ -864,48 +866,146 @@
             </div>
           </div>
 
-          <!-- RTK (optional) -->
-          <div class="reveal" style="transition-delay: 100ms">
+          <!-- Init policy -->
+          <div class="reveal" style="transition-delay: 80ms">
             <div class="flex items-center gap-2 mb-3">
               <span class="font-mono text-cta text-sm font-semibold">02</span>
-              <span class="text-text font-semibold text-sm">Install RTK for token savings <span class="text-muted font-normal">(optional)</span></span>
+              <span class="text-text font-semibold text-sm">Initialize governance policy</span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">#</span> <span class="text-muted">Homebrew (macOS/Linux) &mdash; 60-90% token savings</span>
-<span class="text-muted">$</span> <span class="text-text">brew install rtk</span>
-<span class="text-muted">#</span> <span class="text-muted">Windows: github.com/rtk-ai/rtk/releases</span></code></pre>
-              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="brew install rtk" aria-label="Copy to clipboard">
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">cd your-project</span>
+<span class="text-muted">$</span> <span class="text-text">agentguard init</span>
+<span class="text-muted"># Creates agentguard.yaml with sensible defaults</span></code></pre>
+              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard init" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
           </div>
 
           <!-- Hook into Claude Code -->
-          <div class="reveal" style="transition-delay: 200ms">
+          <div class="reveal" style="transition-delay: 160ms">
             <div class="flex items-center gap-2 mb-3">
               <span class="font-mono text-cta text-sm font-semibold">03</span>
               <span class="text-text font-semibold text-sm">Hook into Claude Code</span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard claude-init</span></code></pre>
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard claude-init</span>
+<span class="text-muted"># Governance is active &mdash; every tool call is now governed</span></code></pre>
               <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard claude-init" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
           </div>
 
-          <!-- Status -->
-          <div class="reveal" style="transition-delay: 300ms">
+          <!-- Cloud login (optional) -->
+          <div class="reveal" style="transition-delay: 240ms">
             <div class="flex items-center gap-2 mb-3">
               <span class="font-mono text-cta text-sm font-semibold">04</span>
-              <span class="text-text font-semibold text-sm">Check governance status</span>
+              <span class="text-text font-semibold text-sm">Connect to cloud dashboard <span class="text-muted font-normal">(optional)</span></span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard status</span></code></pre>
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard cloud login</span>
+<span class="text-muted"># Opens browser &rarr; GitHub or Google OAuth &rarr; CLI auto-configures</span>
+<span class="text-muted"># Visit: agentguard-cloud-dashboard.vercel.app</span></code></pre>
+              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard cloud login" aria-label="Copy to clipboard">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="reveal" style="transition-delay: 320ms">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="font-mono text-cta text-sm font-semibold">05</span>
+              <span class="text-text font-semibold text-sm">Verify governance is active</span>
+            </div>
+            <div class="relative group">
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard status</span>
+<span class="text-cta">✓</span> <span class="text-muted">Claude Code hooks installed</span>
+<span class="text-cta">✓</span> <span class="text-muted">Policy file (agentguard.yaml)</span>
+<span class="text-cta">✓</span> <span class="text-muted">Runtime active</span></code></pre>
               <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard status" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- CLOUD DASHBOARD                              -->
+    <!-- ============================================ -->
+    <section id="cloud" class="py-24" aria-labelledby="cloud-heading">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-16 reveal">
+          <h2 id="cloud-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">Cloud Dashboard</h2>
+          <p class="text-muted text-lg max-w-2xl mx-auto">Real-time governance telemetry for your whole team. Multi-tenant workspaces, GitHub/Google OAuth, live agent visualization.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 reveal-stagger">
+          <!-- Dashboard card -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="shrink-0 w-10 h-10 rounded-lg bg-cta/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </div>
+              <div>
+                <h3 class="font-mono font-semibold text-text text-sm mb-1">Team Dashboard</h3>
+                <p class="text-muted text-sm">Governance runs, violation timelines, analytics. Sign in with GitHub or Google.</p>
+              </div>
+            </div>
+            <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-cta hover:text-cta-dark text-sm font-mono font-semibold transition-colors cursor-pointer">
+              agentguard-cloud-dashboard.vercel.app
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+
+          <!-- Office-sim card -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="shrink-0 w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              </div>
+              <div>
+                <h3 class="font-mono font-semibold text-text text-sm mb-1">Live Office Visualization</h3>
+                <p class="text-muted text-sm">2D visualization of agent activity in real time. See your agents working &mdash; share a link with your team.</p>
+              </div>
+            </div>
+            <a href="https://agentguard-cloud-office-sim.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-info hover:opacity-80 text-sm font-mono font-semibold transition-colors cursor-pointer">
+              agentguard-cloud-office-sim.vercel.app
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+
+          <!-- SSO / OAuth card -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="shrink-0 w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <h3 class="font-mono font-semibold text-text text-sm mb-1">SSO &amp; Multi-Tenant</h3>
+                <p class="text-muted text-sm">GitHub and Google OAuth. Isolated team workspaces. Invite-based access control.</p>
+              </div>
+            </div>
+            <pre class="bg-bg rounded-lg p-3 font-mono text-xs text-muted overflow-x-auto"><code>agentguard cloud login
+<span class="text-cta"># Opens browser &rarr; select workspace &rarr; done</span></code></pre>
+          </div>
+
+          <!-- Telemetry card -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="shrink-0 w-10 h-10 rounded-lg bg-cta/10 flex items-center justify-center">
+                <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div>
+                <h3 class="font-mono font-semibold text-text text-sm mb-1">Anonymous Telemetry by Default</h3>
+                <p class="text-muted text-sm">Telemetry is opt-in and anonymous until you connect a workspace. No PII collected without consent.</p>
+              </div>
+            </div>
+            <pre class="bg-bg rounded-lg p-3 font-mono text-xs text-muted overflow-x-auto"><code>agentguard telemetry   <span class="text-cta"># manage settings</span>
+agentguard cloud status <span class="text-cta"># check connection</span></code></pre>
           </div>
         </div>
       </div>
@@ -1139,7 +1239,7 @@ rules:
             <ul class="space-y-2 text-sm font-mono">
               <li class="text-muted"><span class="text-text">claude-init</span> &mdash; Claude Code hooks</li>
               <li class="text-muted"><span class="text-text">copilot-init</span> &mdash; GitHub Copilot hooks</li>
-              <li class="text-muted"><span class="text-text">cloud connect</span> &mdash; Connect to AgentGuard Cloud</li>
+              <li class="text-muted"><span class="text-text">cloud login</span> &mdash; Device code auth (browser OAuth)</li>
               <li class="text-muted"><span class="text-text">cloud events/runs</span> &mdash; Query cloud data</li>
               <li class="text-muted"><span class="text-text">auto-setup</span> &mdash; Auto-detect &amp; configure</li>
               <li class="text-muted"><span class="text-text">config</span> &mdash; Show/get/set config</li>
@@ -1639,6 +1739,8 @@ rules:
         <div>
           <h3 class="font-mono font-semibold text-text text-sm mb-4">Resources</h3>
           <ul class="space-y-2">
+            <li><a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Cloud Dashboard</a></li>
+            <li><a href="https://agentguard-cloud-office-sim.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Live Office</a></li>
             <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/docs/unified-architecture.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Architecture Docs</a></li>
             <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/docs/event-model.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Event Model</a></li>
             <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/docs/plugin-api.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Plugin API</a></li>

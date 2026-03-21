@@ -2,529 +2,262 @@
   <img src="site/assets/logo-wordmark.svg" alt="AgentGuard" width="320">
 </p>
 
-<p align="center"><strong>Governed action runtime for AI coding agents.</strong><br>
-<em>Ships with a 26-agent autonomous development swarm.</em></p>
+<p align="center"><strong>Runtime governance for AI coding agents.</strong><br>
+Install in 30 seconds. Block dangerous actions before they execute.</p>
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![npm](https://img.shields.io/npm/v/@red-codes/agentguard.svg)](https://www.npmjs.com/package/@red-codes/agentguard)
-[![Website](https://img.shields.io/badge/Website-AgentGuardHQ.github.io/agentguard-22C55E?style=flat&logo=github)](https://agentguardhq.github.io/agentguard/)
+<p align="center">
+  <a href="https://www.npmjs.com/package/@red-codes/agentguard"><img src="https://img.shields.io/npm/v/@red-codes/agentguard.svg" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License: Apache 2.0"></a>
+  <img src="https://github.com/AgentGuardHQ/agentguard/actions/workflows/size-check.yml/badge.svg" alt="CI">
+  <a href="https://agentguardhq.github.io/agentguard/"><img src="https://img.shields.io/badge/Website-AgentGuardHQ.github.io-22C55E?style=flat&logo=github" alt="Website"></a>
+</p>
 
 ---
 
-AgentGuard intercepts AI agent tool calls, enforces policies and invariants, and produces a verifiable execution trail. Traditional AI safety focuses on model behavior — AgentGuard enforces safety at the execution layer through deterministic governance of every action.
+AI coding agents (Claude Code, GitHub Copilot, any MCP client) execute file writes, shell commands, and git operations autonomously. AgentGuard sits between what an agent proposes and what actually runs — enforcing policy, checking 21 built-in safety invariants, and emitting a tamper-resistant audit trail.
 
-```
-agent proposes action  →  policy evaluated  →  invariants checked  →  allow/deny  →  execute  →  events emitted
-```
+**For individuals:** block dangerous actions in your local dev environment.
+**For teams:** centralized governance, compliance packs, and real-time dashboard.
 
 ## Quick Start
 
-**Install and activate governance in 30 seconds:**
-
 ```bash
-# 1. Install AgentGuard
 npm install -g @red-codes/agentguard
-
-# 2. (Optional) Install RTK for 60-90% token savings
-# Homebrew (macOS/Linux):
-brew install rtk
-# Quick install (macOS/Linux):
-curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
-# Windows: download from https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)
-
-# 3. Set up Claude Code hooks
+cd your-project
+agentguard init
 agentguard claude-init
-
-# 4. Check governance status
-agentguard status
-# ✓ Claude Code hooks
-# ✓ Policy file (agentguard.yaml)
-# ⚡ Token optimization  rtk v0.30.0 (60-90% token savings)
+# Governance is active — every Claude Code tool call is now governed
 ```
 
-That's it. Start a Claude Code session and every tool call is now governed. Dangerous actions (push to main, write to .env, rm -rf, force push) are **blocked before execution**.
-
-**Try it on your own repo:**
+Verify it's running:
 
 ```bash
-# Evaluate a sample action against the default policy
+agentguard status
+# ✓ Claude Code hooks installed
+# ✓ Policy file (agentguard.yaml)
+# ✓ Runtime active
+```
+
+Test a deny rule without executing anything:
+
+```bash
 echo '{"tool":"Bash","command":"git push origin main"}' | agentguard guard --dry-run
-
-# Start the runtime with a policy file
-agentguard guard --policy agentguard.yaml
-
-# Inspect the last run
-agentguard inspect --last
+# ✗ git.push main → DENIED (protect-main)
 ```
 
-## Why AgentGuard Exists
+## Cloud Dashboard
 
-AI coding agents execute file writes, shell commands, and git operations autonomously — but there's no governance layer between what an agent proposes and what actually runs. One bad tool call can push to main, leak secrets, or delete production files.
+Connect to the AgentGuard Cloud for team governance, real-time telemetry, and multi-tenant management:
 
-AgentGuard adds a **deterministic decision point** between proposal and execution:
-
-- **Safety policies** — declare what agents can and cannot do in YAML
-- **Invariant enforcement** — 21 built-in checks (secrets, protected branches, blast radius, skill/task protection, package script injection, lockfile integrity, CI/CD config, permission escalation, governance self-modification, container config, environment variables, recursive operations, large file writes, network egress, destructive migrations, transitive effect analysis, IDE socket access) run on every action
-- **Audit trail** — every decision is recorded in structured SQLite, inspectable after the fact
-- **Session debugging** — replay any agent session to see exactly what happened and why
-
-## How It Works
-
-AgentGuard evaluates every agent action through a **governed action kernel**:
-
-1. **Normalize** — Claude Code tool calls (Bash, Write, Edit, Read) are mapped to canonical action types (shell.exec, file.write, file.read)
-2. **Evaluate** — policies match against the action (deny git.push to main, deny destructive commands, enforce scope limits)
-3. **Check invariants** — 21 built-in safety checks run on every action
-4. **Execute** — if allowed, the action runs via adapters (file, shell, git handlers)
-5. **Emit events** — full lifecycle events sunk to SQLite for audit trail
-
-### Example Output
-
-```
-  AgentGuard Runtime Active
-  policy: agentguard.yaml | invariants: 21 active
-
-  ✓ file.write src/auth/service.ts
-  ✓ shell.exec npm test
-  ✗ git.push main → DENIED (protect-main)
-  ⚠ invariant violated: protected-branch
+```bash
+agentguard cloud login
+# Opens browser → authenticate with GitHub or Google → CLI auto-configures
 ```
 
-## Policy Format
+| Link | Description |
+|------|-------------|
+| [agentguard-cloud-dashboard.vercel.app](https://agentguard-cloud-dashboard.vercel.app) | Team dashboard — runs, violations, analytics |
+| [agentguard-cloud-office-sim.vercel.app](https://agentguard-cloud-office-sim.vercel.app) | Live Office — 2D visualization of agent activity |
 
-Policies are YAML or JSON files that declare what agents can and cannot do:
+## What It Does
+
+| Capability | Details |
+|------------|---------|
+| **Policy enforcement** | YAML rules with deny / allow / escalate — drop `agentguard.yaml` in your repo |
+| **21 built-in invariants** | Secret exposure, protected branches, blast radius, path traversal, CI/CD config, package script injection, and more |
+| **46 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
+| **Real-time cloud dashboard** | Telemetry streams to your team dashboard; opt-in, anonymous by default |
+| **Multi-tenant** | Team workspaces, GitHub/Google OAuth, SSO-ready |
+| **Live Office visualization** | 2D view of agents working in real time — share a link with your team |
+| **Agent SDK** | Programmatic governance for custom integrations and RunManifest-driven workflows |
+| **Works with** | Claude Code, GitHub Copilot, any MCP client |
+
+## Policy Example
+
+Drop `agentguard.yaml` in your repo root. It's picked up automatically:
 
 ```yaml
-id: project-policy
-name: Project Policy
+id: my-project
+name: My Project Policy
 severity: 4
+
 rules:
   - action: git.push
     effect: deny
     branches: [main, master]
-    reason: Protected branch
-
-  - action: git.force-push
-    effect: deny
-    reason: Force push not allowed
+    reason: Protected branch — use a PR
 
   - action: file.write
     effect: deny
-    target: .env
+    target: "**/.env"
     reason: No secrets modification
+
+  - action: shell.exec
+    effect: deny
+    pattern: "rm -rf"
+    reason: Destructive shell commands blocked
 
   - action: file.read
     effect: allow
-    reason: Reading is always safe
+    reason: Read access is unrestricted
 ```
 
-Drop an `agentguard.yaml` in your repo root — the CLI picks it up automatically.
+Compose multiple policies with `extends`:
+
+```yaml
+extends:
+  - soc2
+  - hipaa
+```
 
 ## Built-in Invariants
 
 21 safety invariants run on every action evaluation:
 
-| Invariant | Severity | Description |
-|-----------|----------|-------------|
-| **no-secret-exposure** | 5 (critical) | Blocks access to .env, credentials, .pem, .key files |
-| **no-credential-file-creation** | 5 (critical) | Blocks creation or modification of well-known credential files (SSH keys, cloud configs, auth tokens) |
-| **no-scheduled-task-modification** | 5 (critical) | Prevents modification of scheduled task files |
-| **no-cicd-config-modification** | 5 (critical) | Blocks writes to CI/CD pipeline configs (.github/workflows/, .gitlab-ci.yml, Jenkinsfile) |
-| **no-governance-self-modification** | 5 (critical) | Prevents agents from modifying governance config (policy files, governance data) |
-| **protected-branch** | 4 (high) | Prevents direct push to main/master |
-| **no-force-push** | 4 (high) | Forbids force push |
-| **no-skill-modification** | 4 (high) | Prevents modification of .claude/skills/ files |
-| **no-package-script-injection** | 4 (high) | Blocks package.json modifications that alter lifecycle script entries |
-| **no-permission-escalation** | 4 (high) | Catches chmod to world-writable, setuid/setgid, ownership changes |
-| **blast-radius-limit** | 3 (medium) | Enforces file modification limit (default 20) |
-| **test-before-push** | 3 (medium) | Requires tests pass before push |
-| **large-file-write** | 3 (medium) | Enforces per-file size limit to prevent data dumps |
-| **no-container-config-modification** | 3 (medium) | Protects Dockerfile, docker-compose.yml, .dockerignore |
-| **no-env-var-modification** | 3 (medium) | Detects attempts to modify environment variables or shell profile files |
-| **no-destructive-migration** | 3 (medium) | Flags writes to migration directories containing destructive DDL |
-| **no-network-egress** | 4 (high) | Denies HTTP requests to non-allowlisted domains |
-| **transitive-effect-analysis** | 4 (high) | Analyzes written files for downstream effects that would violate policy |
-| **recursive-operation-guard** | 2 (low) | Flags find -exec, xargs combined with write/delete operations |
-| **lockfile-integrity** | 2 (low) | Ensures package.json changes sync with lockfiles |
-| **no-ide-socket-access** | 4 (high) | Blocks access to IDE socket files (vscode-ipc-*.sock) |
-
-## RTK Token Optimization
-
-AgentGuard integrates with [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) to reduce token consumption by 60-90% on common CLI output. When RTK is installed, AgentGuard's shell adapter automatically rewrites commands through RTK after governance approval.
-
-```bash
-# Install RTK (optional but recommended)
-npm install -g @anthropic-ai/rtk
-
-# AgentGuard detects RTK automatically
-agentguard status
-# ⚡ Token optimization  rtk v0.30.0 (60-90% token savings)
-```
-
-**How it works:** After the kernel approves a shell command, the shell adapter passes it to `rtk rewrite` for a token-optimized equivalent. If RTK has a compact version (git, npm, cargo, tsc, docker, kubectl, etc.), it uses that. If not, the original command runs unchanged. This happens transparently — no configuration needed.
-
-**Token savings by category:**
-
-| Category | Commands | Savings |
-|----------|----------|---------|
-| Tests | vitest, playwright, cargo test | 90-99% |
-| Build | next, tsc, lint, prettier | 70-87% |
-| Git | status, log, diff, add, commit | 59-80% |
-| Package managers | pnpm, npm, npx | 70-90% |
-| Infrastructure | docker, kubectl | 85% |
-
-Control via environment variable: `AGENTGUARD_RTK_ENABLED=true` (default) or `false` to disable.
-
-## Escalation
-
-AgentGuard tracks repeated denials and invariant violations. If an agent repeatedly attempts blocked actions, the runtime escalates to lockdown — all actions denied until a human intervenes. See [escalation state machine](docs/unified-architecture.md) for the full detail.
-
-## Performance
-
-Governance overhead is measured per component using [vitest bench](https://vitest.dev/guide/features.html#benchmarking). All numbers below are p99 latencies from the benchmark suite (`pnpm bench`).
-
-| Component | p99 Latency | Description |
-|-----------|-------------|-------------|
-| **Policy evaluation** | < 30µs | Single action against a mixed deny/allow policy |
-| **Invariant check (single)** | < 10µs | One invariant against system state |
-| **Invariant suite (21 checks)** | < 300µs | All 21 built-in invariants, clean state |
-| **Simulation (filesystem)** | < 100µs | File write/delete impact prediction |
-| **Simulation (git)** | < 50µs | Branch delete, push impact prediction |
-| **Full kernel loop** | < 5ms | End-to-end: propose → normalize → evaluate → emit |
-
-**Key takeaway:** The full governance pipeline adds < 5ms of overhead per agent action. Policy evaluation and invariant checking are sub-millisecond. These numbers are enforced by a CI regression gate that fails if any p99 exceeds 50ms.
-
-Run benchmarks locally:
-
-```bash
-pnpm bench                    # Run all benchmarks (77 cases across 4 suites)
-pnpm bench:report             # Generate markdown report from results
-```
-
-## CLI
-
-Install globally: `npm install -g @red-codes/agentguard`
-
-```bash
-# === Governance ===
-agentguard guard                          # Start governed action runtime
-agentguard guard --policy <file>          # Use a specific policy file (YAML/JSON)
-agentguard guard --policy a --policy b   # Compose multiple policies with precedence
-agentguard guard --dry-run                # Evaluate without executing actions
-agentguard inspect [runId]                # Show action graph and decisions for a run
-agentguard inspect --last                 # Inspect most recent run
-agentguard events [runId]                 # Show raw event stream for a run
-agentguard analytics                      # Analyze violation patterns across sessions
-agentguard status                         # Show current governance session status
-agentguard audit-verify                   # Verify tamper-resistant audit chain integrity
-
-# === Setup & Configuration ===
-agentguard claude-init                    # Set up Claude Code hook integration
-agentguard auto-setup                     # Auto-detect AgentGuard and configure Claude Code hooks
-agentguard config show|get|set            # Manage AgentGuard configuration
-agentguard init <type>                    # Scaffold governance extensions or storage backends
-agentguard demo                           # Interactive governance showcase
-
-# === Adoption & Migration ===
-agentguard adoption                       # Adoption metrics and onboarding status
-agentguard learn                          # Interactive tutorials and learning paths
-agentguard migrate                        # Migrate configuration between versions
-
-# === Replay & Debug ===
-agentguard session-viewer [runId]         # Generate interactive HTML dashboard
-agentguard replay --last                  # Replay a governance session timeline
-agentguard replay --last --step           # Step through events interactively
-agentguard diff <run1> <run2>             # Compare two governance sessions side-by-side
-agentguard traces [runId]                 # Display policy evaluation traces for a run
-agentguard simulate <action-json>         # Simulate action and show predicted impact
-
-# === Portability & CI ===
-agentguard export <runId>                 # Export a governance session to JSONL
-agentguard import <file>                  # Import a governance session from JSONL
-agentguard ci-check <session>             # Verify governance session for violations
-agentguard evidence-pr                    # Attach governance evidence summary to a PR
-
-# === Policy ===
-agentguard policy validate <file>        # Validate a policy file without starting the runtime
-agentguard policy-verify <file>          # Verify policy file structure and rules
-
-# === Plugins ===
-agentguard plugin list                    # List installed plugins
-agentguard plugin install <path>          # Install a plugin from a local path
-agentguard plugin remove <id>            # Remove a plugin by ID
-agentguard plugin search [query]          # Search for plugins on npm
-
-# === Cloud ===
-agentguard cloud connect <api-key>       # Connect to AgentGuard Cloud
-agentguard cloud status                  # Check cloud connection status
-agentguard cloud events                  # Query governance events from cloud
-agentguard cloud runs                    # List governance runs from cloud
-agentguard cloud summary                 # Cloud analytics summary
-agentguard cloud disconnect              # Disconnect from cloud
-
-# === Trust & Telemetry ===
-agentguard trust                          # Manage policy and hook trust verification
-agentguard telemetry                      # Manage telemetry enrollment and settings
-agentguard help                           # Show all commands
-```
-
-## Claude Code Integration
-
-AgentGuard integrates with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) via **inline hooks** — not a separate daemon or background process. When a Claude Code session starts, AgentGuard's hooks fire on every tool call, routing each one through the governance kernel for policy and invariant evaluation before Claude Code executes it.
-
-This design is intentional: no daemon to crash, no ports to manage, no IPC. Each hook invocation is self-contained — load policy, evaluate, respond, exit. If anything fails, the hook exits cleanly and Claude Code continues (fail-open).
-
-```bash
-agentguard claude-init    # Set up Claude Code hooks
-```
-
-**Three hooks are installed:**
-
-| Hook | Purpose |
-|------|---------|
-| `PreToolUse` | Governance enforcement — evaluates every tool call against policies and invariants, blocks denied actions |
-| `PostToolUse` | Error monitoring — reports Bash stderr errors (informational only) |
-| `SessionStart` | Build check + governance status display on session start |
-
-**How PreToolUse works:**
-
-```
-Claude Code tool call → stdin (JSON) → AgentGuard kernel → stdout (deny) or silent (allow)
-```
-
-The kernel runs in evaluation-only mode (`dryRun: true`) — it checks policies and invariants but doesn't execute actions. Claude Code handles execution; AgentGuard only governs.
-
-**Tool call mapping:**
-
-| Claude Code Tool | AgentGuard Action |
-|-----------------|-------------------|
-| Write | file.write |
-| Edit | file.write |
-| Read | file.read |
-| Bash | shell.exec (or git.push, git.commit if git command detected) |
-| Glob | file.read |
-| Grep | file.read |
-
-See [Hook Architecture](docs/hook-architecture.md) for the full design, configuration options, and debugging guide.
-
-**Global hook installation (recommended):**
-
-For full coverage even when Claude Code starts from a parent directory, install hooks globally:
-
-```bash
-agentguard claude-init --global    # Installs to ~/.claude/settings.json
-```
-
-Global hooks use path-aware policy resolution — they walk up from the target file to find the nearest `agentguard.yaml`, so governance applies regardless of working directory.
-
-## GitHub Copilot Integration
-
-AgentGuard also supports [GitHub Copilot CLI](https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line) via the same hook pattern:
-
-```bash
-agentguard copilot-init             # Set up Copilot hooks
-agentguard copilot-init --global    # Global installation
-agentguard copilot-init --remove    # Remove hooks
-```
-
-Copilot tool names (`bash`, `view`, `edit`, `create`, `glob`, `grep`) are normalized to AgentGuard's canonical action types, and all policies and invariants apply identically.
-
-## AgentGuard Cloud
-
-Connect to AgentGuard Cloud for centralized governance analytics across teams and repos:
-
-```bash
-agentguard cloud connect <api-key>   # Store credentials
-agentguard cloud status              # Check connection
-agentguard cloud events              # Query governance events
-agentguard cloud runs                # List governance runs
-agentguard cloud summary             # Analytics summary
-agentguard cloud disconnect          # Remove credentials
-```
-
-Cloud telemetry is opt-in and configured via `agentguard cloud connect`. Events, runs, and analytics are queryable from the CLI or via the MCP server's cloud tools.
-
-## Compliance Policy Packs
-
-AgentGuard ships with pre-built compliance policy packs:
-
-```yaml
-# In your agentguard.yaml:
-extends:
-  - soc2
-  - hipaa
-  - engineering-standards
-```
-
-| Pack | Controls | Description |
-|------|----------|-------------|
-| **soc2** | CC6.1, CC6.6, CC7.1-7.2 | SOC 2 Type II access controls and change management |
-| **hipaa** | 164.312(a)-(e) | HIPAA technical safeguards for PHI protection |
-| **engineering-standards** | — | Balanced dev-friendly guardrails |
-| **ci-safe** | — | Strict CI/CD pipeline protection |
-| **enterprise** | — | Full enterprise governance |
-| **strict** | — | Maximum restriction |
-| **open-source** | — | OSS contribution-friendly defaults |
-
-Policy packs are composable — list multiple in `extends` and they merge with your local rules taking highest precedence.
-
-## Data Protection Plugin
-
-For enhanced secret detection beyond the built-in invariants:
-
-```bash
-npm install @red-codes/invariant-data-protection
-```
-
-Adds three invariants:
-- **no-pii-in-logs** — Scans log-file writes for emails, SSNs, credit cards, phone numbers
-- **no-hardcoded-secrets** — 3-layer detection: regex patterns → fingerprint matching → Shannon entropy analysis (18+ secret types)
-- **max-file-count-per-action** — Limits batch operations to a configurable file count
-
-## Agent Swarm
-
-AgentGuard ships with a **26-agent autonomous development swarm** — the same one that builds AgentGuard itself. One command scaffolds the entire pipeline into your repo:
-
-```bash
-agentguard init swarm
-```
-
-This installs 39 skill definitions, governance hooks, and a configurable swarm manifest. Agents handle implementation, code review, CI triage, security audits, planning, docs sync, and more — all under full governance policy enforcement.
-
-```
-ROADMAP.md (you write strategy)
-    │
-    ├── Planning Agent (daily) ─── reads roadmap, sets priorities
-    ├── Coder Agent (2-hourly) ─── picks issues, implements, creates PRs
-    ├── Code Review Agent (2h) ─── reviews PRs for quality
-    ├── CI Triage Agent (hourly) ─ fixes failing CI
-    ├── PR Merger Agent (2h) ───── auto-merges when gates pass
-    ├── Security Audit (weekly) ── dependency + code scanning
-    ├── Recovery Controller (2h) ─ self-healing, detects unhealthy state
-    └── ... 19 more agents across 5 tiers
-```
-
-Select which tiers to enable (core, governance, ops, quality, marketing), override cron schedules, and set behavioral thresholds in `agentguard-swarm.yaml`.
-
-Full documentation: [packages/swarm/README.md](packages/swarm/README.md)
-
-## Event Trail
-
-Every action proposal, decision, and execution is recorded as JSONL:
-
-```
-.agentguard/events/<runId>.jsonl
-```
-
-Inspect with:
-
-```bash
-agentguard inspect --last     # Action summary + event stream
-agentguard events --last      # Raw JSONL to stdout (pipe to jq, etc.)
-```
+| Invariant | Severity | What it blocks |
+|-----------|----------|----------------|
+| `no-secret-exposure` | Critical | `.env`, credentials, `.pem`, `.key` files |
+| `no-credential-file-creation` | Critical | SSH keys, cloud configs, auth tokens |
+| `no-cicd-config-modification` | Critical | `.github/workflows/`, `.gitlab-ci.yml`, Jenkinsfile |
+| `no-governance-self-modification` | Critical | Agents modifying their own governance config |
+| `no-scheduled-task-modification` | Critical | Cron jobs, scheduled task files |
+| `protected-branch` | High | Direct push to main/master |
+| `no-force-push` | High | `git push --force` |
+| `no-network-egress` | High | HTTP requests outside your allowlist |
+| `no-permission-escalation` | High | `chmod` world-writable, setuid/setgid |
+| `no-skill-modification` | High | `.claude/skills/` files |
+| `no-package-script-injection` | High | `package.json` lifecycle script changes |
+| `transitive-effect-analysis` | High | Downstream policy violations from a file write |
+| `no-ide-socket-access` | High | VS Code IPC socket files |
+| `blast-radius-limit` | Medium | Caps file modification count per action (default: 20) |
+| `no-container-config-modification` | Medium | Dockerfile, docker-compose.yml |
+| `no-env-var-modification` | Medium | Shell profile and env var files |
+| `no-destructive-migration` | Medium | Migration files with DROP/TRUNCATE DDL |
+| `large-file-write` | Medium | Per-file size limit (prevents data dumps) |
+| `test-before-push` | Medium | Requires tests to pass before push |
+| `recursive-operation-guard` | Low | `find -exec`, `xargs` with write/delete |
+| `lockfile-integrity` | Low | `package.json` changes without lockfile sync |
 
 ## Architecture
 
 ```
-Agent Tool Call  →  AgentGuard Kernel  →  Policy + Invariants  →  allow / deny
-                                                                       │
-                                              ┌────────────────────────┤
-                                              ▼                        ▼
-                                     Execution Adapter           Event Stream
-                                    (file, shell, git)        (JSONL audit trail)
+Agent tool call
+      │
+      ▼
+AgentGuard Kernel
+  1. Normalize   — map tool call to canonical action type
+  2. Evaluate    — match policy rules (deny / allow / escalate)
+  3. Check       — run 21 built-in invariants
+  4. Execute     — run action via adapter (file, shell, git)
+  5. Emit        — 46 event kinds → SQLite audit trail + cloud telemetry
 ```
 
-Full kernel loop detail: [docs/unified-architecture.md](docs/unified-architecture.md)
+**Storage:** SQLite audit trail at `.agentguard/`. Every decision is recorded and verifiable.
 
-### Repository Structure
+**Kernel overhead:** < 5ms end-to-end (policy evaluation < 30µs, full invariant suite < 300µs).
 
-This is a **pnpm monorepo** orchestrated by **Turbo**. Workspace packages live in `packages/`, applications in `apps/`.
+## For Teams and Enterprise
 
+| Feature | Details |
+|---------|---------|
+| **Compliance packs** | `extends: soc2`, `extends: hipaa` — pre-built policy packs mapping to SOC 2 CC6/CC7 and HIPAA 164.312 controls |
+| **Audit trail** | Tamper-resistant SQLite event chain; export to JSONL for SIEM ingestion |
+| **Evidence PRs** | `agentguard evidence-pr` — attach governance evidence summary to any PR |
+| **CI gates** | `agentguard ci-check <session>` — fail CI if a governance session contains violations |
+| **Branch protection** | Policy-enforced push controls on top of GitHub branch rules |
+| **SSO** | GitHub and Google OAuth via cloud dashboard |
+| **Multi-tenant** | Isolated workspaces per team or project |
+
+## CLI Reference
+
+```bash
+# Setup
+agentguard init                           # Initialize policy in current project
+agentguard claude-init                    # Install Claude Code hooks
+agentguard claude-init --global           # Install hooks globally (~/.claude/settings.json)
+agentguard status                         # Show governance status
+
+# Runtime
+agentguard guard                          # Start governed action runtime
+agentguard guard --policy <file>          # Use a specific policy file
+agentguard guard --dry-run                # Evaluate without executing
+
+# Inspect
+agentguard inspect --last                 # Show last run action graph
+agentguard events --last                  # Raw event stream (pipe to jq)
+agentguard traces [runId]                 # Policy evaluation traces
+agentguard replay --last                  # Replay session timeline
+
+# Cloud
+agentguard cloud login                    # Device code auth — opens browser
+agentguard cloud status                   # Check cloud connection
+agentguard cloud events                   # Query events from cloud
+agentguard cloud runs                     # List governance runs
+agentguard cloud summary                  # Analytics summary
+
+# CI / Compliance
+agentguard ci-check <session>             # Verify session for violations (CI gate)
+agentguard evidence-pr                    # Attach evidence summary to PR
+agentguard audit-verify                   # Verify tamper-resistant audit chain
+agentguard analytics                      # Violation pattern analysis
+
+# Policy
+agentguard policy validate <file>         # Validate a policy file
 ```
-packages/
-├── core/src/               # @red-codes/core — Shared types, actions, hash, rng, execution-log
-├── events/src/             # @red-codes/events — Canonical event model (schema, bus, store)
-├── policy/src/             # @red-codes/policy — Policy evaluation, YAML/JSON loaders, composition
-├── invariants/src/         # @red-codes/invariants — 21 built-in invariant definitions + checker
-├── invariant-data-protection/src/ # @red-codes/invariant-data-protection — Data protection invariant plugin
-├── kernel/src/             # @red-codes/kernel — Governed action kernel (orchestrator, AAB, decisions, simulation)
-├── adapters/src/           # @red-codes/adapters — Execution adapters (file, shell, git, claude-code)
-├── matchers/src/           # @red-codes/matchers — Structured matchers (Aho-Corasick, globs, sets)
-├── storage/src/            # @red-codes/storage — SQLite storage backend (opt-in)
-├── telemetry/src/          # @red-codes/telemetry — Runtime telemetry and logging
-├── plugins/src/            # @red-codes/plugins — Plugin ecosystem (discovery, registry, sandboxing)
-├── renderers/src/          # @red-codes/renderers — Renderer plugin system (TUI renderer)
-├── swarm/src/              # @red-codes/swarm — Shareable agent swarm templates
-└── telemetry-client/src/   # @red-codes/telemetry-client — Telemetry client (identity, signing, queue, sender)
 
-apps/
-├── cli/src/                # @red-codes/agentguard — CLI (published npm package)
-│   ├── bin.ts              # CLI entry point
-│   ├── evidence-summary.ts # Evidence summary generator for PR reports
-│   └── commands/           # guard, inspect, replay, export, import, simulate, ci-check, cloud, etc.
-├── mcp-server/src/         # @red-codes/mcp-server — MCP governance server (14 governance tools)
-├── vscode-extension/src/   # agentguard-vscode — VS Code extension
-│   ├── extension.ts        # Sidebar panels, file watcher, notifications
-│   ├── providers/          # Tree data providers (run status, run history, recent events)
-│   └── services/           # Event reader, notification formatter, diagnostics, violation mapper
+## Agent SDK
 
-crates/
-└── kernel-core/            # Rust kernel (in development)
-
-policies/                   # Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
-```
-
-## npm Packages
-
-AgentGuard is published as three packages on npm:
-
-| Package | Description | Install |
-|---------|-------------|---------|
-| [`@red-codes/agentguard`](https://www.npmjs.com/package/@red-codes/agentguard) | CLI -- the primary install for end users | `npm install -g @red-codes/agentguard` |
-| [`@red-codes/core`](https://www.npmjs.com/package/@red-codes/core) | Shared types, action definitions, utilities | `npm install @red-codes/core` |
-| [`@red-codes/events`](https://www.npmjs.com/package/@red-codes/events) | Canonical event model (schema, bus, store) | `npm install @red-codes/events` |
-
-**Building integrations?** Install the library packages for typed access to AgentGuard's action model and event system:
+Use AgentGuard programmatically in your own tooling:
 
 ```bash
 npm install @red-codes/core @red-codes/events
 ```
 
-## Rust Kernel
+```typescript
+import { createKernel } from '@red-codes/kernel';
 
-Work has started on a Rust implementation of the governance kernel in `crates/kernel-core/`. The long-term goal is to replace the TypeScript kernel with a native binary for lower latency and smaller footprint. The Rust kernel is not yet functional -- the TypeScript kernel remains the production implementation.
-
-## Run Locally
-
-```bash
-git clone https://github.com/AgentGuardHQ/agentguard.git
-cd agentguard
-pnpm install            # Install dependencies
-pnpm build              # Build all packages (turbo build)
-pnpm test               # Run all tests (turbo test)
+const kernel = createKernel({ policy: './agentguard.yaml' });
+const decision = await kernel.propose({
+  tool: 'Bash',
+  command: 'git push origin main',
+});
+// decision.effect === 'deny'
 ```
 
-## Documentation
+## Compliance Policy Packs
 
-| Document | Description |
-|----------|-------------|
-| [AgentGuard Spec](docs/agentguard.md) | Governance runtime specification |
-| [Architecture](docs/unified-architecture.md) | Governed action kernel model |
-| [Hook Architecture](docs/hook-architecture.md) | Claude Code hook integration design |
-| [Agent Swarm](packages/swarm/README.md) | 26-agent autonomous development swarm |
-| [Roadmap](ROADMAP.md) | Technical roadmap and next steps |
-| [Event Model](docs/event-model.md) | Canonical event schema |
-| [Plugin API](docs/plugin-api.md) | Event sources and extension points |
-| [Contributing](CONTRIBUTING.md) | How to contribute |
+```yaml
+# agentguard.yaml
+extends:
+  - soc2              # CC6.1, CC6.6, CC7.1-7.2
+  - hipaa             # 164.312(a)-(e) technical safeguards
+  - engineering-standards
+```
 
-## Report Issues and Contributing
+| Pack | Controls |
+|------|----------|
+| `soc2` | SOC 2 Type II access controls and change management |
+| `hipaa` | HIPAA technical safeguards for PHI protection |
+| `engineering-standards` | Balanced dev-friendly guardrails |
+| `ci-safe` | Strict CI/CD pipeline protection |
+| `enterprise` | Full enterprise governance |
+| `strict` | Maximum restriction |
+| `open-source` | OSS contribution-friendly defaults |
 
-Found a bug, have a feature request, or want to contribute? Open an issue at:
+## Links
 
-**[github.com/AgentGuardHQ/agentguard/issues](https://github.com/AgentGuardHQ/agentguard/issues)**
-
-Contributions are welcome -- see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on submitting pull requests, writing invariants, creating policy packs, and building adapters.
+| Resource | URL |
+|----------|-----|
+| Dashboard | [agentguard-cloud-dashboard.vercel.app](https://agentguard-cloud-dashboard.vercel.app) |
+| Live Office | [agentguard-cloud-office-sim.vercel.app](https://agentguard-cloud-office-sim.vercel.app) |
+| Website | [agentguardhq.github.io/agentguard](https://agentguardhq.github.io/agentguard/) |
+| Docs | [docs/](docs/) |
+| Architecture | [docs/unified-architecture.md](docs/unified-architecture.md) |
+| Hook design | [docs/hook-architecture.md](docs/hook-architecture.md) |
+| Event model | [docs/event-model.md](docs/event-model.md) |
+| Roadmap | [ROADMAP.md](ROADMAP.md) |
+| Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Issues | [github.com/AgentGuardHQ/agentguard/issues](https://github.com/AgentGuardHQ/agentguard/issues) |
 
 ## License
 
