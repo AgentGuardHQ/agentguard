@@ -15,6 +15,8 @@ import type { ClaudeCodeHookPayload } from '@red-codes/adapters';
 import type { LoadedPolicy } from '@red-codes/policy';
 import { resolveMainRepoRoot } from '@red-codes/core';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
+import { resolveInvariantMode } from '../mode-resolver.js';
+import { buildModeConfig } from '../policy-resolver.js';
 
 // --- Session state: persist formatPass/testsPass across hook invocations ----
 // Each Claude Code session is stateless per hook call. We bridge this by writing
@@ -313,14 +315,56 @@ async function handlePreToolUse(
 
   // If denied, output reason to stdout and signal the caller to exit with code 2
   if (!result.allowed) {
-    const response = formatHookResponse(result);
-    if (response) {
-      // Wait for stdout to flush before returning — process.exit() can fire
-      // before async writes complete, causing Claude Code to miss the deny
-      // response and treat exit code 2 as a no-op. This fixes #620.
-      await new Promise<void>((resolve) => process.stdout.write(response, () => resolve()));
+    // Resolve enforcement mode for each violation.
+    // Default to 'enforce' for backward compatibility — only users who
+    // explicitly set mode: monitor in agentguard.yaml get fail-open behavior.
+    const modeConfig = buildModeConfig(policyDefs as LoadedPolicy[], projectRoot);
+    if (!modeConfig.mode) modeConfig.mode = 'enforce';
+    const violations = result.decision?.violations ?? [];
+
+    // Check if ANY violation requires enforcement
+    let shouldEnforce = false;
+    const monitorWarnings: string[] = [];
+
+    if (violations.length > 0) {
+      // Invariant violations — check each invariant's mode
+      for (const v of violations) {
+        const mode = resolveInvariantMode(v.invariantId, modeConfig);
+        if (mode === 'enforce') {
+          shouldEnforce = true;
+          break;
+        }
+        monitorWarnings.push(
+          `\u26A0 agentguard: ${v.invariantId} triggered \u2014 ${v.name} (monitor mode)`
+        );
+      }
+    } else {
+      // Policy rule denial (no invariant violations) — use top-level mode
+      const mode = resolveInvariantMode(null, modeConfig);
+      if (mode === 'enforce') {
+        shouldEnforce = true;
+      } else {
+        const reason = result.decision?.decision?.reason ?? 'Action denied by policy';
+        monitorWarnings.push(
+          `\u26A0 agentguard: policy denied \u2014 ${reason} (monitor mode)`
+        );
+      }
     }
-    return true;
+
+    if (shouldEnforce) {
+      // Current behavior — block the action
+      const response = formatHookResponse(result);
+      if (response) {
+        await new Promise<void>((resolve) => process.stdout.write(response, () => resolve()));
+      }
+      return true;
+    }
+
+    // Monitor mode — warn but allow
+    for (const warning of monitorWarnings) {
+      process.stderr.write(warning + '\n');
+    }
+    return false;
   }
   return false;
 }
