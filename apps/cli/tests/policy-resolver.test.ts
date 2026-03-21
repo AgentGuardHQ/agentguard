@@ -19,6 +19,10 @@ vi.mock('@red-codes/policy', () => ({
   describeComposition: vi.fn(),
 }));
 
+vi.mock('@red-codes/core', () => ({
+  resolveMainRepoRoot: vi.fn(() => '/mock-repo-root'),
+}));
+
 // Mock process.exit to prevent test process from exiting
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 const mockStderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
@@ -35,6 +39,7 @@ import {
   describeComposition,
 } from '@red-codes/policy';
 
+import { resolveMainRepoRoot } from '@red-codes/core';
 import {
   findDefaultPolicy,
   findPolicyForPath,
@@ -42,6 +47,8 @@ import {
   loadPolicyFile,
   loadPolicyDefs,
   loadComposedPolicies,
+  resolvePackByName,
+  buildModeConfig,
 } from '../src/policy-resolver.js';
 
 beforeEach(() => {
@@ -425,5 +432,110 @@ describe('describeComposition', () => {
   it('is re-exported from @red-codes/policy', () => {
     expect(describeComposition).toBeDefined();
     expect(typeof describeComposition).toBe('function');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolvePackByName
+// ---------------------------------------------------------------------------
+
+describe('resolvePackByName', () => {
+  it('resolves essentials pack from bundled policies', () => {
+    const expectedPath = join('/mock-repo-root', 'policies', 'essentials.yaml');
+    vi.mocked(existsSync).mockImplementation((p) => p === expectedPath);
+
+    const result = resolvePackByName('essentials');
+    expect(result).not.toBeNull();
+    expect(result).toContain('essentials.yaml');
+  });
+
+  it('returns null for nonexistent pack', () => {
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    const result = resolvePackByName('does-not-exist-xyz');
+    expect(result).toBeNull();
+  });
+
+  it('prefers project-local pack over bundled', () => {
+    const localPath = join('/my-project', 'policies', 'custom.yaml');
+    const bundledPath = join('/mock-repo-root', 'policies', 'custom.yaml');
+
+    vi.mocked(existsSync).mockImplementation(
+      (p) => p === localPath || p === bundledPath
+    );
+
+    const result = resolvePackByName('custom', '/my-project');
+    expect(result).toBe(localPath);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildModeConfig
+// ---------------------------------------------------------------------------
+
+describe('buildModeConfig', () => {
+  it('extracts mode from first policy that defines it', () => {
+    const policies = [
+      { id: 'p1', name: 'P1', rules: [], severity: 3, mode: 'monitor' as const },
+      { id: 'p2', name: 'P2', rules: [], severity: 3, mode: 'enforce' as const },
+    ];
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    const config = buildModeConfig(policies);
+    expect(config.mode).toBe('monitor');
+  });
+
+  it('extracts invariantModes from first policy that defines them', () => {
+    const policies = [
+      {
+        id: 'p1',
+        name: 'P1',
+        rules: [],
+        severity: 3,
+        invariantModes: { 'no-force-push': 'enforce' as const },
+      },
+    ];
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    const config = buildModeConfig(policies);
+    expect(config.invariantModes).toEqual({ 'no-force-push': 'enforce' });
+  });
+
+  it('resolves pack and extracts packModes', () => {
+    const policies = [
+      { id: 'p1', name: 'P1', rules: [], severity: 3, pack: 'essentials' },
+    ];
+    const packPath = join('/mock-repo-root', 'policies', 'essentials.yaml');
+
+    vi.mocked(existsSync).mockImplementation((p) => p === packPath);
+    vi.mocked(readFileSync).mockReturnValue('id: essentials');
+    vi.mocked(parseYamlPolicy).mockReturnValue({
+      invariantModes: { 'no-secret-exposure': 'enforce' as const },
+    } as never);
+
+    const config = buildModeConfig(policies);
+    expect(config.packModes).toEqual({ 'no-secret-exposure': 'enforce' });
+  });
+
+  it('warns when pack is not found', () => {
+    const policies = [
+      { id: 'p1', name: 'P1', rules: [], severity: 3, pack: 'nonexistent' },
+    ];
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    buildModeConfig(policies);
+    expect(mockStderr).toHaveBeenCalledWith(
+      expect.stringContaining('Pack "nonexistent" not found')
+    );
+  });
+
+  it('returns empty config when policies have no mode fields', () => {
+    const policies = [
+      { id: 'p1', name: 'P1', rules: [], severity: 3 },
+    ];
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    const config = buildModeConfig(policies);
+    expect(config).toEqual({});
   });
 });

@@ -1,0 +1,44 @@
+# Essentials — core safety invariants for any AI-assisted codebase.
+# Used as the default pack for new AgentGuard installations.
+
+id: essentials
+name: Essentials
+description: Core safety invariants — secrets, force push, protected branches, credentials, permissions, blast radius
+severity: 4
+
+invariants:
+  no-secret-exposure: enforce
+  no-force-push: enforce
+  protected-branch: enforce
+  no-credential-file-creation: enforce
+  no-permission-escalation: enforce
+  blast-radius-limit: enforce
+
+rules:
+  - action: git.push
+    effect: deny
+    branches: [main, master]
+    reason: Direct push to protected branch
+
+  - action: git.force-push
+    effect: deny
+    reason: Force push rewrites shared history
+
+  - action: shell.exec
+    effect: deny
+    target: rm -rf
+    reason: Destructive shell commands blocked
+
+  - action: file.write
+    effect: deny
+    target: .env
+    reason: Secrets files must not be modified
+
+  # Worktree enforcement — agents should use worktrees, not checkout in main tree
+  - action: git.checkout
+    effect: deny
+    reason: Use git worktree instead of checkout — isolates agent work from main working tree
+
+  - action: git.reset
+    effect: deny
+    reason: Git reset is destructive — use a worktree for experimental work
