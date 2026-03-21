@@ -1,15 +1,92 @@
 // File operation adapter — executes file.read, file.write, file.delete actions.
 // Node.js adapter. Uses fs APIs.
+// Security: all paths are validated against the project root boundary (#636).
 
 import { readFile, writeFile, unlink, rename } from 'node:fs/promises';
+import { resolve, relative, isAbsolute } from 'node:path';
+import { realpathSync } from 'node:fs';
 import type { CanonicalAction } from '@red-codes/core';
+
+const PROJECT_ROOT = resolve(process.cwd());
+
+/**
+ * Fully decodes URL-encoded characters, handling double/triple encoding.
+ * Loops until the string is stable (no more encoded sequences).
+ */
+function fullyDecode(input: string): string {
+  let prev = input;
+  for (let i = 0; i < 10; i++) {
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(prev);
+    } catch {
+      break; // malformed encoding — stop decoding
+    }
+    if (decoded === prev) break;
+    prev = decoded;
+  }
+  return prev;
+}
+
+/**
+ * Validates that a path resolves within the project root boundary.
+ * Prevents path traversal, null byte injection, URL-encoded escapes,
+ * and symlink-based escapes.
+ *
+ * Returns the resolved absolute path on success.
+ * Throws on any escape attempt.
+ */
+function assertWithinBoundary(target: string): string {
+  // 1. Reject null bytes — can truncate paths on some systems
+  if (target.includes('\0')) {
+    throw new Error(`Path traversal blocked: null byte in path "${target}"`);
+  }
+
+  // 2. Fully decode URL-encoded characters (%2e%2e → .., %252e → %2e → .)
+  const decoded = fullyDecode(target);
+
+  // 3. Resolve to absolute path relative to project root
+  const resolved = resolve(PROJECT_ROOT, decoded);
+
+  // 4. Check lexical boundary (catches ../ and absolute paths)
+  const rel = relative(PROJECT_ROOT, resolved);
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    throw new Error(
+      `Path traversal blocked: "${target}" resolves outside project boundary`
+    );
+  }
+
+  // 5. Follow symlinks and re-check boundary
+  try {
+    const real = realpathSync(resolved);
+    const realRel = relative(PROJECT_ROOT, real);
+    if (realRel.startsWith('..') || isAbsolute(realRel)) {
+      throw new Error(
+        `Path traversal blocked: "${target}" resolves outside project boundary (symlink escape)`
+      );
+    }
+  } catch (err: unknown) {
+    // ENOENT is fine — file doesn't exist yet (e.g., file.write to new path).
+    // Any other error (EACCES, etc.) should propagate.
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      // Re-throw our own traversal errors
+      if (err instanceof Error && /path traversal/i.test(err.message)) {
+        throw err;
+      }
+      // For other fs errors, let the downstream operation handle them
+    }
+  }
+
+  return resolved;
+}
 
 export async function fileAdapter(action: CanonicalAction): Promise<unknown> {
   const target = action.target;
 
   switch (action.type) {
     case 'file.read': {
-      const content = await readFile(target, 'utf8');
+      const safePath = assertWithinBoundary(target);
+      const content = await readFile(safePath, 'utf8');
       return { path: target, size: content.length };
     }
 
@@ -18,12 +95,14 @@ export async function fileAdapter(action: CanonicalAction): Promise<unknown> {
       if (content === undefined) {
         throw new Error('file.write requires content');
       }
-      await writeFile(target, content, 'utf8');
+      const safePath = assertWithinBoundary(target);
+      await writeFile(safePath, content, 'utf8');
       return { path: target, written: content.length };
     }
 
     case 'file.delete': {
-      await unlink(target);
+      const safePath = assertWithinBoundary(target);
+      await unlink(safePath);
       return { path: target, deleted: true };
     }
 
@@ -32,7 +111,9 @@ export async function fileAdapter(action: CanonicalAction): Promise<unknown> {
       if (!destination) {
         throw new Error('file.move requires destination');
       }
-      await rename(target, destination);
+      const safeSrc = assertWithinBoundary(target);
+      const safeDst = assertWithinBoundary(destination);
+      await rename(safeSrc, safeDst);
       return { from: target, to: destination };
     }
 
