@@ -27,6 +27,7 @@ import {
   generateSeed,
   createSeededRng,
   resolveCapabilityGrant,
+  resolveRole,
 } from '@red-codes/core';
 import {
   createEvent,
@@ -207,6 +208,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
   const tracer = config.tracer ?? null;
   const intentSpec = config.intentSpec ?? null;
   const manifest = config.manifest ?? null;
+  const agentRole = resolveRole(manifest);
   const tierRouter: TierRouter | null = config.tierRouterConfig
     ? createTierRouter(config.tierRouterConfig)
     : null;
@@ -275,6 +277,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
           justification: (rawAction.metadata?.justification as string) || 'agent action',
           actionId: undefined,
           agentId: rawAction.agent || 'unknown',
+          agentRole,
           metadata: { runId, command: rawAction.command, persona: rawAction.persona },
         });
         allEvents.push(requestedEvent);
@@ -302,6 +305,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 capabilityGrant: resolved
                   ? { grantIndex: resolved.grantIndex, grant: resolved.grant }
                   : null,
+                agentRole,
                 metadata: { runId, tier: 'fast', cacheHitCount: cached.hitCount },
               });
               allEvents.push(allowedEvent);
@@ -348,6 +352,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                           capabilityGrant: resolved
                             ? { grantIndex: resolved.grantIndex, grant: resolved.grant }
                             : null,
+                          agentRole,
                           metadata: { runId, tier: 'fast' },
                         })
                       );
@@ -359,6 +364,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                           error: execution.error || 'Unknown execution error',
                           actionId: fastAction.id,
                           duration: executionDurationMs,
+                          agentRole,
                           metadata: { runId, tier: 'fast' },
                         })
                       );
@@ -373,6 +379,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                         error: (err as Error).message,
                         actionId: fastAction.id,
                         duration: executionDurationMs,
+                        agentRole,
                         metadata: { runId, tier: 'fast' },
                       })
                     );
@@ -418,6 +425,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 capabilityGrant: resolved
                   ? { grantIndex: resolved.grantIndex, grant: resolved.grant }
                   : null,
+                agentRole,
               });
               sinkDecision(decisionRecord);
 
@@ -427,6 +435,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 actionType: decisionRecord.action.type,
                 target: decisionRecord.action.target,
                 reason: decisionRecord.reason,
+                agentRole,
               });
               sinkEvent(decisionEvent);
 
@@ -486,6 +495,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               reason: `PAUSE intervention: ${decision.decision.reason}`,
               actionId: action?.id,
               policyHash: decision.decision.matchedPolicy?.id,
+              agentRole,
               metadata: {
                 runId,
                 intervention: interventionType,
@@ -543,6 +553,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 reason: pauseReason,
                 actionId: action?.id,
                 policyHash: decision.decision.matchedPolicy?.id,
+                agentRole,
                 metadata: { runId, intervention: interventionType, paused: true },
               });
               allEvents.push(deniedEvent);
@@ -554,6 +565,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 execution: null,
                 executionDurationMs: null,
                 simulation: null,
+                agentRole,
               });
               sinkDecision(decisionRecord);
 
@@ -563,6 +575,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 actionType: decisionRecord.action.type,
                 target: decisionRecord.action.target,
                 reason: decisionRecord.reason,
+                agentRole,
               });
               sinkEvent(decisionEvent);
 
@@ -590,6 +603,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               reason: `MODIFY intervention: ${decision.decision.reason}`,
               actionId: action?.id,
               policyHash: decision.decision.matchedPolicy?.id,
+              agentRole,
               metadata: {
                 runId,
                 intervention: interventionType,
@@ -694,6 +708,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 reason: modifyReason,
                 actionId: action?.id,
                 policyHash: decision.decision.matchedPolicy?.id,
+                agentRole,
                 metadata: { runId, intervention: interventionType, modified: false },
               });
               allEvents.push(deniedEvent);
@@ -705,6 +720,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 execution: null,
                 executionDurationMs: null,
                 simulation: null,
+                agentRole,
               });
               sinkDecision(decisionRecord);
 
@@ -714,6 +730,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 actionType: decisionRecord.action.type,
                 target: decisionRecord.action.target,
                 reason: decisionRecord.reason,
+                agentRole,
               });
               sinkEvent(decisionEvent);
 
@@ -743,6 +760,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               reason: `ROLLBACK intervention: ${decision.decision.reason}`,
               actionId: action?.id,
               policyHash: decision.decision.matchedPolicy?.id,
+              agentRole,
               metadata: {
                 runId,
                 intervention: interventionType,
@@ -869,6 +887,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                     capabilityGrant: rollbackGrant
                       ? { grantIndex: rollbackGrant.grantIndex, grant: rollbackGrant.grant }
                       : null,
+                    agentRole,
                     metadata: { runId, intervention: interventionType, snapshotId },
                   })
                 : execution?.success && rolledBack
@@ -878,6 +897,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                       error: 'Post-execution invariant check failed — rolled back',
                       actionId: action?.id,
                       duration: executionDurationMs,
+                      agentRole,
                       metadata: {
                         runId,
                         intervention: interventionType,
@@ -892,6 +912,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                       error: execution?.error || 'Execution skipped (no adapter or dry-run)',
                       actionId: action?.id,
                       duration: executionDurationMs,
+                      agentRole,
                       metadata: {
                         runId,
                         intervention: interventionType,
@@ -912,6 +933,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 capabilityGrant: rollbackGrant
                   ? { grantIndex: rollbackGrant.grantIndex, grant: rollbackGrant.grant }
                   : null,
+                agentRole,
               }),
               // Use 'rollback' outcome so audit consumers reading decision records
               // directly from JSONL/SQLite see the correct governance disposition —
@@ -926,6 +948,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               actionType: decisionRecord.action.type,
               target: decisionRecord.action.target,
               reason: rolledBack ? 'Executed then rolled back' : decisionRecord.reason,
+              agentRole,
             });
             sinkEvent(decisionEvent);
 
@@ -952,6 +975,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               reason: decision.decision.reason,
               actionId: action?.id,
               policyHash: decision.decision.matchedPolicy?.id,
+              agentRole,
               metadata: {
                 runId,
                 intervention: decision.intervention,
@@ -967,6 +991,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               execution: null,
               executionDurationMs: null,
               simulation: null,
+              agentRole,
             });
             sinkDecision(decisionRecord);
 
@@ -977,6 +1002,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               actionType: decisionRecord.action.type,
               target: decisionRecord.action.target,
               reason: decisionRecord.reason,
+              agentRole,
             });
             sinkEvent(decisionEvent);
 
@@ -1056,6 +1082,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   target: decision.intent.target,
                   reason: `Simulation revealed elevated risk: ${simulationResult.riskLevel} (blast radius: ${simulationResult.blastRadius})`,
                   actionId: action?.id,
+                  agentRole,
                   metadata: {
                     runId,
                     simulationTriggered: true,
@@ -1097,6 +1124,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   execution: null,
                   executionDurationMs: null,
                   simulation: simSummary,
+                  agentRole,
                 });
                 sinkDecision(decisionRecord);
 
@@ -1106,6 +1134,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   actionType: decisionRecord.action.type,
                   target: decisionRecord.action.target,
                   reason: `Simulation-triggered denial`,
+                  agentRole,
                 });
                 sinkEvent(decisionEvent);
 
@@ -1166,6 +1195,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
           capabilityGrant: resolvedGrant
             ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
             : null,
+          agentRole,
           metadata: { runId },
         });
         allEvents.push(allowedEvent);
@@ -1234,6 +1264,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   capabilityGrant: resolvedGrant
                     ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
                     : null,
+                  agentRole,
                   metadata: { runId },
                 });
                 allEvents.push(executedEvent);
@@ -1244,6 +1275,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   error: execution.error || 'Unknown execution error',
                   actionId: action.id,
                   duration: executionDurationMs,
+                  agentRole,
                   metadata: { runId },
                 });
                 allEvents.push(failedEvent);
@@ -1257,6 +1289,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 error: (err as Error).message,
                 actionId: action.id,
                 duration: executionDurationMs,
+                agentRole,
                 metadata: { runId },
               });
               allEvents.push(failedEvent);
@@ -1272,6 +1305,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               target: action.target,
               reason: `no_registered_adapter: ${adapterReason}`,
               actionId: action.id,
+              agentRole,
               metadata: { runId, noAdapter: true },
             });
             allEvents.push(noAdapterDeniedEvent);
@@ -1301,6 +1335,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               execution: null,
               executionDurationMs: null,
               simulation: noAdapterSimSummary,
+              agentRole,
             });
             sinkDecision(noAdapterDecisionRecord);
 
@@ -1310,6 +1345,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               actionType: noAdapterDecisionRecord.action.type,
               target: noAdapterDecisionRecord.action.target,
               reason: `no_registered_adapter`,
+              agentRole,
             });
             sinkEvent(noAdapterDecisionEvent);
 
@@ -1356,6 +1392,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 capabilityGrant: resolvedGrant
                   ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
                   : null,
+                agentRole,
               }),
               outcome: 'modify' as const,
             }
@@ -1368,6 +1405,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
               capabilityGrant: resolvedGrant
                 ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
                 : null,
+              agentRole,
             });
         sinkDecision(decisionRecord);
 
@@ -1378,6 +1416,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
           actionType: decisionRecord.action.type,
           target: decisionRecord.action.target,
           reason: decisionRecord.reason,
+          agentRole,
         });
         sinkEvent(decisionEvent);
 
