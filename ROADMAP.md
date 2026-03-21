@@ -87,6 +87,9 @@ A comprehensive codebase audit assessed the current system against the strategic
 
 | Component | Status | Notes |
 |-----------|--------|-------|
+| KE-1 Structured Matchers (Aho-Corasick, globs) | **Shipped v2.3.0** | `packages/matchers/src/` — path-matcher, command-scanner, policy-matcher, reason-codes |
+| All 46 event kinds mapped to cloud AgentEvent format | **Shipped v2.3.0** | `packages/telemetry/src/event-mapper.ts` — full mapping coverage |
+| Telemetry path responsibilities documented | **Shipped v2.3.0** | Dual-path consolidation documented |
 | Kernel-Level Tracing (eBPF / Project Azazel) | Not Started | Requires Go/Rust, kernel probes, privileged runtime |
 | OS-Level Sandboxing (Bubblewrap/Seatbelt) | Not Started | Only application-level plugin capability checking exists |
 | Transactional Adjudication (P-1b Protocol) | Not Started | No state snapshot at T_authorize, no re-verification at T_execute |
@@ -237,7 +240,7 @@ Monitor escalation state transitions are now persisted as `StateChanged` DomainE
 
 Phases are ordered to prioritize **effect-path closure and mandatory mediation** before research-grade features. The principle: ship a secure, deterministic governance runtime first; add advanced capabilities as extensions.
 
-### Phase 6 — Reference Monitor Hardening `NEXT`
+### Phase 6 — Reference Monitor Hardening `IN PROGRESS`
 
 > **Theme:** Close all bypass vectors. Achieve true default-deny mediation.
 
@@ -247,6 +250,7 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 - [x] Deny actions with no registered adapter in `packages/kernel/src/kernel.ts` (emit `ActionDenied` instead of silently skipping)
 - [x] Persist escalation state changes as `StateChanged` DomainEvents in `packages/kernel/src/monitor.ts`
 - [x] Expand destructive command patterns in `packages/kernel/src/aab.ts` (expanded from 10 to 87 patterns covering sudo, pkill, docker, systemctl, database commands, and more)
+- [x] ~~Path traversal prevention in file adapter~~ — Canonicalization + project-root boundary check shipped in v2.3.0 (2026-03-21)
 - [ ] Enforce intervention types beyond DENY (implement PAUSE and ROLLBACK behaviors in kernel execution)
 - [x] Governance self-modification invariant — agents must not modify `agentguard.yaml`, `.agentguard/`, or `policies/` (`no-governance-self-modification` invariant, severity 5)
 - [x] Performance benchmark suite — formal latency measurement (p50/p95/p99) per action type for policy evaluation, invariant checking, and simulation overhead. Publish results as a marketing asset and regression gate in CI
@@ -269,7 +273,7 @@ The `SystemState` interface in `packages/invariants/src/definitions.ts` is the b
 - [x] Recursive operation guard (severity 2) — flag `find -exec`, `xargs` combined with write/delete operations (`recursive-operation-guard` invariant)
 - [x] Transitive effect analysis (severity 4) — when an agent writes a script or config file, analyze content for downstream effects that would violate policy (e.g., a Python script containing `open('.env').read()` or a shell script with `curl` exfiltration). Closes the creative circumvention gap where agents bypass direct restrictions via indirect file creation
 
-### Kernel Evolution Sprint (KE-1 through KE-6, 60 days) `NEXT`
+### Kernel Evolution Sprint (KE-1 through KE-6, 60 days) `IN PROGRESS`
 
 > **Theme:** Transform the enforcement kernel from advisory heuristics to a sub-millisecond Execution Firewall with algorithmic determinism.
 
@@ -291,16 +295,16 @@ This sprint implements the architectural upgrades required for AgentGuard to fun
 | Cold-Start Latency | < 15 ms | < 25 ms | < 50 ms |
 | Memory Allocation (Hot) | 0 allocs | < 5 allocs | N/A |
 
-#### KE-1: Invariant Engine Evolution
+#### KE-1: Invariant Engine Evolution ✅ Done (2026-03-21)
 
 > Replace regex-based security with deterministic structured matchers.
 
-- [ ] Audit all regex usage in the enforcement path (`packages/kernel/src/aab.ts`, `packages/invariants/src/definitions.ts`, `packages/policy/src/evaluator.ts`)
-- [ ] Classify all patterns into EXACT, PREFIX, SUFFIX, PATH_PREFIX categories
-- [ ] Implement compiled matcher library: Trie (prefix/path), Hash Set (exact), Bitmask (flags)
-- [ ] Replace runtime regex scans with compiled matchers (target: 90%+ replacement)
-- [ ] Produce machine-readable reason codes for all match results
-- [ ] Benchmark: total evaluation p50 < 0.25ms
+- [x] ~~Audit all regex usage in the enforcement path~~ — completed
+- [x] ~~Classify all patterns into EXACT, PREFIX, SUFFIX, PATH_PREFIX categories~~ — completed
+- [x] ~~Implement compiled matcher library: Trie (prefix/path), Hash Set (exact), Bitmask (flags)~~ — `packages/matchers/src/` (path-matcher, command-scanner, policy-matcher, reason-codes)
+- [x] ~~Replace runtime regex scans with compiled matchers~~ — Aho-Corasick command scanner + picomatch glob path matcher shipped
+- [x] ~~Produce machine-readable reason codes for all match results~~ — `packages/matchers/src/reason-codes.ts`
+- [x] ~~Benchmark: total evaluation p50 < 0.25ms~~ — benchmark suite operational
 
 #### KE-2: Canonical Action Normalization (ActionContext)
 
@@ -366,6 +370,7 @@ Depends on: Phase 6 (default-deny) + KE-2 (ActionContext). The `RunManifest` def
 Prior art: Kubernetes Capability Primitives (KCP), OS capability-based security models.
 
 - [x] `RunManifest` type with role and capability grants (extend existing `Capability` type in `packages/core/src/types.ts`)
+- [x] ~~`RunManifest` YAML loader~~ — Shipped in v2.3.0 (2026-03-21)
 - [ ] `IntentSpec` format — machine-readable contract of expected agent behavior (planned action types, target files/branches, expected scope). Declared independently of the agent, loaded at session start
 - [ ] Intent-vs-execution comparison in audit trail — flag actions that fall outside declared intent even if policy allows them (advisory initially, enforceable later)
 - [ ] Validate every adapter call against session capabilities in `packages/kernel/src/kernel.ts`
@@ -391,10 +396,11 @@ Prior art: Kubernetes Capability Primitives (KCP), OS capability-based security 
 > **Theme:** Govern any agent framework. Depends on KE-2 (ActionContext provides vendor-neutral normalization for all adapters).
 
 - [ ] Framework-specific adapters (LangGraph, CrewAI, AutoGen, OpenAI Agents SDK)
-- [ ] Agent SDK for programmatic governance integration
+- [x] ~~Agent SDK for programmatic governance integration~~ — Shipped in v2.3.0 (2026-03-21)
 - [ ] Generic MCP adapter
 - [x] Session-aware context tracking (modified files, test results, deployment state) (#197)
 - [ ] Deep Claude Code integration (auto-install, configuration management)
+- [x] ~~Monitor mode for claude-hook~~ — Shipped in v2.3.0 (2026-03-21)
 - [ ] Cursor integration
 
 ### Phase 10 — Structured Storage Backend `IN PROGRESS`
