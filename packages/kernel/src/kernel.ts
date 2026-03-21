@@ -301,7 +301,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                 reason: cached.reason,
                 capabilityGrant: resolved
                   ? { grantIndex: resolved.grantIndex, grant: resolved.grant }
-                  : undefined,
+                  : null,
                 metadata: { runId, tier: 'fast', cacheHitCount: cached.hitCount },
               });
               allEvents.push(allowedEvent);
@@ -347,7 +347,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                           duration: executionDurationMs,
                           capabilityGrant: resolved
                             ? { grantIndex: resolved.grantIndex, grant: resolved.grant }
-                            : undefined,
+                            : null,
                           metadata: { runId, tier: 'fast' },
                         })
                       );
@@ -868,7 +868,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                     duration: executionDurationMs,
                     capabilityGrant: rollbackGrant
                       ? { grantIndex: rollbackGrant.grantIndex, grant: rollbackGrant.grant }
-                      : undefined,
+                      : null,
                     metadata: { runId, intervention: interventionType, snapshotId },
                   })
                 : execution?.success && rolledBack
@@ -1165,7 +1165,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
           reason: decision.decision.reason,
           capabilityGrant: resolvedGrant
             ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
-            : undefined,
+            : null,
           metadata: { runId },
         });
         allEvents.push(allowedEvent);
@@ -1233,7 +1233,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
                   duration: executionDurationMs,
                   capabilityGrant: resolvedGrant
                     ? { grantIndex: resolvedGrant.grantIndex, grant: resolvedGrant.grant }
-                    : undefined,
+                    : null,
                   metadata: { runId },
                 });
                 allEvents.push(executedEvent);

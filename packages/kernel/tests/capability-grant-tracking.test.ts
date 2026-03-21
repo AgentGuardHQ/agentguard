@@ -111,8 +111,8 @@ describe('Capability Grant Tracking', () => {
       (e: DomainEvent) => e.kind === 'ActionAllowed',
     );
     expect(allowedEvent).toBeDefined();
-    // capabilityGrant should be undefined (not present) when no manifest
-    expect(allowedEvent!.capabilityGrant).toBeUndefined();
+    // capabilityGrant should be null (not undefined) when no manifest
+    expect(allowedEvent!.capabilityGrant).toBeNull();
   });
 
   it('includes capabilityGrant in decision record', async () => {
@@ -179,6 +179,42 @@ describe('Capability Grant Tracking', () => {
       agent: 'test-agent',
     });
 
+    expect(sinkRecords).toHaveLength(1);
+    expect(sinkRecords[0].capabilityGrant).toBeNull();
+  });
+
+  it('denied actions have null capabilityGrant in decision record', async () => {
+    const sinkRecords: GovernanceDecisionRecord[] = [];
+    const manifest = makeManifest({
+      grants: [
+        {
+          permissions: ['read', 'write'],
+          actions: ['file.write'],
+          filePatterns: ['src/**'],
+        },
+      ],
+    });
+    const kernel = createKernel({
+      dryRun: true,
+      policyDefs: [
+        {
+          id: 'deny-all',
+          name: 'Deny All',
+          rules: [{ action: 'file.write', effect: 'deny' as const, reason: 'blocked' }],
+          severity: 5,
+        },
+      ],
+      manifest,
+      decisionSinks: [{ write: (r) => sinkRecords.push(r) }],
+    });
+
+    const result = await kernel.propose({
+      tool: 'Write',
+      file: 'src/index.ts',
+      content: 'hello',
+    });
+
+    expect(result.allowed).toBe(false);
     expect(sinkRecords).toHaveLength(1);
     expect(sinkRecords[0].capabilityGrant).toBeNull();
   });

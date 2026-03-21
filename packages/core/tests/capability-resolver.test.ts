@@ -159,6 +159,14 @@ describe('resolveCapabilityGrant', () => {
       // No target means file patterns are not checked (action-only matching)
       expect(resolveCapabilityGrant(manifest, 'file.write')).not.toBeNull();
     });
+
+    it('does not match file-scoped grant when target is empty string', () => {
+      const manifest = makeManifest([
+        makeGrant({ actions: ['file.write'], filePatterns: ['src/**'] }),
+      ]);
+      const result = resolveCapabilityGrant(manifest, 'file.write', '');
+      expect(result).toBeNull();
+    });
   });
 
   describe('multiple action patterns in a single grant', () => {

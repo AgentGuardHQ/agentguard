@@ -80,7 +80,7 @@ export function resolveCapabilityGrant(
     if (!actionMatch) continue;
 
     // If the grant has file patterns and a target is provided, check target match
-    if (grant.filePatterns && grant.filePatterns.length > 0 && target) {
+    if (grant.filePatterns && grant.filePatterns.length > 0 && target !== undefined) {
       const fileMatch = grant.filePatterns.some((pattern) =>
         targetMatchesFilePattern(target, pattern)
       );
