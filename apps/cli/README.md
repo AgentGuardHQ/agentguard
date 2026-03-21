@@ -1,6 +1,6 @@
 # @red-codes/agentguard
 
-**Runtime governance for AI coding agents.** Intercepts tool calls, enforces policies and invariants, and produces a verifiable execution trail.
+**Run AI agents without fear.** Prevents catastrophic actions — no pushes to main, no credential leaks, no runaway loops. Full audit trail included.
 
 [![npm](https://img.shields.io/npm/v/@red-codes/agentguard.svg)](https://www.npmjs.com/package/@red-codes/agentguard)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/AgentGuardHQ/agentguard/blob/main/LICENSE)
@@ -22,13 +22,13 @@ agentguard claude-init
 
 ## What It Does
 
-AgentGuard adds a deterministic decision layer between what an AI agent proposes and what actually runs. Every tool call passes through a governed action kernel:
+AgentGuard sits between what an AI agent proposes and what actually runs. Every tool call is checked against 21 safety rules before it executes:
 
 ```
-agent proposes action  →  policy evaluated  →  invariants checked  →  allow/deny  →  events emitted
+agent proposes action  →  safety checked  →  allow/deny  →  action recorded
 ```
 
-- **20 built-in invariants** — secret exposure, protected branches, blast radius, CI/CD config modification, permission escalation, and more
+- **21 built-in safety checks** — secret exposure, protected branches, blast radius, credential leaks, permission escalation, and more
 - **YAML policy format** — declare what agents can and can't do
 - **Full audit trail** — every decision recorded to SQLite
 - **Claude Code integration** — hooks fire on every tool call, zero config

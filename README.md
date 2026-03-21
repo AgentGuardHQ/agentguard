@@ -2,8 +2,8 @@
   <img src="site/assets/logo-wordmark.svg" alt="AgentGuard" width="320">
 </p>
 
-<p align="center"><strong>Runtime governance for AI coding agents.</strong><br>
-Install in 30 seconds. Block dangerous actions before they execute.</p>
+<p align="center"><strong>Run AI agents without fear.</strong><br>
+Install in 30 seconds. Your agents can't break what matters.</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@red-codes/agentguard"><img src="https://img.shields.io/npm/v/@red-codes/agentguard.svg" alt="npm version"></a>
@@ -14,10 +14,10 @@ Install in 30 seconds. Block dangerous actions before they execute.</p>
 
 ---
 
-AI coding agents (Claude Code, GitHub Copilot, any MCP client) execute file writes, shell commands, and git operations autonomously. AgentGuard sits between what an agent proposes and what actually runs — enforcing policy, checking 21 built-in safety invariants, and emitting a tamper-resistant audit trail.
+AI coding agents (Claude Code, GitHub Copilot, any MCP client) run autonomously — writing files, executing commands, pushing code. AgentGuard prevents them from doing catastrophic things: no accidental pushes to main, no credential leaks, no runaway destructive loops. 21 built-in safety checks, zero config required.
 
-**For individuals:** block dangerous actions in your local dev environment.
-**For teams:** centralized governance, compliance packs, and real-time dashboard.
+**For individuals:** stop your AI from wrecking your machine or repo.
+**For teams:** run fleets of agents safely at scale, with audit trails that pass compliance.
 
 ## Quick Start
 
