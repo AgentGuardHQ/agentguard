@@ -74,8 +74,11 @@ function loadEndpointFromEnv(envPath: string): string | undefined {
   if (!existsSync(envPath)) return undefined;
   const match = readFileSync(envPath, 'utf8').match(/^AGENTGUARD_TELEMETRY_URL=(.+)$/m);
   let value = match?.[1]?.trim();
-  if (value && ((value.startsWith('"') && value.endsWith('"')) ||
-                (value.startsWith("'") && value.endsWith("'")))) {
+  if (
+    value &&
+    ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'")))
+  ) {
     value = value.slice(1, -1);
   }
   return value;
@@ -285,12 +288,14 @@ export async function cloudLogin(args: string[]): Promise<number> {
 
       // 7. Ask about cloud metrics / telemetry mode
       const enableMetrics = await promptYesNo(
-        'Enable cloud metrics? (sends governance telemetry to AgentGuard Cloud)',
+        'Enable cloud metrics? (sends governance telemetry to AgentGuard Cloud)'
       );
 
       if (enableMetrics) {
         upsertEnvVar(envPath, 'AGENTGUARD_TELEMETRY', 'verified');
-        process.stderr.write(`  ${FG.green}✓${RESET}  Telemetry set to ${BOLD}verified${RESET} mode\n`);
+        process.stderr.write(
+          `  ${FG.green}✓${RESET}  Telemetry set to ${BOLD}verified${RESET} mode\n`
+        );
       } else {
         upsertEnvVar(envPath, 'AGENTGUARD_TELEMETRY', 'anonymous');
         process.stderr.write(`  ${DIM}Telemetry set to anonymous mode${RESET}\n`);
