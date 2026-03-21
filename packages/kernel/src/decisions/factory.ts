@@ -3,7 +3,7 @@
 
 import type { GovernanceDecisionRecord, SimulationSummary } from './types.js';
 import type { MonitorDecision } from '../monitor.js';
-import type { ExecutionResult, CapabilityGrant } from '@red-codes/core';
+import type { ExecutionResult, CapabilityGrant, AgentRole } from '@red-codes/core';
 import { simpleHash } from '@red-codes/core';
 
 export interface DecisionFactoryInput {
@@ -14,6 +14,8 @@ export interface DecisionFactoryInput {
   simulation: SimulationSummary | null;
   /** Resolved capability grant from RunManifest (null if no manifest or no matching grant) */
   capabilityGrant?: { grantIndex: number; grant: CapabilityGrant } | null;
+  /** Agent role from RunManifest (null if no manifest provided) */
+  agentRole?: AgentRole | null;
 }
 
 function generateRecordId(timestamp: number, runId: string, action: string): string {
@@ -22,7 +24,8 @@ function generateRecordId(timestamp: number, runId: string, action: string): str
 }
 
 export function buildDecisionRecord(input: DecisionFactoryInput): GovernanceDecisionRecord {
-  const { runId, decision, execution, executionDurationMs, simulation, capabilityGrant } = input;
+  const { runId, decision, execution, executionDurationMs, simulation, capabilityGrant, agentRole } =
+    input;
   const timestamp = Date.now();
   const intent = decision.intent;
 
@@ -59,6 +62,7 @@ export function buildDecisionRecord(input: DecisionFactoryInput): GovernanceDeci
     capabilityGrant: capabilityGrant ?? null,
     simulation,
     evidencePackId: decision.evidencePack?.packId ?? null,
+    agentRole: agentRole ?? null,
     monitor: {
       escalationLevel: decision.monitor.escalationLevel,
       totalEvaluations: decision.monitor.totalEvaluations,

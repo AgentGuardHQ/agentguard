@@ -1134,6 +1134,8 @@ export interface GovernanceDecisionRecord {
     totalEvaluations: number;
     totalDenials: number;
   };
+  /** Agent role active during this decision (null if no manifest provided) */
+  agentRole: AgentRole | null;
   /** Execution results (null if denied or dry-run) */
   execution: {
     executed: boolean;

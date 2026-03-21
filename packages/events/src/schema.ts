@@ -139,31 +139,31 @@ const EVENT_SCHEMAS: Record<string, EventSchema> = {
   },
   [ACTION_REQUESTED]: {
     required: ['actionType', 'target', 'justification'],
-    optional: ['actionId', 'agentId', 'metadata'],
+    optional: ['actionId', 'agentId', 'agentRole', 'metadata'],
   },
   [ACTION_ALLOWED]: {
     required: ['actionType', 'target', 'capability'],
-    optional: ['actionId', 'reason', 'policyHash', 'capabilityGrant', 'metadata'],
+    optional: ['actionId', 'reason', 'policyHash', 'capabilityGrant', 'agentRole', 'metadata'],
   },
   [ACTION_DENIED]: {
     required: ['actionType', 'target', 'reason'],
-    optional: ['actionId', 'policyHash', 'metadata'],
+    optional: ['actionId', 'policyHash', 'agentRole', 'metadata'],
   },
   [ACTION_ESCALATED]: {
     required: ['actionType', 'target', 'reason'],
-    optional: ['actionId', 'policyHash', 'metadata'],
+    optional: ['actionId', 'policyHash', 'agentRole', 'metadata'],
   },
   [ACTION_EXECUTED]: {
     required: ['actionType', 'target', 'result'],
-    optional: ['actionId', 'duration', 'capabilityGrant', 'metadata'],
+    optional: ['actionId', 'duration', 'capabilityGrant', 'agentRole', 'metadata'],
   },
   [ACTION_FAILED]: {
     required: ['actionType', 'target', 'error'],
-    optional: ['actionId', 'duration', 'metadata'],
+    optional: ['actionId', 'duration', 'agentRole', 'metadata'],
   },
   [DECISION_RECORDED]: {
     required: ['recordId', 'outcome', 'actionType'],
-    optional: ['target', 'reason', 'metadata'],
+    optional: ['target', 'reason', 'agentRole', 'metadata'],
   },
   [POLICY_COMPOSED]: {
     required: ['policyCount', 'totalRules', 'sources'],

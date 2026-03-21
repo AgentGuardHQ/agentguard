@@ -11,3 +11,4 @@ export * from './rtk.js';
 export * from './trust-store.js';
 export * from './repo-root.js';
 export * from './capability-resolver.js';
+export * from './role-resolver.js';

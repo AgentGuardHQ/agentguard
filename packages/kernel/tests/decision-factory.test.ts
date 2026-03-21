@@ -194,4 +194,19 @@ describe('buildDecisionRecord', () => {
     const record = buildDecisionRecord(makeInput({ capabilityGrant: null }));
     expect(record.capabilityGrant).toBeNull();
   });
+
+  it('includes agentRole when provided', () => {
+    const record = buildDecisionRecord(makeInput({ agentRole: 'builder' }));
+    expect(record.agentRole).toBe('builder');
+  });
+
+  it('sets agentRole to null when not provided', () => {
+    const record = buildDecisionRecord(makeInput());
+    expect(record.agentRole).toBeNull();
+  });
+
+  it('sets agentRole to null when explicitly null', () => {
+    const record = buildDecisionRecord(makeInput({ agentRole: null }));
+    expect(record.agentRole).toBeNull();
+  });
 });
