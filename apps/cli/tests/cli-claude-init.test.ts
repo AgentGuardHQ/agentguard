@@ -14,6 +14,13 @@ vi.mock('node:os', () => ({
   homedir: vi.fn(() => '/mock-home'),
 }));
 
+vi.mock('node:readline', () => ({
+  createInterface: vi.fn(() => ({
+    question: vi.fn((_q: string, cb: (answer: string) => void) => cb('')),
+    close: vi.fn(),
+  })),
+}));
+
 import { claudeInit } from '../src/commands/claude-init.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
@@ -397,7 +404,7 @@ describe('claudeInit', () => {
     await claudeInit([]);
 
     expect(process.stderr.write).toHaveBeenCalledWith(
-      expect.stringContaining('Active protections')
+      expect.stringContaining('Monitoring for')
     );
     expect(process.stderr.write).toHaveBeenCalledWith(
       expect.stringContaining('AgentGuard is active')

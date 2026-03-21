@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { createInterface } from 'node:readline';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
 import { resolveMainRepoRoot } from '@red-codes/core';
 
@@ -39,6 +40,30 @@ interface Settings {
     [key: string]: unknown;
   };
   [key: string]: unknown;
+}
+
+async function promptChoice(question: string, options: string[], defaultIdx = 0): Promise<number> {
+  if (!process.stdin.isTTY) return defaultIdx;
+
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+
+  process.stderr.write(`  ${question}\n`);
+  for (let i = 0; i < options.length; i++) {
+    const marker = i === defaultIdx ? `${FG.green}❯${RESET}` : ' ';
+    process.stderr.write(`    ${marker} ${i + 1}) ${options[i]}\n`);
+  }
+
+  return new Promise<number>((resolve) => {
+    rl.question(`  ${DIM}Enter choice [${defaultIdx + 1}]:${RESET} `, (answer) => {
+      rl.close();
+      const num = parseInt(answer.trim(), 10);
+      if (num >= 1 && num <= options.length) {
+        resolve(num - 1);
+      } else {
+        resolve(defaultIdx);
+      }
+    });
+  });
 }
 
 export async function claudeInit(args: string[] = []): Promise<void> {
@@ -99,6 +124,44 @@ export async function claudeInit(args: string[] = []): Promise<void> {
     );
     process.stderr.write(`  ${DIM}Use --remove to uninstall.${RESET}\n\n`);
     return;
+  }
+
+  // Parse --mode and --pack flags for non-interactive mode
+  const modeArgIdx = args.findIndex((a) => a === '--mode');
+  const modeArg = modeArgIdx !== -1 ? args[modeArgIdx + 1] : undefined;
+  const packArgIdx = args.findIndex((a) => a === '--pack');
+  const packArg = packArgIdx !== -1 ? args[packArgIdx + 1] : undefined;
+
+  let selectedMode: 'monitor' | 'enforce' = 'monitor';
+  let selectedPack: string | undefined = 'essentials';
+
+  if (modeArg) {
+    selectedMode = modeArg === 'enforce' ? 'enforce' : 'monitor';
+  } else if (process.stdin.isTTY && !isRefresh) {
+    const modeChoice = await promptChoice(
+      'Start in monitor mode or enforce mode?',
+      [
+        `Monitor ${DIM}— log threats, don't block (recommended)${RESET}`,
+        `Enforce ${DIM}— block dangerous actions immediately${RESET}`,
+      ],
+      0
+    );
+    selectedMode = modeChoice === 1 ? 'enforce' : 'monitor';
+  }
+
+  if (packArg !== undefined) {
+    selectedPack = packArg === 'none' ? undefined : packArg;
+  } else if (process.stdin.isTTY && !isRefresh) {
+    const packChoice = await promptChoice(
+      'Enable a policy pack?',
+      [
+        `essentials ${DIM}— secrets, force push, protected branches, credentials${RESET}`,
+        `strict ${DIM}— all 21 invariants enforced${RESET}`,
+        `none ${DIM}— monitor only, configure later${RESET}`,
+      ],
+      0
+    );
+    selectedPack = packChoice === 2 ? undefined : packChoice === 1 ? 'strict' : 'essentials';
   }
 
   if (!settings.hooks) settings.hooks = {};
@@ -236,7 +299,7 @@ export async function claudeInit(args: string[] = []): Promise<void> {
   }
 
   // Auto-generate starter policy if none exists
-  const policyGenerated = generateStarterPolicy();
+  const policyGenerated = generateStarterPolicy(selectedMode, selectedPack);
 
   // Detect rtk for token optimization status
   let rtkStatus: { available: boolean; version?: string } = { available: false };
@@ -257,7 +320,7 @@ export async function claudeInit(args: string[] = []): Promise<void> {
   }
 
   // Show what protections are active
-  showProtectionSummary(policyGenerated, rtkStatus, isGlobal);
+  showProtectionSummary(policyGenerated, rtkStatus, isGlobal, selectedMode);
 }
 
 function removeHook(settingsPath: string, settingsLabel: string): void {
@@ -343,14 +406,20 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
   );
 }
 
-const STARTER_POLICY = `# AgentGuard policy — guardrails for AI coding agents.
-# Customize this file to match your project's security requirements.
+const STARTER_POLICY_TEMPLATE = (mode: 'monitor' | 'enforce', pack?: string) => {
+  const packLine = pack ? `pack: ${pack}` : '# pack: essentials';
+  return `# AgentGuard policy — runtime protection for AI coding agents.
 # Docs: https://github.com/AgentGuardHQ/agent-guard
 
 id: default-policy
 name: Default Safety Policy
 description: Baseline guardrails for AI coding agents
-severity: 4
+
+# Enforcement mode: monitor (warn but allow) or enforce (block)
+mode: ${mode}
+
+# Policy pack — curated invariant enforcement profiles
+${packLine}
 
 rules:
   # Protected branches — prevent direct push to main/master
@@ -370,32 +439,6 @@ rules:
     target: .env
     reason: Secrets files must not be modified
 
-  - action: file.write
-    effect: deny
-    target: ".npmrc"
-    reason: npm credentials file must not be modified by agents
-
-  - action: file.write
-    effect: deny
-    target: "id_rsa"
-    reason: SSH private keys must not be modified
-
-  - action: file.write
-    effect: deny
-    target: "id_ed25519"
-    reason: SSH private keys must not be modified
-
-  # Skill protection — prevent agent self-modification
-  - action: file.write
-    effect: deny
-    target: ".claude/skills/"
-    reason: Agent skill files are protected from modification
-
-  - action: file.delete
-    effect: deny
-    target: ".claude/skills/"
-    reason: Agent skill files are protected from deletion
-
   # Destructive command protection
   - action: shell.exec
     effect: deny
@@ -410,16 +453,8 @@ rules:
   - action: infra.destroy
     effect: deny
     reason: Infrastructure destruction requires explicit authorization
-
-  # Defaults
-  - action: file.read
-    effect: allow
-    reason: Reading is always safe
-
-  - action: file.write
-    effect: allow
-    reason: File writes allowed by default
 `;
+};
 
 const POLICY_CANDIDATES = [
   'agentguard.yaml',
@@ -429,8 +464,7 @@ const POLICY_CANDIDATES = [
   '.agentguard.yml',
 ];
 
-function generateStarterPolicy(): boolean {
-  // Check if any policy file already exists (check main repo root for worktree support)
+function generateStarterPolicy(mode: 'monitor' | 'enforce' = 'monitor', pack?: string): boolean {
   const repoRoot = resolveMainRepoRoot();
   for (const candidate of POLICY_CANDIDATES) {
     if (existsSync(join(repoRoot, candidate))) {
@@ -439,57 +473,59 @@ function generateStarterPolicy(): boolean {
   }
 
   const policyPath = join(repoRoot, 'agentguard.yaml');
-  writeFileSync(policyPath, STARTER_POLICY, 'utf8');
+  writeFileSync(policyPath, STARTER_POLICY_TEMPLATE(mode, pack), 'utf8');
   process.stderr.write(
-    `  ${FG.green}✓${RESET}  Policy created: ${FG.cyan}agentguard.yaml${RESET}\n`
+    `  ${FG.green}✓${RESET}  Policy created: ${FG.cyan}agentguard.yaml${RESET} (${mode} mode${pack ? `, ${pack} pack` : ''})\n`
   );
   return true;
 }
 
 function showProtectionSummary(
-  policyGenerated: boolean,
+  _policyGenerated: boolean,
   rtkStatus?: { available: boolean; version?: string },
-  isGlobal?: boolean
+  isGlobal?: boolean,
+  mode: 'monitor' | 'enforce' = 'monitor'
 ): void {
   process.stderr.write('\n');
   process.stderr.write(`  ${FG.green}${BOLD}AgentGuard is active.${RESET}\n\n`);
 
-  process.stderr.write(`  ${BOLD}Active protections:${RESET}\n`);
-  process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} push to main/master\n`);
-  process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} force push\n`);
-  process.stderr.write(
-    `  ${FG.red}■${RESET} ${DIM}Block${RESET} writes to .env, .npmrc, SSH keys\n`
-  );
-  process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`);
-  process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} agent skill self-modification\n`);
-  process.stderr.write(
-    `  ${FG.green}■${RESET} ${DIM}Allow${RESET} file reads, file writes (non-sensitive)\n`
-  );
+  if (mode === 'monitor') {
+    process.stderr.write(`  ${BOLD}Mode: ${FG.yellow}monitor${RESET}${BOLD} — threats are logged, not blocked${RESET}\n\n`);
+    process.stderr.write(`  ${BOLD}Monitoring for:${RESET}\n`);
+    process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} force push\n`);
+    process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} credential file creation\n`);
+    process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} permission escalation\n`);
+    process.stderr.write(`  ${FG.yellow}■${RESET} ${DIM}Warn${RESET} blast radius exceeded\n`);
+    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`);
+  } else {
+    process.stderr.write(`  ${BOLD}Mode: ${FG.red}enforce${RESET}${BOLD} — dangerous actions are blocked${RESET}\n\n`);
+    process.stderr.write(`  ${BOLD}Enforcing:${RESET}\n`);
+    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} force push\n`);
+    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} writes to .env, credentials\n`);
+    process.stderr.write(`  ${FG.red}■${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`);
+  }
   process.stderr.write(`  ${FG.blue}■${RESET} ${DIM}Track${RESET} all actions with audit trail\n`);
 
-  // Token optimization status (optional)
   if (rtkStatus?.available) {
     const ver = rtkStatus.version ? ` v${rtkStatus.version}` : '';
     process.stderr.write(
-      `  ${FG.cyan}■${RESET} ${DIM}Optimize${RESET} token usage via rtk${ver} (60-90% savings)\n`
-    );
-  } else {
-    process.stderr.write(
-      `  ${DIM}○ Token optimization  rtk not installed (optional — brew install rtk)${RESET}\n`
+      `  ${FG.cyan}■${RESET} ${DIM}Optimize${RESET} token usage via rtk${ver}\n`
     );
   }
   process.stderr.write('\n');
 
   process.stderr.write(`  ${BOLD}Next steps:${RESET}\n`);
-  if (policyGenerated) {
+  if (mode === 'monitor') {
     process.stderr.write(
-      `  ${DIM}1. Edit ${FG.cyan}agentguard.yaml${RESET}${DIM} to customize rules for your project${RESET}\n`
+      `  ${DIM}1. Start a Claude Code session — warnings appear in your terminal${RESET}\n`
     );
     process.stderr.write(
-      `  ${DIM}2. Start a Claude Code session — governance is automatic${RESET}\n`
+      `  ${DIM}2. Run ${FG.cyan}agentguard inspect --last${RESET}${DIM} to review the audit trail${RESET}\n`
     );
     process.stderr.write(
-      `  ${DIM}3. Run ${FG.cyan}agentguard inspect --last${RESET}${DIM} to review decisions${RESET}\n`
+      `  ${DIM}3. Edit ${FG.cyan}agentguard.yaml${RESET}${DIM} → set ${FG.cyan}mode: enforce${RESET}${DIM} when ready to block${RESET}\n`
     );
   } else {
     process.stderr.write(
@@ -499,20 +535,12 @@ function showProtectionSummary(
       `  ${DIM}2. Run ${FG.cyan}agentguard inspect --last${RESET}${DIM} to review decisions${RESET}\n`
     );
   }
-  // Suggest global installation if this was a local install
   if (!isGlobal) {
     process.stderr.write(
       `\n  ${FG.yellow}Tip:${RESET} Run ${FG.cyan}agentguard claude-init --global${RESET} to install hooks globally.\n`
     );
-    process.stderr.write(
-      `  ${DIM}Global hooks protect governed repos even when Claude Code starts from a parent directory.${RESET}\n`
-    );
   }
-
-  process.stderr.write(
-    `\n  ${DIM}Try it: ${FG.cyan}agentguard demo${RESET}${DIM} — see governance in action${RESET}\n`
-  );
-  process.stderr.write(`  ${DIM}Remove: ${FG.cyan}agentguard claude-init --remove${RESET}\n\n`);
+  process.stderr.write('\n');
 }
 
 function hasAgentGuardHook(settings: Settings): boolean {
