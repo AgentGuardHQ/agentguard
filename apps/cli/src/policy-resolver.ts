@@ -10,6 +10,7 @@ import type { LoadedPolicy } from '@red-codes/policy';
 import type { CompositionSource, CompositionResult } from '@red-codes/policy';
 import { composePolicies, describeComposition } from '@red-codes/policy';
 import { resolveMainRepoRoot } from '@red-codes/core';
+import type { ModeConfig } from './mode-resolver.js';
 
 const DEFAULT_POLICY_CANDIDATES = [
   'agentguard.yaml',
@@ -230,6 +231,70 @@ export function loadComposedPolicies(policyPaths?: string[]): CompositionResult 
   }
 
   return composePolicies(sources);
+}
+
+/**
+ * Resolve a pack short name to a file path.
+ * Search order:
+ * 1. <project-root>/policies/<name>.yaml
+ * 2. <agentguard-install-dir>/policies/<name>.yaml (bundled packs)
+ */
+export function resolvePackByName(name: string, projectRoot?: string): string | null {
+  // Project-local packs
+  if (projectRoot) {
+    const local = join(projectRoot, 'policies', `${name}.yaml`);
+    if (existsSync(local)) return local;
+  }
+
+  // CWD-relative packs
+  const cwdLocal = join(process.cwd(), 'policies', `${name}.yaml`);
+  if (existsSync(cwdLocal)) return cwdLocal;
+
+  // Bundled packs (relative to main repo root)
+  const mainRoot = resolveMainRepoRoot();
+  const bundled = join(mainRoot, 'policies', `${name}.yaml`);
+  if (existsSync(bundled)) return bundled;
+
+  return null;
+}
+
+/**
+ * Build a ModeConfig from loaded policies and resolved pack.
+ * Reads mode/pack/invariantModes from the first policy that has them.
+ */
+export function buildModeConfig(policies: LoadedPolicy[], projectRoot?: string): ModeConfig {
+  const config: ModeConfig = {};
+
+  for (const policy of policies) {
+    if (policy.mode && !config.mode) {
+      config.mode = policy.mode;
+    }
+    if (policy.invariantModes && !config.invariantModes) {
+      config.invariantModes = policy.invariantModes;
+    }
+    if (policy.pack && !config.packModes) {
+      const packPath = resolvePackByName(policy.pack, projectRoot);
+      if (packPath) {
+        try {
+          const packContent = readFileSync(packPath, 'utf8');
+          const packDef = parseYamlPolicy(packContent);
+          if (packDef.invariantModes) {
+            config.packModes = packDef.invariantModes;
+          }
+        } catch {
+          process.stderr.write(
+            `  \x1b[33mWarning:\x1b[0m Failed to load pack "${policy.pack}"\n`
+          );
+        }
+      } else {
+        process.stderr.write(
+          `  \x1b[33mWarning:\x1b[0m Pack "${policy.pack}" not found\n`
+        );
+      }
+    }
+  }
+
+  return config;
 }
 
 export { describeComposition };
