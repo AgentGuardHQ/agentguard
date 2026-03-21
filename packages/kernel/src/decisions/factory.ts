@@ -24,8 +24,15 @@ function generateRecordId(timestamp: number, runId: string, action: string): str
 }
 
 export function buildDecisionRecord(input: DecisionFactoryInput): GovernanceDecisionRecord {
-  const { runId, decision, execution, executionDurationMs, simulation, capabilityGrant, agentRole } =
-    input;
+  const {
+    runId,
+    decision,
+    execution,
+    executionDurationMs,
+    simulation,
+    capabilityGrant,
+    agentRole,
+  } = input;
   const timestamp = Date.now();
   const intent = decision.intent;
 

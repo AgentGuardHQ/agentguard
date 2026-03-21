@@ -85,7 +85,7 @@ export function resolveRole(manifest: RunManifest | null | undefined): AgentRole
  * Returns the default definition for the manifest's role, or null if no manifest.
  */
 export function resolveRoleDefinition(
-  manifest: RunManifest | null | undefined,
+  manifest: RunManifest | null | undefined
 ): RoleDefinition | null {
   if (!manifest) return null;
   return DEFAULT_ROLE_DEFINITIONS[manifest.role];
@@ -96,7 +96,7 @@ export function resolveRoleDefinition(
  */
 export function roleHasCapability(
   role: AgentRole,
-  capability: 'canModifyFiles' | 'canRunTests' | 'canRefactor',
+  capability: 'canModifyFiles' | 'canRunTests' | 'canRefactor'
 ): boolean {
   return DEFAULT_ROLE_DEFINITIONS[role][capability];
 }
