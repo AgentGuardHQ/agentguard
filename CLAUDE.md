@@ -13,7 +13,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - SQLite event persistence for audit trail and replay (JSONL export still supported)
 - Claude Code adapter for PreToolUse/PostToolUse hooks
-- **pnpm monorepo** with Turbo orchestration: 14 packages under `packages/`, 3 apps under `apps/`
+- **pnpm monorepo** with Turbo orchestration: 15 packages under `packages/`, 3 apps under `apps/`
 - Each package compiles independently via `tsc`; CLI bundle via `esbuild` in `apps/cli`
 - Scoped npm packages: `@red-codes/*` for workspace modules, `@red-codes/agentguard` for published CLI
 - CLI has runtime dependencies (`chokidar`, `commander`, `pino`); optional `better-sqlite3` for SQLite storage backend
@@ -43,7 +43,7 @@ This is a **pnpm monorepo** orchestrated by **Turbo**. Workspace packages live i
 packages/
 ├── core/src/                   # @red-codes/core — Shared utilities
 │   ├── types.ts                # Shared TypeScript type definitions (includes RunManifest)
-│   ├── actions.ts              # 23 canonical action types across 8 classes
+│   ├── actions.ts              # 24 canonical action types across 9 classes
 │   ├── governance-data.ts      # Governance data loader (typed access to shared JSON data)
 │   ├── data/                   # JSON governance data (actions, blast-radius, destructive-patterns, escalation, git-action-patterns, invariant-patterns, tool-action-map)
 │   ├── hash.ts                 # Content hashing utilities
@@ -144,6 +144,11 @@ packages/
 │   ├── scaffolder.ts           # Swarm scaffolding
 │   ├── types.ts                # Swarm type definitions
 │   └── index.ts                # Module re-exports
+├── sdk/src/                    # @red-codes/sdk — Agent SDK for programmatic governance
+│   ├── sdk.ts                  # SDK implementation
+│   ├── session.ts              # Session management
+│   ├── types.ts                # SDK type definitions
+│   └── index.ts                # Module re-exports
 └── invariant-data-protection/src/ # @red-codes/invariant-data-protection — Data protection invariant plugin
     ├── index.ts                # Module re-exports
     ├── invariants.ts           # Data protection invariant definitions
@@ -167,7 +172,7 @@ apps/
 │   ├── server.ts               # MCP server implementation
 │   ├── config.ts               # Server configuration
 │   ├── backends/               # Storage backends
-│   └── tools/                  # 14 governance MCP tools
+│   └── tools/                  # 15 governance MCP tools
 └── vscode-extension/src/       # agentguard-vscode — VS Code extension
     ├── extension.ts            # Extension entry point (sidebar panels, file watcher)
     ├── providers/              # Tree data providers (run status, run history, recent events)
@@ -175,7 +180,7 @@ apps/
 
 tests/
 └── *.test.js               # 14 JS test files (custom zero-dependency harness)
-# 147 TS test files (vitest) distributed across packages/ and apps/ directories
+# 157 TS test files (vitest) distributed across packages/ and apps/ directories
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
 docs/                       # System documentation (architecture, event model, specs)
@@ -241,10 +246,11 @@ Each workspace package maps to a single architectural concept:
 - **packages/storage/** — Storage backend: SQLite (indexed queries, the only storage backend)
 - **packages/telemetry/** — Runtime telemetry and logging
 - **packages/telemetry-client/** — Telemetry client (identity, signing, queue, sender)
+- **packages/sdk/** — Agent SDK for programmatic governance integration
 - **packages/swarm/** — Shareable agent swarm templates (config, manifest, scaffolder)
 - **apps/cli/** — CLI entry point and commands (published as `@red-codes/agentguard`)
 - **packages/invariant-data-protection/** — Data protection invariant plugin
-- **apps/mcp-server/** — MCP governance server (14 governance tools)
+- **apps/mcp-server/** — MCP governance server (15 governance tools)
 
 ### CLI Commands
 - `agentguard guard` — Start the governed action runtime (policy + invariant enforcement)
@@ -298,10 +304,11 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **Adoption Analytics**: `AdoptionAnalyzed`, `AdoptionAnalysisFailed`
 - **Denial Learning**: `DenialPatternDetected`
 - **Intent Drift**: `IntentDriftDetected`
+- **Capability Validation**: `CapabilityValidated`
 - **Environmental Enforcement**: `IdeSocketAccessBlocked`
 
 ### Action Classes & Types
-23 canonical action types across 8 classes, defined in `packages/core/src/actions.ts`:
+24 canonical action types across 9 classes, defined in `packages/core/src/actions.ts`:
 - **file**: `file.read`, `file.write`, `file.delete`, `file.move`
 - **test**: `test.run`, `test.run.unit`, `test.run.integration`
 - **git**: `git.diff`, `git.commit`, `git.push`, `git.branch.create`, `git.branch.delete`, `git.checkout`, `git.reset`, `git.merge`
@@ -310,6 +317,7 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **http**: `http.request`
 - **deploy**: `deploy.trigger`
 - **infra**: `infra.apply`, `infra.destroy`
+- **mcp**: `mcp.call`
 
 ### Build & Module System
 Turbo orchestrates per-package `tsc` builds (incremental via TypeScript project references). The CLI app (`apps/cli`) is additionally bundled via `esbuild`. Workspace imports use `@red-codes/*` scoped package names.
