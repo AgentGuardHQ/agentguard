@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// AgentGuard CLI — Runtime governance for AI coding agents
+// AgentGuard CLI — Run AI agents without fear
 
 // Injected by esbuild at build time via define
 declare const AGENTGUARD_VERSION: string;
@@ -26,7 +26,7 @@ const COMMANDS: Record<string, CommandHelp> = {
     description: 'Analyze denial patterns and suggest policy improvements',
     usage: 'agentguard learn [flags]',
     flags: [
-      { flag: '--write-rules', description: 'Write governance hints to .claude/rules/' },
+      { flag: '--write-rules', description: 'Write safety hints to .claude/rules/' },
       { flag: '--store <backend>', description: 'Storage backend (sqlite)' },
       { flag: '--db-path <path>', description: 'SQLite database path' },
       { flag: '--json', description: 'Output as JSON' },
@@ -35,7 +35,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   adoption: {
     name: 'agentguard adoption',
-    description: 'Analyze what percentage of agent tool calls go through governance',
+    description: 'Show how much of your agent activity is protected',
     usage: 'agentguard adoption [flags]',
     flags: [
       { flag: '--session <path>', description: 'Path to Claude session JSONL file' },
@@ -51,7 +51,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   analytics: {
     name: 'agentguard analytics',
-    description: 'Analyze violation patterns across governance sessions',
+    description: 'Analyze blocked action patterns across safety sessions',
     usage: 'agentguard analytics [flags]',
     flags: [
       { flag: '--format, -f <format>', description: 'Output format: terminal, json, markdown' },
@@ -74,7 +74,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   guard: {
     name: 'agentguard guard',
-    description: 'Start the governed action runtime — enforce policies and invariants',
+    description: 'Start the safety runtime — prevent dangerous agent actions',
     usage: 'agentguard guard [flags]',
     flags: [
       {
@@ -139,7 +139,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   replay: {
     name: 'agentguard replay',
-    description: 'Replay a governance session timeline',
+    description: 'Replay an agent session timeline',
     usage: 'agentguard replay [session-id] [flags]',
     flags: [
       { flag: '--last, -l', description: 'Replay the most recent session' },
@@ -149,7 +149,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--denied-only', description: 'Show only denied actions (with --ui)' },
       { flag: '--output, -o <file>', description: 'Output HTML file path (with --ui)' },
       { flag: '--no-open', description: 'Do not open browser automatically (with --ui)' },
-      { flag: '--run <runId>', description: 'Replay a specific governance run (with --ui)' },
+      { flag: '--run <runId>', description: 'Replay a specific run (with --ui)' },
       { flag: '--filter <kind>', description: 'Filter events by kind' },
       { flag: '--store <backend>', description: 'Storage backend (sqlite)' },
       {
@@ -167,7 +167,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   export: {
     name: 'agentguard export',
-    description: 'Export a governance session to a portable JSONL file',
+    description: 'Export a safety session to a portable JSONL file',
     usage: 'agentguard export <runId> [flags]',
     flags: [
       { flag: '--output, -o <file>', description: 'Output file path' },
@@ -187,7 +187,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   import: {
     name: 'agentguard import',
-    description: 'Import a governance session from a portable JSONL file',
+    description: 'Import a safety session from a portable JSONL file',
     usage: 'agentguard import <file> [flags]',
     flags: [
       { flag: '--as <runId>', description: 'Import as a different run ID' },
@@ -228,7 +228,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'ci-check': {
     name: 'agentguard ci-check',
-    description: 'CI governance verification — check a session for violations',
+    description: 'CI safety check — verify no dangerous actions in a session',
     usage: 'agentguard ci-check <session-file> [flags]',
     flags: [
       { flag: '--fail-on-violation', description: 'Exit 1 if invariant violations found' },
@@ -292,7 +292,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   diff: {
     name: 'agentguard diff',
-    description: 'Compare two governance sessions side-by-side',
+    description: 'Compare two safety sessions side-by-side',
     usage: 'agentguard diff <runId-A> <runId-B> [flags]',
     flags: [
       { flag: '--json', description: 'Output as JSON' },
@@ -309,7 +309,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   init: {
     name: 'agentguard init',
-    description: 'Scaffold a new governance extension',
+    description: 'Scaffold a new AgentGuard extension',
     usage: 'agentguard init --extension <type> [--name <name>] [--dir <path>]',
     flags: [
       {
@@ -328,7 +328,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   traces: {
     name: 'agentguard traces',
-    description: 'Display policy evaluation traces for a governance run',
+    description: 'Display policy evaluation traces for a run',
     usage: 'agentguard traces [runId] [flags]',
     flags: [
       { flag: '--last', description: 'Show traces for the most recent run' },
@@ -353,7 +353,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   status: {
     name: 'agentguard status',
-    description: 'Check AgentGuard governance readiness (hooks, policy, directories)',
+    description: 'Check AgentGuard safety readiness (hooks, policy, directories)',
     usage: 'agentguard status [flags]',
     flags: [
       { flag: '--quiet, -q', description: 'Machine-readable output (exit 0 if ready, 1 if not)' },
@@ -362,7 +362,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'evidence-pr': {
     name: 'agentguard evidence-pr',
-    description: 'Attach governance evidence report to a pull request',
+    description: 'Attach safety evidence report to a pull request',
     usage: 'agentguard evidence-pr [pr-number] [flags]',
     flags: [
       { flag: '--pr, -n <number>', description: 'PR number (auto-detected if omitted)' },
@@ -475,7 +475,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'session-viewer': {
     name: 'agentguard session-viewer',
-    description: 'Generate an interactive HTML visualization of a governance session',
+    description: 'Generate an interactive HTML visualization of an agent session',
     usage: 'agentguard session-viewer [runId] [flags]',
     flags: [
       { flag: '--last', description: 'Visualize the most recent run' },
@@ -929,18 +929,18 @@ async function main() {
 
 function printHelp(): void {
   console.log(`
-  \x1b[1mAgentGuard\x1b[0m — Runtime governance for AI coding agents
+  \x1b[1mAgentGuard\x1b[0m — Run AI agents without fear
 
-  \x1b[1mGovernance:\x1b[0m
-    agentguard guard                          Start governed action runtime
+  \x1b[1mSafety:\x1b[0m
+    agentguard guard                          Start the safety runtime
     agentguard guard --policy <file>          Use a specific policy file (YAML/JSON)
     agentguard guard --policy a --policy b    Compose multiple policies with precedence
     agentguard guard --dry-run                Evaluate without executing actions
     agentguard guard --trace                  Show policy evaluation traces inline
     agentguard inspect [runId]                Inspect action graph and decisions
     agentguard events [runId]                 Show raw event stream for a run
-    agentguard analytics                      Analyze violation patterns across sessions
-    agentguard adoption                       Analyze % of tool calls going through governance
+    agentguard analytics                      Analyze blocked action patterns across sessions
+    agentguard adoption                       Show how much agent activity is protected
     agentguard learn                          Analyze denial patterns and suggest policy improvements
 
   \x1b[1mTraces:\x1b[0m
@@ -950,7 +950,7 @@ function printHelp(): void {
     agentguard traces --last --decision deny  Filter traces by decision
 
   [1mComparison:[0m
-    agentguard diff <runA> <runB>              Compare two governance sessions
+    agentguard diff <runA> <runB>              Compare two safety sessions
     agentguard diff --last                     Compare the two most recent runs
     agentguard diff --last --json              Output comparison as JSON
 
@@ -962,9 +962,9 @@ function printHelp(): void {
     agentguard simulate ... --json             Output raw JSON result
 
   \x1b[1mPortability:\x1b[0m
-    agentguard export <runId>                 Export a governance session to JSONL
+    agentguard export <runId>                 Export a safety session to JSONL
     agentguard export --last                  Export the most recent run
-    agentguard import <file>                  Import a governance session from JSONL
+    agentguard import <file>                  Import a safety session from JSONL
     agentguard migrate                        Bulk-import JSONL files into SQLite
     agentguard migrate --dry-run              Preview migration without writing
 
@@ -1003,17 +1003,17 @@ function printHelp(): void {
     agentguard audit-verify ... --json        Output as JSON
 
   \x1b[1mEvidence:\x1b[0m
-    agentguard evidence-pr                    Attach governance evidence to a PR
+    agentguard evidence-pr                    Attach safety evidence to a PR
     agentguard evidence-pr --pr <number>      Post evidence to a specific PR
     agentguard evidence-pr --dry-run          Preview the evidence report
 
   \x1b[1mScaffolding:\x1b[0m
-    agentguard init --extension <type>        Scaffold a new governance extension
+    agentguard init --extension <type>        Scaffold a new AgentGuard extension
     agentguard init --extension <type> -n X   Name the extension
 
 
   \x1b[1mCI/CD:\x1b[0m
-    agentguard ci-check <session>             Verify governance session in CI
+    agentguard ci-check <session>             Verify agent session safety in CI
     agentguard ci-check --last                Check most recent run locally
 
 
@@ -1025,9 +1025,9 @@ function printHelp(): void {
     agentguard auto-setup --dry-run           Detect without installing
     agentguard claude-hook                    Claude Code hook handler (internal)
     agentguard copilot-hook                   Copilot CLI hook handler (internal)
-    agentguard status                         Check governance readiness (hooks, policy, dirs)
+    agentguard status                         Check safety readiness (hooks, policy, dirs)
     agentguard status --quiet                 Machine-readable check (exit code only)
-    agentguard demo                           See governance in action (interactive showcase)
+    agentguard demo                           See AgentGuard in action (interactive showcase)
 
   \x1b[1mConfiguration:\x1b[0m
     agentguard config show                    Display resolved configuration
@@ -1042,8 +1042,8 @@ function printHelp(): void {
     agentguard cloud connect ... --endpoint   Use a custom cloud endpoint
     agentguard cloud status                   Show cloud connection status
     agentguard cloud disconnect               Remove cloud connection
-    agentguard cloud events                   Query governance events from cloud
-    agentguard cloud runs                     Query governance runs from cloud
+    agentguard cloud events                   Query agent events from cloud
+    agentguard cloud runs                     Query agent runs from cloud
     agentguard cloud summary                  Show cloud analytics summary
 
   \x1b[1mMeta:\x1b[0m

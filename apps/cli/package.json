@@ -1,7 +1,7 @@
 {
   "name": "@red-codes/agentguard",
   "version": "2.3.0",
-  "description": "Runtime governance for AI coding agents — CLI",
+  "description": "Run AI agents without fear — CLI safety layer",
   "type": "module",
   "license": "Apache-2.0",
   "private": false,

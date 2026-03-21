@@ -1,7 +1,7 @@
 {
   "name": "agentguard",
   "private": true,
-  "description": "AgentGuard Platform — governed action runtime for AI coding agents",
+  "description": "AgentGuard — production-safe autonomy for AI coding agents",
   "type": "module",
   "engines": {
     "node": ">=18"

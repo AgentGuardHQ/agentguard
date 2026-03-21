@@ -2,8 +2,8 @@
   <img src="site/assets/logo-wordmark.svg" alt="AgentGuard" width="320">
 </p>
 
-<p align="center"><strong>Runtime governance for AI coding agents.</strong><br>
-Install in 30 seconds. Block dangerous actions before they execute.</p>
+<p align="center"><strong>Run AI agents without fear.</strong><br>
+Install in 30 seconds. Your agents can't break what matters.</p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@red-codes/agentguard"><img src="https://img.shields.io/npm/v/@red-codes/agentguard.svg" alt="npm version"></a>
@@ -14,10 +14,10 @@ Install in 30 seconds. Block dangerous actions before they execute.</p>
 
 ---
 
-AI coding agents (Claude Code, GitHub Copilot, any MCP client) execute file writes, shell commands, and git operations autonomously. AgentGuard sits between what an agent proposes and what actually runs — enforcing policy, checking 21 built-in safety invariants, and emitting a tamper-resistant audit trail.
+AI coding agents (Claude Code, GitHub Copilot, any MCP client) run autonomously — writing files, executing commands, pushing code. AgentGuard prevents them from doing catastrophic things: no accidental pushes to main, no credential leaks, no runaway destructive loops. 21 built-in safety checks, zero config required.
 
-**For individuals:** block dangerous actions in your local dev environment.
-**For teams:** centralized governance, compliance packs, and real-time dashboard.
+**For individuals:** stop your AI from wrecking your machine or repo.
+**For teams:** run fleets of agents safely at scale, with audit trails that pass compliance.
 
 ## Quick Start
 
@@ -84,7 +84,7 @@ agentguard cloud login
 |------------|---------|
 | **Policy enforcement** | YAML rules with deny / allow / escalate — drop `agentguard.yaml` in your repo |
 | **21 built-in invariants** | Secret exposure, protected branches, blast radius, path traversal, CI/CD config, package script injection, and more |
-| **46 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
+| **47 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
 | **Real-time cloud dashboard** | Telemetry streams to your team dashboard; opt-in, anonymous by default |
 | **Multi-tenant** | Team workspaces, GitHub/Google OAuth, SSO-ready |
 | **Live Office visualization** | 2D view of agents working in real time — share a link with your team |
@@ -218,7 +218,7 @@ rules:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, etc. (23 types across 8 classes) |
+| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (24 types across 9 classes) |
 | `effect` | `string` | `deny` or `allow` |
 | `target` | `string` | Glob pattern for file paths or command patterns |
 | `branches` | `string[]` | Git branch names this rule applies to |
@@ -269,7 +269,7 @@ AgentGuard Kernel
   2. Evaluate    — match policy rules (deny / allow / escalate)
   3. Check       — run 21 built-in invariants
   4. Execute     — run action via adapter (file, shell, git)
-  5. Emit        — 46 event kinds → SQLite audit trail + cloud telemetry
+  5. Emit        — 47 event kinds → SQLite audit trail + cloud telemetry
 ```
 
 **Storage:** SQLite audit trail at `.agentguard/`. Every decision is recorded and verifiable.

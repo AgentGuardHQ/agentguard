@@ -413,7 +413,7 @@ const STARTER_POLICY_TEMPLATE = (mode: 'monitor' | 'enforce', pack?: string) => 
 
 id: default-policy
 name: Default Safety Policy
-description: Baseline guardrails for AI coding agents
+description: Baseline safety rules for AI coding agents
 
 # Enforcement mode: monitor (warn but allow) or enforce (block)
 mode: ${mode}

@@ -1415,10 +1415,10 @@ function printInitHelp(): void {
     firestore          Set up Firestore backend (security rules + credentials guide)
 
   ${bold('Policy templates:')}
-    strict             Maximum guardrails — deny all destructive ops
+    strict             Maximum protection — deny all destructive ops
     permissive         Default-allow with safety nets for dangerous ops
     ci-only            Read-only CI pipeline mode — build and test only
-    development        Balanced guardrails for active development
+    development        Balanced protection for active development
 
   ${bold('Flags:')}
     --extension, -e    Extension type
