@@ -15,8 +15,6 @@ import type { ClaudeCodeHookPayload } from '@red-codes/adapters';
 import type { LoadedPolicy } from '@red-codes/policy';
 import { resolveMainRepoRoot } from '@red-codes/core';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
-import { resolveInvariantMode } from '../mode-resolver.js';
-import { buildModeConfig } from '../policy-resolver.js';
 
 // --- Session state: persist formatPass/testsPass across hook invocations ----
 // Each Claude Code session is stateless per hook call. We bridge this by writing
@@ -318,8 +316,9 @@ async function handlePreToolUse(
     // Resolve enforcement mode for each violation.
     // Default to 'enforce' for backward compatibility — only users who
     // explicitly set mode: monitor in agentguard.yaml get fail-open behavior.
+    const { resolveInvariantMode } = await import('../mode-resolver.js');
+    const { buildModeConfig } = await import('../policy-resolver.js');
     const modeConfig = buildModeConfig(policyDefs as LoadedPolicy[], projectRoot);
-    if (!modeConfig.mode) modeConfig.mode = 'enforce';
     const violations = result.decision?.violations ?? [];
 
     // Check if ANY violation requires enforcement

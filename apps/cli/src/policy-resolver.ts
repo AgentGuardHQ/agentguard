@@ -123,7 +123,16 @@ export function loadPolicyFile(policyPath: string): unknown[] {
       }
 
       const merged = mergePolicies(localPolicy, packPolicies);
-      return merged.map((p) => ({ id: p.id, name: p.name, rules: p.rules, severity: p.severity }));
+      return merged.map((p) => ({
+        id: p.id,
+        name: p.name,
+        rules: p.rules,
+        severity: p.severity,
+        mode: p.mode,
+        pack: p.pack,
+        invariantModes: p.invariantModes,
+        disabledInvariants: p.disabledInvariants,
+      }));
     }
 
     return [
@@ -132,6 +141,10 @@ export function loadPolicyFile(policyPath: string): unknown[] {
         name: localPolicy.name,
         rules: localPolicy.rules,
         severity: localPolicy.severity,
+        mode: localPolicy.mode,
+        pack: localPolicy.pack,
+        invariantModes: localPolicy.invariantModes,
+        disabledInvariants: localPolicy.disabledInvariants,
       },
     ];
   }
