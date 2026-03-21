@@ -1,6 +1,6 @@
 # Contributing to AgentGuard
 
-Thanks for your interest in contributing to AgentGuard -- a governed action runtime for AI coding agents. This guide covers how to set up the project, run tests, and submit contributions.
+Thanks for your interest in contributing to AgentGuard -- the safety layer for AI coding agents. This guide covers how to set up the project, run tests, and submit contributions.
 
 ## Getting Started
 

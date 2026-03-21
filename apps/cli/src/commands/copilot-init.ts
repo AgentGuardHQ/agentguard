@@ -192,13 +192,13 @@ function removeHooks(hooksPath: string, hooksLabel: string): void {
   );
 }
 
-const STARTER_POLICY = `# AgentGuard policy — guardrails for AI coding agents.
+const STARTER_POLICY = `# AgentGuard policy — safety rules for AI coding agents.
 # Customize this file to match your project's security requirements.
 # Docs: https://github.com/AgentGuardHQ/agent-guard
 
 id: default-policy
 name: Default Safety Policy
-description: Baseline guardrails for AI coding agents
+description: Baseline safety rules for AI coding agents
 severity: 4
 
 rules:

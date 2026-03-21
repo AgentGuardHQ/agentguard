@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// AgentGuard CLI — Runtime governance for AI coding agents
+// AgentGuard CLI — Run AI agents without fear
 
 // Injected by esbuild at build time via define
 declare const AGENTGUARD_VERSION: string;
@@ -35,7 +35,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   adoption: {
     name: 'agentguard adoption',
-    description: 'Analyze what percentage of agent tool calls go through governance',
+    description: 'Show how much of your agent activity is protected',
     usage: 'agentguard adoption [flags]',
     flags: [
       { flag: '--session <path>', description: 'Path to Claude session JSONL file' },
@@ -51,7 +51,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   analytics: {
     name: 'agentguard analytics',
-    description: 'Analyze violation patterns across governance sessions',
+    description: 'Analyze blocked action patterns across safety sessions',
     usage: 'agentguard analytics [flags]',
     flags: [
       { flag: '--format, -f <format>', description: 'Output format: terminal, json, markdown' },
@@ -74,7 +74,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   guard: {
     name: 'agentguard guard',
-    description: 'Start the governed action runtime — enforce policies and invariants',
+    description: 'Start the safety runtime — prevent dangerous agent actions',
     usage: 'agentguard guard [flags]',
     flags: [
       {
@@ -139,7 +139,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   replay: {
     name: 'agentguard replay',
-    description: 'Replay a governance session timeline',
+    description: 'Replay an agent session timeline',
     usage: 'agentguard replay [session-id] [flags]',
     flags: [
       { flag: '--last, -l', description: 'Replay the most recent session' },
@@ -149,7 +149,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--denied-only', description: 'Show only denied actions (with --ui)' },
       { flag: '--output, -o <file>', description: 'Output HTML file path (with --ui)' },
       { flag: '--no-open', description: 'Do not open browser automatically (with --ui)' },
-      { flag: '--run <runId>', description: 'Replay a specific governance run (with --ui)' },
+      { flag: '--run <runId>', description: 'Replay a specific run (with --ui)' },
       { flag: '--filter <kind>', description: 'Filter events by kind' },
       { flag: '--store <backend>', description: 'Storage backend (sqlite)' },
       {
@@ -167,7 +167,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   export: {
     name: 'agentguard export',
-    description: 'Export a governance session to a portable JSONL file',
+    description: 'Export a safety session to a portable JSONL file',
     usage: 'agentguard export <runId> [flags]',
     flags: [
       { flag: '--output, -o <file>', description: 'Output file path' },
@@ -187,7 +187,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   import: {
     name: 'agentguard import',
-    description: 'Import a governance session from a portable JSONL file',
+    description: 'Import a safety session from a portable JSONL file',
     usage: 'agentguard import <file> [flags]',
     flags: [
       { flag: '--as <runId>', description: 'Import as a different run ID' },
@@ -228,7 +228,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'ci-check': {
     name: 'agentguard ci-check',
-    description: 'CI governance verification — check a session for violations',
+    description: 'CI safety check — verify no dangerous actions in a session',
     usage: 'agentguard ci-check <session-file> [flags]',
     flags: [
       { flag: '--fail-on-violation', description: 'Exit 1 if invariant violations found' },
@@ -292,7 +292,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   diff: {
     name: 'agentguard diff',
-    description: 'Compare two governance sessions side-by-side',
+    description: 'Compare two safety sessions side-by-side',
     usage: 'agentguard diff <runId-A> <runId-B> [flags]',
     flags: [
       { flag: '--json', description: 'Output as JSON' },
@@ -309,7 +309,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   init: {
     name: 'agentguard init',
-    description: 'Scaffold a new governance extension',
+    description: 'Scaffold a new AgentGuard extension',
     usage: 'agentguard init --extension <type> [--name <name>] [--dir <path>]',
     flags: [
       {
@@ -328,7 +328,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   traces: {
     name: 'agentguard traces',
-    description: 'Display policy evaluation traces for a governance run',
+    description: 'Display policy evaluation traces for a run',
     usage: 'agentguard traces [runId] [flags]',
     flags: [
       { flag: '--last', description: 'Show traces for the most recent run' },
@@ -353,7 +353,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   status: {
     name: 'agentguard status',
-    description: 'Check AgentGuard governance readiness (hooks, policy, directories)',
+    description: 'Check AgentGuard safety readiness (hooks, policy, directories)',
     usage: 'agentguard status [flags]',
     flags: [
       { flag: '--quiet, -q', description: 'Machine-readable output (exit 0 if ready, 1 if not)' },
@@ -362,7 +362,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'evidence-pr': {
     name: 'agentguard evidence-pr',
-    description: 'Attach governance evidence report to a pull request',
+    description: 'Attach safety evidence report to a pull request',
     usage: 'agentguard evidence-pr [pr-number] [flags]',
     flags: [
       { flag: '--pr, -n <number>', description: 'PR number (auto-detected if omitted)' },
@@ -475,7 +475,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   },
   'session-viewer': {
     name: 'agentguard session-viewer',
-    description: 'Generate an interactive HTML visualization of a governance session',
+    description: 'Generate an interactive HTML visualization of an agent session',
     usage: 'agentguard session-viewer [runId] [flags]',
     flags: [
       { flag: '--last', description: 'Visualize the most recent run' },
