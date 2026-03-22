@@ -175,8 +175,8 @@
   "healthChecks": {
     "prQueue": {
       "status": "improved",
-      "openPRs": 2,
-      "conflictedPRs": 1,
+      "openPRs": 1,
+      "conflictedPRs": 0,
       "stuckPRs": 0,
       "ciFailingPRs": 0,
       "note": "Clean PR queue: 1 open PR (#724), MERGEABLE, all CI green. PR #670 (conflicted) and PR #681 (capability grants) both resolved since prior assessment.",
