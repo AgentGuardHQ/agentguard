@@ -12,11 +12,14 @@ describe('detectDriver', () => {
   });
 
   it('returns copilot when COPILOT_AGENT is set', () => {
+    delete process.env.GITHUB_ACTIONS;
     process.env.COPILOT_AGENT = '1';
     expect(detectDriver()).toBe('copilot');
   });
 
   it('returns claude-code when CLAUDE_MODEL is set', () => {
+    delete process.env.GITHUB_ACTIONS;
+    delete process.env.COPILOT_AGENT;
     process.env.CLAUDE_MODEL = 'claude-opus-4-6';
     expect(detectDriver()).toBe('claude-code');
   });

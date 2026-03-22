@@ -54,8 +54,16 @@ export function createTelemetrySender(
     if (typeof process !== 'undefined' && process.env?.AGENTGUARD_PERSONA_DRIVER) {
       const persona: Record<string, string> = {};
       for (const key of [
-        'DRIVER', 'MODEL', 'ROLE', 'PROJECT', 'TRUST_TIER',
-        'AUTONOMY', 'RISK_TOLERANCE', 'RUNTIME', 'PROVIDER', 'TAGS',
+        'DRIVER',
+        'MODEL',
+        'ROLE',
+        'PROJECT',
+        'TRUST_TIER',
+        'AUTONOMY',
+        'RISK_TOLERANCE',
+        'RUNTIME',
+        'PROVIDER',
+        'TAGS',
       ]) {
         const val = process.env[`AGENTGUARD_PERSONA_${key}`];
         if (val) persona[key.toLowerCase()] = val;
