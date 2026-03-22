@@ -23,10 +23,12 @@ export function detectModel(): string {
 
 export function detectProject(): string {
   try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
-      .trim()
-      .split(/[\\/]/)
-      .pop() ?? 'unknown';
+    return (
+      execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' })
+        .trim()
+        .split(/[\\/]/)
+        .pop() ?? 'unknown'
+    );
   } catch {
     return 'unknown';
   }

@@ -169,7 +169,11 @@ exit 0
 `;
 
 /** Hook wrapper template — needs CLI prefix injected */
-export function claudeHookWrapper(cliPrefix: string, storeSuffix: string, dbPathSuffix: string): string {
+export function claudeHookWrapper(
+  cliPrefix: string,
+  storeSuffix: string,
+  dbPathSuffix: string
+): string {
   return `#!/usr/bin/env bash
 # claude-hook-wrapper.sh — Sources persona identity before running governance hook
 

@@ -1,6 +1,6 @@
 // agentguard claude-init — set up Claude Code integration
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
@@ -91,7 +91,7 @@ export async function claudeInit(args: string[] = []): Promise<void> {
 
   // Parse --role flag
   const roleArgIdx = args.findIndex((a) => a === '--role');
-  const roleArg = roleArgIdx !== -1 ? args[roleArgIdx + 1] as Role : undefined;
+  const roleArg = roleArgIdx !== -1 ? (args[roleArgIdx + 1] as Role) : undefined;
 
   // Parse --driver flag (override auto-detection)
   const driverArgIdx = args.findIndex((a) => a === '--driver');
@@ -539,20 +539,30 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
   // Clean up identity scripts
   const repoRoot = resolveMainRepoRoot();
   const identityScripts = [
-    'agent-identity-bridge.sh', 'write-persona.sh',
-    'session-persona-check.sh', 'claude-hook-wrapper.sh',
+    'agent-identity-bridge.sh',
+    'write-persona.sh',
+    'session-persona-check.sh',
+    'claude-hook-wrapper.sh',
   ];
   for (const name of identityScripts) {
     const scriptPath = join(repoRoot, 'scripts', name);
     if (existsSync(scriptPath)) {
-      try { unlinkSync(scriptPath); } catch { /* ignore */ }
+      try {
+        unlinkSync(scriptPath);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   // Clean up persona file
   const personaPath = join(repoRoot, '.agentguard', 'persona.env');
   if (existsSync(personaPath)) {
-    try { unlinkSync(personaPath); } catch { /* ignore */ }
+    try {
+      unlinkSync(personaPath);
+    } catch {
+      /* ignore */
+    }
   }
 
   process.stderr.write(
