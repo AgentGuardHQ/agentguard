@@ -1,29 +1,37 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Newsletter — AgentGuard</title>
-  <meta name="description" content="AgentGuard intercepts AI agent tool calls, enforces policies and invariants, and produces a verifiable execution trail. Deterministic governance for every action.">
+  <title>The Execution Boundary — AgentGuard Newsletter</title>
+  <meta name="description" content="Analysis of risk, control, and governance for AI systems that can take real-world actions. A LinkedIn newsletter by Jared Pleva.">
 
   <!-- OpenGraph -->
-  <meta property="og:title" content="Newsletter — AgentGuard">
-  <meta property="og:description" content="Thoughts on AI governance, agent safety, and building AgentGuard.">
+  <meta property="og:title" content="The Execution Boundary — AgentGuard Newsletter">
+  <meta property="og:description" content="Analysis of risk, control, and governance for AI systems that can take real-world actions.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://jpleva91.github.io/agent-guard/posts.html">
-  <meta property="og:image" content="https://jpleva91.github.io/agent-guard/og-image.png">
+  <meta property="og:url" content="https://agentguardhq.github.io/agentguard/posts.html">
+  <meta property="og:image" content="https://agentguardhq.github.io/agentguard/og-image.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Newsletter — AgentGuard">
-  <meta name="twitter:description" content="Thoughts on AI governance, agent safety, and building AgentGuard.">
+  <meta name="twitter:title" content="The Execution Boundary — AgentGuard Newsletter">
+  <meta name="twitter:description" content="Analysis of risk, control, and governance for AI systems that can take real-world actions.">
 
-  <!-- Favicon (inline SVG shield) -->
+  <!-- Theme -->
+  <meta name="theme-color" content="#0F172A" id="meta-theme-color">
+  <script>
+    (function(){var t=localStorage.getItem('ag-theme');if(t==='light'){document.documentElement.setAttribute('data-theme','light');document.getElementById('meta-theme-color').content='#F8FAFC';}})();
+  </script>
+
+  <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'><polygon points='7.75,32 7.75,46 32,60 56.25,46 56.25,32' fill='%2322C55E' fill-opacity='0.1'/><polygon points='32,4 56.25,18 56.25,46 32,60 7.75,46 7.75,18' stroke='%2322C55E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/><polyline points='7.75,32 27,32 29,35 32,24 35,35 37,32 56.25,32' stroke='%2322C55E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+  <link rel="apple-touch-icon" href="assets/logo-icon.svg">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CDN -->
@@ -54,210 +62,79 @@
   </script>
 
   <style>
-    /* Base resets */
     html { scroll-behavior: smooth; }
     body { font-family: 'IBM Plex Sans', sans-serif; background: #0F172A; color: #F8FAFC; }
 
-    /* Dot grid background */
-    .dot-grid {
-      background-image: radial-gradient(circle, #334155 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-
-    /* Scroll reveal */
     .reveal {
       opacity: 0;
       transform: translateY(24px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* Staggered children */
-    .reveal-stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
-    .reveal-stagger > .reveal:nth-child(2) { transition-delay: 80ms; }
-    .reveal-stagger > .reveal:nth-child(3) { transition-delay: 160ms; }
-    .reveal-stagger > .reveal:nth-child(4) { transition-delay: 240ms; }
-    .reveal-stagger > .reveal:nth-child(5) { transition-delay: 320ms; }
-    .reveal-stagger > .reveal:nth-child(6) { transition-delay: 400ms; }
-    .reveal-stagger > .reveal:nth-child(7) { transition-delay: 480ms; }
-    .reveal-stagger > .reveal:nth-child(8) { transition-delay: 560ms; }
+    .mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .mobile-menu.open { max-height: 400px; }
 
-    /* Terminal cursor */
-    .cursor {
-      display: inline-block;
-      width: 8px;
-      height: 18px;
-      background: #22C55E;
-      animation: blink 1s step-end infinite;
-      vertical-align: text-bottom;
-      margin-left: 2px;
-    }
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-
-    /* Card hover lift */
-    .card-lift {
+    .article-card {
       transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
-    .card-lift:hover {
+    .article-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 32px rgba(34, 197, 94, 0.1);
       border-color: #22C55E;
     }
 
-    /* Pipeline connector arrows — horizontal on desktop */
-    .pipeline-arrow {
+    :focus-visible { outline: 2px solid #22C55E; outline-offset: 2px; }
+
+    /* Theme toggle */
+    .theme-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; }
+    .theme-toggle:hover { background-color: rgba(148, 163, 184, 0.15); }
+    .theme-toggle .icon-sun, .theme-toggle .icon-moon { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="light"] .theme-toggle .icon-moon { display: block; }
+
+    /* Light theme */
+    [data-theme="light"] body { background: #F8FAFC; color: #0F172A; }
+    [data-theme="light"] .bg-bg { background-color: #F8FAFC !important; }
+    [data-theme="light"] .bg-surface { background-color: #FFFFFF !important; }
+    [data-theme="light"] .bg-surface\/95 { background-color: rgba(255, 255, 255, 0.95) !important; }
+    [data-theme="light"] .text-text { color: #0F172A !important; }
+    [data-theme="light"] .text-muted { color: #475569 !important; }
+    [data-theme="light"] .text-bg { color: #FFFFFF !important; }
+    [data-theme="light"] .border-surface-light { border-color: #E2E8F0 !important; }
+    [data-theme="light"] .border-t { border-color: #E2E8F0 !important; }
+
+    /* LinkedIn embed responsive */
+    .linkedin-embed {
       position: relative;
-    }
-    .pipeline-arrow::after {
-      content: '';
-      position: absolute;
-      right: -20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 12px solid #22C55E;
-    }
-    .pipeline-arrow.last::after {
-      display: none;
-    }
-
-    /* Pipeline — vertical on mobile */
-    @media (max-width: 767px) {
-      .pipeline-arrow::after {
-        right: auto;
-        top: auto;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-top: 12px solid #22C55E;
-        border-bottom: none;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-      }
-    }
-
-    /* Copy button flash */
-    .copy-flash {
-      animation: flash 0.4s ease;
-    }
-    @keyframes flash {
-      0% { background-color: #22C55E; color: #0F172A; }
-      100% { background-color: transparent; }
-    }
-
-    /* Green glow */
-    .glow-green {
-      box-shadow: 0 0 40px rgba(34, 197, 94, 0.15);
-    }
-
-    /* Focus visible */
-    :focus-visible {
-      outline: 2px solid #22C55E;
-      outline-offset: 2px;
-    }
-
-    /* Counter number */
-    .counter {
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Nav transition */
-    #main-nav {
-      transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
-    }
-
-    /* Mobile menu */
-    .mobile-menu {
-      max-height: 0;
+      width: 100%;
+      min-height: 300px;
+      border-radius: 12px;
       overflow: hidden;
-      transition: max-height 0.3s ease;
+      background: #1E293B;
     }
-    .mobile-menu.open {
-      max-height: 400px;
+    .linkedin-embed iframe {
+      width: 100%;
+      min-height: 300px;
+      border: none;
     }
+    [data-theme="light"] .linkedin-embed { background: #F1F5F9; }
 
-    /* Severity badge colors */
-    .sev-critical { color: #EF4444; background: rgba(239, 68, 68, 0.1); }
-    .sev-high { color: #F59E0B; background: rgba(245, 158, 11, 0.1); }
-    .sev-medium { color: #3B82F6; background: rgba(59, 130, 246, 0.1); }
-    .sev-low { color: #94A3B8; background: rgba(148, 163, 184, 0.1); }
-
-    /* Horizontal scroll snap for mobile pipeline */
-    .scroll-snap-x {
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-    .scroll-snap-x > * {
-      scroll-snap-align: center;
-    }
-
-    /* Gradient border effect */
-    .gradient-border {
-      position: relative;
-    }
-    .gradient-border::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(135deg, #22C55E 0%, #334155 50%, #22C55E 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
-    /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       .reveal { opacity: 1; transform: none; transition: none; }
-      .cursor { animation: none; opacity: 1; }
-      .card-lift { transition: none; }
-      .card-lift:hover { transform: none; }
-      #main-nav { transition: none; }
+      .article-card { transition: none; }
+      .article-card:hover { transform: none; }
       .mobile-menu { transition: none; }
-      .post-card { transition: none; }
-      .post-card:hover { transform: none; }
-    }
-
-    /* Post card hover */
-    .post-card {
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-    .post-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.1);
-      border-color: #22C55E;
-    }
-
-    /* Post image placeholder */
-    .post-placeholder {
-      background: #1E293B;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
   </style>
 </head>
 
 <body class="antialiased overflow-x-hidden">
-  <!-- Skip to content -->
   <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-cta focus:text-bg focus:px-4 focus:py-2 focus:rounded font-mono text-sm">Skip to content</a>
 
-  <!-- ============================================ -->
-  <!-- NAV                                          -->
-  <!-- ============================================ -->
-  <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50" aria-label="Main navigation">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <!-- Logo -->
+  <!-- NAV -->
+  <nav id="main-nav" class="fixed top-4 left-4 right-4 z-50 rounded-2xl border border-transparent transition-all duration-300" aria-label="Main navigation">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-2 group" aria-label="AgentGuard home">
         <svg class="w-7 h-7 text-cta" viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <polygon points="7.75,32 7.75,46 32,60 56.25,46 56.25,32" fill="currentColor" fill-opacity="0.1"/>
@@ -267,7 +144,6 @@
         <span class="font-mono font-bold text-lg text-text group-hover:text-cta transition-colors">AgentGuard</span>
       </a>
 
-      <!-- Desktop links -->
       <div class="hidden md:flex items-center gap-8">
         <a href="index.html#features" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Features</a>
         <a href="index.html#architecture" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Architecture</a>
@@ -275,11 +151,14 @@
         <a href="index.html#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="index.html#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
         <a href="posts.html" class="text-cta text-sm font-medium cursor-pointer">Newsletter</a>
-        <a href="https://github.com/AgentGuardHQ/agent-guard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
+        <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
+        <button id="theme-toggle-desktop" class="theme-toggle text-muted hover:text-text" aria-label="Toggle light/dark mode">
+          <svg class="icon-sun w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
         <a href="index.html#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Get Started</a>
       </div>
 
-      <!-- Mobile hamburger -->
       <button id="mobile-toggle" class="md:hidden text-muted hover:text-text p-2 cursor-pointer" aria-label="Toggle menu" aria-expanded="false">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
@@ -287,8 +166,7 @@
       </button>
     </div>
 
-    <!-- Mobile menu -->
-    <div id="mobile-menu" class="mobile-menu md:hidden bg-surface border-t border-surface-light">
+    <div id="mobile-menu" class="mobile-menu md:hidden bg-surface/95 border-t border-surface-light rounded-b-2xl">
       <div class="px-6 py-4 flex flex-col gap-4">
         <a href="index.html#features" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Features</a>
         <a href="index.html#architecture" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Architecture</a>
@@ -296,21 +174,87 @@
         <a href="index.html#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="index.html#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
         <a href="posts.html" class="text-cta text-sm font-medium cursor-pointer">Newsletter</a>
-        <a href="https://github.com/AgentGuardHQ/agent-guard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
+        <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
         <a href="index.html#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors text-center cursor-pointer">Get Started</a>
       </div>
     </div>
   </nav>
 
-  <main id="main" class="min-h-screen pt-24 pb-16">
+  <main id="main" class="min-h-screen pt-28 pb-16">
     <div class="max-w-4xl mx-auto px-6">
+
+      <!-- Header -->
       <div class="mb-12 reveal">
-        <h1 class="font-mono font-bold text-4xl md:text-5xl text-text mb-4">Newsletter</h1>
-        <p class="text-muted text-lg max-w-2xl">Thoughts on AI governance, agent safety, and building AgentGuard.</p>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="font-mono text-cta text-sm font-semibold tracking-wider uppercase">LinkedIn Newsletter</span>
+          <span class="text-surface-light">&middot;</span>
+          <span class="font-mono text-muted text-sm">Monthly</span>
+        </div>
+        <h1 class="font-mono font-bold text-4xl md:text-5xl text-text mb-4">The Execution Boundary</h1>
+        <p class="text-muted text-lg max-w-2xl mb-8">Analysis of risk, control, and governance for AI systems that can take real-world actions.</p>
+
+        <!-- Subscribe CTA -->
+        <a href="https://www.linkedin.com/newsletters/the-execution-boundary-7439405116505583617/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 bg-cta hover:bg-cta-dark text-bg font-semibold px-6 py-3 rounded-lg transition-colors text-sm cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Subscribe on LinkedIn
+        </a>
       </div>
-      <div id="posts-container">
-        <div class="flex items-center justify-center py-20">
-          <p class="text-muted">Loading posts...</p>
+
+      <!-- Articles -->
+      <div class="space-y-8">
+
+        <!-- Article 1 -->
+        <article class="reveal">
+          <a href="https://www.linkedin.com/pulse/ai-doesnt-break-systems-unchecked-actions-do-jared-pleva-recrc/" target="_blank" rel="noopener noreferrer" class="block article-card bg-surface border border-surface-light rounded-xl p-6 md:p-8 cursor-pointer">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="font-mono text-xs font-semibold text-cta bg-cta/10 px-2 py-1 rounded">LATEST</span>
+              <time class="text-muted text-xs font-mono" datetime="2026-03-22">March 22, 2026</time>
+            </div>
+            <h2 class="font-sans font-bold text-xl md:text-2xl text-text mb-3">AI Doesn't Break Systems. Unchecked Actions Do.</h2>
+            <p class="text-muted text-sm leading-relaxed mb-4">Most AI coding agents execute with zero oversight. They can delete files, push to main, and expose secrets &mdash; all in a single tool call. Here's why governance at the execution layer changes everything.</p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-muted text-xs font-mono">By Jared Pleva</span>
+              </div>
+              <span class="inline-flex items-center gap-1 text-cta text-sm font-medium">
+                Read on LinkedIn
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </span>
+            </div>
+          </a>
+        </article>
+
+        <!--
+          To add a new article, copy this template:
+
+          <article class="reveal">
+            <a href="LINKEDIN_ARTICLE_URL" target="_blank" rel="noopener noreferrer" class="block article-card bg-surface border border-surface-light rounded-xl p-6 md:p-8 cursor-pointer">
+              <div class="flex items-center gap-3 mb-4">
+                <time class="text-muted text-xs font-mono" datetime="YYYY-MM-DD">Month DD, YYYY</time>
+              </div>
+              <h2 class="font-sans font-bold text-xl md:text-2xl text-text mb-3">ARTICLE TITLE</h2>
+              <p class="text-muted text-sm leading-relaxed mb-4">ARTICLE EXCERPT</p>
+              <div class="flex items-center justify-between">
+                <span class="text-muted text-xs font-mono">By Jared Pleva</span>
+                <span class="inline-flex items-center gap-1 text-cta text-sm font-medium">
+                  Read on LinkedIn
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                </span>
+              </div>
+            </a>
+          </article>
+        -->
+
+      </div>
+
+      <!-- More articles CTA -->
+      <div class="mt-16 text-center reveal">
+        <div class="bg-surface border border-surface-light rounded-xl p-8">
+          <p class="text-muted text-sm mb-4">New articles published monthly on LinkedIn.</p>
+          <a href="https://www.linkedin.com/newsletters/the-execution-boundary-7439405116505583617/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-cta hover:text-cta-dark text-sm font-mono font-semibold transition-colors cursor-pointer">
+            View all articles on LinkedIn
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
         </div>
       </div>
     </div>
@@ -319,7 +263,6 @@
   <footer class="py-16 border-t border-surface-light" aria-label="Footer">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-        <!-- Brand -->
         <div>
           <div class="flex items-center gap-2 mb-4">
             <svg class="w-6 h-6 text-cta" viewBox="0 0 64 64" fill="none" aria-hidden="true">
@@ -331,8 +274,6 @@
           </div>
           <p class="text-muted text-sm leading-relaxed">Governed action runtime for AI coding agents. Deterministic safety at the execution layer.</p>
         </div>
-
-        <!-- Project -->
         <div>
           <h3 class="font-mono font-semibold text-text text-sm mb-4">Project</h3>
           <ul class="space-y-2">
@@ -340,35 +281,27 @@
             <li><a href="index.html#architecture" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Architecture</a></li>
             <li><a href="index.html#invariants" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Invariants</a></li>
             <li><a href="index.html#cli" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">CLI Commands</a></li>
-            <li><a href="index.html#swarm" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Agent Swarm</a></li>
             <li><a href="https://www.npmjs.com/package/@red-codes/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">npm Package</a></li>
           </ul>
         </div>
-
-        <!-- Resources -->
         <div>
           <h3 class="font-mono font-semibold text-text text-sm mb-4">Resources</h3>
           <ul class="space-y-2">
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/docs/unified-architecture.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Architecture Docs</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/docs/event-model.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Event Model</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/docs/plugin-api.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Plugin API</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Roadmap</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Changelog</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/docs/unified-architecture.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Architecture Docs</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Roadmap</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Changelog</a></li>
           </ul>
         </div>
-
-        <!-- Community -->
         <div>
           <h3 class="font-mono font-semibold text-text text-sm mb-4">Community</h3>
           <ul class="space-y-2">
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">GitHub</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Contributing</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/issues" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Issues</a></li>
-            <li><a href="https://github.com/AgentGuardHQ/agent-guard/discussions" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Discussions</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">GitHub</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Contributing</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/issues" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Issues</a></li>
+            <li><a href="https://github.com/AgentGuardHQ/agentguard/discussions" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Discussions</a></li>
           </ul>
         </div>
       </div>
-
       <div class="border-t border-surface-light pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p class="text-muted text-xs">Apache 2.0 License &middot; Built by <a href="https://github.com/jpleva91" target="_blank" rel="noopener noreferrer" class="text-text hover:text-cta transition-colors cursor-pointer">jpleva91</a></p>
         <p class="text-muted text-xs">Governed by its own policies.</p>
@@ -376,14 +309,11 @@
     </div>
   </footer>
 
-  <!-- ============================================ -->
-  <!-- SCRIPTS                                      -->
-  <!-- ============================================ -->
   <script>
     (function () {
       'use strict';
 
-      // ---- Scroll Reveal (Intersection Observer) ----
+      // ---- Scroll Reveal ----
       var revealObserver = new IntersectionObserver(
         function (entries) {
           entries.forEach(function (entry) {
@@ -395,26 +325,28 @@
         },
         { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
       );
+      document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
 
-      document.querySelectorAll('.reveal').forEach(function (el) {
-        revealObserver.observe(el);
-      });
-
-      // ---- Nav Background on Scroll ----
+      // ---- Nav ----
       var nav = document.getElementById('main-nav');
       function updateNav() {
+        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
         if (window.scrollY > 40) {
-          nav.style.backgroundColor = 'rgba(15, 23, 42, 0.95)';
-          nav.style.backdropFilter = 'blur(12px)';
+          nav.style.backgroundColor = isLight ? 'rgba(248, 250, 252, 0.92)' : 'rgba(15, 23, 42, 0.92)';
+          nav.style.backdropFilter = 'blur(16px)';
+          nav.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.8)' : 'rgba(51, 65, 85, 0.6)';
+          nav.style.boxShadow = isLight ? '0 4px 24px rgba(0, 0, 0, 0.08)' : '0 4px 24px rgba(0, 0, 0, 0.3)';
         } else {
           nav.style.backgroundColor = 'transparent';
           nav.style.backdropFilter = 'none';
+          nav.style.borderColor = 'transparent';
+          nav.style.boxShadow = 'none';
         }
       }
       window.addEventListener('scroll', updateNav, { passive: true });
       updateNav();
 
-      // ---- Mobile Menu Toggle ----
+      // ---- Mobile Menu ----
       var mobileToggle = document.getElementById('mobile-toggle');
       var mobileMenu = document.getElementById('mobile-menu');
       mobileToggle.addEventListener('click', function () {
@@ -428,218 +360,19 @@
         });
       });
 
-      // ---- Post Rendering ----
-      var POSTS_URL = 'posts.json';
-      var postsContainer = document.getElementById('posts-container');
-
-      function formatDate(dateStr) {
-        var d = new Date(dateStr + 'T00:00:00');
-        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      // ---- Theme Toggle ----
+      function toggleTheme() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('ag-theme', next);
+        var metaTheme = document.getElementById('meta-theme-color');
+        if (metaTheme) metaTheme.content = next === 'dark' ? '#0F172A' : '#F8FAFC';
+        updateNav();
       }
-
-      function truncate(str, len) {
-        if (str.length <= len) return str;
-        return str.substring(0, len).replace(/\s+\S*$/, '') + '...';
-      }
-
-      function createPlaceholderSvg() {
-        var ns = 'http://www.w3.org/2000/svg';
-        var svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('class', 'w-10 h-10 text-cta opacity-30');
-        svg.setAttribute('viewBox', '0 0 64 64');
-        svg.setAttribute('fill', 'none');
-
-        var p1 = document.createElementNS(ns, 'polygon');
-        p1.setAttribute('points', '7.75,32 7.75,46 32,60 56.25,46 56.25,32');
-        p1.setAttribute('fill', 'currentColor');
-        p1.setAttribute('fill-opacity', '0.1');
-
-        var p2 = document.createElementNS(ns, 'polygon');
-        p2.setAttribute('points', '32,4 56.25,18 56.25,46 32,60 7.75,46 7.75,18');
-        p2.setAttribute('stroke', 'currentColor');
-        p2.setAttribute('stroke-width', '2.5');
-        p2.setAttribute('fill', 'none');
-
-        var pl = document.createElementNS(ns, 'polyline');
-        pl.setAttribute('points', '7.75,32 27,32 29,35 32,24 35,35 37,32 56.25,32');
-        pl.setAttribute('stroke', 'currentColor');
-        pl.setAttribute('stroke-width', '2');
-        pl.setAttribute('fill', 'none');
-
-        svg.appendChild(p1);
-        svg.appendChild(p2);
-        svg.appendChild(pl);
-        return svg;
-      }
-
-      function createArrowSvg(extraClass) {
-        var ns = 'http://www.w3.org/2000/svg';
-        var svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('class', 'w-4 h-4' + (extraClass ? ' ' + extraClass : ''));
-        svg.setAttribute('fill', 'none');
-        svg.setAttribute('stroke', 'currentColor');
-        svg.setAttribute('stroke-width', '2');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        var path = document.createElementNS(ns, 'path');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
-        path.setAttribute('d', 'M7 17L17 7M17 7H7M17 7v10');
-        svg.appendChild(path);
-        return svg;
-      }
-
-      function createImageEl(image, heightPx) {
-        if (image) {
-          var img = document.createElement('img');
-          img.setAttribute('src', image);
-          img.setAttribute('alt', '');
-          img.setAttribute('loading', 'lazy');
-          img.className = 'w-full h-full object-cover rounded-lg';
-          return img;
-        }
-        var placeholder = document.createElement('div');
-        placeholder.className = 'post-placeholder w-full h-full rounded-lg';
-        placeholder.style.minHeight = heightPx + 'px';
-        placeholder.appendChild(createPlaceholderSvg());
-        return placeholder;
-      }
-
-      function buildHeroCard(post) {
-        var a = document.createElement('a');
-        a.setAttribute('href', post.url);
-        a.setAttribute('target', '_blank');
-        a.setAttribute('rel', 'noopener noreferrer');
-        a.setAttribute('aria-label', 'Read: ' + post.title);
-        a.className = 'block post-card rounded-xl border border-cta bg-surface p-6 md:p-8 mb-10 reveal';
-
-        var flex = document.createElement('div');
-        flex.className = 'flex flex-col md:flex-row gap-6';
-
-        var imgCol = document.createElement('div');
-        imgCol.className = 'md:w-48 md:h-36 flex-shrink-0';
-        imgCol.appendChild(createImageEl(post.image, 144));
-        flex.appendChild(imgCol);
-
-        var content = document.createElement('div');
-        content.className = 'flex-1';
-
-        var badge = document.createElement('span');
-        badge.className = 'inline-block font-mono text-xs font-semibold text-cta bg-cta/10 px-2 py-1 rounded mb-3';
-        badge.textContent = 'LATEST';
-        content.appendChild(badge);
-
-        var h2 = document.createElement('h2');
-        h2.className = 'font-sans font-bold text-xl md:text-2xl text-text mb-3';
-        h2.textContent = post.title;
-        content.appendChild(h2);
-
-        var excerpt = document.createElement('p');
-        excerpt.className = 'text-muted text-sm mb-4 leading-relaxed';
-        excerpt.textContent = post.excerpt;
-        content.appendChild(excerpt);
-
-        var bottom = document.createElement('div');
-        bottom.className = 'flex items-center justify-between';
-
-        var time = document.createElement('time');
-        time.className = 'text-muted text-xs font-mono';
-        time.setAttribute('datetime', post.date);
-        time.textContent = formatDate(post.date);
-        bottom.appendChild(time);
-
-        var cta = document.createElement('span');
-        cta.className = 'inline-flex items-center gap-1 text-cta text-sm font-medium';
-        cta.textContent = 'Read on LinkedIn ';
-        cta.appendChild(createArrowSvg(''));
-        bottom.appendChild(cta);
-
-        content.appendChild(bottom);
-        flex.appendChild(content);
-        a.appendChild(flex);
-        return a;
-      }
-
-      function buildGridCard(post) {
-        var a = document.createElement('a');
-        a.setAttribute('href', post.url);
-        a.setAttribute('target', '_blank');
-        a.setAttribute('rel', 'noopener noreferrer');
-        a.setAttribute('aria-label', 'Read: ' + post.title);
-        a.className = 'block post-card rounded-xl border border-surface-light bg-surface p-5 reveal';
-
-        var imgWrap = document.createElement('div');
-        imgWrap.className = 'h-32 mb-4';
-        imgWrap.appendChild(createImageEl(post.image, 128));
-        a.appendChild(imgWrap);
-
-        var h3 = document.createElement('h3');
-        h3.className = 'font-sans font-semibold text-base text-text mb-2';
-        h3.textContent = post.title;
-        a.appendChild(h3);
-
-        var excerpt = document.createElement('p');
-        excerpt.className = 'text-muted text-sm mb-3 leading-relaxed';
-        excerpt.textContent = truncate(post.excerpt, 100);
-        a.appendChild(excerpt);
-
-        var bottom = document.createElement('div');
-        bottom.className = 'flex items-center justify-between';
-
-        var time = document.createElement('time');
-        time.className = 'text-muted text-xs font-mono';
-        time.setAttribute('datetime', post.date);
-        time.textContent = formatDate(post.date);
-        bottom.appendChild(time);
-
-        bottom.appendChild(createArrowSvg('text-muted'));
-        a.appendChild(bottom);
-        return a;
-      }
-
-      function renderEmptyState() {
-        postsContainer.replaceChildren();
-        var wrap = document.createElement('div');
-        wrap.className = 'flex items-center justify-center py-20 reveal';
-        var p = document.createElement('p');
-        p.className = 'text-muted text-lg';
-        p.textContent = 'No posts yet \u2014 check back soon.';
-        wrap.appendChild(p);
-        postsContainer.appendChild(wrap);
-        document.querySelectorAll('.reveal:not(.visible)').forEach(function (el) { revealObserver.observe(el); });
-      }
-
-      function renderPosts(posts) {
-        var sorted = posts.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
-
-        if (sorted.length === 0) {
-          renderEmptyState();
-          return;
-        }
-
-        postsContainer.replaceChildren();
-
-        postsContainer.appendChild(buildHeroCard(sorted[0]));
-
-        if (sorted.length > 1) {
-          var grid = document.createElement('div');
-          grid.className = 'grid md:grid-cols-2 gap-6 reveal-stagger';
-          for (var i = 1; i < sorted.length; i++) {
-            grid.appendChild(buildGridCard(sorted[i]));
-          }
-          postsContainer.appendChild(grid);
-        }
-
-        document.querySelectorAll('.reveal:not(.visible)').forEach(function (el) { revealObserver.observe(el); });
-      }
-
-      fetch(POSTS_URL)
-        .then(function (r) {
-          if (!r.ok) throw new Error(r.status);
-          return r.json();
-        })
-        .then(function (data) { renderPosts(Array.isArray(data.posts) ? data.posts : []); })
-        .catch(function () { renderEmptyState(); });
-
+      var themeToggleDesktop = document.getElementById('theme-toggle-desktop');
+      if (themeToggleDesktop) themeToggleDesktop.addEventListener('click', toggleTheme);
     }());
   </script>
 </body>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,15 +44,27 @@
   }
   </script>
 
+  <!-- Theme color for browser chrome -->
+  <meta name="theme-color" content="#0F172A" id="meta-theme-color">
+
+  <!-- Prevent FOUC: apply saved theme before paint -->
+  <script>
+    (function(){var t=localStorage.getItem('ag-theme');if(t==='light'){document.documentElement.setAttribute('data-theme','light');document.getElementById('meta-theme-color').content='#F8FAFC';}})();
+  </script>
+
+  <!-- Apple touch icon -->
+  <link rel="apple-touch-icon" href="assets/logo-icon.svg">
+
   <!-- Favicon (inline SVG shield) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'><polygon points='7.75,32 7.75,46 32,60 56.25,46 56.25,32' fill='%2322C55E' fill-opacity='0.1'/><polygon points='32,4 56.25,18 56.25,46 32,60 7.75,46 7.75,18' stroke='%2322C55E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/><polyline points='7.75,32 27,32 29,35 32,24 35,35 37,32 56.25,32' stroke='%2322C55E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind CDN (preconnect above reduces latency) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -155,18 +167,23 @@
       display: none;
     }
 
-    /* Pipeline — vertical on mobile */
+    /* Pipeline — vertical timeline on mobile */
     @media (max-width: 767px) {
       .pipeline-arrow::after {
+        content: '';
+        position: absolute;
         right: auto;
         top: auto;
-        bottom: -20px;
+        bottom: -18px;
         left: 50%;
         transform: translateX(-50%);
-        border-top: 12px solid #22C55E;
-        border-bottom: none;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
+        width: 2px;
+        height: 14px;
+        background: #22C55E;
+        border: none;
+      }
+      .pipeline-arrow.last::after {
+        display: none;
       }
     }
 
@@ -242,6 +259,76 @@
       pointer-events: none;
     }
 
+    /* ---- Light theme overrides ---- */
+    [data-theme="light"] body {
+      background: #F8FAFC;
+      color: #0F172A;
+    }
+    [data-theme="light"] .dot-grid {
+      background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+    }
+    [data-theme="light"] .bg-bg { background-color: #F8FAFC !important; }
+    [data-theme="light"] .bg-surface { background-color: #FFFFFF !important; }
+    [data-theme="light"] .bg-surface\/30 { background-color: rgba(241, 245, 249, 0.6) !important; }
+    [data-theme="light"] .bg-surface-light\/50 { background-color: rgba(226, 232, 240, 0.5) !important; }
+    [data-theme="light"] .bg-surface-light\/30 { background-color: rgba(226, 232, 240, 0.3) !important; }
+    [data-theme="light"] .text-text { color: #0F172A !important; }
+    [data-theme="light"] .text-muted { color: #475569 !important; }
+    [data-theme="light"] .border-surface-light { border-color: #E2E8F0 !important; }
+    [data-theme="light"] .border-surface-light\/50 { border-color: rgba(226, 232, 240, 0.5) !important; }
+    [data-theme="light"] .divide-surface-light\/50 > * + * { border-color: rgba(226, 232, 240, 0.5) !important; }
+    [data-theme="light"] .bg-bg\/50 { background-color: rgba(248, 250, 252, 0.5) !important; }
+    [data-theme="light"] .glow-green { box-shadow: 0 0 40px rgba(34, 197, 94, 0.08); }
+    [data-theme="light"] pre { background-color: #F1F5F9 !important; }
+    [data-theme="light"] code .text-muted { color: #64748B !important; }
+    [data-theme="light"] .card-lift:hover {
+      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.06);
+    }
+    [data-theme="light"] :focus-visible {
+      outline-color: #16A34A;
+    }
+    [data-theme="light"] .gradient-border::before {
+      background: linear-gradient(135deg, #22C55E 0%, #E2E8F0 50%, #22C55E 100%);
+    }
+    [data-theme="light"] .bg-surface\/95 { background-color: rgba(255, 255, 255, 0.95) !important; }
+    [data-theme="light"] .sev-critical { color: #DC2626; background: rgba(220, 38, 38, 0.08); }
+    [data-theme="light"] .sev-high { color: #D97706; background: rgba(217, 119, 6, 0.08); }
+    [data-theme="light"] .sev-medium { color: #2563EB; background: rgba(37, 99, 235, 0.08); }
+    [data-theme="light"] .sev-low { color: #64748B; background: rgba(100, 116, 139, 0.08); }
+    [data-theme="light"] .bg-surface-light { background-color: #E2E8F0 !important; }
+    [data-theme="light"] .from-bg\/80 { --tw-gradient-from: rgba(248, 250, 252, 0.8) !important; }
+    [data-theme="light"] .via-bg\/60 { --tw-gradient-via: rgba(248, 250, 252, 0.6) !important; }
+    [data-theme="light"] .to-bg { --tw-gradient-to: #F8FAFC !important; }
+    [data-theme="light"] .border-y { border-color: #E2E8F0 !important; }
+    [data-theme="light"] .border-t { border-color: #E2E8F0 !important; }
+    [data-theme="light"] .bg-cta\/10 { background-color: rgba(34, 197, 94, 0.06) !important; }
+    [data-theme="light"] .bg-danger\/10 { background-color: rgba(239, 68, 68, 0.06) !important; }
+    [data-theme="light"] .bg-info\/10 { background-color: rgba(59, 130, 246, 0.06) !important; }
+    [data-theme="light"] .bg-warning\/10 { background-color: rgba(245, 158, 11, 0.06) !important; }
+    [data-theme="light"] .bg-cta\/10, [data-theme="light"] .bg-cta\/5 { background-color: rgba(34, 197, 94, 0.05) !important; }
+    [data-theme="light"] .text-bg { color: #FFFFFF !important; }
+    [data-theme="light"] .hover\:bg-surface-light:hover { background-color: #E2E8F0 !important; }
+    [data-theme="light"] .bg-surface-light\/50 .font-mono { color: #334155 !important; }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .theme-toggle:hover {
+      background-color: rgba(148, 163, 184, 0.15);
+    }
+    .theme-toggle .icon-sun,
+    .theme-toggle .icon-moon { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="light"] .theme-toggle .icon-moon { display: block; }
+
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       .reveal { opacity: 1; transform: none; transition: none; }
@@ -263,8 +350,8 @@
   <!-- ============================================ -->
   <!-- NAV                                          -->
   <!-- ============================================ -->
-  <nav id="main-nav" class="fixed top-0 left-0 right-0 z-50" aria-label="Main navigation">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+  <nav id="main-nav" class="fixed top-4 left-4 right-4 z-50 rounded-2xl border border-transparent transition-all duration-300" aria-label="Main navigation">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
       <!-- Logo -->
       <a href="#" class="flex items-center gap-2 group" aria-label="AgentGuard home">
         <svg class="w-7 h-7 text-cta" viewBox="0 0 64 64" fill="none" aria-hidden="true">
@@ -285,6 +372,10 @@
         <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Dashboard</a>
         <a href="posts.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Newsletter</a>
         <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
+        <button id="theme-toggle-desktop" class="theme-toggle text-muted hover:text-text" aria-label="Toggle light/dark mode">
+          <svg class="icon-sun w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
         <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer">Get Started</a>
       </div>
 
@@ -297,7 +388,7 @@
     </div>
 
     <!-- Mobile menu -->
-    <div id="mobile-menu" class="mobile-menu md:hidden bg-surface border-t border-surface-light">
+    <div id="mobile-menu" class="mobile-menu md:hidden bg-surface/95 border-t border-surface-light rounded-b-2xl">
       <div class="px-6 py-4 flex flex-col gap-4">
         <a href="#features" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Features</a>
         <a href="#architecture" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Architecture</a>
@@ -558,6 +649,42 @@
     </section>
 
     <!-- ============================================ -->
+    <!-- WORKS WITH (Social Proof)                    -->
+    <!-- ============================================ -->
+    <section class="py-16 border-y border-surface-light/50" aria-label="Compatible integrations">
+      <div class="max-w-5xl mx-auto px-6">
+        <p class="text-center text-muted text-sm font-mono uppercase tracking-wider mb-10 reveal">Works with</p>
+        <div class="flex flex-wrap items-center justify-center gap-10 sm:gap-16 reveal-stagger">
+          <!-- Claude Code -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            <span class="font-mono text-text text-sm font-medium">Claude Code</span>
+          </div>
+          <!-- GitHub Copilot -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span class="font-mono text-text text-sm font-medium">GitHub Copilot</span>
+          </div>
+          <!-- VS Code -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span class="font-mono text-text text-sm font-medium">VS Code</span>
+          </div>
+          <!-- GitHub Actions -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="font-mono text-text text-sm font-medium">GitHub Actions</span>
+          </div>
+          <!-- MCP -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span class="font-mono text-text text-sm font-medium">MCP Server</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================ -->
     <!-- FEATURES                                     -->
     <!-- ============================================ -->
     <section id="features" class="py-24" aria-labelledby="features-heading">
@@ -684,7 +811,7 @@
             <div class="pipeline-arrow flex-shrink-0">
               <div class="bg-surface border-2 border-warning rounded-lg px-4 py-4 text-center w-[110px]">
                 <div class="font-mono font-bold text-warning text-sm">Invariants</div>
-                <div class="text-muted text-xs mt-1">20 safety checks</div>
+                <div class="text-muted text-xs mt-1">21 safety checks</div>
               </div>
             </div>
 
@@ -1033,43 +1160,88 @@ agentguard cloud status <span class="text-cta"># check connection</span></code><
           <p class="text-muted text-lg max-w-2xl mx-auto">AgentGuard operates at the execution layer &mdash; after the model decides what to do, before the action touches your system.</p>
         </div>
 
-        <div class="reveal overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-surface-light">
-                <th class="text-left font-mono font-semibold text-text py-3 px-4">Category</th>
-                <th class="text-left font-mono font-semibold text-text py-3 px-4">What they do</th>
-                <th class="text-left font-mono font-semibold text-text py-3 px-4">What AgentGuard does</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-surface-light/50">
-              <tr>
-                <td class="py-3 px-4 font-mono text-text text-xs">LLM Guardrails</td>
-                <td class="py-3 px-4 text-muted">Filter model output text</td>
-                <td class="py-3 px-4 text-cta">Governs actual tool execution</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text text-xs">Prompt Filters</td>
-                <td class="py-3 px-4 text-muted">Block unsafe prompts</td>
-                <td class="py-3 px-4 text-cta">Operates after the prompt, at execution time</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text text-xs">Static Analysis</td>
-                <td class="py-3 px-4 text-muted">Scan code at rest</td>
-                <td class="py-3 px-4 text-cta">Intercepts actions in real-time</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text text-xs">Git Hooks</td>
-                <td class="py-3 px-4 text-muted">Pre-commit / pre-push checks</td>
-                <td class="py-3 px-4 text-cta">Governs all agent actions, not just git</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text text-xs">Policy-as-Code</td>
-                <td class="py-3 px-4 text-muted">Infrastructure policy (OPA, Sentinel)</td>
-                <td class="py-3 px-4 text-cta">Agent action policy with simulation</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="space-y-3 reveal-stagger">
+          <!-- Header row -->
+          <div class="reveal grid grid-cols-3 gap-3 text-xs font-mono font-semibold uppercase tracking-wider px-1">
+            <div class="text-muted">Category</div>
+            <div class="text-muted">What they do</div>
+            <div class="text-cta">AgentGuard</div>
+          </div>
+
+          <!-- LLM Guardrails -->
+          <div class="reveal grid grid-cols-3 gap-3 items-center">
+            <div class="bg-surface border border-surface-light rounded-xl p-4">
+              <span class="font-mono text-text text-sm font-semibold">LLM Guardrails</span>
+            </div>
+            <div class="bg-surface border border-surface-light rounded-xl p-4 flex items-start gap-2">
+              <svg class="w-4 h-4 text-surface-light mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span class="text-muted text-sm">Filter model output text</span>
+            </div>
+            <div class="bg-surface border border-cta/30 rounded-xl p-4 flex items-start gap-2 border-l-2 border-l-cta">
+              <svg class="w-4 h-4 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-cta text-sm font-medium">Governs actual tool execution</span>
+            </div>
+          </div>
+
+          <!-- Prompt Filters -->
+          <div class="reveal grid grid-cols-3 gap-3 items-center">
+            <div class="bg-surface border border-surface-light rounded-xl p-4">
+              <span class="font-mono text-text text-sm font-semibold">Prompt Filters</span>
+            </div>
+            <div class="bg-surface border border-surface-light rounded-xl p-4 flex items-start gap-2">
+              <svg class="w-4 h-4 text-surface-light mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span class="text-muted text-sm">Block unsafe prompts</span>
+            </div>
+            <div class="bg-surface border border-cta/30 rounded-xl p-4 flex items-start gap-2 border-l-2 border-l-cta">
+              <svg class="w-4 h-4 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-cta text-sm font-medium">Operates post-prompt, at execution time</span>
+            </div>
+          </div>
+
+          <!-- Static Analysis -->
+          <div class="reveal grid grid-cols-3 gap-3 items-center">
+            <div class="bg-surface border border-surface-light rounded-xl p-4">
+              <span class="font-mono text-text text-sm font-semibold">Static Analysis</span>
+            </div>
+            <div class="bg-surface border border-surface-light rounded-xl p-4 flex items-start gap-2">
+              <svg class="w-4 h-4 text-surface-light mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span class="text-muted text-sm">Scan code at rest</span>
+            </div>
+            <div class="bg-surface border border-cta/30 rounded-xl p-4 flex items-start gap-2 border-l-2 border-l-cta">
+              <svg class="w-4 h-4 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-cta text-sm font-medium">Intercepts actions in real-time</span>
+            </div>
+          </div>
+
+          <!-- Git Hooks -->
+          <div class="reveal grid grid-cols-3 gap-3 items-center">
+            <div class="bg-surface border border-surface-light rounded-xl p-4">
+              <span class="font-mono text-text text-sm font-semibold">Git Hooks</span>
+            </div>
+            <div class="bg-surface border border-surface-light rounded-xl p-4 flex items-start gap-2">
+              <svg class="w-4 h-4 text-surface-light mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span class="text-muted text-sm">Pre-commit / pre-push only</span>
+            </div>
+            <div class="bg-surface border border-cta/30 rounded-xl p-4 flex items-start gap-2 border-l-2 border-l-cta">
+              <svg class="w-4 h-4 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-cta text-sm font-medium">Governs all agent actions, not just git</span>
+            </div>
+          </div>
+
+          <!-- Policy-as-Code -->
+          <div class="reveal grid grid-cols-3 gap-3 items-center">
+            <div class="bg-surface border border-surface-light rounded-xl p-4">
+              <span class="font-mono text-text text-sm font-semibold">Policy-as-Code</span>
+            </div>
+            <div class="bg-surface border border-surface-light rounded-xl p-4 flex items-start gap-2">
+              <svg class="w-4 h-4 text-surface-light mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span class="text-muted text-sm">Infrastructure policy (OPA, Sentinel)</span>
+            </div>
+            <div class="bg-surface border border-cta/30 rounded-xl p-4 flex items-start gap-2 border-l-2 border-l-cta">
+              <svg class="w-4 h-4 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <span class="text-cta text-sm font-medium">Agent action policy with simulation</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1810,12 +1982,17 @@ rules:
       // ---- Nav Background on Scroll ----
       var nav = document.getElementById('main-nav');
       function updateNav() {
+        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
         if (window.scrollY > 40) {
-          nav.style.backgroundColor = 'rgba(15, 23, 42, 0.95)';
-          nav.style.backdropFilter = 'blur(12px)';
+          nav.style.backgroundColor = isLight ? 'rgba(248, 250, 252, 0.92)' : 'rgba(15, 23, 42, 0.92)';
+          nav.style.backdropFilter = 'blur(16px)';
+          nav.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.8)' : 'rgba(51, 65, 85, 0.6)';
+          nav.style.boxShadow = isLight ? '0 4px 24px rgba(0, 0, 0, 0.08)' : '0 4px 24px rgba(0, 0, 0, 0.3)';
         } else {
           nav.style.backgroundColor = 'transparent';
           nav.style.backdropFilter = 'none';
+          nav.style.borderColor = 'transparent';
+          nav.style.boxShadow = 'none';
         }
       }
       window.addEventListener('scroll', updateNav, { passive: true });
@@ -1908,7 +2085,7 @@ rules:
       // ---- Terminal Typing Animation ----
       var terminalLines = [
         { text: '  AgentGuard Runtime Active', cls: 'text-cta', delay: 0 },
-        { text: '  policy: agentguard.yaml | invariants: 20 | patterns: 87', cls: 'text-muted', delay: 0 },
+        { text: '  policy: agentguard.yaml | invariants: 21 | patterns: 87', cls: 'text-muted', delay: 0 },
         { text: '', cls: '', delay: 300 },
         { text: '  \u2713 file.write  src/auth/service.ts', cls: 'text-cta', delay: 0 },
         { text: '  \u2713 shell.exec  npm test', cls: 'text-cta', delay: 0 },
@@ -1970,6 +2147,22 @@ rules:
           setTimeout(typeNextChar, line.delay || 150);
         }
       }
+
+      // ---- Theme Toggle ----
+      function toggleTheme() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('ag-theme', next);
+        var metaTheme = document.getElementById('meta-theme-color');
+        if (metaTheme) metaTheme.content = next === 'dark' ? '#0F172A' : '#F8FAFC';
+        // Update nav background for new theme
+        updateNav();
+      }
+
+      var themeToggleDesktop = document.getElementById('theme-toggle-desktop');
+      if (themeToggleDesktop) themeToggleDesktop.addEventListener('click', toggleTheme);
 
       // Start terminal animation after fonts load
       if (document.fonts && document.fonts.ready) {
