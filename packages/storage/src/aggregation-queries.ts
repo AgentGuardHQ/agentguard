@@ -2,72 +2,33 @@
 // All queries run directly in SQLite, returning only summary data.
 
 import type Database from 'better-sqlite3';
+import type {
+  AggregationTimeFilter,
+  EventKindCount,
+  DecisionOutcomeCount,
+  DeniedActionCount,
+  RunSummary,
+  ViolationByInvariant,
+  TimeBucketCount,
+  GovernanceStats,
+  AgentStats,
+  TimeRollup,
+  TeamViolationPattern,
+} from './types.js';
 
-/** Time-range filter for aggregation queries */
-export interface AggregationTimeFilter {
-  /** Only include events at or after this timestamp (epoch ms) */
-  readonly since?: number;
-  /** Only include events at or before this timestamp (epoch ms) */
-  readonly until?: number;
-  /** Restrict to the N most recent sessions */
-  readonly sessionLimit?: number;
-}
-
-/** Event count grouped by kind */
-export interface EventKindCount {
-  readonly kind: string;
-  readonly count: number;
-}
-
-/** Decision count grouped by outcome */
-export interface DecisionOutcomeCount {
-  readonly outcome: string;
-  readonly count: number;
-}
-
-/** Denied action count grouped by action_type */
-export interface DeniedActionCount {
-  readonly actionType: string;
-  readonly count: number;
-  readonly distinctSessions: number;
-}
-
-/** Per-run summary statistics */
-export interface RunSummary {
-  readonly runId: string;
-  readonly totalEvents: number;
-  readonly allowed: number;
-  readonly denied: number;
-  readonly escalated: number;
-  readonly violations: number;
-  readonly firstEventAt: number;
-  readonly lastEventAt: number;
-}
-
-/** Violation count grouped by invariant name */
-export interface ViolationByInvariant {
-  readonly invariant: string;
-  readonly count: number;
-  readonly distinctSessions: number;
-}
-
-/** Time-bucketed event count */
-export interface TimeBucketCount {
-  readonly bucketStart: number;
-  readonly count: number;
-}
-
-/** Overall governance statistics */
-export interface GovernanceStats {
-  readonly totalSessions: number;
-  readonly totalEvents: number;
-  readonly totalDecisions: number;
-  readonly allowedCount: number;
-  readonly deniedCount: number;
-  readonly escalatedCount: number;
-  readonly firstEventAt: number | null;
-  readonly lastEventAt: number | null;
-}
+export type {
+  AggregationTimeFilter,
+  EventKindCount,
+  DecisionOutcomeCount,
+  DeniedActionCount,
+  RunSummary,
+  ViolationByInvariant,
+  TimeBucketCount,
+  GovernanceStats,
+  AgentStats,
+  TimeRollup,
+  TeamViolationPattern,
+};
 
 // ─── Helper: build WHERE clause from time filter + optional run_id restriction ───
 
@@ -308,4 +269,144 @@ export function denialPatterns(
     occurrences: number;
     distinctSessions: number;
   }>;
+}
+
+// ─── Team Observability Queries ────────────────────────────────────────────────
+
+/**
+ * Governance statistics grouped by agent identity.
+ * Extracts agent from the decisions data JSON ($.action.agent).
+ */
+export function statsByAgent(db: Database.Database, filter?: AggregationTimeFilter): AgentStats[] {
+  const { where, params } = buildTimeConditions(filter, 'decisions');
+  const sql = `
+    SELECT
+      COALESCE(json_extract(data, '$.action.agent'), 'unknown') as agent,
+      COUNT(*) as totalDecisions,
+      SUM(CASE WHEN outcome = 'allowed' THEN 1 ELSE 0 END) as allowed,
+      SUM(CASE WHEN outcome = 'denied' THEN 1 ELSE 0 END) as denied,
+      SUM(CASE WHEN outcome = 'escalated' THEN 1 ELSE 0 END) as escalated,
+      COUNT(DISTINCT run_id) as distinctSessions,
+      MIN(timestamp) as firstSeenAt,
+      MAX(timestamp) as lastSeenAt
+    FROM decisions
+    ${where}
+    GROUP BY agent
+    ORDER BY totalDecisions DESC
+  `;
+  return db.prepare(sql).all(...params) as AgentStats[];
+}
+
+/**
+ * Governance statistics bucketed by time period (daily, weekly, monthly).
+ * Uses SQLite date functions for natural calendar alignment.
+ */
+export function timeRollup(
+  db: Database.Database,
+  granularity: 'daily' | 'weekly' | 'monthly',
+  filter?: AggregationTimeFilter
+): TimeRollup[] {
+  const { where: eventWhere, params: eventParams } = buildTimeConditions(filter, 'events');
+  const { where: decisionWhere, params: decisionParams } = buildTimeConditions(filter, 'decisions');
+
+  // SQLite date expression for bucketing timestamps (epoch ms → date string)
+  const dateBucket =
+    granularity === 'daily'
+      ? "date(timestamp / 1000, 'unixepoch')"
+      : granularity === 'weekly'
+        ? "date(timestamp / 1000, 'unixepoch', 'weekday 0', '-6 days')"
+        : "strftime('%Y-%m', timestamp / 1000, 'unixepoch')";
+
+  // Event counts per period
+  const eventSql = `
+    SELECT ${dateBucket} as period, COUNT(*) as totalEvents, COUNT(DISTINCT run_id) as distinctSessions
+    FROM events ${eventWhere}
+    GROUP BY period
+    ORDER BY period
+  `;
+  const eventRows = db.prepare(eventSql).all(...eventParams) as Array<{
+    period: string;
+    totalEvents: number;
+    distinctSessions: number;
+  }>;
+
+  // Decision counts per period
+  const decisionSql = `
+    SELECT ${dateBucket} as period,
+      COUNT(*) as totalDecisions,
+      SUM(CASE WHEN outcome = 'allowed' THEN 1 ELSE 0 END) as allowed,
+      SUM(CASE WHEN outcome = 'denied' THEN 1 ELSE 0 END) as denied
+    FROM decisions ${decisionWhere}
+    GROUP BY period
+    ORDER BY period
+  `;
+  const decisionRows = db.prepare(decisionSql).all(...decisionParams) as Array<{
+    period: string;
+    totalDecisions: number;
+    allowed: number;
+    denied: number;
+  }>;
+
+  // Merge event and decision data by period
+  const periodMap = new Map<string, TimeRollup>();
+
+  for (const row of eventRows) {
+    periodMap.set(row.period, {
+      period: row.period,
+      totalEvents: row.totalEvents,
+      totalDecisions: 0,
+      allowed: 0,
+      denied: 0,
+      distinctSessions: row.distinctSessions,
+    });
+  }
+
+  for (const row of decisionRows) {
+    const existing = periodMap.get(row.period);
+    if (existing) {
+      periodMap.set(row.period, {
+        ...existing,
+        totalDecisions: row.totalDecisions,
+        allowed: row.allowed,
+        denied: row.denied,
+      });
+    } else {
+      periodMap.set(row.period, {
+        period: row.period,
+        totalEvents: 0,
+        totalDecisions: row.totalDecisions,
+        allowed: row.allowed,
+        denied: row.denied,
+        distinctSessions: 0,
+      });
+    }
+  }
+
+  return Array.from(periodMap.values()).sort((a, b) => a.period.localeCompare(b.period));
+}
+
+/**
+ * Invariant violations that affect multiple agents — team-wide patterns.
+ */
+export function teamViolationPatterns(
+  db: Database.Database,
+  filter?: AggregationTimeFilter
+): TeamViolationPattern[] {
+  const { where, params } = buildTimeConditions(filter, 'events');
+  const kindCondition = where
+    ? `${where} AND kind = 'InvariantViolation'`
+    : "WHERE kind = 'InvariantViolation'";
+
+  const sql = `
+    SELECT
+      COALESCE(json_extract(data, '$.invariant'), json_extract(data, '$.invariantId'), 'unknown') as invariant,
+      COUNT(*) as count,
+      COUNT(DISTINCT COALESCE(json_extract(data, '$.agent'), 'unknown')) as distinctAgents,
+      COUNT(DISTINCT run_id) as distinctSessions
+    FROM events
+    ${kindCondition}
+    GROUP BY invariant
+    ORDER BY count DESC
+  `;
+  return db.prepare(sql).all(...params) as TeamViolationPattern[];
 }

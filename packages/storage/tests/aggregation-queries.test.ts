@@ -11,6 +11,9 @@ import {
   eventTimeSeries,
   governanceStats,
   denialPatterns,
+  statsByAgent,
+  timeRollup,
+  teamViolationPatterns,
 } from '@red-codes/storage';
 import type { DomainEvent } from '@red-codes/core';
 
@@ -390,6 +393,249 @@ describe('Aggregation Queries', () => {
 
       const result = denialPatterns(db, 2);
       expect(result).toHaveLength(2);
+    });
+  });
+
+  // ─── Team Observability Queries ────────────────────────────────────────────
+
+  describe('statsByAgent', () => {
+    it('returns empty array for empty database', () => {
+      expect(statsByAgent(db)).toEqual([]);
+    });
+
+    it('groups decisions by agent identity', () => {
+      // Insert decisions with agent field in the JSON data
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d1', 'r1', 100, 'allowed', 'file.write', 'a.ts', 'ok', JSON.stringify({ action: { agent: 'alice' } }), null);
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d2', 'r1', 200, 'denied', 'git.push', 'main', 'protected', JSON.stringify({ action: { agent: 'alice' } }), null);
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d3', 'r2', 300, 'allowed', 'file.read', 'b.ts', 'ok', JSON.stringify({ action: { agent: 'bob' } }), null);
+
+      const result = statsByAgent(db);
+      expect(result).toHaveLength(2);
+
+      const alice = result.find((a) => a.agent === 'alice');
+      expect(alice).toBeDefined();
+      expect(alice!.totalDecisions).toBe(2);
+      expect(alice!.allowed).toBe(1);
+      expect(alice!.denied).toBe(1);
+      expect(alice!.distinctSessions).toBe(1);
+
+      const bob = result.find((a) => a.agent === 'bob');
+      expect(bob).toBeDefined();
+      expect(bob!.totalDecisions).toBe(1);
+      expect(bob!.allowed).toBe(1);
+    });
+
+    it('uses "unknown" for decisions without agent field', () => {
+      insertDecision(db, { recordId: 'd1', outcome: 'allowed' });
+
+      const result = statsByAgent(db);
+      expect(result).toHaveLength(1);
+      expect(result[0].agent).toBe('unknown');
+    });
+
+    it('filters by time range', () => {
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d1', 'r1', 100, 'allowed', 'file.write', 'a.ts', 'ok', JSON.stringify({ action: { agent: 'alice' } }), null);
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d2', 'r1', 500, 'denied', 'git.push', 'main', 'no', JSON.stringify({ action: { agent: 'alice' } }), null);
+
+      const result = statsByAgent(db, { since: 200 });
+      expect(result).toHaveLength(1);
+      expect(result[0].totalDecisions).toBe(1);
+      expect(result[0].denied).toBe(1);
+    });
+
+    it('counts escalated decisions in the escalated field', () => {
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d1', 'r1', 100, 'allowed', 'file.write', 'a.ts', 'ok', JSON.stringify({ action: { agent: 'alice' } }), null);
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d2', 'r1', 200, 'escalated', 'git.push', 'main', 'high risk', JSON.stringify({ action: { agent: 'alice' } }), 8);
+      db.prepare(
+        `INSERT INTO decisions (record_id, run_id, timestamp, outcome, action_type, target, reason, data, severity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run('d3', 'r1', 300, 'escalated', 'shell.exec', 'rm -rf', 'blast radius', JSON.stringify({ action: { agent: 'alice' } }), 9);
+
+      const result = statsByAgent(db);
+      expect(result).toHaveLength(1);
+      expect(result[0].agent).toBe('alice');
+      expect(result[0].totalDecisions).toBe(3);
+      expect(result[0].allowed).toBe(1);
+      expect(result[0].escalated).toBe(2);
+    });
+  });
+
+  describe('timeRollup', () => {
+    it('returns empty array for empty database', () => {
+      expect(timeRollup(db, 'daily')).toEqual([]);
+    });
+
+    it('buckets events by day', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      // 2024-01-01 00:00 UTC
+      const day1 = new Date('2024-01-01T10:00:00Z').getTime();
+      // 2024-01-02 00:00 UTC
+      const day2 = new Date('2024-01-02T15:00:00Z').getTime();
+
+      store.append(makeEvent({ id: 'e1', kind: 'ActionAllowed', timestamp: day1 }));
+      store.append(makeEvent({ id: 'e2', kind: 'ActionDenied', timestamp: day1 + 1000 }));
+      store.append(makeEvent({ id: 'e3', kind: 'ActionAllowed', timestamp: day2 }));
+
+      const result = timeRollup(db, 'daily');
+      expect(result).toHaveLength(2);
+      expect(result[0].period).toBe('2024-01-01');
+      expect(result[0].totalEvents).toBe(2);
+      expect(result[1].period).toBe('2024-01-02');
+      expect(result[1].totalEvents).toBe(1);
+    });
+
+    it('merges event and decision data per period', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      const ts = new Date('2024-01-15T12:00:00Z').getTime();
+
+      store.append(makeEvent({ id: 'e1', kind: 'ActionAllowed', timestamp: ts }));
+      insertDecision(db, { recordId: 'd1', outcome: 'allowed', timestamp: ts, runId: 'run_1' });
+      insertDecision(db, { recordId: 'd2', outcome: 'denied', timestamp: ts + 1000, runId: 'run_1' });
+
+      const result = timeRollup(db, 'daily');
+      expect(result).toHaveLength(1);
+      expect(result[0].totalEvents).toBe(1);
+      expect(result[0].totalDecisions).toBe(2);
+      expect(result[0].allowed).toBe(1);
+      expect(result[0].denied).toBe(1);
+    });
+
+    it('supports monthly granularity', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      const jan = new Date('2024-01-15T12:00:00Z').getTime();
+      const feb = new Date('2024-02-10T12:00:00Z').getTime();
+
+      store.append(makeEvent({ id: 'e1', timestamp: jan }));
+      store.append(makeEvent({ id: 'e2', timestamp: jan + 86400000 }));
+      store.append(makeEvent({ id: 'e3', timestamp: feb }));
+
+      const result = timeRollup(db, 'monthly');
+      expect(result).toHaveLength(2);
+      expect(result[0].period).toBe('2024-01');
+      expect(result[0].totalEvents).toBe(2);
+      expect(result[1].period).toBe('2024-02');
+      expect(result[1].totalEvents).toBe(1);
+    });
+
+    it('supports weekly granularity — groups events into week-starting periods', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      // Monday 2024-01-15 and Friday 2024-01-19 are in the same week (Mon–Sun starting Jan 14)
+      const mon = new Date('2024-01-15T10:00:00Z').getTime();
+      const fri = new Date('2024-01-19T10:00:00Z').getTime();
+      // Monday 2024-01-22 is in the next week
+      const nextWeekMon = new Date('2024-01-22T10:00:00Z').getTime();
+
+      store.append(makeEvent({ id: 'e1', timestamp: mon }));
+      store.append(makeEvent({ id: 'e2', timestamp: fri }));
+      store.append(makeEvent({ id: 'e3', timestamp: nextWeekMon }));
+
+      const result = timeRollup(db, 'weekly');
+      expect(result).toHaveLength(2);
+      // Both weeks' periods should be valid ISO date strings
+      expect(result[0].period).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(result[0].totalEvents).toBe(2);
+      expect(result[1].totalEvents).toBe(1);
+      // Second week period should be later than the first
+      expect(result[1].period > result[0].period).toBe(true);
+    });
+  });
+
+  describe('teamViolationPatterns', () => {
+    it('returns empty array when no violations', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      store.append(makeEvent({ id: 'e1', kind: 'ActionAllowed' }));
+      expect(teamViolationPatterns(db)).toEqual([]);
+    });
+
+    it('groups violations with agent count', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      store.append(
+        makeEvent({
+          id: 'v1',
+          kind: 'InvariantViolation',
+          invariant: 'no-force-push',
+          agent: 'alice',
+          timestamp: 100,
+        })
+      );
+      store.append(
+        makeEvent({
+          id: 'v2',
+          kind: 'InvariantViolation',
+          invariant: 'no-force-push',
+          agent: 'bob',
+          timestamp: 200,
+        })
+      );
+
+      const s2 = createSqliteEventStore(db, 'run_2');
+      s2.append(
+        makeEvent({
+          id: 'v3',
+          kind: 'InvariantViolation',
+          invariant: 'no-force-push',
+          agent: 'alice',
+          timestamp: 300,
+        })
+      );
+
+      const result = teamViolationPatterns(db);
+      expect(result).toHaveLength(1);
+      expect(result[0].invariant).toBe('no-force-push');
+      expect(result[0].count).toBe(3);
+      expect(result[0].distinctAgents).toBe(2);
+      expect(result[0].distinctSessions).toBe(2);
+    });
+
+    it('counts events without agent field as "unknown" agent', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      // Violation from alice
+      store.append(
+        makeEvent({
+          id: 'v1',
+          kind: 'InvariantViolation',
+          invariant: 'secret-exposure',
+          agent: 'alice',
+          timestamp: 100,
+        })
+      );
+      // Violation with no agent field (legacy event format)
+      store.append(
+        makeEvent({
+          id: 'v2',
+          kind: 'InvariantViolation',
+          invariant: 'secret-exposure',
+          timestamp: 200,
+        })
+      );
+
+      const result = teamViolationPatterns(db);
+      expect(result).toHaveLength(1);
+      expect(result[0].invariant).toBe('secret-exposure');
+      expect(result[0].count).toBe(2);
+      // alice + 'unknown' = 2 distinct agents (COALESCE maps null → 'unknown')
+      expect(result[0].distinctAgents).toBe(2);
     });
   });
 });
