@@ -2,13 +2,36 @@
 
 This document describes the agent identity model, delegation chain tracking, and human-in-the-loop approval workflows.
 
+## Implementation Status
+
+> **Shipped in v2.4.0:** Session-level agent identity is now implemented. The features below marked with **(Shipped)** are live. Features marked with **(Aspirational)** remain planned.
+>
+> **Shipped capabilities:**
+> - Session identity prompt — agents are prompted for role + driver at session start if `--agent-name` is not set
+> - `agentguard guard --agent-name <name>` CLI flag for non-interactive identity declaration
+> - MCP persona — identity is surfaced through the MCP governance server
+> - Worktree enforcement — agents operating in git worktrees are correctly identified and isolated
+> - Cloud telemetry attribution — identity flows to cloud dashboard for per-agent grouping and analytics
+> - Supported roles: `developer`, `reviewer`, `ops`, `security`, `planner`
+> - Supported drivers: `human`, `claude-code`, `copilot`, `ci`
+>
+> **Still aspirational:** Full agent registry with lifecycle management, delegation chains with capability narrowing, capability tokens, cross-session identity persistence, and human-in-the-loop approval gates via external channels (Slack, webhook, email).
+
 ## Motivation
 
-AgentGuard events include an `agentId` field, but there is no first-class identity system. All agents are anonymous — the kernel cannot distinguish between a trusted production agent and an untrusted test agent. There is no tracking of delegation (human → agent → sub-agent) and no mechanism for human approval of high-risk actions.
+~~AgentGuard events include an `agentId` field, but there is no first-class identity system. All agents are anonymous — the kernel cannot distinguish between a trusted production agent and an untrusted test agent.~~ **(Partially addressed in v2.4.0 — session identity now distinguishes agents by role and driver.)** There is no tracking of delegation (human → agent → sub-agent) and no mechanism for human approval of high-risk actions beyond the PAUSE intervention type.
 
 ## Agent Identity Model
 
-### AgentIdentity
+### Session Identity (Shipped)
+
+The current implementation uses a lightweight session identity model. At session start, the agent declares:
+- **Role**: one of `developer`, `reviewer`, `ops`, `security`, `planner`
+- **Driver**: one of `human`, `claude-code`, `copilot`, `ci`
+
+This identity is set via `agentguard guard --agent-name <name>` or collected through an interactive prompt (auto-detecting wizard). Identity is attached to all governance events and telemetry payloads for the session.
+
+### AgentIdentity (Aspirational)
 
 ```
 AgentIdentity {
@@ -23,7 +46,7 @@ AgentIdentity {
 }
 ```
 
-### Trust Levels
+### Trust Levels (Aspirational)
 
 | Level | Grants | Use Case |
 |-------|--------|----------|
@@ -32,7 +55,7 @@ AgentIdentity {
 | ELEVATED | Git operations, limited shell execution | Trusted CI/CD agents |
 | TRUSTED | Full access per policy | Production agents with established history |
 
-### Agent Registry
+### Agent Registry (Aspirational)
 
 ```
 AgentRegistry {
@@ -45,7 +68,7 @@ AgentRegistry {
 }
 ```
 
-### Agent Lifecycle
+### Agent Lifecycle (Aspirational)
 
 ```
 Register → Active → (Suspended | Deactivated)
@@ -59,7 +82,7 @@ Register → Active → (Suspended | Deactivated)
 | Suspended | Agent's actions are auto-denied, capabilities frozen |
 | Deactivated | Agent removed from active registry, history preserved |
 
-## Delegation Chains
+## Delegation Chains (Aspirational)
 
 ### Model
 
@@ -117,7 +140,7 @@ human:jplev
 │           └── capabilities: file:read:src/**
 ```
 
-## Human-in-the-Loop Approval
+## Human-in-the-Loop Approval (Aspirational)
 
 ### Approval Gates
 
@@ -171,7 +194,7 @@ ApprovalRecord {
 }
 ```
 
-## Identity Persistence
+## Identity Persistence (Aspirational)
 
 ### Cross-Session
 

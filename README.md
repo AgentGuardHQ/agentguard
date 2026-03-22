@@ -78,6 +78,17 @@ agentguard cloud login
 | [agentguard-cloud-dashboard.vercel.app](https://agentguard-cloud-dashboard.vercel.app) | Team dashboard — runs, violations, analytics |
 | [agentguard-cloud-office-sim.vercel.app](https://agentguard-cloud-office-sim.vercel.app) | Live Office — 2D visualization of agent activity |
 
+## Agent Identity
+
+Every governed session has an identity. Set it via the CLI flag or let the interactive prompt ask:
+
+```bash
+agentguard guard --agent-name my-agent
+# Or omit --agent-name and an interactive prompt will ask for role + driver
+```
+
+Identity consists of a **role** (`developer`, `reviewer`, `ops`, `security`, `planner`) and a **driver** (`human`, `claude-code`, `copilot`, `ci`). Identity flows to cloud telemetry for attribution, dashboard grouping, and persona-scoped policy rules.
+
 ## What It Does
 
 | Capability | Details |
@@ -89,6 +100,8 @@ agentguard cloud login
 | **Multi-tenant** | Team workspaces, GitHub/Google OAuth, SSO-ready |
 | **Live Office visualization** | 2D view of agents working in real time — share a link with your team |
 | **Agent SDK** | Programmatic governance for custom integrations and RunManifest-driven workflows |
+| **Agent identity** | Declare agent role + driver for governance telemetry — automatic prompt or CLI flag |
+| **Pre-push hooks** | Branch protection enforcement via git pre-push hooks, configured from agentguard.yaml |
 | **Works with** | Claude Code, GitHub Copilot, any MCP client |
 
 ## Policy Format (YAML)
@@ -295,6 +308,7 @@ AgentGuard Kernel
 agentguard claude-init                    # Interactive wizard: mode + pack → creates policy + hooks
 agentguard claude-init --global           # Install hooks globally (~/.claude/settings.json)
 agentguard claude-init --mode monitor --pack essentials  # Non-interactive setup
+agentguard claude-init                    # Also installs pre-push hooks for branch protection
 agentguard init --template strict         # Scaffold policy from a template
 agentguard status                         # Show governance status
 
@@ -302,6 +316,7 @@ agentguard status                         # Show governance status
 agentguard guard                          # Start governed action runtime
 agentguard guard --policy <file>          # Use a specific policy file
 agentguard guard --dry-run                # Evaluate without executing
+agentguard guard --agent-name <name>      # Set agent identity for session
 
 # Inspect
 agentguard inspect --last                 # Show last run action graph

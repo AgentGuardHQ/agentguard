@@ -596,7 +596,7 @@ Several extensions of this architecture merit investigation:
 
 4. **Agent debugging replay**: Using the canonical event stream to replay agent sessions, enabling post-hoc analysis of agent decision-making and governance interactions.
 
-5. **Distributed agent governance**: Extending the architecture to multi-agent systems where agents operate across different repositories, services, and infrastructure boundaries.
+5. **Distributed agent governance**: Extending the architecture to multi-agent systems where agents operate across different repositories, services, and infrastructure boundaries. *Note (v2.4.0):* A session-level identity system has been shipped as a first step toward multi-agent governance. Agents declare their role and driver at session start via an interactive prompt or `--agent-name` CLI flag. Identity flows to cloud telemetry for attribution and dashboard grouping. Full delegation chains, capability tokens, and cross-agent policy remain future work.
 
 6. **Enterprise control planes**: Building organization-level governance dashboards that aggregate evidence packs and escalation events across teams and projects.
 

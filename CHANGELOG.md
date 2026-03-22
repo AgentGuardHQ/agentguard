@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.4.0 (2026-03-22)
+
+### Features
+
+* **Agent identity system** — session identity prompt, auto-detecting wizard, MCP persona, and worktree enforcement. Agents declare identity (role + driver) for telemetry attribution and persona-scoped policy rules. Set via `--agent-name` flag or interactive prompt (#715, #714, #713, #712, #709, #707, #706)
+* **Pre-push branch protection** — enforce branch protection rules from `agentguard.yaml` via git pre-push hooks, installed automatically by `agentguard claude-init` (#704)
+* **Capability grants enforcement** — enforce capability grants before adapter execution (#681)
+* **Cloud credential storage** — store cloud credentials in project `.env` instead of global config (#679, #678)
+
+### Bug Fixes
+
+* **Security: governance bypass vectors** — closed three governance bypass vectors (#696)
+* **ESM bundle fix** — added `createRequire` shim and updated help text for ESM compatibility (#703)
+
+### Other
+
+* **Site redesign** — floating nav, dark/light toggle, social proof, newsletter signup (#708)
+* **Messaging pivot** — governance-first to outcome-first positioning (#701)
+* **CLI wizard docs** — YAML policy format documentation updated (#697)
+
 ## 1.0.0 (2026-03-07)
 
 
