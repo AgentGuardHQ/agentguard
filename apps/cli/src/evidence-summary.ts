@@ -17,6 +17,7 @@ export interface EvidenceSummary {
   readonly actionTypeBreakdown: Record<string, { allowed: number; denied: number }>;
   readonly denialReasons: string[];
   readonly violationDetails: string[];
+  readonly codeReviews: number;
   readonly runIds: string[];
 }
 
@@ -39,6 +40,7 @@ const GOVERNANCE_KINDS = new Set([
   'EvidencePackGenerated',
   'DecisionRecorded',
   'SimulationCompleted',
+  'CodeReviewed',
 ]);
 
 const ESCALATION_ORDER: Record<string, number> = {
@@ -60,6 +62,7 @@ export function aggregateEvents(events: DomainEvent[]): EvidenceSummary {
   let escalations = 0;
   let blastRadiusExceeded = 0;
   let evidencePacksGenerated = 0;
+  let codeReviews = 0;
   let maxEscalationOrdinal = 0;
   const actionTypeBreakdown: Record<string, { allowed: number; denied: number }> = {};
   const denialReasons: string[] = [];
@@ -122,6 +125,10 @@ export function aggregateEvents(events: DomainEvent[]): EvidenceSummary {
         evidencePacksGenerated++;
         break;
       }
+      case 'CodeReviewed': {
+        codeReviews++;
+        break;
+      }
       case 'StateChanged': {
         const to = (event.to as string) || '';
         const ordinal = ESCALATION_ORDER[to] ?? 0;
@@ -146,6 +153,7 @@ export function aggregateEvents(events: DomainEvent[]): EvidenceSummary {
     escalations,
     blastRadiusExceeded,
     evidencePacksGenerated,
+    codeReviews,
     maxEscalationLevel,
     actionTypeBreakdown,
     denialReasons,
@@ -175,6 +183,9 @@ export function formatEvidenceMarkdown(
   lines.push(`| Escalations | ${summary.escalations} |`);
   lines.push(`| Blast radius exceeded | ${summary.blastRadiusExceeded} |`);
   lines.push(`| Escalation level | ${summary.maxEscalationLevel} |`);
+  if (summary.codeReviews > 0) {
+    lines.push(`| Code reviews | ${summary.codeReviews} |`);
+  }
 
   // Verdict line
   if (summary.actionsDenied === 0 && summary.invariantViolations === 0) {

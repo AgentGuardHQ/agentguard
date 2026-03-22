@@ -62,6 +62,59 @@ function mockTTYStdin() {
 }
 
 describe('claudeHook', () => {
+  // --- Bootstrap: auto-create identity when missing ---
+
+  it('auto-creates .agentguard-identity when missing instead of blocking', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const identityPath = path.join(process.cwd(), '.agentguard-identity');
+    const backupPath = identityPath + '.test-backup';
+
+    // Temporarily move identity file out of the way
+    let hadFile = false;
+    try {
+      fs.renameSync(identityPath, backupPath);
+      hadFile = true;
+    } catch {
+      // File didn't exist — that's fine
+    }
+
+    // Also clear env var
+    const savedEnv = process.env.AGENTGUARD_AGENT_NAME;
+    delete process.env.AGENTGUARD_AGENT_NAME;
+
+    const input = JSON.stringify({
+      hook: 'PreToolUse',
+      tool_name: 'Read',
+      tool_input: { file_path: '/tmp/test.ts' },
+    });
+    const restore = mockStdin(input);
+    try {
+      await claudeHook('pre');
+      // Should NOT block (exit 2) — should continue normally (exit 0)
+      expect(process.exit).toHaveBeenCalledWith(0);
+      expect(process.exit).not.toHaveBeenCalledWith(2);
+
+      // Should have logged a notice to stderr
+      expect(process.stderr.write).toHaveBeenCalledWith(
+        expect.stringContaining('auto-created .agentguard-identity')
+      );
+
+      // Should have created the identity file with default name
+      const content = fs.readFileSync(identityPath, 'utf8');
+      expect(content).toBe('claude-code');
+    } finally {
+      restore();
+      // Restore original identity file
+      if (hadFile) {
+        fs.renameSync(backupPath, identityPath);
+      }
+      if (savedEnv !== undefined) {
+        process.env.AGENTGUARD_AGENT_NAME = savedEnv;
+      }
+    }
+  });
+
   // --- General ---
 
   it('exits 0 for TTY stdin (no piped input)', async () => {

@@ -388,6 +388,23 @@ const COMMANDS: Record<string, CommandHelp> = {
       'agentguard evidence-pr --last --store sqlite',
     ],
   },
+  review: {
+    name: 'agentguard review',
+    description: 'Code review powered by code-review-graph structural analysis',
+    usage: 'agentguard review <subcommand> [flags]',
+    flags: [
+      { flag: '--json', description: 'Output as JSON' },
+      { flag: '--pr <number>', description: 'Target PR number (for pr subcommand)' },
+    ],
+    examples: [
+      'agentguard review status',
+      'agentguard review build',
+      'agentguard review delta',
+      'agentguard review delta --json',
+      'agentguard review pr',
+      'agentguard review pr --pr 42',
+    ],
+  },
   'audit-verify': {
     name: 'agentguard audit-verify',
     description: 'Verify tamper-resistant audit chain integrity and generate enforcement report',
@@ -741,6 +758,17 @@ async function main() {
       }
       const { evidencePr } = await import('./commands/evidence-pr.js');
       const code = await evidencePr(args.slice(1), resolveStorageConfig(args.slice(1)));
+      process.exit(code);
+      break;
+    }
+
+    case 'review': {
+      if (wantsHelp) {
+        console.log(formatHelp(COMMANDS.review));
+        break;
+      }
+      const { review: reviewCmd } = await import('./commands/review.js');
+      const code = await reviewCmd(args.slice(1), resolveStorageConfig(args.slice(1)));
       process.exit(code);
       break;
     }

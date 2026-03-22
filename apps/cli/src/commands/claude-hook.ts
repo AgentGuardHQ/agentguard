@@ -180,22 +180,18 @@ export async function claudeHook(hookType?: string, extraArgs: string[] = []): P
       hookType === 'pre' || data.hook === 'PreToolUse' || (!hookType && !data.tool_output);
 
     if (isPreToolUse) {
-      // Agent identity hard gate — block all actions until identity is set.
-      // Blank stale identity on first PreToolUse of a session, then resolve fresh.
-      // If resolved from env var, persist to identity file for subsequent hook calls.
-      const agentIdentity = resolveAgentIdentity();
+      // Agent identity resolution — auto-bootstrap when missing to prevent deadlock.
+      // Previous behavior blocked ALL tool calls when .agentguard-identity was missing,
+      // which created a deadlock: the agent couldn't create the file it needs because
+      // every tool call was blocked. Now we auto-create with a default name.
+      let agentIdentity = resolveAgentIdentity();
       if (!agentIdentity) {
-        process.stdout.write(
-          JSON.stringify({
-            decision: 'block',
-            reason:
-              'Agent identity not set. Write your agent name to .agentguard-identity or set AGENTGUARD_AGENT_NAME env var.',
-          })
+        agentIdentity = 'claude-code';
+        writeIdentityFile(agentIdentity);
+        process.stderr.write(
+          '[agentguard] notice: No agent identity found \u2014 auto-created .agentguard-identity with default "claude-code".\n'
         );
-        process.exit(2);
-        return;
-      }
-      if (process.env.AGENTGUARD_AGENT_NAME) {
+      } else if (process.env.AGENTGUARD_AGENT_NAME) {
         writeIdentityFile(agentIdentity);
       }
 
