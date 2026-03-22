@@ -181,15 +181,33 @@ export async function claudeHook(hookType?: string, extraArgs: string[] = []): P
 
     if (isPreToolUse) {
       // Agent identity hard gate — block all actions until identity is set.
-      // Blank stale identity on first PreToolUse of a session, then resolve fresh.
       // If resolved from env var, persist to identity file for subsequent hook calls.
+      // Exception: allow Write/Bash calls targeting .agentguard-identity so the agent
+      // can prompt the user for their name and write it — breaking the chicken-and-egg lockout.
       const agentIdentity = resolveAgentIdentity();
       if (!agentIdentity) {
+        const toolInput = (data.tool_input || {}) as Record<string, unknown>;
+        const isIdentityWrite =
+          // Write tool targeting the identity file
+          ((data.tool_name === 'Write' || data.tool_name === 'Edit') &&
+            typeof toolInput.file_path === 'string' &&
+            toolInput.file_path.replace(/\\/g, '/').endsWith('.agentguard-identity')) ||
+          // Bash writing to the identity file
+          (data.tool_name === 'Bash' &&
+            typeof toolInput.command === 'string' &&
+            toolInput.command.includes('.agentguard-identity'));
+
+        if (isIdentityWrite) {
+          // Allow through — agent is setting the identity file. Skip kernel evaluation.
+          process.exit(0);
+          return;
+        }
+
         process.stdout.write(
           JSON.stringify({
             decision: 'block',
             reason:
-              'Agent identity not set. Write your agent name to .agentguard-identity or set AGENTGUARD_AGENT_NAME env var.',
+              'Agent identity not set. Ask the user for their agent name (e.g. "claude-code", their name, or a team identifier), then write it to the file .agentguard-identity in the project root. This is required before any other actions can proceed.',
           })
         );
         process.exit(2);
