@@ -95,8 +95,8 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Kernel-Level Tracing (eBPF / Project Azazel) | Not Started | Requires Go/Rust, kernel probes, privileged runtime |
 | OS-Level Sandboxing (Bubblewrap/Seatbelt) | Not Started | Only application-level plugin capability checking exists |
 | Transactional Adjudication (P-1b Protocol) | Not Started | No state snapshot at T_authorize, no re-verification at T_execute |
-| Confidence-Based HITL | Partial | Count-based escalation only. PAUSE/ROLLBACK/TEST_ONLY are labels, not enforced behaviors |
-| Multi-Agent Identity & Capability Tokens | Aspirational | Types defined but never used. Basic session ID hashing exists |
+| Confidence-Based HITL | Partial | Count-based escalation only. PAUSE intervention is now label-enforced for certain actions; ROLLBACK/TEST_ONLY remain labels |
+| Multi-Agent Identity & Capability Tokens | Partial — Shipped in v2.4.0 | Session identity prompt, agent-name CLI flag, MCP persona, worktree enforcement, cloud telemetry attribution. Capability tokens remain aspirational |
 | Shared State Contract & Heartbeat | Not Started | Would require architectural redesign |
 | Formal Verification (Z3/SMT) | Not Started | No dependencies, no symbolic analysis |
 | Automated Invariant Learning | Not Started | Analytics foundation removed; no synthesis/feedback loop |
@@ -118,8 +118,8 @@ A comprehensive codebase audit assessed the current system against the strategic
 | Project Azazel (eBPF) | Not Started | Aspirational |
 | OS-Level Sandboxing | Not Started | Aspirational |
 | P-1b Transactional Protocol | Not Started | Aspirational |
-| Confidence-Based HITL | Partial | Labels only |
-| Multi-Agent Identity | Aspirational | Types exist, no enforcement |
+| Confidence-Based HITL | Partial | PAUSE label-enforced for certain actions; ROLLBACK/TEST_ONLY remain labels |
+| Multi-Agent Identity | Partial — v2.4.0 | Session identity prompt, --agent-name flag, MCP persona, worktree enforcement |
 | Shared State & Heartbeat | Partial | Heartbeat implemented (`packages/kernel/src/heartbeat.ts`) |
 | Formal Verification (Z3) | Not Started | Aspirational |
 | Automated Invariant Learning | Not Started | Aspirational |
@@ -130,7 +130,7 @@ A comprehensive codebase audit assessed the current system against the strategic
 
 ### Reference Monitor Bypass Vectors
 
-One bypass path remains in the AAB (one previously identified vector has been resolved):
+Three additional governance bypass vectors were closed in #696 (v2.4.0). One bypass path remains in the AAB (one previously identified vector has been resolved):
 
 **1. Unknown actions default-allow.**
 `packages/policy/src/evaluator.ts` returns `allowed: true` when no policy rule matches an action. Unrecognized tool calls pass through governance unchecked. This violates the core principle of reference monitors: default deny.
@@ -256,6 +256,7 @@ This is the architectural hinge. These changes transform the AAB from advisory i
 - [ ] Enforce intervention types beyond DENY (implement PAUSE and ROLLBACK behaviors in kernel execution)
 - [x] Governance self-modification invariant — agents must not modify `agentguard.yaml`, `.agentguard/`, or `policies/` (`no-governance-self-modification` invariant, severity 5)
 - [x] Performance benchmark suite — formal latency measurement (p50/p95/p99) per action type for policy evaluation, invariant checking, and simulation overhead. Publish results as a marketing asset and regression gate in CI
+- [x] Pre-push branch protection — enforced from `agentguard.yaml` via git pre-push hook, installed automatically by `agentguard claude-init` (#704)
 
 ### Phase 6.5 — Invariant Expansion `STABLE`
 

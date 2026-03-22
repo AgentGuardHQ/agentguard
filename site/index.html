@@ -766,6 +766,24 @@
             <h3 class="font-mono font-semibold text-text mb-2">RTK Token Optimization</h3>
             <p class="text-muted text-sm leading-relaxed">Integrated with <a href="https://github.com/rtk-ai/rtk" class="text-cta hover:underline">RTK</a> for 60-90% token savings. Shell commands auto-rewrite to compact output after governance approval. Git, npm, cargo, docker, kubectl, and more.</p>
           </div>
+
+          <!-- Card 9: Agent Identity -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift cursor-pointer">
+            <div class="w-10 h-10 rounded-lg bg-info/10 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h3 class="font-mono font-semibold text-text mb-2">Agent Identity</h3>
+            <p class="text-muted text-sm leading-relaxed">Declare agent role (developer, reviewer, ops, security) and driver (human, claude-code, copilot, ci). Identity flows to telemetry, persona-scoped policies, and cloud dashboard.</p>
+          </div>
+
+          <!-- Card 10: Pre-Push Hooks -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift cursor-pointer">
+            <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <h3 class="font-mono font-semibold text-text mb-2">Pre-Push Branch Protection</h3>
+            <p class="text-muted text-sm leading-relaxed">Git pre-push hooks enforce branch protection rules from <code class="text-cta text-xs">agentguard.yaml</code>. Blocks pushes to protected branches at the git layer, not just at the agent layer.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -849,7 +867,7 @@
         <div class="grid md:grid-cols-3 gap-6 mt-16 reveal-stagger">
           <div class="reveal bg-surface border border-surface-light rounded-xl p-6">
             <h3 class="font-mono font-semibold text-cta text-sm mb-3">Action Authorization Boundary</h3>
-            <p class="text-muted text-sm leading-relaxed">The AAB normalizes raw tool calls into 23 canonical action types across 8 classes. Every agent operation&mdash;whether a Bash command, file write, or git push&mdash;gets classified before evaluation.</p>
+            <p class="text-muted text-sm leading-relaxed">The AAB normalizes raw tool calls into 27 canonical action types across 9 classes. Every agent operation&mdash;whether a Bash command, file write, or git push&mdash;gets classified before evaluation.</p>
           </div>
           <div class="reveal bg-surface border border-surface-light rounded-xl p-6">
             <h3 class="font-mono font-semibold text-info text-sm mb-3">Simulation Engine</h3>
@@ -1728,7 +1746,7 @@ rules:
             <svg class="w-5 h-5 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
             <div>
               <h3 class="font-mono font-semibold text-text text-sm">Policy Composition</h3>
-              <p class="text-muted text-sm mt-1">Org-wide base + team overrides. 4 built-in packs: ci-safe, enterprise, open-source, strict.</p>
+              <p class="text-muted text-sm mt-1">Org-wide base + team overrides. 8 built-in packs: essentials, strict, soc2, hipaa, enterprise, ci-safe, engineering-standards, open-source.</p>
             </div>
           </div>
           <div class="reveal flex items-start gap-3">
@@ -1822,6 +1840,17 @@ rules:
             </div>
           </div>
 
+          <!-- Agent Identity (Shipped) -->
+          <div class="reveal flex items-start gap-4 bg-surface border border-cta/30 rounded-xl p-5">
+            <div class="shrink-0 mt-0.5">
+              <span class="font-mono text-xs font-semibold px-2 py-1 rounded bg-cta/10 text-cta">SHIPPED</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-mono font-semibold text-text text-sm">Agent Identity &amp; Telemetry Attribution</h3>
+              <p class="text-muted text-sm mt-1">Session identity prompt, <code class="text-xs text-cta">--agent-name</code> CLI flag, MCP persona, role-based policy scoping, cloud telemetry attribution. Pre-push branch protection hooks.</p>
+            </div>
+          </div>
+
           <!-- Phase 14 -->
           <div class="reveal flex items-start gap-4 bg-surface border border-surface-light rounded-xl p-5">
             <div class="shrink-0 mt-0.5">
@@ -1829,7 +1858,7 @@ rules:
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-mono font-semibold text-text text-sm">Phase 14 &mdash; Multi-Agent Governance</h3>
-              <p class="text-muted text-sm mt-1">Agent identity verification, PID-bound capability tokens, cross-agent policy, fleet orchestration.</p>
+              <p class="text-muted text-sm mt-1">PID-bound capability tokens, cross-agent policy negotiation, fleet orchestration, shared state contracts.</p>
             </div>
           </div>
 

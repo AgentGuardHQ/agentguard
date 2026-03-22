@@ -15,6 +15,11 @@ All system activity — agent tool calls, governance decisions, invariant violat
 └──────┬───────┘
        │
        ▼
+┌──────────────┐
+│   Identity   │  Declare role + driver (prompt or --agent-name flag)
+└──────┬───────┘
+       │
+       ▼
 ┌──────────────────────────────────────────────┐
 │              AgentGuard Kernel                │
 │                                              │
@@ -106,3 +111,18 @@ The `claude-init` command provides an interactive wizard that generates a starte
 4. **Escalation state machine** — Repeated violations escalate: NORMAL → ELEVATED → HIGH → LOCKDOWN
 5. **Adapter pattern** — Execution is abstracted behind adapters, making the kernel testable without real file/git operations
 6. **YAML-first policy** — Human-readable policy-as-code, version-controlled alongside the project
+
+## Agent Identity
+
+Agents declare their identity (role + driver) at the start of each governance session. If the `--agent-name` flag is not provided, an interactive prompt collects the identity.
+
+**Roles:** `developer`, `reviewer`, `ops`, `security`, `planner`
+**Drivers:** `human`, `claude-code`, `copilot`, `ci`
+
+Identity serves three purposes:
+
+1. **Persona-scoped policy rules** — Policy rules can match on agent role or driver, enabling different governance for different agent types (e.g., stricter rules for autonomous CI agents than for human-supervised development agents).
+2. **Telemetry attribution** — Every event in the audit trail carries the agent identity, enabling per-agent analysis in the cloud dashboard.
+3. **Cloud dashboard grouping** — The cloud dashboard groups sessions by agent identity for fleet-level visibility.
+
+The `telemetry-client` package (`packages/telemetry-client/`) handles identity signing, queue management, and sender logic. Identity is attached to all outbound telemetry payloads. Worktree enforcement ensures that agents operating in git worktrees are correctly identified and isolated
