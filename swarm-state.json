@@ -1,48 +1,48 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-03-22T08:30:00Z",
+  "updatedAt": "2026-03-22T11:45:00Z",
   "updatedBy": "risk-escalation-agent",
   "mode": "conservative",
-  "recommendedMode": "normal",
-  "modeReason": "Both critical blockers now resolved: #647 (protected branch bypass regression) CLOSED, #636 (path traversal) CLOSED. PR #670 (conflicted) also closed. Only 1 open PR (#724, MERGEABLE, all CI green, small blast radius — 2 files). Composite risk score 22→8. NORMAL escalation threshold met. Recommend switching mode to 'normal'. Remaining HIGH issues (#638, #637, #618) should be addressed in normal mode.",
+  "recommendedMode": "conservative",
+  "modeReason": "ELEVATED risk (score 30/100). Two new risk signals detected since 08:30Z assessment: (1) Systemic CI regression (#723) — identity gate breaks cli-claude-hook tests on every PR until fixed; (2) New conflicted PR #731 (1076 additions, CONFLICTING, no CI). Security gaps #638/#637 persist without PRs. Prior recommendation to switch to 'normal' reversed — maintain conservative mode until CI regression #723 is resolved.",
   "riskAssessment": {
-    "compositeScore": 8,
-    "escalationLevel": "NORMAL",
-    "assessedAt": "2026-03-22T08:30:00Z",
+    "compositeScore": 30,
+    "escalationLevel": "ELEVATED",
+    "assessedAt": "2026-03-22T11:45:00Z",
     "dimensions": {
       "prBlastRadius": {
-        "score": 2,
+        "score": 8,
         "max": 25,
         "openPRs": 1,
-        "note": "1 open PR (#724): fix(aab) refspec syntax/git flags — 208 additions, 2 deletions, 2 files. MERGEABLE, all CI green (bench, lint, test-and-build, rust-kernel, CodeQL — all SUCCESS). Small focused fix. PR #670 (conflicted path traversal) closed since last assessment."
+        "note": "1 open PR (#731): feat(issue-328) team observability analytics — 1076 additions, 23 deletions, 6 files. CONFLICTING (merge conflict). No CI checks run yet. Large feature PR (analytics CLI + SQL aggregation queries). PR #724 (refspec fix) appears merged — no longer in open PRs. Labeled #731 conflict:needs-human."
       },
       "testFailureRate": {
-        "score": 1,
+        "score": 10,
         "max": 25,
-        "ciRunsAnalyzed": 30,
-        "failures": 3,
-        "failureRate": "~10% (all on abandoned/stale branches — 0% on active PRs)",
-        "note": "Active PR #724: all 6 CI checks pass (bench, lint, test-and-build, rust-kernel, CodeQL, analyze) as of 08:24Z. Main branch CI green (Deploy Pages, 07:05Z). The 3 CI failures are on 'claude/integrate-paperclip-agentguard-IDmeO' (no open PR, abandoned experiment) and 'jpleva91-patch-1' (1 earlier failure, later run succeeded and merged as #709). Active development pace healthy: 10 PRs merged today including identity wizard (#715, #713, #714), site redesign (#708), session identity (#707), agent identity gate (#706)."
+        "ciRunsAnalyzed": 20,
+        "failures": 1,
+        "failureRate": "5% (raw) — but SYSTEMIC CI REGRESSION detected",
+        "note": "CRITICAL NEW SIGNAL: Issue #723 (priority:high, 2026-03-22T08:18Z) reveals that the identity gate system (#706-#715, merged today) breaks cli-claude-hook tests in CI on EVERY PR. Root causes: (1) Tests expect process.exit(0) for allowed actions but get exit(2) because no .agentguard-identity fixture exists in CI; (2) Identity driver detection returns 'ci' in CI environment but tests expect 'copilot'/'claude-code'; (3) Rust test count mismatch (same family as #659). These failures will recur on ALL future PRs until fixed. Current raw CI: 1 failure on abandoned branch (paperclip), rest all-green. But systemic regression means all active PRs will fail."
       },
       "governanceDenialRate": {
-        "score": 5,
+        "score": 7,
         "max": 25,
-        "note": "MAJOR IMPROVEMENT: Issue #647 (CRITICAL: protected branch bypass regression — primary prior blocker) CLOSED. Issue #636 (CRITICAL: path traversal) also CLOSED. PR #670 closed (no longer conflicting). Issue #627 has PR #724 in-progress with CI-green (imminent resolution). Remaining open HIGH: #638 (fail-open evaluator, no PR), #637 (AAB regex bypass, no PR), #618 (credential write bypass, needs:refinement), #650, #648, #646, #643. Issue #659 (priority:critical rust test assertion) is technical debt, not a security regression."
+        "note": "Persistent: #638 (HIGH security: policy evaluator fail-open, no PR), #637 (HIGH security: AAB regex bypass, no PR), #646 (HIGH: CI/CD invariant too broad), #648 (HIGH: read-only operations blocked), #650 (HIGH: pattern-matches command body text), #643 (HIGH: missing test coverage), #659 (CRITICAL technical debt: Rust count assertion). No new critical security regressions since 08:30Z. Note: #627 resolved via merged PR #724."
       },
       "mergeConflictRate": {
-        "score": 0,
+        "score": 5,
         "max": 25,
-        "conflictedPRs": 0,
+        "conflictedPRs": 1,
         "openPRs": 1,
-        "note": "0 conflicted PRs. PR #670 closed (not merged — was CONFLICTING). PR #724 is MERGEABLE. Merge conflict dimension fully cleared since last assessment."
+        "note": "1/1 open PRs is CONFLICTING (100%). PR #731 created at 10:29Z, immediately conflicting. Conflict dimension regressed from 0 (prior) to 1 conflicted PR. Small sample size but 100% conflict rate is signal."
       }
     },
     "deltaFromPrior": {
-      "priorScore": 22,
-      "currentScore": 8,
-      "delta": -14,
-      "direction": "improving-rapidly",
-      "cause": "Issue #647 (critical protected branch bypass — primary mode blocker) CLOSED. Issue #636 (critical path traversal) CLOSED. PR #670 (conflicted) closed. PR #724 (refspec fix for #627) now CI-green and MERGEABLE. 10 PRs merged today. PR queue reduced to 1 clean, low-blast-radius PR."
+      "priorScore": 8,
+      "currentScore": 30,
+      "delta": 22,
+      "direction": "deteriorating",
+      "cause": "Two new risk signals: (1) Systemic CI regression #723 — identity gate breaks all future PR CI runs until test fixtures are updated (+9 test dimension); (2) New CONFLICTING PR #731 with 1076 additions (+8 PR blast radius, +5 conflict dimension). Security gaps #638/#637 persist. Prior recommendation to switch to normal mode reversed."
     }
   },
   "phaseTracking": {
@@ -246,6 +246,12 @@
       "timestamp": "2026-03-22T08:30:00Z",
       "description": "Updated swarm-state.json: Issues #647 and #636 CLOSED, PR #670 closed, risk score 22→8, escalation ELEVATED→NORMAL, mode recommendation conservative→normal. 10 PRs merged today. 1 open PR (#724, MERGEABLE, all CI green).",
       "agent": "risk-escalation-agent"
+    },
+    {
+      "type": "swarm-state-update",
+      "timestamp": "2026-03-22T11:45:00Z",
+      "description": "Updated swarm-state.json: Risk score 8→30, escalation NORMAL→ELEVATED, mode recommendation normal→conservative. New signals: systemic CI regression #723 (identity gate breaks all future PR CI), CONFLICTING PR #731 (1076 additions, labeled conflict:needs-human). PR #724 confirmed merged.",
+      "agent": "risk-escalation-agent"
     }
   ],
   "blockers": [
@@ -275,26 +281,27 @@
     }
   ],
   "systemSummary": {
-    "overallHealth": "normal",
-    "escalationLevel": "NORMAL",
-    "riskScore": 8,
-    "riskTrend": "improving-rapidly",
+    "overallHealth": "elevated-risk",
+    "escalationLevel": "ELEVATED",
+    "riskScore": 30,
+    "riskTrend": "deteriorating",
     "mainBranchCI": "green",
     "openPRsCount": 1,
-    "conflictedPRsCount": 0,
+    "conflictedPRsCount": 1,
     "stuckPRsCount": 0,
     "ciFailingPRsCount": 0,
-    "criticalIssuesWithoutPR": 0,
+    "criticalIssuesWithoutPR": 1,
     "criticalIssuesWithPR": 0,
-    "highIssuesWithoutPR": 4,
-    "highIssuesWithPR": 1,
-    "regressionDetected": false,
+    "highIssuesWithoutPR": 6,
+    "highIssuesWithPR": 0,
+    "regressionDetected": true,
+    "regressionDetails": "Identity gate merged today (#706-#715) breaks cli-claude-hook + identity tests in CI on every future PR. Issue #723 tracks fix.",
     "completedPhaseCount": 7,
     "activePhaseCount": 3,
-    "progressSinceLastRun": "Risk score 22→8. Issues #647 (critical protected branch bypass) and #636 (critical path traversal) both CLOSED. PR #670 (conflicted) closed. PR #681 merged (capability grants, Phase 7). 10 PRs merged today including full identity system (#706-#715). 1 clean open PR (#724, refspec fix, MERGEABLE, CI-green).",
+    "progressSinceLastRun": "Risk score 8→30 (+22, deteriorating). PR #724 merged (refspec fix, closes #627). New CONFLICTING PR #731 (1076 additions, team analytics, labeled conflict:needs-human). Systemic CI regression discovered (#723 — identity gate breaks cli-claude-hook+identity tests on all future PRs). Security gaps #638/#637 persist without PRs. Prior recommendation to switch to 'normal' mode REVERSED.",
     "modeChangeConditions": {
-      "toNormal": "CONDITIONS MET — all critical blockers resolved, risk score 8 (NORMAL). Recommend mode change from 'conservative' to 'normal'. Human approval advised.",
-      "toElevated": "New high-severity security issue without PR, main CI failure rate >20%, or merge conflict rate >25%.",
+      "toNormal": "Requires: CI regression #723 resolved + risk score ≤20. Currently BLOCKED by systemic test failure.",
+      "toElevated": "CURRENT STATE — systemic CI regression + conflicted PR with large blast radius.",
       "toCritical": "New security regression on main, main CI failure rate >30%, or 2+ unresolved critical issues without PRs."
     }
   }
