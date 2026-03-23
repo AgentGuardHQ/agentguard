@@ -7,17 +7,21 @@
 
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, parse as parsePath } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { CopilotCliHookPayload } from '@red-codes/adapters';
+import type { LoadedPolicy } from '@red-codes/policy';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
 
-// --- Session state: persist writtenFiles across hook invocations -----------
+// --- Session state: persist formatPass/testsPass/writtenFiles across hook invocations
 // Copilot CLI hooks are stateless per invocation. We bridge this by writing
-// a JSON file keyed by session_id so file write tracking from one call is
-// visible to the commit-scope-guard invariant in subsequent calls.
+// a JSON file keyed by session_id so file write tracking, format pass, and test
+// pass results from one call are visible to subsequent preToolUse governance checks.
 
-interface CopilotSessionState {
+interface CopilotSessionState extends Record<string, unknown> {
+  formatPass?: boolean;
+  testsPass?: boolean;
+  /** File paths written/modified in this session — for commit-scope-guard invariant */
   writtenFiles?: string[];
 }
 
@@ -45,7 +49,92 @@ function writeSessionState(sessionId: string | undefined, patch: Partial<Copilot
   }
 }
 
+/**
+ * Load AGENTGUARD_* variables from the nearest .env file, walking up from cwd.
+ * Only sets variables that are not already in process.env (env vars take precedence).
+ * This allows the hook to pick up the API key from the project's .env without
+ * hardcoding secrets in the hook command or global config files.
+ */
+function loadProjectEnv(): void {
+  let dir = process.env.AGENTGUARD_WORKSPACE || process.cwd();
+  const { root } = parsePath(dir);
+
+  while (dir !== root) {
+    const envPath = join(dir, '.env');
+    if (existsSync(envPath)) {
+      try {
+        const content = readFileSync(envPath, 'utf8');
+        for (const line of content.split('\n')) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          const eqIdx = trimmed.indexOf('=');
+          if (eqIdx < 0) continue;
+          const key = trimmed.slice(0, eqIdx).trim();
+          // Only load AGENTGUARD_* vars — don't pollute the env with unrelated keys
+          if (!key.startsWith('AGENTGUARD_')) continue;
+          if (process.env[key] !== undefined) continue; // env vars take precedence
+          let value = trimmed.slice(eqIdx + 1).trim();
+          // Strip surrounding quotes
+          if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+          ) {
+            value = value.slice(1, -1);
+          }
+          process.env[key] = value;
+        }
+      } catch {
+        // Non-fatal — continue without .env
+      }
+      return; // Stop at the first .env found
+    }
+    dir = dirname(dir);
+  }
+}
+
+/**
+ * Extract the target file path from a Copilot hook payload for path-aware policy resolution.
+ * Used to find the nearest agentguard.yaml when cwd differs from the project root.
+ * Copilot tool names are lowercase: bash, edit, create, view, glob, grep.
+ * Copilot toolArgs is a JSON string, not an object.
+ */
+function extractTargetPath(payload: CopilotCliHookPayload): string | undefined {
+  let args: Record<string, unknown> = {};
+  try {
+    if (payload.toolArgs) {
+      args = JSON.parse(payload.toolArgs) as Record<string, unknown>;
+    }
+  } catch {
+    return undefined;
+  }
+
+  // File tools (edit, create, view) have an explicit file_path
+  if (args.file_path && typeof args.file_path === 'string') {
+    return args.file_path;
+  }
+
+  // Also check path and filePath variants
+  if (args.path && typeof args.path === 'string') {
+    return args.path;
+  }
+  if (args.filePath && typeof args.filePath === 'string') {
+    return args.filePath;
+  }
+
+  // Bash: look for absolute paths in the command
+  if (payload.toolName === 'bash' && typeof args.command === 'string') {
+    // Match Unix or Windows absolute paths (avoid matching flags like --force)
+    const match = args.command.match(/(?:^|\s)(\/(?!dev\/null)[^\s"']+|[A-Z]:\\[^\s"']+)/);
+    if (match) return match[1];
+  }
+
+  return undefined;
+}
+
 export async function copilotHook(hookType?: string, extraArgs: string[] = []): Promise<void> {
+  // Load AGENTGUARD_* env vars from the project's .env file before anything reads them.
+  loadProjectEnv();
+
   try {
     const input = await readStdin();
     if (!input) process.exit(0);
@@ -98,13 +187,27 @@ async function handlePreToolUse(
 ): Promise<boolean> {
   const { processCopilotCliHook, formatCopilotHookResponse } = await import('@red-codes/adapters');
   const { createKernel } = await import('@red-codes/kernel');
-  const { loadPolicyDefs } = await import('../policy-resolver.js');
+  const { DEFAULT_INVARIANTS } = await import('@red-codes/invariants');
+  const { loadPolicyDefs, findPolicyForPath } = await import('../policy-resolver.js');
   const { resolveStorageConfig, createStorageBundle } = await import('@red-codes/storage');
+
+  // Extract target path for path-aware policy resolution.
+  // This fixes the governance bypass when Copilot runs from a parent directory.
+  const targetPath = extractTargetPath(payload);
+  let projectRoot: string | undefined;
+
+  // If we have a target path, try to find the project root and policy together (one walk-up)
+  if (targetPath) {
+    const policyResult = findPolicyForPath(targetPath);
+    if (policyResult) {
+      projectRoot = policyResult.projectRoot;
+    }
+  }
 
   // Load policy (fail-open: empty policy if none found)
   let policyDefs: unknown[] = [];
   try {
-    policyDefs = loadPolicyDefs();
+    policyDefs = loadPolicyDefs(undefined, targetPath);
   } catch (policyErr) {
     process.stderr.write(
       `agentguard: warning — no policy loaded (${policyErr instanceof Error ? policyErr.message : 'unknown error'}). All actions will be allowed.\n`
@@ -164,18 +267,43 @@ async function handlePreToolUse(
   //
   // Default-deny: when policies are loaded, unknown actions are denied (fail-closed).
   // When no policies exist, fail-open to avoid blocking users who haven't configured governance.
-  if (policyDefs.length === 0) {
-    process.stderr.write(
-      '[agentguard] WARNING: No policies loaded — running in fail-open mode. All unmatched actions will be allowed.\n'
-    );
-  }
-
   const allEventSinks = [eventSink, cloudSinks?.eventSink].filter(
     Boolean
   ) as import('@red-codes/core').EventSink[];
   const allDecisionSinks = [decisionSink, cloudSinks?.decisionSink].filter(
     Boolean
   ) as import('@red-codes/core').DecisionSink[];
+
+  // Optional JSONL streaming sink (for real-time tailing via `tail -f`)
+  if (storageConfig.jsonlPath) {
+    const { createJsonlEventSink, createJsonlDecisionSink } = await import('@red-codes/storage');
+    allEventSinks.push(createJsonlEventSink(storageConfig.jsonlPath, runId));
+    allDecisionSinks.push(createJsonlDecisionSink(storageConfig.jsonlPath, runId));
+  }
+
+  // Collect disabledInvariants from loaded policies (human-operator override).
+  // Multiple policies may each disable different invariants — merge them all.
+  const disabledIds = new Set<string>();
+  for (const def of policyDefs) {
+    const di = (def as LoadedPolicy).disabledInvariants;
+    if (Array.isArray(di)) {
+      for (const id of di) {
+        disabledIds.add(id);
+      }
+    }
+  }
+
+  // Filter DEFAULT_INVARIANTS if any are disabled by policy.
+  let invariants: typeof DEFAULT_INVARIANTS | undefined;
+  if (disabledIds.size > 0) {
+    invariants = DEFAULT_INVARIANTS.filter((inv) => !disabledIds.has(inv.id));
+  }
+
+  if (policyDefs.length === 0) {
+    process.stderr.write(
+      '[agentguard] WARNING: No policies loaded — running in fail-open mode. All unmatched actions will be allowed.\n'
+    );
+  }
 
   const kernel = createKernel({
     runId,
@@ -184,6 +312,7 @@ async function handlePreToolUse(
     evaluateOptions: { defaultDeny: policyDefs.length > 0 },
     sinks: allEventSinks,
     decisionSinks: allDecisionSinks,
+    ...(invariants ? { invariants } : {}),
   });
 
   // Record session in the sessions table (SQLite only).
@@ -199,14 +328,15 @@ async function handlePreToolUse(
   const envPersona = readPersonaFromEnv();
   const resolvedPersona = envPersona ? resolvePersona(undefined, envPersona) : undefined;
 
-  // Inject session write log for commit-scope-guard invariant.
+  // Inject session state for governance context.
+  // Includes writtenFiles (for commit-scope-guard), formatPass, and testsPass.
   const sessionState = readSessionState(payload.sessionId);
-  const systemContext: Record<string, unknown> = {};
+  const enrichedState: Record<string, unknown> = { ...sessionState };
   if (sessionState.writtenFiles && sessionState.writtenFiles.length > 0) {
-    systemContext.sessionWrittenFiles = sessionState.writtenFiles;
+    enrichedState.sessionWrittenFiles = sessionState.writtenFiles;
   }
 
-  const result = await processCopilotCliHook(kernel, payload, systemContext, resolvedPersona);
+  const result = await processCopilotCliHook(kernel, payload, enrichedState, resolvedPersona);
   kernel.shutdown();
 
   // Track file writes in session state so commit-scope-guard knows what this session touched.
@@ -248,13 +378,56 @@ async function handlePreToolUse(
     }
   }
 
-  // If denied, output the deny response to stdout
+  // If denied, resolve enforcement mode for each violation.
+  // Default to 'enforce' for backward compatibility — only users who
+  // explicitly set mode: monitor in agentguard.yaml get fail-open behavior.
   if (!result.allowed) {
-    const response = formatCopilotHookResponse(result);
-    if (response) {
-      process.stdout.write(response);
+    const { resolveInvariantMode } = await import('../mode-resolver.js');
+    const { buildModeConfig } = await import('../policy-resolver.js');
+    const modeConfig = buildModeConfig(policyDefs as LoadedPolicy[], projectRoot);
+    const violations = result.decision?.violations ?? [];
+
+    // Check if ANY violation requires enforcement
+    let shouldEnforce = false;
+    const monitorWarnings: string[] = [];
+
+    if (violations.length > 0) {
+      // Invariant violations — check each invariant's mode
+      for (const v of violations) {
+        const mode = resolveInvariantMode(v.invariantId, modeConfig);
+        if (mode === 'enforce') {
+          shouldEnforce = true;
+          break;
+        }
+        monitorWarnings.push(
+          `\u26A0 agentguard: ${v.invariantId} triggered \u2014 ${v.name} (monitor mode)`
+        );
+      }
+    } else {
+      // Policy rule denial (no invariant violations) — use top-level mode
+      const mode = resolveInvariantMode(null, modeConfig);
+      if (mode === 'enforce') {
+        shouldEnforce = true;
+      } else {
+        const reason = result.decision?.decision?.reason ?? 'Action denied by policy';
+        monitorWarnings.push(`\u26A0 agentguard: policy denied \u2014 ${reason} (monitor mode)`);
+      }
     }
-    return true;
+
+    if (shouldEnforce) {
+      // Hard deny — output the deny response to stdout as JSON
+      const response = formatCopilotHookResponse(result);
+      if (response) {
+        process.stdout.write(response);
+      }
+      return true;
+    }
+
+    // Monitor mode — warn but allow
+    for (const warning of monitorWarnings) {
+      process.stderr.write(warning + '\n');
+    }
+    return false;
   }
   return false;
 }
@@ -266,6 +439,7 @@ function handlePostToolUse(data: Record<string, unknown>): void {
   const toolResult = (data.toolResult || {}) as Record<string, unknown>;
   const resultType = (toolResult.resultType || '') as string;
   const textResult = (toolResult.textResultForLlm || '') as string;
+  const exitCode = (toolResult.exitCode ?? toolResult.exit_code ?? -1) as number;
 
   if (resultType === 'failure' && textResult.trim()) {
     process.stderr.write('\n');
@@ -273,6 +447,41 @@ function handlePostToolUse(data: Record<string, unknown>): void {
       `  \x1b[1m\x1b[31mError detected:\x1b[0m ${textResult.trim().split('\n')[0].slice(0, 80)}\n`
     );
     process.stderr.write('\n');
+  }
+
+  // Extract command string from toolArgs (JSON string in Copilot payloads)
+  let toolInput = '';
+  try {
+    const rawArgs = data.toolArgs as string | undefined;
+    if (rawArgs) {
+      const parsed = JSON.parse(rawArgs) as Record<string, unknown>;
+      if (typeof parsed.command === 'string') {
+        toolInput = parsed.command;
+      }
+    }
+  } catch {
+    // toolArgs parse failure — skip tracking
+  }
+
+  // Track format pass — when a Prettier/format command exits 0, record it for the session.
+  // This satisfies the `requireFormat` policy condition on subsequent git.commit actions.
+  const sessionId =
+    (data.sessionId as string | undefined) || process.env.COPILOT_SESSION_ID || undefined;
+  const resolvedExitCode = exitCode !== -1 ? exitCode : (resultType === 'failure' ? 1 : 0);
+
+  if (resolvedExitCode === 0 && sessionId) {
+    const isFormatCmd =
+      toolInput.includes('prettier') ||
+      toolInput.includes('format:fix') ||
+      toolInput.includes('format --write');
+    if (isFormatCmd) {
+      writeSessionState(sessionId, { formatPass: true });
+    }
+    const isTestCmd =
+      toolInput.includes('vitest') || toolInput.includes('jest') || toolInput.includes('pnpm test');
+    if (isTestCmd) {
+      writeSessionState(sessionId, { testsPass: true });
+    }
   }
 }
 
