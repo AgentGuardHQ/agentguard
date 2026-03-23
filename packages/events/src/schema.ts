@@ -2,8 +2,15 @@
 // All systems emit and consume these event types.
 // No DOM, no Node.js APIs — pure data definitions.
 
-import type { EventKind, EventSchema, DomainEvent, ValidationResult } from '@red-codes/core';
-import { simpleHash } from '@red-codes/core';
+import type {
+  EventKind,
+  EventSchema,
+  DomainEvent,
+  ValidationResult,
+  GovernanceEventEnvelope,
+  EnvelopePerformanceMetrics,
+} from '@red-codes/core';
+import { simpleHash, ENVELOPE_SCHEMA_VERSION } from '@red-codes/core';
 
 // --- Event Kinds ---
 
@@ -357,4 +364,122 @@ export function createEvent(kind: EventKind, data: Record<string, unknown> = {})
     event.fingerprint = fingerprintEvent(kind, data);
   }
   return event as unknown as DomainEvent;
+}
+
+// --- KE-3: Governance Event Envelope ---
+
+let envelopeCounter = 0;
+
+/** Reset the envelope counter. Exported for test determinism. */
+export function resetEnvelopeCounter(): void {
+  envelopeCounter = 0;
+}
+
+function generateEnvelopeId(timestamp: number): string {
+  return `env_${timestamp}_${++envelopeCounter}`;
+}
+
+/** Options for creating a GovernanceEventEnvelope */
+export interface CreateEnvelopeOptions {
+  /** Runtime source (e.g., 'claude-code', 'copilot-cli', 'langgraph') */
+  readonly source: string;
+  /** Policy version or hash (null if unknown) */
+  readonly policyVersion?: string | null;
+  /** Decision codes associated with this event */
+  readonly decisionCodes?: readonly string[];
+  /** Performance metrics */
+  readonly performanceMetrics?: EnvelopePerformanceMetrics;
+}
+
+/**
+ * Wrap a DomainEvent in a versioned GovernanceEventEnvelope.
+ *
+ * The envelope is runtime-agnostic: Claude Code, Copilot CLI, and any future
+ * adapter produce identical envelope structures, differing only in the `source` field.
+ */
+export function createEnvelope(
+  event: DomainEvent,
+  options: CreateEnvelopeOptions
+): GovernanceEventEnvelope {
+  const now = Date.now();
+  return {
+    schemaVersion: ENVELOPE_SCHEMA_VERSION,
+    envelopeId: generateEnvelopeId(now),
+    timestamp: new Date(now).toISOString(),
+    source: options.source,
+    policyVersion: options.policyVersion ?? null,
+    decisionCodes: options.decisionCodes ?? [],
+    performanceMetrics: options.performanceMetrics ?? {},
+    event,
+  };
+}
+
+/**
+ * Type guard: check whether a value is a GovernanceEventEnvelope.
+ */
+export function isEnvelope(value: unknown): value is GovernanceEventEnvelope {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj.schemaVersion === 'string' &&
+    typeof obj.envelopeId === 'string' &&
+    typeof obj.source === 'string' &&
+    obj.event !== null &&
+    obj.event !== undefined &&
+    typeof obj.event === 'object'
+  );
+}
+
+/**
+ * Unwrap a GovernanceEventEnvelope to its inner DomainEvent.
+ * If the value is already a DomainEvent (not wrapped), returns it unchanged.
+ */
+export function unwrapEnvelope(value: GovernanceEventEnvelope | DomainEvent): DomainEvent {
+  if (isEnvelope(value)) {
+    return value.event;
+  }
+  return value as DomainEvent;
+}
+
+/**
+ * Validate a GovernanceEventEnvelope.
+ * Checks envelope structure and delegates inner event validation to validateEvent.
+ */
+export function validateEnvelope(envelope: unknown): ValidationResult {
+  const errors: string[] = [];
+
+  if (!envelope || typeof envelope !== 'object') {
+    return { valid: false, errors: ['Envelope must be a non-null object'] };
+  }
+
+  const obj = envelope as Record<string, unknown>;
+
+  if (typeof obj.schemaVersion !== 'string') {
+    errors.push('Envelope is missing required field: schemaVersion');
+  }
+  if (typeof obj.envelopeId !== 'string') {
+    errors.push('Envelope is missing required field: envelopeId');
+  }
+  if (typeof obj.timestamp !== 'string') {
+    errors.push('Envelope is missing required field: timestamp');
+  }
+  if (typeof obj.source !== 'string') {
+    errors.push('Envelope is missing required field: source');
+  }
+  if (!Array.isArray(obj.decisionCodes)) {
+    errors.push('Envelope is missing required field: decisionCodes');
+  }
+  if (!obj.event || typeof obj.event !== 'object') {
+    errors.push('Envelope is missing required field: event');
+  }
+
+  // Validate inner event if present
+  if (obj.event && typeof obj.event === 'object') {
+    const innerResult = validateEvent(obj.event as Record<string, unknown>);
+    if (!innerResult.valid) {
+      errors.push(...innerResult.errors.map((e) => `Inner event: ${e}`));
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
 }

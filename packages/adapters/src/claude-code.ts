@@ -7,8 +7,15 @@ import { dirname, join, parse as parsePath } from 'node:path';
 import type { RawAgentAction } from '@red-codes/kernel';
 import { normalizeToActionContext } from '@red-codes/kernel';
 import type { Kernel, KernelResult } from '@red-codes/kernel';
-import type { AgentPersona, ActionContext } from '@red-codes/core';
+import type {
+  AgentPersona,
+  ActionContext,
+  GovernanceEventEnvelope,
+  DomainEvent,
+  EnvelopePerformanceMetrics,
+} from '@red-codes/core';
 import { simpleHash, personaFromEnv } from '@red-codes/core';
+import { createEnvelope } from '@red-codes/events';
 
 export interface ClaudeCodeToolUse {
   tool_name: string;
@@ -292,4 +299,26 @@ export function formatHookResponse(result: KernelResult): string {
     });
   }
   return '';
+}
+
+/**
+ * Wrap a DomainEvent in a GovernanceEventEnvelope with Claude Code as the source.
+ *
+ * This is the KE-3 envelope producer for the Claude Code adapter. All adapters
+ * produce identical envelope structures — only the `source` field differs.
+ */
+export function claudeCodeToEnvelope(
+  event: DomainEvent,
+  options?: {
+    policyVersion?: string | null;
+    decisionCodes?: readonly string[];
+    performanceMetrics?: EnvelopePerformanceMetrics;
+  }
+): GovernanceEventEnvelope {
+  return createEnvelope(event, {
+    source: 'claude-code',
+    policyVersion: options?.policyVersion,
+    decisionCodes: options?.decisionCodes,
+    performanceMetrics: options?.performanceMetrics,
+  });
 }

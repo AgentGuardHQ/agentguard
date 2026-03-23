@@ -1241,3 +1241,48 @@ export interface DecisionSink {
   write(record: GovernanceDecisionRecord): void;
   flush?(): void;
 }
+
+// ---------------------------------------------------------------------------
+// KE-3: Governance Event Envelope
+// ---------------------------------------------------------------------------
+
+/** Current envelope schema version */
+export const ENVELOPE_SCHEMA_VERSION = '1.0.0';
+
+/** Performance metrics captured during event production */
+export interface EnvelopePerformanceMetrics {
+  /** Hook latency in microseconds (µs) */
+  readonly hookLatencyUs?: number;
+  /** Policy evaluation latency in microseconds (µs) */
+  readonly evaluationLatencyUs?: number;
+}
+
+/**
+ * GovernanceEventEnvelope — versioned, runtime-agnostic wrapper for DomainEvents.
+ *
+ * Every governance event produced by any runtime adapter (Claude Code, Copilot CLI,
+ * LangGraph, etc.) is wrapped in this envelope before persistence or transmission.
+ * The envelope adds cross-cutting metadata that the raw DomainEvent does not carry:
+ * schema version, source runtime, policy version, decision codes, and performance metrics.
+ *
+ * Consumers that understand envelopes get richer context; those that don't can access
+ * the inner `event` field for full backward compatibility.
+ */
+export interface GovernanceEventEnvelope {
+  /** Schema version for the envelope format (semver) */
+  readonly schemaVersion: string;
+  /** Unique envelope identifier */
+  readonly envelopeId: string;
+  /** ISO 8601 timestamp when the envelope was created */
+  readonly timestamp: string;
+  /** Runtime source that produced this event (e.g., 'claude-code', 'copilot-cli') */
+  readonly source: string;
+  /** Policy version or hash active when the event was produced (null if unknown) */
+  readonly policyVersion: string | null;
+  /** Decision codes associated with this event (e.g., ['allow'], ['deny', 'escalate']) */
+  readonly decisionCodes: readonly string[];
+  /** Performance metrics captured during event production */
+  readonly performanceMetrics: EnvelopePerformanceMetrics;
+  /** The wrapped domain event — the full, unmodified DomainEvent payload */
+  readonly event: DomainEvent;
+}
