@@ -178,9 +178,7 @@ apps/
     ├── providers/              # Tree data providers (run status, run history, recent events)
     └── services/               # Event reader, notification formatter, notification service, diagnostics service, violation mapper
 
-tests/
-└── *.test.js               # 14 JS test files (custom zero-dependency harness)
-# 159 TS test files (vitest) distributed across packages/ and apps/ directories
+# TS test files (vitest) distributed across packages/ and apps/ directories
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
 docs/                       # System documentation (architecture, event model, specs)
@@ -360,8 +358,7 @@ pnpm test --filter=@red-codes/kernel  # Test a single package
 
 **Test structure:**
 - **Vitest workspace** (`vitest.workspace.ts`): orchestrates tests across all packages
-- **JS tests** (`tests/*.test.js`): 14 files using a custom zero-dependency harness (`tests/run.js` with `node:assert`)
-- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): 147 files using vitest
+- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): vitest
 - **Coverage areas**: adapters (file, git, shell, claude-code, copilot-cli, hook integrity), kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline, conformance, tiers, intent drift, enforcement audit, interventions), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate, policy-verify, diff, evidence-pr, traces, plugin, auto-setup, config, demo, migrate), decision records, domain models, events, evidence packs (explainable, explanation chain), evidence summary, execution log, export-import roundtrip, impact forecast, invariants, matchers (path-matcher, command-scanner, policy-matcher, benchmark), notification formatter, plugins (discovery, registry, sandbox, validation), policy evaluation (including composer, pack loader, policy packs, evaluation trace, forecast conditions, gate conditions, persona, trust, pack versioning), renderers, replay (engine, comparator, processor), simulation (filesystem, git, package, dependency graph), SQLite storage (migrations, session, sink, store, cross-run, factory, aggregation queries, commands), swarm (scaffolder, config, manifest), telemetry (event queue, event sender, anonymize, cloud sink, event mapper), TUI renderer, violation mapper, VS Code event reader, YAML loading
 
 ## CI/CD & Automation

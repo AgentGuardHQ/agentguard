@@ -1,6 +1,6 @@
 # Skill: Test Health Review
 
-Evaluate the health, coverage, and reliability of the test suite. Run both test tracks (JS + TypeScript), analyze coverage, detect regressions, identify untested code, and assess test quality. Publish a Test Health Report. Designed for daily scheduled execution.
+Evaluate the health, coverage, and reliability of the test suite. Run tests, analyze coverage, detect regressions, identify untested code, and assess test quality. Publish a Test Health Report. Designed for daily scheduled execution.
 
 ## Autonomy Directive
 
@@ -31,9 +31,9 @@ Build must succeed before tests can run:
 pnpm build
 ```
 
-If the build fails, record the error output and skip to Step 9 (Generate Report) with build failure as the primary finding. Do NOT attempt to fix the build — that is the Coder Agent's job.
+If the build fails, record the error output and skip to Step 8 (Generate Report) with build failure as the primary finding. Do NOT attempt to fix the build — that is the Coder Agent's job.
 
-### 3. Run TypeScript Tests
+### 3. Run Tests (vitest)
 
 Run the vitest test suite and capture structured output:
 
@@ -49,25 +49,12 @@ Parse the output to extract:
 - **Duration**: Total execution time
 - **Per-file results**: Pass/fail status for each test file
 
-### 4. Run JavaScript Tests
+### 4. Run Coverage Analysis
 
-Run the custom JS test harness:
-
-```bash
-pnpm test 2>&1
-```
-
-Parse the output for:
-- **Total tests**: Count of test cases
-- **Passed/Failed**: Counts with test names
-- **Duration**: Execution time
-
-### 5. Run Coverage Analysis
-
-Run coverage to measure code coverage:
+Run coverage using vitest's built-in coverage:
 
 ```bash
-npx c8 --reporter=text --check-coverage --lines 50 node tests/run.js 2>&1
+pnpm test:coverage 2>&1
 ```
 
 Parse the output to extract:
@@ -77,7 +64,7 @@ Parse the output to extract:
 - **Uncovered lines**: File paths and line ranges with zero coverage
 - **Threshold status**: Whether the 50% line coverage minimum is met
 
-### 6. Run Type Check
+### 5. Run Type Check
 
 Verify TypeScript strict mode compliance:
 
@@ -90,7 +77,7 @@ Parse output for:
 - **Error locations**: File paths and line numbers
 - **Error categories**: Missing types, type mismatches, unused variables, etc.
 
-### 7. Analyze Test-to-Code Ratio
+### 6. Analyze Test-to-Code Ratio
 
 Calculate the ratio of test code to source code:
 
@@ -119,7 +106,7 @@ For each source file, check if a corresponding test exists in the same package:
 
 List all source files that have NO corresponding test file.
 
-### 8. Analyze Recent CI History
+### 7. Analyze Recent CI History
 
 Fetch recent CI runs to detect patterns:
 
@@ -139,7 +126,7 @@ Also check for any currently failing CI on open PRs:
 gh pr list --state open --json number,title,statusCheckRollup --jq '.[] | select(.statusCheckRollup != null) | {number, title, checks: [.statusCheckRollup[] | {name: .name, conclusion: .conclusion}]}'
 ```
 
-### 9. Generate Test Health Report
+### 8. Generate Test Health Report
 
 Compose a structured report in markdown:
 
@@ -150,7 +137,7 @@ Compose a structured report in markdown:
 
 **Test Results Dashboard** (table):
 | Suite | Total | Passed | Failed | Skipped | Duration |
-Showing JS tests, TS tests, and combined totals.
+Showing vitest results.
 
 **Failed Tests** (if any):
 List each failing test with:
@@ -192,7 +179,7 @@ Top 5 actions to improve test health, prioritized by impact:
 4. Address flaky tests (if detected)
 5. Fix type errors (if any)
 
-### 10. Route Output (Report Routing Protocol)
+### 9. Route Output (Report Routing Protocol)
 
 Apply the `report-routing` protocol to determine where output goes:
 
@@ -248,11 +235,11 @@ mkdir -p .agentguard/logs
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [test-agent] All tests passing. Coverage: N%. CI pass rate: N%." >> .agentguard/logs/swarm.log
 ```
 
-### 11. Summary
+### 10. Summary
 
 Report:
 - **Build status**: Success / Failure
-- **Tests**: N passed / N failed / N skipped (JS + TS combined)
+- **Tests**: N passed / N failed / N skipped
 - **Coverage**: N% lines (threshold: 50%)
 - **Type errors**: N
 - **CI pass rate**: N% (last 20 runs)
@@ -271,4 +258,4 @@ Report:
 - If the build fails, still produce a report (with build failure as primary finding)
 - If `gh` CLI is not authenticated, report the error and STOP
 - Do not create duplicate alert issues — check for existing ones first
-- Coverage analysis runs on JS tests only (c8 wraps the JS harness). TS test coverage uses vitest's built-in reporting if available.
+- Coverage analysis uses vitest's built-in coverage reporting.

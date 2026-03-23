@@ -1,6 +1,6 @@
 # Skill: Test Health Review
 
-Evaluate the health, coverage, and reliability of the test suite. Run both test tracks (JS + TypeScript), analyze coverage, detect regressions, identify untested code, and assess test quality. Publish a Test Health Report. Designed for daily scheduled execution.
+Evaluate the health, coverage, and reliability of the test suite. Run tests, analyze coverage, detect regressions, identify untested code, and assess test quality. Publish a Test Health Report. Designed for daily scheduled execution.
 
 ## Agent Identity
 
@@ -39,9 +39,9 @@ Build must succeed before tests can run:
 pnpm build
 ```
 
-If the build fails, record the error output and skip to Step 9 (Generate Report) with build failure as the primary finding. Do NOT attempt to fix the build — that is the Coder Agent's job.
+If the build fails, record the error output and skip to Step 8 (Generate Report) with build failure as the primary finding. Do NOT attempt to fix the build — that is the Coder Agent's job.
 
-### 3. Run TypeScript Tests
+### 3. Run Tests (vitest)
 
 Run the vitest test suite and capture structured output:
 
@@ -57,25 +57,12 @@ Parse the output to extract:
 - **Duration**: Total execution time
 - **Per-file results**: Pass/fail status for each test file
 
-### 4. Run JavaScript Tests
+### 4. Run Coverage Analysis
 
-Run the custom JS test harness:
-
-```bash
-pnpm test 2>&1
-```
-
-Parse the output for:
-- **Total tests**: Count of test cases
-- **Passed/Failed**: Counts with test names
-- **Duration**: Execution time
-
-### 5. Run Coverage Analysis
-
-Run coverage to measure code coverage:
+Run coverage using vitest's built-in coverage:
 
 ```bash
-npx c8 --reporter=text --check-coverage --lines 50 node tests/run.js 2>&1
+pnpm test:coverage 2>&1
 ```
 
 Parse the output to extract:
@@ -85,7 +72,7 @@ Parse the output to extract:
 - **Uncovered lines**: File paths and line ranges with zero coverage
 - **Threshold status**: Whether the 50% line coverage minimum is met
 
-### 6. Run Type Check
+### 5. Run Type Check
 
 Verify TypeScript strict mode compliance:
 
@@ -98,7 +85,7 @@ Parse output for:
 - **Error locations**: File paths and line numbers
 - **Error categories**: Missing types, type mismatches, unused variables, etc.
 
-### 7. Analyze Test-to-Code Ratio
+### 6. Analyze Test-to-Code Ratio
 
 Calculate the ratio of test code to source code:
 
@@ -127,7 +114,7 @@ For each source file, check if a corresponding test exists in the same package:
 
 List all source files that have NO corresponding test file.
 
-### 8. Analyze Recent CI History
+### 7. Analyze Recent CI History
 
 Fetch recent CI runs to detect patterns:
 
@@ -147,7 +134,7 @@ Also check for any currently failing CI on open PRs:
 gh pr list --state open --json number,title,statusCheckRollup --jq '.[] | select(.statusCheckRollup != null) | {number, title, checks: [.statusCheckRollup[] | {name: .name, conclusion: .conclusion}]}'
 ```
 
-### 9. Generate Test Health Report
+### 8. Generate Test Health Report
 
 Compose a structured report in markdown:
 
@@ -158,7 +145,7 @@ Compose a structured report in markdown:
 
 **Test Results Dashboard** (table):
 | Suite | Total | Passed | Failed | Skipped | Duration |
-Showing JS tests, TS tests, and combined totals.
+Showing vitest results.
 
 **Failed Tests** (if any):
 List each failing test with:
@@ -200,72 +187,83 @@ Top 5 actions to improve test health, prioritized by impact:
 4. Address flaky tests (if detected)
 5. Fix type errors (if any)
 
-### 10. Publish Test Health Report
+### 9. Route Output (Report Routing Protocol)
 
-Check if a previous test health report exists:
+Apply the `report-routing` protocol to determine where output goes:
 
-```bash
-gh issue list --state open --label "source:test-agent" --json number --jq '.[0].number'
-```
+**Assess severity**: Check if ANY of the following critical conditions exist:
+- Test failures detected (any failing tests)
+- Build failure
+- CI pass rate below 50%
+- Coverage dropped below threshold
 
-If a previous report exists, close it with a forward reference:
+**If critical conditions exist → ALERT tier**:
 
-```bash
-gh issue close <PREV_NUMBER> --comment "Superseded by new test health report."
-```
-
-Create the new report issue:
-
-```bash
-gh issue create \
-  --title "Test Health Report — $(date +%Y-%m-%d)" \
-  --body "<test health report markdown>" \
-  --label "source:test-agent" --label "status:pending"
-```
-
-### 11. Flag Critical Issues
-
-If any tests are failing, check if a tracking issue already exists:
+First, check if a tracking issue already exists:
 
 ```bash
 gh issue list --state open --label "source:test-agent" --label "priority:critical" --json number,title
 ```
 
-If failing tests are found and no existing tracking issue covers them, create ONE issue:
+If failing tests are found and no existing tracking issue covers them, create ONE alert issue:
 
 ```bash
 gh issue create \
   --title "Test failures detected — $(date +%Y-%m-%d)" \
   --body "<failing test details with file paths and error messages>" \
-  --label "source:test-agent" --label "priority:critical" --label "task:bug" --label "status:pending"
+  --label "source:test-agent" --label "priority:critical" --label "bug" --label "status:pending"
 ```
 
-Cap at **1 failure tracking issue per run**.
+Cap at **1 alert issue per run**. Do NOT create a separate "Test Health Report" issue.
 
-### 12. Summary
+**If no critical conditions → REPORT tier**:
+
+Write the full report to a local file instead of creating a GitHub issue:
+
+```bash
+mkdir -p .agentguard/reports
+cat > .agentguard/reports/test-agent-$(date +%Y-%m-%d).md <<'REPORT_EOF'
+<test health report markdown>
+REPORT_EOF
+```
+
+Close any previous test health report issues that are still open (cleanup from before routing was implemented):
+
+```bash
+PREV=$(gh issue list --state open --label "source:test-agent" --json number --jq '.[].number' 2>/dev/null)
+for num in $PREV; do
+  gh issue close "$num" --comment "Superseded — reports now written to .agentguard/reports/" 2>/dev/null || true
+done
+```
+
+**If all tests pass AND no findings above INFO → LOG tier**:
+
+```bash
+mkdir -p .agentguard/logs
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [test-agent] All tests passing. Coverage: N%. CI pass rate: N%." >> .agentguard/logs/swarm.log
+```
+
+### 10. Summary
 
 Report:
 - **Build status**: Success / Failure
-- **Tests**: N passed / N failed / N skipped (JS + TS combined)
+- **Tests**: N passed / N failed / N skipped
 - **Coverage**: N% lines (threshold: 50%)
 - **Type errors**: N
 - **CI pass rate**: N% (last 20 runs)
 - **Untested modules**: N files
 - **Test-to-code ratio**: N
-- **Test health report created**: #N
-- **Critical issues created**: N
+- **Output routed to**: ALERT (issue #N) / REPORT (.agentguard/reports/test-agent-DATE.md) / LOG
 - **Top recommendation**: Brief statement of the single most important test health action
 
 ## Rules
 
-- Create a maximum of **1 test health report issue per run**
-- Create a maximum of **1 failure tracking issue per run**
+- Create a maximum of **1 alert issue per run** — only for critical findings (test failures, build failure, CI collapse)
+- **Routine reports go to `.agentguard/reports/`, NOT GitHub issues** — follow the report-routing protocol
 - **Never fix tests** — only report findings. Fixing is the Coder Agent's job.
-- **Never modify source code** — this agent is read-only except for GitHub issues
-- **Never close issues** — only close previous test health report issues labeled `source:test-agent`
+- **Never modify source code** — this agent is read-only except for GitHub issues and report files
 - **Never assign issues** — that is the Coder Agent's job
 - If the build fails, still produce a report (with build failure as primary finding)
 - If `gh` CLI is not authenticated, report the error and STOP
-- Do not create duplicate failure tracking issues — check for existing ones first
-- When closing previous reports, verify the issue is actually labeled `source:test-agent` before closing
-- Coverage analysis runs on JS tests only (c8 wraps the JS harness). TS test coverage uses vitest's built-in reporting if available.
+- Do not create duplicate alert issues — check for existing ones first
+- Coverage analysis uses vitest's built-in coverage reporting.
