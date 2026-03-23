@@ -60,6 +60,10 @@ export interface SystemState {
   requestDomain?: string;
   /** Allowlisted domains for network egress (default: empty = deny all) */
   networkEgressAllowlist?: string[];
+  /** Files staged for the current git.commit, from `git diff --cached --name-only` */
+  stagedFiles?: string[];
+  /** All file paths written/modified by this session, accumulated by the kernel */
+  sessionWrittenFiles?: string[];
 }
 
 /** Patterns matched as substrings (case-insensitive) against file paths. */
@@ -1541,6 +1545,67 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
         holds: true,
         expected: 'Agent must not access IDE IPC sockets',
         actual: 'No IDE socket access detected',
+      };
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // 22 — Commit Scope Guard
+  // Prevents agents from committing files they didn't modify in the current session.
+  // Catches accidental inclusion of pre-staged files from prior operations.
+  // ---------------------------------------------------------------------------
+  {
+    id: 'commit-scope-guard',
+    name: 'Commit Scope Guard',
+    description:
+      'All files in a git commit must have been written or modified by the current session. ' +
+      'Prevents accidental inclusion of pre-staged files from prior operations.',
+    severity: 4,
+    check(state: SystemState): InvariantCheckResult {
+      // Only applies to git.commit actions
+      if (state.currentActionType !== 'git.commit') {
+        return {
+          holds: true,
+          expected: 'All staged files must have been written in this session',
+          actual: 'Not a git.commit action — skipped',
+        };
+      }
+
+      // Fail-open: no staged file data means the kernel couldn't fetch it (e.g. dry-run)
+      if (!state.stagedFiles || state.stagedFiles.length === 0) {
+        return {
+          holds: true,
+          expected: 'All staged files must have been written in this session',
+          actual: 'No staged files detected',
+        };
+      }
+
+      // Conservative: staged files exist but no session write log — cannot verify
+      if (!state.sessionWrittenFiles || state.sessionWrittenFiles.length === 0) {
+        return {
+          holds: false,
+          expected: 'All staged files must have been written in this session',
+          actual: `${state.stagedFiles.length} staged file(s) but no session write log — cannot verify commit scope`,
+        };
+      }
+
+      const writtenSet = new Set(state.sessionWrittenFiles);
+      const unexpected = state.stagedFiles.filter((f) => !writtenSet.has(f));
+
+      if (unexpected.length > 0) {
+        const listed = unexpected.slice(0, 5).join(', ');
+        const suffix = unexpected.length > 5 ? ` (+${unexpected.length - 5} more)` : '';
+        return {
+          holds: false,
+          expected: 'All staged files must have been written in this session',
+          actual: `${unexpected.length} unexpected staged file(s) not modified in this session: ${listed}${suffix}`,
+        };
+      }
+
+      return {
+        holds: true,
+        expected: 'All staged files must have been written in this session',
+        actual: `All ${state.stagedFiles.length} staged file(s) match session write log`,
       };
     },
   },

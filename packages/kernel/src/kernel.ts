@@ -217,6 +217,7 @@ export function createKernel(config: KernelConfig = {}): Kernel {
   const actionLog: KernelResult[] = [];
   let eventCount = 0;
   let filesModifiedCount = 0;
+  const sessionWrittenFiles = new Set<string>();
 
   const monitor = createMonitor({
     policyDefs: config.policyDefs,
@@ -547,9 +548,28 @@ export function createKernel(config: KernelConfig = {}): Kernel {
           }
         }
 
-        // 2. Evaluate via monitor (AAB → policy → invariants → evidence)
+        // 2. Pre-fetch staged files for commit-scope-guard invariant.
+        // Must happen before monitor.process() so the invariant has the data synchronously.
+        // Runs even in dryRun mode — fetchStagedFiles is read-only (git diff --cached --name-only)
+        // and hooks always use dryRun: true.
+        let enrichedContext = systemContext;
+        {
+          const preIntent = normalizeIntent(rawAction);
+          if (preIntent.action === 'git.commit') {
+            const stagedFiles = await fetchStagedFiles(
+              (rawAction as Record<string, unknown>)?.cwd as string | undefined
+            );
+            enrichedContext = {
+              ...systemContext,
+              stagedFiles,
+              sessionWrittenFiles: [...sessionWrittenFiles],
+            };
+          }
+        }
+
+        // Evaluate via monitor (AAB → policy → invariants → evidence)
         // `let` because the PAUSE-approved path reassigns: decision = { ...decision, allowed: true }
-        let decision = monitor.process(rawAction, systemContext);
+        let decision = monitor.process(rawAction, enrichedContext);
 
         // 3. Create canonical action object for execution
         let action: CanonicalAction | null = null;
@@ -1398,13 +1418,16 @@ export function createKernel(config: KernelConfig = {}): Kernel {
             }
           }
 
-          // Track file modifications for scope limit checking
+          // Track file modifications for scope limit checking and commit-scope-guard
           if (
             decision.intent.action === 'file.write' ||
             decision.intent.action === 'file.delete' ||
             decision.intent.action === 'file.move'
           ) {
             filesModifiedCount++;
+            if (decision.intent.target) {
+              sessionWrittenFiles.add(decision.intent.target);
+            }
           }
         }
 
@@ -1682,4 +1705,31 @@ export function createKernel(config: KernelConfig = {}): Kernel {
       tracer?.shutdown();
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// fetchStagedFiles — pre-fetch for commit-scope-guard invariant
+// ---------------------------------------------------------------------------
+
+/** Run `git diff --cached --name-only` and resolve to absolute paths for comparison with session write log. */
+async function fetchStagedFiles(cwd?: string): Promise<string[]> {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve } = await import('node:path');
+  const execFileAsync = promisify(execFile);
+  const workDir = cwd || process.cwd();
+  try {
+    const { stdout } = await execFileAsync('git', ['diff', '--cached', '--name-only'], {
+      cwd: workDir,
+      timeout: 5000,
+    });
+    // Resolve repo-relative paths to absolute so they match session write log entries
+    return stdout
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((f) => resolve(workDir, f));
+  } catch {
+    return [];
+  }
 }
