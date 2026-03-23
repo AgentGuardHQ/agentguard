@@ -75,18 +75,39 @@ export const CREDENTIAL_BASENAME_PATTERNS: string[] = INVARIANT_CREDENTIAL_BASEN
 /** File extensions/patterns that are non-code (docs, config, metadata).
  * Used by test-before-push to exempt commits that only change these files. */
 const NON_CODE_EXTENSIONS = new Set([
-  '.md', '.mdx', '.txt', '.rst', '.adoc',           // documentation
-  '.yaml', '.yml', '.toml',                          // config
-  '.json',                                           // metadata/state
-  '.csv', '.tsv',                                    // data
-  '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico',   // images
-  '.lock',                                           // lockfiles
+  '.md',
+  '.mdx',
+  '.txt',
+  '.rst',
+  '.adoc', // documentation
+  '.yaml',
+  '.yml',
+  '.toml', // config
+  '.json', // metadata/state
+  '.csv',
+  '.tsv', // data
+  '.svg',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.ico', // images
+  '.lock', // lockfiles
 ]);
 
 const NON_CODE_BASENAMES = new Set([
-  'license', 'changelog', 'roadmap', 'authors',
-  '.gitignore', '.gitattributes', '.editorconfig', '.prettierrc', '.prettierignore',
-  '.eslintignore', '.npmrc', '.nvmrc',
+  'license',
+  'changelog',
+  'roadmap',
+  'authors',
+  '.gitignore',
+  '.gitattributes',
+  '.editorconfig',
+  '.prettierrc',
+  '.prettierignore',
+  '.eslintignore',
+  '.npmrc',
+  '.nvmrc',
 ]);
 
 function isNonCodeFile(filePath: string): boolean {

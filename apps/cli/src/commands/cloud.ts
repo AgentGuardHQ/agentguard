@@ -167,12 +167,8 @@ async function cloudConnect(args: string[]): Promise<number> {
       authKey = args[i + 1]!;
       i++;
     } else if (arg.startsWith('-')) {
-      process.stderr.write(
-        `  ${FG.red}Error:${RESET} Unknown flag: ${arg}\n`
-      );
-      process.stderr.write(
-        `  ${DIM}Run "agentguard cloud help" for usage.${RESET}\n`
-      );
+      process.stderr.write(`  ${FG.red}Error:${RESET} Unknown flag: ${arg}\n`);
+      process.stderr.write(`  ${DIM}Run "agentguard cloud help" for usage.${RESET}\n`);
       return 1;
     } else {
       apiKey = arg;
@@ -209,9 +205,7 @@ async function cloudConnect(args: string[]): Promise<number> {
     }
 
     if (!authKey) {
-      process.stderr.write(
-        `  ${FG.red}Error:${RESET} No API key found for authentication.\n`
-      );
+      process.stderr.write(`  ${FG.red}Error:${RESET} No API key found for authentication.\n`);
       process.stderr.write(
         `  ${DIM}Provide --key <key> or run "agentguard cloud login" first.${RESET}\n`
       );
@@ -266,12 +260,8 @@ async function cloudConnect(args: string[]): Promise<number> {
   process.stderr.write(
     `  ${FG.red}Error:${RESET} Provide an API key or use --tenant <id> to provision one.\n`
   );
-  process.stderr.write(
-    `  ${DIM}Usage: agentguard cloud connect <api-key>\n`
-  );
-  process.stderr.write(
-    `         agentguard cloud connect --tenant <id> --api <url>${RESET}\n`
-  );
+  process.stderr.write(`  ${DIM}Usage: agentguard cloud connect <api-key>\n`);
+  process.stderr.write(`         agentguard cloud connect --tenant <id> --api <url>${RESET}\n`);
   return 1;
 }
 

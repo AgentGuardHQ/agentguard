@@ -18,7 +18,9 @@ function printUsage(): void {
   process.stderr.write('         agentguard trust --hooks\n');
   process.stderr.write('\n  Flags:\n');
   process.stderr.write('    --yes, -y   Skip confirmation prompt\n');
-  process.stderr.write('    --hooks     Re-baseline hook integrity (accept current settings.json)\n');
+  process.stderr.write(
+    '    --hooks     Re-baseline hook integrity (accept current settings.json)\n'
+  );
   process.stderr.write('\n  Examples:\n');
   process.stderr.write('    agentguard trust agentguard.yaml\n');
   process.stderr.write('    agentguard trust .agentguard/policy.yaml --yes\n');
@@ -48,12 +50,8 @@ async function trustHooks(): Promise<number> {
   }
 
   if (baselined === 0) {
-    process.stderr.write(
-      `  ${FG.yellow}No settings.json with AgentGuard hooks found.${RESET}\n`
-    );
-    process.stderr.write(
-      `  ${DIM}Run "agentguard claude-init" first.${RESET}\n`
-    );
+    process.stderr.write(`  ${FG.yellow}No settings.json with AgentGuard hooks found.${RESET}\n`);
+    process.stderr.write(`  ${DIM}Run "agentguard claude-init" first.${RESET}\n`);
     return 1;
   }
 
