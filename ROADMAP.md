@@ -26,8 +26,8 @@ AgentGuard is the **mandatory execution control plane for AI agents** — the ru
 | Action Authorization Boundary (AAB) | Implemented | Bypass vectors closed (3 fixed in v2.4.0) |
 | Policy evaluator (YAML/JSON, composition, packs) | Implemented | Production |
 | 21 built-in invariants | Implemented | Production |
-| Canonical event model (50+ event kinds) | Implemented | Production |
-| Pre-execution simulation engine (3 simulators) | Implemented | Production |
+| Canonical event model (47 event kinds) | Implemented | Production |
+| Pre-execution simulation engine (5 simulators) | Implemented | Production |
 | Blast radius computation | Implemented | Production |
 | Escalation state machine (NORMAL → LOCKDOWN) | Implemented | Production |
 | SQLite persistence (events, decisions, sessions) | Implemented | Production |
@@ -41,7 +41,7 @@ AgentGuard is the **mandatory execution control plane for AI agents** — the ru
 | 8 policy packs (essentials, strict, ci-safe, enterprise, open-source, soc2, hipaa, eng-standards) | Implemented | Production |
 | 26-agent autonomous swarm templates | Implemented | Production |
 | KE-1 Structured matchers (Aho-Corasick, globs, reason codes) | **Shipped v2.3.0** | `packages/matchers/` |
-| All 46 event kinds mapped to cloud AgentEvent | **Shipped v2.3.0** | `packages/telemetry/src/event-mapper.ts` |
+| All 47 event kinds mapped to cloud AgentEvent | **Shipped v2.3.0** | `packages/telemetry/src/event-mapper.ts` |
 | Agent SDK for programmatic governance | **Shipped v2.3.0** | Programmatic governance integration |
 | RunManifest YAML loader | **Shipped v2.3.0** | Declarative session configuration |
 | Monitor mode for claude-hook | **Shipped v2.3.0** | `apps/cli/src/commands/claude-hook.ts` |

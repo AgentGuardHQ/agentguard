@@ -50,6 +50,8 @@ packages/
 │   ├── crypto-hash.ts          # Cryptographic hashing (SHA-256)
 │   ├── rtk.ts                  # RTK token optimization integration
 │   ├── adapters.ts             # Adapter registry interface
+│   ├── capability-resolver.ts  # Capability grant resolution
+│   ├── role-resolver.ts        # Agent role resolution
 │   ├── rng.ts                  # Seeded random number generator
 │   ├── persona.ts              # Persona definitions
 │   ├── repo-root.ts            # Repository root detection
@@ -63,7 +65,8 @@ packages/
 ├── events/src/                 # @red-codes/events — Canonical event model
 │   ├── schema.ts               # Event kinds, factory, validation
 │   ├── bus.ts                  # Generic typed EventBus
-│   └── store.ts                # In-memory event store
+│   ├── store.ts                # In-memory event store
+│   └── session-context.ts      # Session context management
 ├── policy/src/                 # @red-codes/policy — Policy system
 │   ├── composer.ts             # Policy composition (multi-file merging)
 │   ├── evaluator.ts            # Rule matching engine
@@ -103,6 +106,8 @@ packages/
 │       ├── filesystem-simulator.ts  # File system impact simulation
 │       ├── git-simulator.ts         # Git operation simulation
 │       ├── package-simulator.ts     # Package change simulation
+│       ├── dependency-graph-simulator.ts # Dependency graph impact simulation
+│       ├── plan-simulator.ts        # Action plan simulation
 │       ├── forecast.ts              # Impact forecast builder
 │       ├── registry.ts              # Simulator registry
 │       └── types.ts                 # Simulation type definitions
@@ -128,9 +133,11 @@ packages/
 │   └── index.ts                # Module re-exports
 ├── storage/src/                # @red-codes/storage — Storage backends (SQLite, opt-in)
 │   ├── adoption-analytics.ts   # Adoption analytics engine
+│   ├── aggregation-queries.ts  # Cross-run aggregation queries
 │   ├── denial-learner.ts       # Denial pattern learning
 │   ├── factory.ts              # Storage bundle factory
 │   ├── index.ts                # Module re-exports
+│   ├── jsonl-sink.ts           # JSONL file event sink
 │   ├── migrations.ts           # Schema migrations (version-based)
 │   ├── sqlite-session.ts       # SQLite session lifecycle (insert on start, update on end)
 │   ├── sqlite-sink.ts          # SQLite event/decision sink
@@ -160,13 +167,19 @@ apps/
 │   ├── args.ts                 # Argument parsing utilities
 │   ├── colors.ts               # Terminal color helpers
 │   ├── tui.ts                  # TUI renderer (terminal action stream)
+│   ├── identity.ts             # Agent identity utilities
+│   ├── manifest-loader.ts      # RunManifest YAML loader
+│   ├── mode-resolver.ts        # Enforcement mode resolution
 │   ├── policy-resolver.ts      # Policy file discovery and resolution
 │   ├── recorder.ts             # Event recording
 │   ├── replay.ts               # Session replay logic
+│   ├── replay-timeline-html.ts # HTML timeline viewer generation
 │   ├── session-store.ts        # Session management
+│   ├── session-viewer-html.ts  # Interactive HTML session viewer
 │   ├── file-event-store.ts     # File-based event persistence
 │   ├── evidence-summary.ts     # Evidence summary generator for PR reports
-│   └── commands/               # guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, policy-verify, claude-hook, claude-init, copilot-hook, copilot-init, cloud, init, diff, evidence-pr, traces, session-viewer, status, analytics, auto-setup, config, audit-verify, demo, adoption, learn, migrate, trust
+│   ├── templates/              # Template generators (scripts, skills)
+│   └── commands/               # guard, inspect, replay, export, import, simulate, ci-check, plugin, policy, policy-verify, claude-hook, claude-init, copilot-hook, copilot-init, cloud, cloud-login, init, diff, evidence-pr, traces, session-viewer, status, analytics, auto-setup, config, audit-verify, demo, adoption, learn, migrate, trust, team-report, telemetry
 ├── mcp-server/src/             # @red-codes/mcp-server — MCP governance server
 │   ├── index.ts                # Entry point
 │   ├── server.ts               # MCP server implementation
@@ -180,7 +193,7 @@ apps/
 
 tests/
 └── *.test.js               # 14 JS test files (custom zero-dependency harness)
-# 159 TS test files (vitest) distributed across packages/ and apps/ directories
+# 162 TS test files (vitest) distributed across packages/ and apps/ directories
 policy/                     # Policy configuration (JSON: action_rules, capabilities)
 policies/                   # Policy packs (YAML: ci-safe, engineering-standards, enterprise, hipaa, open-source, soc2, strict)
 docs/                       # System documentation (architecture, event model, specs)
@@ -281,12 +294,14 @@ Each workspace package maps to a single architectural concept:
 - `agentguard audit-verify` — Verify tamper-resistant audit chain integrity
 - `agentguard demo` — Interactive governance showcase
 - `agentguard adoption` — Adoption metrics and onboarding status
-- `agentguard learn` — Interactive tutorials and learning paths
-- `agentguard migrate` — Migrate configuration between versions
+- `agentguard learn` — Analyze denial patterns and suggest policy improvements
+- `agentguard migrate` — Bulk-import JSONL event/decision files into SQLite
 - `agentguard trust` — Manage policy and hook trust verification
 - `agentguard cloud login|connect|status|events|runs|summary|disconnect` — Cloud governance analytics
 - `agentguard copilot-hook` — Handle GitHub Copilot PreToolUse/PostToolUse hook events
 - `agentguard copilot-init` — Set up GitHub Copilot hook integration
+- `agentguard team-report` — Generate team governance report from aggregated session data
+- `agentguard telemetry` — Manage telemetry configuration and status
 
 ### Event Model
 The canonical event model is the architectural spine. Event kinds defined in `packages/events/src/schema.ts`:
@@ -361,8 +376,8 @@ pnpm test --filter=@red-codes/kernel  # Test a single package
 **Test structure:**
 - **Vitest workspace** (`vitest.workspace.ts`): orchestrates tests across all packages
 - **JS tests** (`tests/*.test.js`): 14 files using a custom zero-dependency harness (`tests/run.js` with `node:assert`)
-- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): 147 files using vitest
-- **Coverage areas**: adapters (file, git, shell, claude-code, copilot-cli, hook integrity), kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline, conformance, tiers, intent drift, enforcement audit, interventions), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate, policy-verify, diff, evidence-pr, traces, plugin, auto-setup, config, demo, migrate), decision records, domain models, events, evidence packs (explainable, explanation chain), evidence summary, execution log, export-import roundtrip, impact forecast, invariants, matchers (path-matcher, command-scanner, policy-matcher, benchmark), notification formatter, plugins (discovery, registry, sandbox, validation), policy evaluation (including composer, pack loader, policy packs, evaluation trace, forecast conditions, gate conditions, persona, trust, pack versioning), renderers, replay (engine, comparator, processor), simulation (filesystem, git, package, dependency graph), SQLite storage (migrations, session, sink, store, cross-run, factory, aggregation queries, commands), swarm (scaffolder, config, manifest), telemetry (event queue, event sender, anonymize, cloud sink, event mapper), TUI renderer, violation mapper, VS Code event reader, YAML loading
+- **TypeScript tests** (distributed across `packages/*/tests/` and `apps/*/tests/`): 162 files using vitest
+- **Coverage areas**: adapters (file, git, shell, claude-code, copilot-cli, hook integrity, credential stripping, IDE socket stripping, shell profiles), kernel (AAB, engine, monitor, blast radius, heartbeat, integration, e2e pipeline, conformance, tiers, intent drift, enforcement audit, interventions, capability enforcement, capability grant tracking, plan simulator), CLI commands (args, guard, inspect, init, simulate, ci-check, claude-hook, claude-init, export/import, policy-validate, policy-verify, diff, evidence-pr, traces, plugin, auto-setup, config, demo, migrate, team-report, cloud-query, identity, manifest-loader, mode-resolver, replay-timeline-html), decision records, domain models, events (bus, store, session context), evidence packs (explainable, explanation chain), evidence summary, execution log, export-import roundtrip, impact forecast, invariants, matchers (path-matcher, command-scanner, policy-matcher, benchmark), notification formatter, plugins (discovery, registry, sandbox, validation, simulator loader), policy evaluation (including composer, pack loader, policy packs, evaluation trace, forecast conditions, gate conditions, persona, trust, pack versioning), renderers, replay (engine, comparator, processor), simulation (filesystem, git, package, dependency graph, plan), SQLite storage (migrations, session, sink, store, cross-run, factory, aggregation queries, commands, JSONL sink, team aggregation), swarm (scaffolder, config, manifest), telemetry (event queue, event sender, anonymize, cloud sink, event mapper), TUI renderer, violation mapper, VS Code event reader, YAML loading
 
 ## CI/CD & Automation
 
