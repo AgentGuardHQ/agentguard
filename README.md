@@ -294,8 +294,7 @@ AgentGuard Kernel
 | Feature | Details |
 |---------|---------|
 | **Compliance packs** | `extends: soc2`, `extends: hipaa` — pre-built policy packs mapping to SOC 2 CC6/CC7 and HIPAA 164.312 controls |
-| **Audit trail** | Tamper-resistant SQLite event chain; optional JSONL streaming sink (`--jsonl`) for real-time tailing and SIEM ingestion |
-| **Team reporting** | `agentguard team-report` — per-agent compliance rates, denial trends, multi-format output (text, JSON, CSV, Markdown) |
+| **Audit trail** | Tamper-resistant SQLite event chain; export to JSONL for SIEM ingestion |
 | **Evidence PRs** | `agentguard evidence-pr` — attach governance evidence summary to any PR |
 | **CI gates** | `agentguard ci-check <session>` — fail CI if a governance session contains violations |
 | **Branch protection** | Policy-enforced push controls on top of GitHub branch rules |
@@ -318,7 +317,6 @@ agentguard guard                          # Start governed action runtime
 agentguard guard --policy <file>          # Use a specific policy file
 agentguard guard --dry-run                # Evaluate without executing
 agentguard guard --agent-name <name>      # Set agent identity for session
-agentguard guard --jsonl <dir>            # Stream events/decisions as JSONL (real-time tailing)
 
 # Inspect
 agentguard inspect --last                 # Show last run action graph
@@ -338,8 +336,6 @@ agentguard ci-check <session>             # Verify session for violations (CI ga
 agentguard evidence-pr                    # Attach evidence summary to PR
 agentguard audit-verify                   # Verify tamper-resistant audit chain
 agentguard analytics                      # Violation pattern analysis
-agentguard team-report                    # Team-level governance observability across agents
-agentguard team-report --format json      # Output as JSON (also: csv, markdown)
 
 # Policy
 agentguard policy validate <file>         # Validate a policy file
@@ -349,10 +345,10 @@ agentguard init --template <name>         # Scaffold from template (strict/permi
 
 ## Agent SDK
 
-The kernel stack is published to npm at **1.0.0** — use AgentGuard programmatically in your own tooling:
+Use AgentGuard programmatically in your own tooling:
 
 ```bash
-npm install @red-codes/kernel @red-codes/policy @red-codes/invariants
+npm install @red-codes/core @red-codes/events
 ```
 
 ```typescript

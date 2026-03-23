@@ -28,12 +28,6 @@ function resolveCliPrefix(): { cli: string; isLocal: boolean } {
   if (existsSync(localMarker)) {
     return { cli: LOCAL_BIN, isLocal: true };
   }
-  // If agentguard is a local devDependency (node_modules/.bin/agentguard exists),
-  // use npx to invoke it — bare 'agentguard' won't be on PATH.
-  const localBin = join(mainRoot, 'node_modules', '.bin', 'agentguard');
-  if (existsSync(localBin)) {
-    return { cli: 'npx agentguard', isLocal: false };
-  }
   return { cli: 'agentguard', isLocal: false };
 }
 
@@ -579,7 +573,8 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
   );
 }
 
-const STARTER_POLICY_TEMPLATE = (mode: 'monitor' | 'enforce', _pack?: string) => {
+const STARTER_POLICY_TEMPLATE = (mode: 'monitor' | 'enforce', pack?: string) => {
+  const packLine = pack ? `pack: ${pack}` : '# pack: essentials';
   return `# AgentGuard policy — runtime protection for AI coding agents.
 # Docs: https://github.com/AgentGuardHQ/agent-guard
 
@@ -589,6 +584,9 @@ description: Baseline safety rules for AI coding agents
 
 # Enforcement mode: monitor (warn but allow) or enforce (block)
 mode: ${mode}
+
+# Policy pack — curated invariant enforcement profiles
+${packLine}
 
 rules:
   # Protected branches — prevent direct push to main/master
@@ -622,10 +620,6 @@ rules:
   - action: infra.destroy
     effect: deny
     reason: Infrastructure destruction requires explicit authorization
-
-  # Default allow — all actions not matching a deny rule above are permitted
-  - action: "*"
-    effect: allow
 `;
 };
 
