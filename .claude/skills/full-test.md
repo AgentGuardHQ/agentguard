@@ -30,23 +30,15 @@ pnpm ts:check
 
 Runs `tsc --noEmit` for strict type verification. Report any type errors with file:line references.
 
-### 3. Run TypeScript Tests (vitest)
-
-```bash
-ppnpm test
-```
-
-Report pass/fail count. If tests fail, note the failing test names and error messages.
-
-### 4. Run JavaScript Tests
+### 3. Run Tests (vitest)
 
 ```bash
 pnpm test
 ```
 
-Report pass/fail count. These use the custom zero-dependency harness in `tests/run.js`.
+Report pass/fail count. If tests fail, note the failing test names and error messages.
 
-### 5. Run ESLint
+### 4. Run ESLint
 
 ```bash
 pnpm lint
@@ -54,7 +46,7 @@ pnpm lint
 
 Report any lint errors with file:line references.
 
-### 6. Run Prettier Format Check
+### 5. Run Prettier Format Check
 
 ```bash
 pnpm format
@@ -62,7 +54,7 @@ pnpm format
 
 Report any formatting issues.
 
-### 7. Run Coverage Check
+### 6. Run Coverage Check
 
 ```bash
 pnpm test:coverage
@@ -70,7 +62,7 @@ pnpm test:coverage
 
 Report line coverage percentage. The project threshold is 50% line coverage.
 
-### 8. Summary
+### 7. Summary
 
 Provide a structured pass/fail summary:
 
@@ -81,16 +73,15 @@ Provide a structured pass/fail summary:
 |-------|--------|---------|
 | Build | PASS/FAIL | <error count or clean> |
 | Type-check | PASS/FAIL | <error count or clean> |
-| TS tests (vitest) | PASS/FAIL | <X pass / Y fail> |
-| JS tests | PASS/FAIL | <X pass / Y fail> |
+| Tests (vitest) | PASS/FAIL | <X pass / Y fail> |
 | Lint | PASS/FAIL | <error count or clean> |
 | Format | PASS/FAIL | <issue count or clean> |
 | Coverage | PASS/FAIL | <X% lines (threshold: 50%)> |
 ```
 
 One-line verdict:
-- **All clear**: "All 7 checks passed — codebase healthy"
-- **Issues found**: "N/7 checks failed — see details above"
+- **All clear**: "All 6 checks passed — codebase healthy"
+- **Issues found**: "N/6 checks failed — see details above"
 
 ## Rules
 
