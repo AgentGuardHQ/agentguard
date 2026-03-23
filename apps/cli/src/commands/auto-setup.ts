@@ -1,10 +1,11 @@
-// agentguard auto-setup — detect AgentGuard in project and auto-configure Claude Code hooks
+// agentguard auto-setup — detect AgentGuard in project and auto-configure Claude Code and Copilot CLI hooks
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
 import { claudeInit } from './claude-init.js';
+import { copilotInit } from './copilot-init.js';
 import { resolveMainRepoRoot } from '@red-codes/core';
 
 const HOOK_MARKER = 'claude-hook';
@@ -89,18 +90,33 @@ export function detectExistingHooks(cwd: string = process.cwd()): boolean {
     }
   }
 
+  // Check Copilot CLI hooks
+  const copilotHooksPath = join(cwd, '.github', 'hooks', 'hooks.json');
+  if (existsSync(copilotHooksPath)) {
+    try {
+      const config = JSON.parse(readFileSync(copilotHooksPath, 'utf8')) as {
+        hooks?: { preToolUse?: Array<{ bash?: string }> };
+      };
+      const preToolUse = config?.hooks?.preToolUse ?? [];
+      const hasCopilotHook = preToolUse.some((entry) => entry.bash?.includes('copilot-hook'));
+      if (hasCopilotHook) return true;
+    } catch {
+      /* ignore */
+    }
+  }
+
   return false;
 }
 
 /**
- * Auto-detect AgentGuard in the project and configure Claude Code hooks if needed.
+ * Auto-detect AgentGuard in the project and configure Claude Code and Copilot CLI hooks if needed.
  *
  * Detection checks (in order):
  * 1. Is agentguard listed in package.json dependencies?
  * 2. Does .claude/ directory exist (Claude Code environment)?
- * 3. Are hooks already installed?
+ * 3. Are hooks already installed (Claude Code settings.json or Copilot CLI hooks.json)?
  *
- * If agentguard is a dependency and hooks are missing, runs claude-init automatically.
+ * If agentguard is a dependency and hooks are missing, runs claude-init and copilot-init automatically.
  */
 export async function autoSetup(args: string[] = []): Promise<AutoSetupResult> {
   const quiet = args.includes('--quiet') || args.includes('-q');
@@ -157,7 +173,7 @@ export async function autoSetup(args: string[] = []): Promise<AutoSetupResult> {
     result.hooksMissing = false;
     result.skipped = 'Hooks already installed';
     if (!quiet) {
-      process.stderr.write(`  ${FG.green}✓${RESET}  Claude Code hooks already installed\n`);
+      process.stderr.write(`  ${FG.green}✓${RESET}  Governance hooks already installed\n`);
       process.stderr.write(`\n  ${DIM}No action needed — governance is active.${RESET}\n\n`);
     }
     return result;
@@ -200,6 +216,8 @@ export async function autoSetup(args: string[] = []): Promise<AutoSetupResult> {
   }
 
   await claudeInit(forwardArgs);
+  // Also configure Copilot CLI hooks
+  await copilotInit(forwardArgs);
   result.installed = true;
 
   return result;

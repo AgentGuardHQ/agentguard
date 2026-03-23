@@ -32,7 +32,7 @@ const shared: esbuild.BuildOptions = {
 // CLI bundle — single self-contained entry point
 await esbuild.build({
   ...shared,
-  entryPoints: ['src/bin.ts'],
+  entryPoints: ['src/bin.ts', 'src/postinstall.ts'],
 });
 
 // Copy hooks/ and templates/ into dist so they ship with the npm package

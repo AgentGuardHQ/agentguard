@@ -33,7 +33,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src/",
     "ts:check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "postinstall": "node dist/postinstall.js || true"
   },
   "dependencies": {
     "chokidar": "^5.0.0",
