@@ -82,5 +82,7 @@ export function buildSystemState(context: Record<string, unknown> = {}): SystemS
     requestUrl: context.requestUrl as string | undefined,
     requestDomain: context.requestDomain as string | undefined,
     networkEgressAllowlist: context.networkEgressAllowlist as string[] | undefined,
+    stagedFiles: context.stagedFiles as string[] | undefined,
+    sessionWrittenFiles: context.sessionWrittenFiles as string[] | undefined,
   };
 }
