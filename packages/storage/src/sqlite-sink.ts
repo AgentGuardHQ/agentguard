@@ -7,6 +7,7 @@ import type {
   EventSink,
   GovernanceDecisionRecord,
   DecisionSink,
+  GovernanceEventEnvelope,
 } from '@red-codes/core';
 
 /** Create an EventSink that writes events to the SQLite events table */
@@ -88,4 +89,57 @@ function extractActionType(event: DomainEvent): string | null {
   const rec = event as unknown as Record<string, unknown>;
   if (typeof rec.actionType === 'string') return rec.actionType;
   return null;
+}
+
+/** Sink interface for GovernanceEventEnvelopes — writes both envelope metadata and the inner event */
+export interface EnvelopeSink {
+  write(envelope: GovernanceEventEnvelope): void;
+  flush?(): void;
+}
+
+/**
+ * Create an EnvelopeSink that writes envelopes to SQLite.
+ *
+ * Persists the inner event to the standard events table and additionally stores
+ * envelope-level metadata (schema_version, source, policy_version, decision_codes,
+ * performance_metrics) in the envelope_data column.
+ *
+ * The events table INSERT uses the existing schema — envelope metadata is stored as
+ * a JSON string in the `data` column alongside the raw event. This keeps the migration
+ * path simple: no schema changes required for envelope support.
+ */
+export function createSqliteEnvelopeSink(
+  db: Database.Database,
+  runId: string,
+  onError?: (error: Error) => void
+): EnvelopeSink {
+  const stmt = db.prepare(`
+    INSERT OR IGNORE INTO events (id, run_id, kind, timestamp, fingerprint, data, action_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  return {
+    write(envelope: GovernanceEventEnvelope): void {
+      try {
+        const event = envelope.event;
+        const actionType = extractActionType(event);
+        // Store the full envelope (including inner event) in the data column
+        stmt.run(
+          event.id,
+          runId,
+          event.kind,
+          event.timestamp,
+          event.fingerprint,
+          JSON.stringify(envelope),
+          actionType
+        );
+      } catch (err) {
+        onError?.(err as Error);
+      }
+    },
+
+    flush(): void {
+      // No buffering needed
+    },
+  };
 }

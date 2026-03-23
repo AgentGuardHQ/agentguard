@@ -6,8 +6,15 @@
 import type { RawAgentAction } from '@red-codes/kernel';
 import { normalizeToActionContext } from '@red-codes/kernel';
 import type { Kernel, KernelResult } from '@red-codes/kernel';
-import type { AgentPersona, ActionContext } from '@red-codes/core';
+import type {
+  AgentPersona,
+  ActionContext,
+  GovernanceEventEnvelope,
+  DomainEvent,
+  EnvelopePerformanceMetrics,
+} from '@red-codes/core';
 import { simpleHash, personaFromEnv } from '@red-codes/core';
+import { createEnvelope } from '@red-codes/events';
 
 export interface CopilotCliHookPayload {
   timestamp?: number;
@@ -250,4 +257,26 @@ export function formatCopilotHookResponse(result: KernelResult): string {
   }
   // Copilot CLI: return empty string for allowed actions (no output = allow)
   return '';
+}
+
+/**
+ * Wrap a DomainEvent in a GovernanceEventEnvelope with Copilot CLI as the source.
+ *
+ * This is the KE-3 envelope producer for the Copilot CLI adapter. All adapters
+ * produce identical envelope structures — only the `source` field differs.
+ */
+export function copilotCliToEnvelope(
+  event: DomainEvent,
+  options?: {
+    policyVersion?: string | null;
+    decisionCodes?: readonly string[];
+    performanceMetrics?: EnvelopePerformanceMetrics;
+  }
+): GovernanceEventEnvelope {
+  return createEnvelope(event, {
+    source: 'copilot-cli',
+    policyVersion: options?.policyVersion,
+    decisionCodes: options?.decisionCodes,
+    performanceMetrics: options?.performanceMetrics,
+  });
 }

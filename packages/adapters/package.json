@@ -22,9 +22,7 @@
   },
   "dependencies": {
     "@red-codes/core": "workspace:*",
+    "@red-codes/events": "workspace:*",
     "@red-codes/kernel": "workspace:*"
-  },
-  "devDependencies": {
-    "@red-codes/events": "workspace:*"
   }
 }

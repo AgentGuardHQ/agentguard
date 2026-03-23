@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import type { DomainEvent, GovernanceDecisionRecord } from '@red-codes/core';
-import { mapDomainEventToAgentEvent, mapDecisionToAgentEvent } from '../src/event-mapper.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import type { DomainEvent, GovernanceDecisionRecord, GovernanceEventEnvelope } from '@red-codes/core';
+import { ENVELOPE_SCHEMA_VERSION } from '@red-codes/core';
+import {
+  mapDomainEventToAgentEvent,
+  mapDecisionToAgentEvent,
+  mapEnvelopeToAgentEvent,
+} from '../src/event-mapper.js';
 
 // ---------------------------------------------------------------------------
 // Helpers — minimal valid DomainEvent and GovernanceDecisionRecord factories
@@ -822,5 +827,138 @@ describe('mapDomainEventToAgentEvent — environmental enforcement', () => {
     });
     const result = mapDomainEventToAgentEvent(event);
     expect(result.eventType).toBe('policy_evaluation');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// mapEnvelopeToAgentEvent — KE-3 envelope-aware mapping
+// ---------------------------------------------------------------------------
+
+function makeEnvelope(
+  overrides: Partial<GovernanceEventEnvelope> = {}
+): GovernanceEventEnvelope {
+  const event = makeDomainEvent({
+    kind: 'ActionAllowed',
+    actionType: 'file.write',
+    target: '/src/index.ts',
+    agentId: 'agent-1',
+  });
+  return {
+    schemaVersion: ENVELOPE_SCHEMA_VERSION,
+    envelopeId: 'env_123_1',
+    timestamp: new Date(1710000000000).toISOString(),
+    source: 'claude-code',
+    policyVersion: null,
+    decisionCodes: [],
+    performanceMetrics: {},
+    event,
+    ...overrides,
+  };
+}
+
+describe('mapEnvelopeToAgentEvent', () => {
+  it('maps the inner event correctly', () => {
+    const envelope = makeEnvelope();
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.eventType).toBe('decision');
+    expect(result.outcome).toBe('success');
+    expect(result.action).toBe('file.write');
+    expect(result.resource).toBe('/src/index.ts');
+  });
+
+  it('enriches with policyVersion from envelope', () => {
+    const envelope = makeEnvelope({ policyVersion: 'policy-v2.3' });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.policyVersion).toBe('policy-v2.3');
+  });
+
+  it('does not set policyVersion when null', () => {
+    const envelope = makeEnvelope({ policyVersion: null });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.policyVersion).toBeUndefined();
+  });
+
+  it('includes envelope metadata in AgentEvent metadata', () => {
+    const envelope = makeEnvelope({ source: 'copilot-cli' });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.envelopeId).toBe('env_123_1');
+    expect(result.metadata?.schemaVersion).toBe(ENVELOPE_SCHEMA_VERSION);
+    expect(result.metadata?.source).toBe('copilot-cli');
+  });
+
+  it('includes decisionCodes when present', () => {
+    const envelope = makeEnvelope({ decisionCodes: ['allow', 'escalate'] });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.decisionCodes).toEqual(['allow', 'escalate']);
+  });
+
+  it('omits decisionCodes when empty', () => {
+    const envelope = makeEnvelope({ decisionCodes: [] });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.decisionCodes).toBeUndefined();
+  });
+
+  it('includes performanceMetrics when present', () => {
+    const envelope = makeEnvelope({
+      performanceMetrics: { hookLatencyUs: 1500, evaluationLatencyUs: 800 },
+    });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.performanceMetrics).toEqual({
+      hookLatencyUs: 1500,
+      evaluationLatencyUs: 800,
+    });
+  });
+
+  it('omits performanceMetrics when empty', () => {
+    const envelope = makeEnvelope({ performanceMetrics: {} });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.performanceMetrics).toBeUndefined();
+  });
+
+  it('merges envelope metadata with existing event metadata', () => {
+    const event = makeDomainEvent({
+      kind: 'ActionRequested',
+      actionType: 'file.write',
+      target: '/app.ts',
+      agentId: 'agent-7',
+      metadata: { extra: 'info' },
+    });
+    const envelope = makeEnvelope({ event, source: 'claude-code' });
+    const result = mapEnvelopeToAgentEvent(envelope);
+
+    expect(result.metadata?.extra).toBe('info');
+    expect(result.metadata?.source).toBe('claude-code');
+    expect(result.metadata?.envelopeId).toBe('env_123_1');
+  });
+
+  it('produces identical structure for different source runtimes', () => {
+    const event = makeDomainEvent({
+      kind: 'ActionDenied',
+      actionType: 'git.push',
+      target: 'main',
+      agentId: 'agent-1',
+    });
+    const claudeResult = mapEnvelopeToAgentEvent(
+      makeEnvelope({ event, source: 'claude-code', policyVersion: 'v1' })
+    );
+    const copilotResult = mapEnvelopeToAgentEvent(
+      makeEnvelope({ event, source: 'copilot-cli', policyVersion: 'v1' })
+    );
+
+    // Same event mapping, same policyVersion, different source
+    expect(claudeResult.eventType).toBe(copilotResult.eventType);
+    expect(claudeResult.outcome).toBe(copilotResult.outcome);
+    expect(claudeResult.action).toBe(copilotResult.action);
+    expect(claudeResult.policyVersion).toBe(copilotResult.policyVersion);
+    expect(claudeResult.metadata?.source).toBe('claude-code');
+    expect(copilotResult.metadata?.source).toBe('copilot-cli');
   });
 });

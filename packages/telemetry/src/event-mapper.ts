@@ -2,7 +2,12 @@
 // AgentEvent is the wire format sent to the cloud telemetry API.
 
 import { randomUUID } from 'node:crypto';
-import type { DomainEvent, EventKind, GovernanceDecisionRecord } from '@red-codes/core';
+import type {
+  DomainEvent,
+  EventKind,
+  GovernanceDecisionRecord,
+  GovernanceEventEnvelope,
+} from '@red-codes/core';
 
 // ---------------------------------------------------------------------------
 // AgentEvent — cloud telemetry wire format (defined locally, not imported)
@@ -262,6 +267,49 @@ export function mapDecisionToAgentEvent(record: GovernanceDecisionRecord): Agent
   }
 
   agentEvent.metadata = metadata;
+
+  return agentEvent;
+}
+
+// ---------------------------------------------------------------------------
+// mapEnvelopeToAgentEvent — KE-3 envelope-aware mapping
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a GovernanceEventEnvelope to an AgentEvent for cloud telemetry.
+ *
+ * Extracts envelope-level metadata (source, policyVersion, performance metrics)
+ * and merges it with the inner DomainEvent mapping. This is the preferred path
+ * for telemetry once all producers emit envelopes.
+ */
+export function mapEnvelopeToAgentEvent(envelope: GovernanceEventEnvelope): AgentEvent {
+  // Map the inner event using the existing pipeline
+  const agentEvent = mapDomainEventToAgentEvent(envelope.event);
+
+  // Enrich with envelope-level metadata
+  if (envelope.policyVersion) {
+    agentEvent.policyVersion = envelope.policyVersion;
+  }
+
+  // Merge envelope metadata into the AgentEvent metadata
+  const envelopeMeta: Record<string, unknown> = {
+    envelopeId: envelope.envelopeId,
+    schemaVersion: envelope.schemaVersion,
+    source: envelope.source,
+  };
+
+  if (envelope.decisionCodes.length > 0) {
+    envelopeMeta.decisionCodes = envelope.decisionCodes;
+  }
+
+  if (
+    envelope.performanceMetrics.hookLatencyUs !== undefined ||
+    envelope.performanceMetrics.evaluationLatencyUs !== undefined
+  ) {
+    envelopeMeta.performanceMetrics = envelope.performanceMetrics;
+  }
+
+  agentEvent.metadata = { ...agentEvent.metadata, ...envelopeMeta };
 
   return agentEvent;
 }
