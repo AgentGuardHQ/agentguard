@@ -37,7 +37,7 @@ jobs:
             exit 1
           fi
 
-      # Publish in dependency order: core → events → cli
+      # Publish in dependency order: core → events → matchers → policy → invariants → kernel → cli
       # Library packages tolerate "already published" (E403) since their versions
       # only bump when they actually change.
 
@@ -62,6 +62,62 @@ jobs:
             echo "$OUTPUT"
             if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
               echo "::notice::@red-codes/events already published at this version, skipping"
+            else
+              exit 1
+            fi
+          }
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @red-codes/matchers
+        working-directory: packages/matchers
+        run: |
+          OUTPUT=$(pnpm publish --provenance --access public --no-git-checks 2>&1) && echo "$OUTPUT" || {
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
+              echo "::notice::@red-codes/matchers already published at this version, skipping"
+            else
+              exit 1
+            fi
+          }
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @red-codes/policy
+        working-directory: packages/policy
+        run: |
+          OUTPUT=$(pnpm publish --provenance --access public --no-git-checks 2>&1) && echo "$OUTPUT" || {
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
+              echo "::notice::@red-codes/policy already published at this version, skipping"
+            else
+              exit 1
+            fi
+          }
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @red-codes/invariants
+        working-directory: packages/invariants
+        run: |
+          OUTPUT=$(pnpm publish --provenance --access public --no-git-checks 2>&1) && echo "$OUTPUT" || {
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
+              echo "::notice::@red-codes/invariants already published at this version, skipping"
+            else
+              exit 1
+            fi
+          }
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @red-codes/kernel
+        working-directory: packages/kernel
+        run: |
+          OUTPUT=$(pnpm publish --provenance --access public --no-git-checks 2>&1) && echo "$OUTPUT" || {
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
+              echo "::notice::@red-codes/kernel already published at this version, skipping"
             else
               exit 1
             fi
