@@ -129,6 +129,21 @@ describe('detectExistingHooks', () => {
 
     expect(detectExistingHooks('/mock-cwd')).toBe(false);
   });
+
+  it('returns true when copilot-hook found in .github/hooks/hooks.json', () => {
+    vi.mocked(existsSync).mockImplementation((p: unknown) => {
+      const path = String(p);
+      return path.includes('.github/hooks/hooks.json');
+    });
+    vi.mocked(readFileSync).mockReturnValue(
+      JSON.stringify({
+        version: 1,
+        hooks: { preToolUse: [{ bash: 'agentguard copilot-hook pre' }] },
+      })
+    );
+
+    expect(detectExistingHooks('/mock-cwd')).toBe(true);
+  });
 });
 
 describe('autoSetup', () => {
