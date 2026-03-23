@@ -6,10 +6,44 @@
 // Cloud telemetry: sends governance events to the AgentGuard dashboard when AGENTGUARD_API_KEY is set.
 
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import type { CopilotCliHookPayload } from '@red-codes/adapters';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
+
+// --- Session state: persist writtenFiles across hook invocations -----------
+// Copilot CLI hooks are stateless per invocation. We bridge this by writing
+// a JSON file keyed by session_id so file write tracking from one call is
+// visible to the commit-scope-guard invariant in subsequent calls.
+
+interface CopilotSessionState {
+  writtenFiles?: string[];
+}
+
+function sessionStatePath(sessionId: string): string {
+  return join(tmpdir(), 'agentguard', `copilot-session-${sessionId}.json`);
+}
+
+function readSessionState(sessionId: string | undefined): CopilotSessionState {
+  const key = sessionId || String(process.ppid) || 'default';
+  try {
+    return JSON.parse(readFileSync(sessionStatePath(key), 'utf8')) as CopilotSessionState;
+  } catch {
+    return {};
+  }
+}
+
+function writeSessionState(sessionId: string | undefined, patch: Partial<CopilotSessionState>): void {
+  const key = sessionId || String(process.ppid) || 'default';
+  try {
+    mkdirSync(join(tmpdir(), 'agentguard'), { recursive: true });
+    const current = readSessionState(key);
+    writeFileSync(sessionStatePath(key), JSON.stringify({ ...current, ...patch }));
+  } catch {
+    // Non-fatal
+  }
+}
 
 export async function copilotHook(hookType?: string, extraArgs: string[] = []): Promise<void> {
   try {
@@ -165,8 +199,33 @@ async function handlePreToolUse(
   const envPersona = readPersonaFromEnv();
   const resolvedPersona = envPersona ? resolvePersona(undefined, envPersona) : undefined;
 
-  const result = await processCopilotCliHook(kernel, payload, {}, resolvedPersona);
+  // Inject session write log for commit-scope-guard invariant.
+  const sessionState = readSessionState(payload.sessionId);
+  const systemContext: Record<string, unknown> = {};
+  if (sessionState.writtenFiles && sessionState.writtenFiles.length > 0) {
+    systemContext.sessionWrittenFiles = sessionState.writtenFiles;
+  }
+
+  const result = await processCopilotCliHook(kernel, payload, systemContext, resolvedPersona);
   kernel.shutdown();
+
+  // Track file writes in session state so commit-scope-guard knows what this session touched.
+  // Copilot tool names: 'edit', 'create' (write), 'view' (read — skip)
+  if (result.allowed && (payload.toolName === 'edit' || payload.toolName === 'create')) {
+    let filePath: string | undefined;
+    try {
+      const args = payload.toolArgs ? JSON.parse(payload.toolArgs) : {};
+      filePath = args.file_path || args.path || args.filePath;
+    } catch {
+      // toolArgs parse failure — skip tracking
+    }
+    if (filePath) {
+      const existing = sessionState.writtenFiles ?? [];
+      if (!existing.includes(filePath)) {
+        writeSessionState(payload.sessionId, { writtenFiles: [...existing, filePath] });
+      }
+    }
+  }
 
   // Flush cloud telemetry before exit — hook is short-lived so we can't rely on intervals.
   // Cap at 2s to avoid blocking the agent on network issues.
