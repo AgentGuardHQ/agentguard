@@ -7,6 +7,7 @@ import { homedir } from 'node:os';
 import { createInterface } from 'node:readline';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
 import { resolveMainRepoRoot } from '@red-codes/core';
+import type { EnforcementMode } from '@red-codes/core';
 import { detectDriver, detectModel, detectProject, VALID_ROLES, type Role } from '../identity.js';
 import {
   AGENT_IDENTITY_BRIDGE,
@@ -151,21 +152,28 @@ export async function claudeInit(args: string[] = []): Promise<void> {
   const packArgIdx = args.findIndex((a) => a === '--pack');
   const packArg = packArgIdx !== -1 ? args[packArgIdx + 1] : undefined;
 
-  let selectedMode: 'monitor' | 'enforce' = 'monitor';
+  let selectedMode: EnforcementMode = 'guide';
   let selectedPack: string | undefined = 'essentials';
 
+  const VALID_MODES: EnforcementMode[] = ['guide', 'educate', 'monitor', 'enforce'];
+
   if (modeArg) {
-    selectedMode = modeArg === 'enforce' ? 'enforce' : 'monitor';
+    selectedMode = VALID_MODES.includes(modeArg as EnforcementMode)
+      ? (modeArg as EnforcementMode)
+      : 'guide';
   } else if (process.stdin.isTTY && !isRefresh) {
     const modeChoice = await promptChoice(
-      'Start in monitor mode or enforce mode?',
+      'Start in which mode?',
       [
-        `Monitor ${DIM}— log threats, don't block (recommended)${RESET}`,
-        `Enforce ${DIM}— block dangerous actions immediately${RESET}`,
+        `Guide ${DIM}— block dangerous actions with corrective suggestions (recommended)${RESET}`,
+        `Educate ${DIM}— allow actions but teach correct patterns${RESET}`,
+        `Monitor ${DIM}— log threats, don't block${RESET}`,
+        `Enforce ${DIM}— block dangerous actions, no suggestions${RESET}`,
       ],
       0
     );
-    selectedMode = modeChoice === 1 ? 'enforce' : 'monitor';
+    const modeMap: EnforcementMode[] = ['guide', 'educate', 'monitor', 'enforce'];
+    selectedMode = modeMap[modeChoice];
   }
 
   if (packArg !== undefined) {
@@ -573,7 +581,7 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
   );
 }
 
-const STARTER_POLICY_TEMPLATE = (mode: 'monitor' | 'enforce', pack?: string) => {
+const STARTER_POLICY_TEMPLATE = (mode: EnforcementMode, pack?: string) => {
   const packLine = pack ? `pack: ${pack}` : '# pack: essentials';
   return `# AgentGuard policy — runtime protection for AI coding agents.
 # Docs: https://github.com/AgentGuardHQ/agent-guard
@@ -582,7 +590,11 @@ id: default-policy
 name: Default Safety Policy
 description: Baseline safety rules for AI coding agents
 
-# Enforcement mode: monitor (warn but allow) or enforce (block)
+# Enforcement mode: guide | educate | monitor | enforce
+#   guide   — block dangerous actions with corrective suggestions (recommended)
+#   educate — allow actions but teach correct patterns
+#   monitor — log threats, don't block
+#   enforce — block dangerous actions, no suggestions
 mode: ${mode}
 
 # Policy pack — curated invariant enforcement profiles
@@ -594,6 +606,8 @@ rules:
     effect: deny
     branches: [main, master]
     reason: Direct push to protected branch
+    suggestion: Push to a feature branch and open a pull request instead
+    correctedCommand: "git push origin HEAD:feat/my-branch"
 
   # No force push — prevent history rewriting
   - action: git.force-push
@@ -631,7 +645,7 @@ const POLICY_CANDIDATES = [
   '.agentguard.yml',
 ];
 
-function generateStarterPolicy(mode: 'monitor' | 'enforce' = 'monitor', pack?: string): boolean {
+function generateStarterPolicy(mode: EnforcementMode = 'guide', pack?: string): boolean {
   const repoRoot = resolveMainRepoRoot();
   for (const candidate of POLICY_CANDIDATES) {
     if (existsSync(join(repoRoot, candidate))) {
@@ -651,12 +665,41 @@ function showProtectionSummary(
   _policyGenerated: boolean,
   rtkStatus?: { available: boolean; version?: string },
   isGlobal?: boolean,
-  mode: 'monitor' | 'enforce' = 'monitor'
+  mode: EnforcementMode = 'guide'
 ): void {
   process.stderr.write('\n');
   process.stderr.write(`  ${FG.green}${BOLD}AgentGuard is active.${RESET}\n\n`);
 
-  if (mode === 'monitor') {
+  if (mode === 'guide') {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.cyan}guide${RESET}${BOLD} — dangerous actions blocked with corrective suggestions${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Guiding:${RESET}\n`);
+    process.stderr.write(`  ${FG.cyan}■${RESET} ${DIM}Block + suggest${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.cyan}■${RESET} ${DIM}Block + suggest${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.cyan}■${RESET} ${DIM}Block + suggest${RESET} writes to .env, credentials\n`
+    );
+    process.stderr.write(
+      `  ${FG.cyan}■${RESET} ${DIM}Block + suggest${RESET} rm -rf, deploy, infra destroy\n`
+    );
+  } else if (mode === 'educate') {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.blue}educate${RESET}${BOLD} — actions allowed with corrective teaching${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Teaching:${RESET}\n`);
+    process.stderr.write(`  ${FG.blue}■${RESET} ${DIM}Allow + teach${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.blue}■${RESET} ${DIM}Allow + teach${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.blue}■${RESET} ${DIM}Allow + teach${RESET} credential file creation\n`
+    );
+    process.stderr.write(
+      `  ${FG.blue}■${RESET} ${DIM}Allow + teach${RESET} permission escalation\n`
+    );
+    process.stderr.write(
+      `  ${FG.red}■${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`
+    );
+  } else if (mode === 'monitor') {
     process.stderr.write(
       `  ${BOLD}Mode: ${FG.yellow}monitor${RESET}${BOLD} — threats are logged, not blocked${RESET}\n\n`
     );
@@ -700,7 +743,17 @@ function showProtectionSummary(
       `  ${DIM}2. Run ${FG.cyan}agentguard inspect --last${RESET}${DIM} to review the audit trail${RESET}\n`
     );
     process.stderr.write(
-      `  ${DIM}3. Edit ${FG.cyan}agentguard.yaml${RESET}${DIM} → set ${FG.cyan}mode: enforce${RESET}${DIM} when ready to block${RESET}\n`
+      `  ${DIM}3. Edit ${FG.cyan}agentguard.yaml${RESET}${DIM} → set ${FG.cyan}mode: guide${RESET}${DIM} when ready to block with suggestions${RESET}\n`
+    );
+  } else if (mode === 'educate') {
+    process.stderr.write(
+      `  ${DIM}1. Start a Claude Code session — teaching feedback appears in your terminal${RESET}\n`
+    );
+    process.stderr.write(
+      `  ${DIM}2. Run ${FG.cyan}agentguard inspect --last${RESET}${DIM} to review the audit trail${RESET}\n`
+    );
+    process.stderr.write(
+      `  ${DIM}3. Edit ${FG.cyan}agentguard.yaml${RESET}${DIM} → set ${FG.cyan}mode: guide${RESET}${DIM} when ready to block with suggestions${RESET}\n`
     );
   } else {
     process.stderr.write(

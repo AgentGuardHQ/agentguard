@@ -466,7 +466,7 @@ describe('claudeInit', () => {
     await claudeInit([]);
 
     expect(process.stderr.write).toHaveBeenCalledWith(
-      expect.stringContaining('Monitoring for')
+      expect.stringContaining('Guiding')
     );
     expect(process.stderr.write).toHaveBeenCalledWith(
       expect.stringContaining('AgentGuard is active')

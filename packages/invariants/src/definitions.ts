@@ -9,6 +9,7 @@ import {
   INVARIANT_LIFECYCLE_SCRIPTS,
   INVARIANT_IDE_SOCKET_PATH_PATTERNS,
 } from '@red-codes/core';
+import type { Suggestion } from '@red-codes/core';
 import { PathMatcher } from '@red-codes/matchers';
 
 export interface InvariantCheckResult {
@@ -23,6 +24,7 @@ export interface AgentGuardInvariant {
   description: string;
   severity: number;
   check: (state: SystemState) => InvariantCheckResult;
+  suggest?: (state: SystemState) => Suggestion | null;
 }
 
 export interface SystemState {

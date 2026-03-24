@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { RESET, BOLD, DIM, FG } from '../colors.js';
 import { resolveMainRepoRoot } from '@red-codes/core';
+import type { EnforcementMode } from '@red-codes/core';
 
 const HOOK_MARKER = 'copilot-hook';
 const LOCAL_BIN = 'node apps/cli/dist/bin.js';
@@ -54,6 +55,14 @@ export async function copilotInit(args: string[] = []): Promise<void> {
   const dbPathIdx = args.findIndex((a) => a === '--db-path');
   const dbPathValue = dbPathIdx !== -1 ? args[dbPathIdx + 1] : undefined;
   const dbPathSuffix = dbPathValue ? ` --db-path "${dbPathValue}"` : '';
+
+  // Parse --mode flag for enforcement mode
+  const modeArgIdx = args.findIndex((a) => a === '--mode');
+  const modeArg = modeArgIdx !== -1 ? args[modeArgIdx + 1] : undefined;
+  const VALID_MODES: EnforcementMode[] = ['guide', 'educate', 'monitor', 'enforce'];
+  const selectedMode: EnforcementMode = modeArg && VALID_MODES.includes(modeArg as EnforcementMode)
+    ? (modeArg as EnforcementMode)
+    : 'guide';
 
   // Copilot CLI hooks location:
   // Repo-level: .github/hooks/hooks.json
@@ -139,9 +148,9 @@ export async function copilotInit(args: string[] = []): Promise<void> {
   }
 
   // Auto-generate starter policy if none exists
-  const policyGenerated = generateStarterPolicy();
+  const policyGenerated = generateStarterPolicy(selectedMode);
 
-  showProtectionSummary(policyGenerated);
+  showProtectionSummary(policyGenerated, selectedMode);
 }
 
 function removeHooks(hooksPath: string, hooksLabel: string): void {
@@ -192,7 +201,7 @@ function removeHooks(hooksPath: string, hooksLabel: string): void {
   );
 }
 
-const STARTER_POLICY = `# AgentGuard policy — safety rules for AI coding agents.
+const STARTER_POLICY_TEMPLATE = (mode: EnforcementMode) => `# AgentGuard policy — safety rules for AI coding agents.
 # Customize this file to match your project's security requirements.
 # Docs: https://github.com/AgentGuardHQ/agent-guard
 
@@ -201,12 +210,21 @@ name: Default Safety Policy
 description: Baseline safety rules for AI coding agents
 severity: 4
 
+# Enforcement mode: guide | educate | monitor | enforce
+#   guide   — block dangerous actions with corrective suggestions (recommended)
+#   educate — allow actions but teach correct patterns
+#   monitor — log threats, don't block
+#   enforce — block dangerous actions, no suggestions
+mode: ${mode}
+
 rules:
   # Protected branches — prevent direct push to main/master
   - action: git.push
     effect: deny
     branches: [main, master]
     reason: Direct push to protected branch
+    suggestion: Push to a feature branch and open a pull request instead
+    correctedCommand: "git push origin HEAD:feat/my-branch"
 
   # No force push — prevent history rewriting
   - action: git.force-push
@@ -267,7 +285,7 @@ const POLICY_CANDIDATES = [
   '.agentguard.yml',
 ];
 
-function generateStarterPolicy(): boolean {
+function generateStarterPolicy(mode: EnforcementMode = 'guide'): boolean {
   const repoRoot = resolveMainRepoRoot();
   for (const candidate of POLICY_CANDIDATES) {
     if (existsSync(join(repoRoot, candidate))) {
@@ -276,26 +294,70 @@ function generateStarterPolicy(): boolean {
   }
 
   const policyPath = join(repoRoot, 'agentguard.yaml');
-  writeFileSync(policyPath, STARTER_POLICY, 'utf8');
+  writeFileSync(policyPath, STARTER_POLICY_TEMPLATE(mode), 'utf8');
   process.stderr.write(
-    `  ${FG.green}\u2713${RESET}  Policy created: ${FG.cyan}agentguard.yaml${RESET}\n`
+    `  ${FG.green}\u2713${RESET}  Policy created: ${FG.cyan}agentguard.yaml${RESET} (${mode} mode)\n`
   );
   return true;
 }
 
-function showProtectionSummary(policyGenerated: boolean): void {
+function showProtectionSummary(policyGenerated: boolean, mode: EnforcementMode = 'guide'): void {
   process.stderr.write('\n');
   process.stderr.write(`  ${FG.green}${BOLD}AgentGuard is active for Copilot CLI.${RESET}\n\n`);
 
-  process.stderr.write(`  ${BOLD}Active protections:${RESET}\n`);
-  process.stderr.write(`  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} push to main/master\n`);
-  process.stderr.write(`  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} force push\n`);
-  process.stderr.write(
-    `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} writes to .env, .npmrc, SSH keys\n`
-  );
-  process.stderr.write(
-    `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`
-  );
+  if (mode === 'guide') {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.cyan}guide${RESET}${BOLD} — dangerous actions blocked with corrective suggestions${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Guiding:${RESET}\n`);
+    process.stderr.write(`  ${FG.cyan}\u25A0${RESET} ${DIM}Block + suggest${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.cyan}\u25A0${RESET} ${DIM}Block + suggest${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.cyan}\u25A0${RESET} ${DIM}Block + suggest${RESET} writes to .env, .npmrc, SSH keys\n`
+    );
+    process.stderr.write(
+      `  ${FG.cyan}\u25A0${RESET} ${DIM}Block + suggest${RESET} rm -rf, deploy, infra destroy\n`
+    );
+  } else if (mode === 'educate') {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.blue}educate${RESET}${BOLD} — actions allowed with corrective teaching${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Teaching:${RESET}\n`);
+    process.stderr.write(`  ${FG.blue}\u25A0${RESET} ${DIM}Allow + teach${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.blue}\u25A0${RESET} ${DIM}Allow + teach${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.blue}\u25A0${RESET} ${DIM}Allow + teach${RESET} writes to .env, .npmrc, SSH keys\n`
+    );
+    process.stderr.write(
+      `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`
+    );
+  } else if (mode === 'monitor') {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.yellow}monitor${RESET}${BOLD} — threats are logged, not blocked${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Monitoring for:${RESET}\n`);
+    process.stderr.write(`  ${FG.yellow}\u25A0${RESET} ${DIM}Warn${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.yellow}\u25A0${RESET} ${DIM}Warn${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.yellow}\u25A0${RESET} ${DIM}Warn${RESET} writes to .env, .npmrc, SSH keys\n`
+    );
+    process.stderr.write(
+      `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} secret exposure (always enforced)\n`
+    );
+  } else {
+    process.stderr.write(
+      `  ${BOLD}Mode: ${FG.red}enforce${RESET}${BOLD} — dangerous actions are blocked${RESET}\n\n`
+    );
+    process.stderr.write(`  ${BOLD}Enforcing:${RESET}\n`);
+    process.stderr.write(`  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} push to main/master\n`);
+    process.stderr.write(`  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} force push\n`);
+    process.stderr.write(
+      `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} writes to .env, .npmrc, SSH keys\n`
+    );
+    process.stderr.write(
+      `  ${FG.red}\u25A0${RESET} ${DIM}Block${RESET} rm -rf, deploy, infra destroy\n`
+    );
+  }
   process.stderr.write(
     `  ${FG.green}\u25A0${RESET} ${DIM}Allow${RESET} file reads, file writes (non-sensitive)\n`
   );
