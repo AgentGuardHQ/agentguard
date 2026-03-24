@@ -3,7 +3,7 @@
 // No external dependencies — minimal line-based parser for constrained format.
 
 import type { PolicyRule, LoadedPolicy, PersonaCondition, ForecastCondition } from './evaluator.js';
-import type { AgentPersona } from '@red-codes/core';
+import type { AgentPersona, EnforcementMode } from '@red-codes/core';
 
 export interface YamlPersonaDef {
   model?: string;
@@ -29,12 +29,12 @@ export interface YamlPolicyDef {
   rules?: YamlRule[];
   /** Kernel invariant IDs to disable (human-operator override) */
   disabledInvariants?: string[];
-  /** Top-level enforcement mode: 'monitor' (warn) or 'enforce' (block) */
-  mode?: 'monitor' | 'enforce';
+  /** Top-level enforcement mode */
+  mode?: EnforcementMode;
   /** Named policy pack to apply (e.g., 'essentials', 'strict') */
   pack?: string;
-  /** Per-invariant mode overrides: invariant ID → 'monitor' | 'enforce' */
-  invariantModes?: Record<string, 'monitor' | 'enforce'>;
+  /** Per-invariant mode overrides: invariant ID → enforcement mode */
+  invariantModes?: Record<string, EnforcementMode>;
 }
 
 interface YamlRule {
@@ -43,6 +43,8 @@ interface YamlRule {
   target?: string;
   branches?: string[];
   reason?: string;
+  suggestion?: string;
+  correctedCommand?: string;
   limit?: number;
   requireTests?: boolean;
   requireFormat?: boolean;
@@ -292,11 +294,13 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
         case 'rules':
           inRules = true;
           break;
-        case 'mode':
-          if (val === 'monitor' || val === 'enforce') {
-            result.mode = val;
+        case 'mode': {
+          const VALID_MODES: EnforcementMode[] = ['monitor', 'educate', 'guide', 'enforce'];
+          if (VALID_MODES.includes(val as EnforcementMode)) {
+            result.mode = val as EnforcementMode;
           }
           break;
+        }
         case 'pack':
           result.pack = trimQuotes(val);
           break;
@@ -324,13 +328,14 @@ export function parseYamlPolicy(yaml: string): YamlPolicyDef {
 
     // Inside invariants block (per-invariant mode overrides)
     if (inInvariants && !inRules) {
+      const VALID_MODES: EnforcementMode[] = ['monitor', 'educate', 'guide', 'enforce'];
       const colonIdx = trimmed.indexOf(':');
       if (colonIdx !== -1) {
         const invId = trimmed.slice(0, colonIdx).trim();
         const invMode = trimQuotes(trimmed.slice(colonIdx + 1).trim());
-        if (invMode === 'monitor' || invMode === 'enforce') {
+        if (VALID_MODES.includes(invMode as EnforcementMode)) {
           result.invariantModes = result.invariantModes || {};
-          result.invariantModes[invId] = invMode;
+          result.invariantModes[invId] = invMode as EnforcementMode;
         }
       }
       continue;
@@ -508,6 +513,12 @@ function applyRuleField(rule: YamlRule, key: string, val: string): void {
     case 'intervention':
       rule.intervention = trimQuotes(val);
       break;
+    case 'suggestion':
+      rule.suggestion = trimQuotes(val);
+      break;
+    case 'correctedCommand':
+      rule.correctedCommand = trimQuotes(val);
+      break;
   }
 }
 
@@ -571,6 +582,14 @@ function convertRule(yamlRule: YamlRule): PolicyRule {
 
   if (yamlRule.intervention) {
     rule.intervention = yamlRule.intervention as PolicyRule['intervention'];
+  }
+
+  if (yamlRule.suggestion) {
+    rule.suggestion = yamlRule.suggestion;
+  }
+
+  if (yamlRule.correctedCommand) {
+    rule.correctedCommand = yamlRule.correctedCommand;
   }
 
   return rule;
