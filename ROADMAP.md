@@ -2,7 +2,7 @@
 
 > Deterministic governance for AI coding agents.
 
-**Last updated**: 2026-03-23
+**Last updated**: 2026-03-24
 **License**: Apache 2.0
 **Repository**: [AgentGuardHQ/agent-guard](https://github.com/AgentGuardHQ/agent-guard)
 
@@ -10,9 +10,11 @@
 
 ## Vision
 
-AgentGuard is the **mandatory execution control plane for AI agents** — the runtime governance layer that sits between autonomous agents and the real world. All agent side effects must pass through deterministic governance before reaching the environment.
+AgentGuard is the **Execution Control Plane for autonomous AI agents** — the independent governance layer that sits between autonomous agents and the real world. All agent side effects must pass through deterministic governance before reaching the environment, regardless of which orchestration framework, cloud provider, or AI model powers the agents.
 
-**Core thesis**: Once autonomous agents start modifying production systems, organizations need deterministic execution governance. Prompt alignment cannot solve this. Only a reference monitor architecture — default-deny, tamper-evident, fully auditable — provides the guarantees enterprises require.
+**Strategic positioning**: Autonomous Execution Governance (AEG). Like Okta for the application layer, AgentGuard controls the trust boundary without replacing the underlying systems. This is Layer 1 (OSS Kernel) of the four-layer architecture — the moat that makes everything else possible.
+
+**Core thesis**: Once autonomous agents start modifying production systems, organizations need deterministic execution governance. Prompt alignment cannot solve this. Only a reference monitor architecture — default-deny, tamper-evident, fully auditable — provides the guarantees enterprises require. Orchestration is commoditizing (LangGraph, CrewAI, AutoGen, platform-level tools); governance remains scarce.
 
 **Engineering thesis**: The enforcement boundary must achieve sub-millisecond latency (p50 < 0.25ms) with zero network or disk I/O dependencies. The governance layer must be invisible during operation yet impenetrable during a violation.
 
