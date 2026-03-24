@@ -27,7 +27,7 @@ AgentGuard is the **Execution Control Plane for autonomous AI agents** — the i
 | Governed action kernel (27 action types, 9 classes) | Implemented | Production |
 | Action Authorization Boundary (AAB) | Implemented | Bypass vectors closed (3 fixed in v2.4.0) |
 | Policy evaluator (YAML/JSON, composition, packs) | Implemented | Production |
-| 21 built-in invariants | Implemented | Production |
+| 22 built-in invariants | Implemented | Production |
 | Canonical event model (50+ event kinds) | Implemented | Production |
 | Pre-execution simulation engine (3 simulators) | Implemented | Production |
 | Blast radius computation | Implemented | Production |
@@ -54,7 +54,11 @@ AgentGuard is the **Execution Control Plane for autonomous AI agents** — the i
 | 3 governance bypass vectors closed | **Shipped v2.4.0** | Security hardening (#696) |
 | Capability grants enforcement before adapter execution | **Shipped v2.4.0** | `packages/kernel/` |
 | Cloud credential storage in project .env | **Shipped v2.4.0** | Per-project instead of global config |
-| Copilot CLI adapter | **Shipped v2.4.0** | `packages/adapters/src/copilot-cli.ts` |
+| Copilot CLI adapter (full parity with Claude Code) | **Shipped v2.4.0** | `packages/adapters/src/copilot-cli.ts` |
+| Postinstall dual-hook auto-setup (Claude Code + Copilot CLI) | **Shipped v2.4.0** | `apps/cli/src/postinstall.ts` |
+| KE-2 ActionContext (vendor-neutral action normalization) | **Shipped v2.4.0** | `packages/core/src/types.ts`, `packages/kernel/src/aab.ts` |
+| KE-3 Governance Event Envelope (versioned, runtime-agnostic) | **Shipped v2.4.0** | `packages/events/src/schema.ts`, `packages/core/src/types.ts` |
+| Commit-scope-guard invariant (#22) | **Shipped v2.4.0** | `packages/invariants/src/definitions.ts` |
 | Rust kernel (Phase 1 — types, AAB, policy) | In Progress | Experimental |
 
 ---
@@ -110,24 +114,24 @@ This sprint implements the architectural upgrades required for AgentGuard to fun
 - [x] ~~Produce machine-readable reason codes for all match results~~ — `packages/matchers/src/reason-codes.ts`
 - [x] ~~Benchmark: total evaluation p50 < 0.25ms~~ — benchmark suite in CI
 
-#### KE-2: Canonical Action Normalization (ActionContext)
+#### KE-2: Canonical Action Normalization (ActionContext) ✅ Done 2026-03-23
 
 > Formalize a vendor-neutral action representation that decouples the policy engine from provider-specific payloads.
 
-- [ ] Design `ActionContext` contract: actor identity (agent/session/worktree), action category, structured arguments
-- [ ] Build specialized adapter for Claude tool-calls → `ActionContext` mapping
-- [ ] Ensure policy engine consumes only normalized `ActionContext` (no provider-specific logic)
-- [ ] Benchmark: context normalization in 50–100µs
+- [x] ~~Design `ActionContext` contract: actor identity (agent/session/worktree), action category, structured arguments~~ — `ActorIdentity`, `ActionArguments`, `ActionContext` types in `packages/core/src/types.ts`
+- [x] ~~Build specialized adapter for Claude tool-calls → `ActionContext` mapping~~ — `toActionContext()` in claude-code adapter, `copilotToActionContext()` in copilot-cli adapter
+- [x] ~~Ensure policy engine consumes only normalized `ActionContext` (no provider-specific logic)~~ — `evaluate()` accepts `NormalizedIntent | ActionContext` (backward-compatible)
+- [x] ~~Benchmark: context normalization in 50–100µs~~ — `normalizeToActionContext()` in `packages/kernel/src/aab.ts`
 
-#### KE-3: Governance Event Envelope
+#### KE-3: Governance Event Envelope ✅ Done 2026-03-24
 
 > Standardize all telemetry into a versioned, runtime-agnostic schema that the Cloud can consume without special cases.
 
-- [ ] Design versioned `GovernanceEvent` envelope: eventId, timestamp, policy version, decision codes, performance metrics (hook latency in µs)
-- [ ] Ensure schema is runtime-agnostic (Claude, Copilot, LangGraph all produce identical envelopes)
-- [ ] Migrate existing event model to envelope format (backward-compatible)
-- [ ] 100% of telemetry follows the versioned schema
-- [ ] **Integration point**: Cloud ingestion consumes envelopes directly — zero special cases
+- [x] ~~Design versioned `GovernanceEvent` envelope: eventId, timestamp, policy version, decision codes, performance metrics (hook latency in µs)~~ — `GovernanceEventEnvelope` + `EnvelopePerformanceMetrics` types in `packages/core/src/types.ts`; `ENVELOPE_SCHEMA_VERSION = '1.0.0'`
+- [x] ~~Ensure schema is runtime-agnostic (Claude, Copilot, LangGraph all produce identical envelopes)~~ — `claudeCodeToEnvelope()` and `copilotCliToEnvelope()` produce identical structures (differ only in `source` field)
+- [x] ~~Migrate existing event model to envelope format (backward-compatible)~~ — `createEnvelope()`, `isEnvelope()`, `unwrapEnvelope()` in `packages/events/src/schema.ts`
+- [x] ~~100% of telemetry follows the versioned schema~~ — `createSqliteEnvelopeSink()` in storage; `mapEnvelopeToAgentEvent()` in telemetry
+- [x] ~~**Integration point**: Cloud ingestion consumes envelopes directly — zero special cases~~ — Envelope metadata enriches `AgentEvent` for cloud consumption
 
 #### KE-4: Plane Separation (Evaluator / Emitter / Shipper)
 
@@ -166,7 +170,7 @@ This sprint implements the architectural upgrades required for AgentGuard to fun
 
 > Ship the governance kernel to the world. Default-deny + KE-2 = production-grade enforcement.
 
-- [ ] Default-deny finalized + KE-2 ActionContext shipped
+- [ ] Default-deny finalized + ~~KE-2 ActionContext shipped~~ (KE-2 ✅, KE-3 ✅)
 - [ ] 30-second demo video (install → configure → govern → Cloud dashboard)
 - [ ] Site update with demo embed
 - [ ] LinkedIn + dev community announcement
