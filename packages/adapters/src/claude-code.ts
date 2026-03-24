@@ -13,6 +13,8 @@ import type {
   GovernanceEventEnvelope,
   DomainEvent,
   EnvelopePerformanceMetrics,
+  Suggestion,
+  EnforcementMode,
 } from '@red-codes/core';
 import { simpleHash, personaFromEnv } from '@red-codes/core';
 import { createEnvelope } from '@red-codes/events';
@@ -341,7 +343,70 @@ export async function processClaudeCodeHook(
   return kernel.propose(context, systemContext);
 }
 
-export function formatHookResponse(result: KernelResult): string {
+export interface HookResponseOptions {
+  mode: EnforcementMode;
+  retryAttempt?: number;
+  maxRetries?: number;
+}
+
+export function formatHookResponse(
+  result: KernelResult,
+  suggestion?: Suggestion | null,
+  options?: HookResponseOptions
+): string {
+  const mode = options?.mode;
+
+  // --- Educate mode: allow the action but inject the suggestion as context ---
+  if (mode === 'educate' && suggestion) {
+    const contextParts = [`[AgentGuard educate] ${suggestion.message}`];
+    if (suggestion.correctedCommand) {
+      contextParts.push(`Suggested command: ${suggestion.correctedCommand}`);
+    }
+    return JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'allow',
+        additionalContext: contextParts.join('\n'),
+      },
+    });
+  }
+
+  // --- Guide mode: block with corrective suggestion ---
+  if (mode === 'guide' && !result.allowed) {
+    const attempt = options?.retryAttempt ?? 0;
+    const maxRetries = options?.maxRetries ?? 3;
+
+    // Retry exhausted — hard block
+    if (attempt > maxRetries) {
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'deny',
+          permissionDecisionReason: `Action blocked after ${attempt} correction attempts — ask the human for help`,
+        },
+      });
+    }
+
+    const reason = result.decision?.decision?.reason ?? 'Action denied';
+    const parts = [reason];
+    if (suggestion) {
+      parts.push(`Suggestion: ${suggestion.message}`);
+      if (suggestion.correctedCommand) {
+        parts.push(`Corrected command: ${suggestion.correctedCommand}`);
+      }
+    }
+    parts.push(`(attempt ${attempt}/${maxRetries})`);
+
+    return JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: parts.join(' | '),
+      },
+    });
+  }
+
+  // --- Enforce mode / Monitor mode / no options: existing behavior ---
   if (!result.allowed) {
     const reason = result.decision?.decision?.reason ?? 'Action denied';
     const violations = result.decision?.violations ?? [];
