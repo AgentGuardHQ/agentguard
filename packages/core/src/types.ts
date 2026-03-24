@@ -564,6 +564,27 @@ export interface ActionDefinition {
 /** Authorization decision */
 export type Decision = 'allow' | 'deny' | 'escalate';
 
+/**
+ * Enforcement mode — controls how the kernel responds to policy violations.
+ *
+ * - monitor: observe and log only, never block
+ * - educate: log + attach a Suggestion explaining the violation
+ * - guide:   log + attach a Suggestion with a correctedCommand when possible
+ * - enforce: deny the action outright (current default behavior)
+ */
+export type EnforcementMode = 'monitor' | 'educate' | 'guide' | 'enforce';
+
+/**
+ * Suggestion — corrective feedback attached to a governance decision
+ * when the enforcement mode is 'educate' or 'guide'.
+ */
+export interface Suggestion {
+  /** Human-readable explanation of the violation and how to fix it */
+  message: string;
+  /** Optional corrected command the agent could run instead (guide mode) */
+  correctedCommand?: string;
+}
+
 // ---------------------------------------------------------------------------
 // ActionContext — KE-2: Canonical Action Normalization
 // ---------------------------------------------------------------------------

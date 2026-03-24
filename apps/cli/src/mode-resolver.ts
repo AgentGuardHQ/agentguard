@@ -1,16 +1,18 @@
-// Mode resolution for monitor/enforce per invariant.
+// Mode resolution for enforcement modes per invariant.
 // Pure function — no I/O, no side effects.
+
+import type { EnforcementMode } from '@red-codes/core';
 
 /** Invariant IDs that are always enforced regardless of config. */
 const ALWAYS_ENFORCE = new Set(['no-secret-exposure']);
 
 export interface ModeConfig {
-  /** Top-level mode from agentguard.yaml. Defaults to 'monitor'. */
-  mode?: 'monitor' | 'enforce';
+  /** Top-level mode from agentguard.yaml. Defaults to 'enforce'. */
+  mode?: EnforcementMode;
   /** Per-invariant overrides from agentguard.yaml invariants: section */
-  invariantModes?: Record<string, 'monitor' | 'enforce'>;
+  invariantModes?: Record<string, EnforcementMode>;
   /** Per-invariant overrides from resolved policy pack */
-  packModes?: Record<string, 'monitor' | 'enforce'>;
+  packModes?: Record<string, EnforcementMode>;
 }
 
 /**
@@ -21,14 +23,14 @@ export interface ModeConfig {
  * 2. Per-invariant override from agentguard.yaml
  * 3. Pack defaults
  * 4. Top-level mode
- * 5. Default: 'monitor'
+ * 5. Default: 'enforce'
  *
  * Pass invariantId = null for policy-rule denials (uses top-level mode).
  */
 export function resolveInvariantMode(
   invariantId: string | null,
   config: ModeConfig
-): 'monitor' | 'enforce' {
+): EnforcementMode {
   // Hardcoded enforce — cannot be overridden
   if (invariantId && ALWAYS_ENFORCE.has(invariantId)) {
     return 'enforce';
