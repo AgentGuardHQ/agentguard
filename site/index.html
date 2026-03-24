@@ -737,7 +737,7 @@
               <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <h3 class="font-mono font-semibold text-text mb-2">YAML Policies</h3>
-            <p class="text-muted text-sm leading-relaxed">Version-controlled boundaries. <code class="text-cta text-xs">mode</code> + <code class="text-cta text-xs">pack</code> for quick setup. Compose with <code class="text-cta text-xs">extends</code>. Per-invariant overrides. 8 built-in packs.</p>
+            <p class="text-muted text-sm leading-relaxed">Version-controlled boundaries. Four enforcement modes (<code class="text-cta text-xs">monitor</code> / <code class="text-cta text-xs">educate</code> / <code class="text-cta text-xs">guide</code> / <code class="text-cta text-xs">enforce</code>) + <code class="text-cta text-xs">pack</code> for quick setup. Per-invariant overrides. 8 built-in packs.</p>
           </div>
 
           <!-- Card 6: Full Audit Trail -->
@@ -1046,7 +1046,7 @@
             <div class="relative group">
               <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">cd your-project</span>
 <span class="text-muted">$</span> <span class="text-text">agentguard claude-init</span>
-<span class="text-muted"># Wizard: choose monitor/enforce mode + policy pack</span>
+<span class="text-muted"># Wizard: choose enforcement mode + policy pack</span>
 <span class="text-muted"># Creates agentguard.yaml + installs Claude Code hooks</span></code></pre>
               <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard claude-init" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
@@ -1281,13 +1281,14 @@ agentguard cloud status <span class="text-cta"># check connection</span></code><
               <pre class="bg-surface border border-surface-light rounded-xl p-6 font-mono text-sm leading-relaxed overflow-x-auto"><code><span class="text-muted"># agentguard.yaml</span>
 <span class="text-cta">id</span>: my-project
 <span class="text-cta">name</span>: My Project Policy
-<span class="text-cta">mode</span>: <span class="text-warning">enforce</span>          <span class="text-muted"># monitor | enforce</span>
+<span class="text-cta">mode</span>: <span class="text-warning">guide</span>            <span class="text-muted"># monitor | educate | guide | enforce</span>
 <span class="text-cta">pack</span>: essentials        <span class="text-muted"># curated invariant profile</span>
 
 <span class="text-muted"># Per-invariant overrides</span>
 <span class="text-cta">invariants</span>:
-  <span class="text-cta">blast-radius-limit</span>: monitor
+  <span class="text-cta">blast-radius-limit</span>: educate
   <span class="text-cta">no-secret-exposure</span>: enforce
+  <span class="text-cta">no-force-push</span>: guide
 
 <span class="text-cta">rules</span>:
   - <span class="text-cta">action</span>: git.push
@@ -1305,12 +1306,13 @@ agentguard cloud status <span class="text-cta"># check connection</span></code><
     <span class="text-cta">reason</span>: Reading is always safe</code></pre>
               <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="id: my-project
 name: My Project Policy
-mode: enforce
+mode: guide
 pack: essentials
 
 invariants:
-  blast-radius-limit: monitor
+  blast-radius-limit: educate
   no-secret-exposure: enforce
+  no-force-push: guide
 
 rules:
   - action: git.push
@@ -1351,6 +1353,16 @@ rules:
                 <div>
                   <h3 class="font-mono font-semibold text-text mb-1">Allow rules grant explicit permission</h3>
                   <p class="text-muted text-sm leading-relaxed">Safe operations like file reads are explicitly allowed. Clear intent, no ambiguity.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-4 h-4 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-mono font-semibold text-text mb-1">Four enforcement modes</h3>
+                  <p class="text-muted text-sm leading-relaxed"><code class="text-cta bg-cta/10 px-1.5 py-0.5 rounded text-xs">monitor</code>, <code class="text-cta bg-cta/10 px-1.5 py-0.5 rounded text-xs">educate</code>, <code class="text-cta bg-cta/10 px-1.5 py-0.5 rounded text-xs">guide</code>, <code class="text-cta bg-cta/10 px-1.5 py-0.5 rounded text-xs">enforce</code>. Educate explains violations; guide suggests corrected commands. Graduate from observe to block at your own pace.</p>
                 </div>
               </div>
 
