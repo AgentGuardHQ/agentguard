@@ -2,7 +2,7 @@
 // Pure domain logic. No DOM, no Node.js-specific APIs.
 // Accepts both NormalizedIntent and ActionContext (KE-2) as input.
 
-import type { AgentPersona, ActionContext } from '@red-codes/core';
+import type { AgentPersona, ActionContext, EnforcementMode } from '@red-codes/core';
 import { PolicyMatcher } from '@red-codes/matchers';
 
 export interface PersonaCondition {
@@ -75,6 +75,10 @@ export interface PolicyRule {
     forecast?: ForecastCondition;
   };
   reason?: string;
+  /** Human-readable suggestion explaining the violation (educate / guide modes) */
+  suggestion?: string;
+  /** Corrected command the agent could run instead (guide mode) */
+  correctedCommand?: string;
   /** Optional intervention type override for deny rules. When set, the kernel uses this
    *  instead of the severity-based default (e.g., `intervention: 'pause'` or `'rollback'`). */
   intervention?: 'pause' | 'rollback' | 'deny' | 'modify';
@@ -93,10 +97,10 @@ export interface LoadedPolicy {
   agentguardVersion?: string;
   /** Invariant IDs to disable for this policy (human-operator override) */
   disabledInvariants?: string[];
-  /** Enforcement mode: 'monitor' (warn) or 'enforce' (block). Defaults to 'monitor'. */
-  mode?: 'monitor' | 'enforce';
+  /** Enforcement mode. Defaults to 'monitor'. */
+  mode?: EnforcementMode;
   /** Per-invariant mode overrides from yaml config or pack */
-  invariantModes?: Record<string, 'monitor' | 'enforce'>;
+  invariantModes?: Record<string, EnforcementMode>;
   /** Named pack reference (resolved by the hook layer) */
   pack?: string;
 }
@@ -155,6 +159,10 @@ export interface EvalResult {
   trace?: PolicyEvaluationTrace;
   /** Policy-specified intervention override (from the matched deny rule, if any) */
   policyIntervention?: 'pause' | 'rollback' | 'deny' | 'modify';
+  /** Human-readable suggestion explaining the violation (from matched rule) */
+  suggestion?: string;
+  /** Corrected command the agent could run instead (from matched rule) */
+  correctedCommand?: string;
   /** Security warning when the evaluation outcome may indicate a configuration risk */
   warning?: string;
 }
@@ -473,6 +481,8 @@ export function evaluate(
           reason: rule.reason || `Denied by policy "${policy.name}"`,
           severity: policy.severity,
           policyIntervention: rule.intervention,
+          suggestion: rule.suggestion,
+          correctedCommand: rule.correctedCommand,
           trace: {
             rulesEvaluated,
             totalRulesChecked: rulesEvaluated.length,
@@ -528,6 +538,8 @@ export function evaluate(
           matchedPolicy: policy,
           reason: rule.reason || `Allowed by policy "${policy.name}"`,
           severity: 0,
+          suggestion: rule.suggestion,
+          correctedCommand: rule.correctedCommand,
           trace: {
             rulesEvaluated,
             totalRulesChecked: rulesEvaluated.filter((r) => r.outcome !== 'skipped').length,

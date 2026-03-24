@@ -394,3 +394,145 @@ rules:
     expect(result.rules![0].requireFormat).toBe(true);
   });
 });
+
+describe('suggestion and correctedCommand parsing', () => {
+  it('parses suggestion from YAML rule', () => {
+    const yaml = `
+id: guide-policy
+name: Guide Policy
+severity: 3
+rules:
+  - action: git.push
+    effect: deny
+    reason: Force push is dangerous
+    suggestion: Use a non-destructive push instead
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(1);
+    expect(result.rules![0].suggestion).toBe('Use a non-destructive push instead');
+  });
+
+  it('parses correctedCommand from YAML rule', () => {
+    const yaml = `
+id: guide-policy
+name: Guide Policy
+severity: 3
+rules:
+  - action: git.push
+    effect: deny
+    reason: Force push is dangerous
+    correctedCommand: git push --force-with-lease
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(1);
+    expect(result.rules![0].correctedCommand).toBe('git push --force-with-lease');
+  });
+
+  it('parses both suggestion and correctedCommand together', () => {
+    const yaml = `
+id: guide-policy
+name: Guide Policy
+severity: 3
+rules:
+  - action: git.push
+    effect: deny
+    reason: Force push is dangerous
+    suggestion: Use --force-with-lease for safer force pushes
+    correctedCommand: git push --force-with-lease origin main
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.rules).toHaveLength(1);
+    expect(result.rules![0].suggestion).toBe(
+      'Use --force-with-lease for safer force pushes',
+    );
+    expect(result.rules![0].correctedCommand).toBe(
+      'git push --force-with-lease origin main',
+    );
+  });
+
+  it('propagates suggestion and correctedCommand to LoadedPolicy rules', () => {
+    const yaml = `
+id: guide-policy
+name: Guide Policy
+severity: 3
+rules:
+  - action: git.push
+    effect: deny
+    reason: Force push is dangerous
+    suggestion: Use --force-with-lease instead
+    correctedCommand: git push --force-with-lease
+`;
+    const policy = loadYamlPolicy(yaml);
+    expect(policy.rules).toHaveLength(1);
+    expect(policy.rules[0].suggestion).toBe('Use --force-with-lease instead');
+    expect(policy.rules[0].correctedCommand).toBe('git push --force-with-lease');
+  });
+
+  it('leaves suggestion and correctedCommand undefined when not set', () => {
+    const yaml = `
+rules:
+  - action: git.push
+    effect: deny
+    reason: No pushing
+`;
+    const policy = loadYamlPolicy(yaml);
+    expect(policy.rules[0].suggestion).toBeUndefined();
+    expect(policy.rules[0].correctedCommand).toBeUndefined();
+  });
+});
+
+describe('EnforcementMode parsing', () => {
+  it('parses mode: educate', () => {
+    const yaml = `
+id: test
+name: Test
+mode: educate
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.mode).toBe('educate');
+  });
+
+  it('parses mode: guide', () => {
+    const yaml = `
+id: test
+name: Test
+mode: guide
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.mode).toBe('guide');
+  });
+
+  it('parses per-invariant educate and guide modes', () => {
+    const yaml = `
+id: test
+name: Test
+mode: educate
+invariants:
+  no-secret-exposure: enforce
+  protected-branch: guide
+  no-force-push: educate
+`;
+    const result = parseYamlPolicy(yaml);
+    expect(result.invariantModes).toEqual({
+      'no-secret-exposure': 'enforce',
+      'protected-branch': 'guide',
+      'no-force-push': 'educate',
+    });
+  });
+
+  it('surfaces educate/guide modes in LoadedPolicy', () => {
+    const yaml = `
+id: test-policy
+name: Test Policy
+mode: guide
+invariants:
+  no-force-push: educate
+rules:
+  - action: file.read
+    effect: allow
+`;
+    const policy = loadYamlPolicy(yaml);
+    expect(policy.mode).toBe('guide');
+    expect(policy.invariantModes).toEqual({ 'no-force-push': 'educate' });
+  });
+});
