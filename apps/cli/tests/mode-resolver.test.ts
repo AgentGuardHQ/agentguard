@@ -7,9 +7,9 @@ describe('resolveInvariantMode', () => {
     expect(resolveInvariantMode('no-force-push', config)).toBe('monitor');
   });
 
-  it('defaults to monitor when mode is absent', () => {
+  it('defaults to enforce when mode is absent', () => {
     const config: ModeConfig = {};
-    expect(resolveInvariantMode('no-force-push', config)).toBe('monitor');
+    expect(resolveInvariantMode('no-force-push', config)).toBe('enforce');
   });
 
   it('returns enforce when top-level mode is enforce', () => {
@@ -66,5 +66,46 @@ describe('resolveInvariantMode', () => {
       invariantModes: { 'no-force-push': 'monitor' },
     };
     expect(resolveInvariantMode('blast-radius-limit', config)).toBe('enforce');
+  });
+
+  // --- Four-mode tests (educate + guide) ---
+
+  it('guide mode works as top-level', () => {
+    const config: ModeConfig = { mode: 'guide' };
+    expect(resolveInvariantMode('no-force-push', config)).toBe('guide');
+  });
+
+  it('educate mode works as top-level', () => {
+    const config: ModeConfig = { mode: 'educate' };
+    expect(resolveInvariantMode('no-force-push', config)).toBe('educate');
+  });
+
+  it('per-invariant guide overrides top-level enforce', () => {
+    const config: ModeConfig = {
+      mode: 'enforce',
+      invariantModes: { 'no-force-push': 'guide' },
+    };
+    expect(resolveInvariantMode('no-force-push', config)).toBe('guide');
+  });
+
+  it('per-invariant educate overrides top-level monitor', () => {
+    const config: ModeConfig = {
+      mode: 'monitor',
+      invariantModes: { 'no-force-push': 'educate' },
+    };
+    expect(resolveInvariantMode('no-force-push', config)).toBe('educate');
+  });
+
+  it('hardcoded no-secret-exposure stays enforce even with guide mode', () => {
+    const config: ModeConfig = {
+      mode: 'guide',
+      invariantModes: { 'no-secret-exposure': 'guide' },
+    };
+    expect(resolveInvariantMode('no-secret-exposure', config)).toBe('enforce');
+  });
+
+  it('policy rule denial (null invariantId) uses guide mode', () => {
+    const config: ModeConfig = { mode: 'guide' };
+    expect(resolveInvariantMode(null, config)).toBe('guide');
   });
 });
