@@ -25,16 +25,18 @@ AI coding agents (Claude Code, GitHub Copilot, any MCP client) run autonomously 
 npm install -g @red-codes/agentguard
 cd your-project
 agentguard claude-init
-# Interactive wizard: choose monitor/enforce mode and a policy pack
+# Interactive wizard: choose enforcement mode and a policy pack
 # → Creates agentguard.yaml, installs Claude Code hooks, and activates governance
 ```
 
 The `claude-init` wizard walks you through setup interactively:
 
 ```
-  Start in monitor mode or enforce mode?
-    ❯ 1) Monitor — log threats, don't block (recommended)
-      2) Enforce — block dangerous actions immediately
+  Choose an enforcement mode:
+    ❯ 1) Monitor  — log threats, don't block (recommended to start)
+      2) Educate  — log + explain why the action was flagged
+      3) Guide    — log + suggest a corrected command
+      4) Enforce  — block dangerous actions immediately
 
   Enable a policy pack?
     ❯ 1) essentials — secrets, force push, protected branches, credentials
@@ -61,7 +63,7 @@ echo '{"tool":"Bash","command":"git push origin main"}' | agentguard guard --dry
 Non-interactive setup (CI or scripted installs):
 
 ```bash
-agentguard claude-init --mode monitor --pack essentials
+agentguard claude-init --mode guide --pack essentials
 ```
 
 ## Cloud Dashboard
@@ -111,7 +113,7 @@ Drop `agentguard.yaml` in your repo root. It's picked up automatically.
 ### Minimal policy
 
 ```yaml
-mode: monitor      # monitor (warn) or enforce (block)
+mode: guide        # monitor | educate | guide | enforce
 pack: essentials   # curated invariant profile
 
 rules:
@@ -119,6 +121,41 @@ rules:
     effect: deny
     branches: [main, master]
     reason: Protected branch — use a PR
+```
+
+### Enforcement Modes
+
+Four enforcement modes control how AgentGuard responds to policy violations:
+
+| Mode | Blocks? | Suggests? | Behavior |
+|------|---------|-----------|----------|
+| `monitor` | No | No | Log only — observe violations without interfering |
+| `educate` | No | Yes | Log + attach a `suggestion` explaining the violation |
+| `guide` | No | Yes | Log + attach a `suggestion` with a `correctedCommand` when possible |
+| `enforce` | Yes | No | Deny the action outright |
+
+Set the mode globally and override per-invariant:
+
+```yaml
+mode: guide                  # global default
+
+invariants:
+  no-secret-exposure: enforce   # always block secrets (hardcoded)
+  blast-radius-limit: educate   # explain but don't suggest a fix
+  no-force-push: guide          # suggest the safe alternative
+```
+
+In `educate` and `guide` modes, denied decisions include a `suggestion` field:
+
+```json
+{
+  "effect": "deny",
+  "mode": "guide",
+  "suggestion": {
+    "message": "Force push is not allowed on protected branches",
+    "correctedCommand": "git push origin main"
+  }
+}
 ```
 
 ### Full schema reference
@@ -133,7 +170,7 @@ version: "1.0.0"
 agentguardVersion: ">=2.3.0"  # minimum AgentGuard version
 
 # Enforcement mode
-mode: enforce                 # monitor | enforce
+mode: enforce                 # monitor | educate | guide | enforce
 
 # Policy pack (curated invariant profiles)
 pack: essentials              # essentials | strict | or a named pack
@@ -308,7 +345,7 @@ AgentGuard Kernel
 # Setup (interactive wizard)
 agentguard claude-init                    # Interactive wizard: mode + pack → creates policy + hooks
 agentguard claude-init --global           # Install hooks globally (~/.claude/settings.json)
-agentguard claude-init --mode monitor --pack essentials  # Non-interactive setup
+agentguard claude-init --mode guide --pack essentials  # Non-interactive setup
 agentguard claude-init                    # Also installs pre-push hooks for branch protection
 agentguard init --template strict         # Scaffold policy from a template
 agentguard status                         # Show governance status
