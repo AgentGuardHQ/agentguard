@@ -16,9 +16,13 @@ runtime/replay/*
 .agentguard/*
 !.agentguard/events/.gitkeep
 !.agentguard/decisions/.gitkeep
+!.agentguard/squad-manifest.yaml
+!.agentguard/squads/
 **/.agentguard/*
 !**/.agentguard/events/.gitkeep
 !**/.agentguard/decisions/.gitkeep
+!**/.agentguard/squad-manifest.yaml
+!**/.agentguard/squads/
 logs/*
 !logs/.gitkeep
 **/logs/runtime-events.jsonl
