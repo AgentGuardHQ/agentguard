@@ -16,6 +16,8 @@ import { posix } from 'node:path';
  * Symlink resolution is an execution-time concern handled by adapters.
  */
 export function canonicalizePath(filePath: string): string {
+  if (!filePath) return '';
+
   // 1. Reject null bytes — these can truncate paths in C-level APIs
   if (filePath.includes('\0')) {
     return '';
@@ -28,6 +30,11 @@ export function canonicalizePath(filePath: string): string {
   } catch {
     // Invalid percent-encoding — use the raw string
     p = filePath;
+  }
+
+  // Re-check for null bytes after decoding (e.g. %00 → \0)
+  if (p.includes('\0')) {
+    return '';
   }
 
   // 3. Normalize path separators (Windows backslash → forward slash)

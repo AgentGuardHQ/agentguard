@@ -63,7 +63,7 @@ export class PolicyMatcher {
     if (!normalized) return false;
 
     for (const pattern of scopePatterns) {
-      // Canonicalize pattern (separators + traversal only, no URL-decoding for patterns)
+      // Normalize pattern separators (backslash → forward slash)
       const normalizedPattern = pattern.replace(/\\/g, '/');
 
       // Wildcard matches everything
