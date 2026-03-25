@@ -71,3 +71,84 @@ export interface ScaffoldedAgent {
   readonly description: string;
   readonly prompt: string;
 }
+
+// --- Squad hierarchy types ---
+
+export type SquadRank = 'director' | 'em' | 'product-lead' | 'architect' | 'senior' | 'junior' | 'qa';
+export type AgentDriver = 'claude-code' | 'copilot-cli';
+export type AgentModel = 'opus' | 'sonnet' | 'haiku' | 'copilot';
+
+export interface SquadAgent {
+  readonly id: string;
+  readonly rank: SquadRank;
+  readonly driver: AgentDriver;
+  readonly model: AgentModel;
+  readonly cron: string;
+  readonly skills: readonly string[];
+}
+
+export interface Squad {
+  readonly name: string;
+  readonly repo: string;       // repo name or '*' for cross-repo
+  readonly em: SquadAgent;
+  readonly agents: Readonly<Record<string, SquadAgent>>;
+}
+
+export interface SquadManifest {
+  readonly version: string;
+  readonly org: {
+    readonly director: SquadAgent;
+  };
+  readonly squads: Readonly<Record<string, Squad>>;
+  readonly loopGuards: LoopGuardConfig;
+}
+
+export interface LoopGuardConfig {
+  readonly maxOpenPRsPerSquad: number;
+  readonly maxRetries: number;
+  readonly maxBlastRadius: number;
+  readonly maxRunMinutes: number;
+}
+
+export interface SquadState {
+  readonly squad: string;
+  readonly sprint: {
+    readonly goal: string;
+    readonly issues: readonly string[];
+  };
+  readonly assignments: Readonly<Record<string, {
+    readonly current: string | null;
+    readonly status: string;
+    readonly waiting?: string;
+  }>>;
+  readonly blockers: readonly string[];
+  readonly prQueue: {
+    readonly open: number;
+    readonly reviewed: number;
+    readonly mergeable: number;
+  };
+  readonly updatedAt: string;
+}
+
+export interface EMReport {
+  readonly squad: string;
+  readonly timestamp: string;
+  readonly health: 'green' | 'yellow' | 'red';
+  readonly summary: string;
+  readonly blockers: readonly string[];
+  readonly escalations: readonly string[];
+  readonly metrics: {
+    readonly prsOpened: number;
+    readonly prsMerged: number;
+    readonly issuesClosed: number;
+    readonly denials: number;
+    readonly retries: number;
+  };
+}
+
+export interface DirectorBrief {
+  readonly timestamp: string;
+  readonly squads: Readonly<Record<string, EMReport>>;
+  readonly escalationsForHuman: readonly string[];
+  readonly overallHealth: 'green' | 'yellow' | 'red';
+}
