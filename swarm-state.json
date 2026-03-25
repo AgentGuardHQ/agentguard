@@ -1,58 +1,52 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-03-24T16:05:00Z",
-  "updatedBy": "risk-escalation-agent",
+  "updatedAt": "2026-03-25T13:10:00Z",
+  "updatedBy": "progress-controller-agent",
   "mode": "normal",
-  "recommendedMode": "elevated",
-  "modeReason": "Recommending ELEVATED mode: (1) PR queue expanded from 3 to 8 open PRs — review throughput not keeping pace with agent output; (2) PR #822 (v3.0 release prep) is CONFLICTING — needs human rebase; (3) PR #814 (subagent identity, 270 additions, 7 files) is a high-blast-radius feature PR with no review; (4) 10 HIGH-priority issues remain open including security bypass vectors (#618 credential bypass, #648 read-only blocking, #815 default-deny); (5) Composite risk score 23/100, above NORMAL threshold of 20. No CI failures on main, but growing queue and persistent security gaps warrant caution.",
+  "recommendedMode": "normal",
+  "modeReason": "PR queue drained to 0 (down from 8). Main CI green. Phase 6 and KE-3 completed. No merge conflicts. Risk score dropped from 23 to 10. Backlog expansion rate 1.11x (stable). No stalled phases.",
   "riskAssessment": {
-    "compositeScore": 23,
-    "escalationLevel": "ELEVATED",
-    "assessedAt": "2026-03-24T16:05:00Z",
+    "compositeScore": 10,
+    "escalationLevel": "NORMAL",
+    "assessedAt": "2026-03-25T13:10:00Z",
     "dimensions": {
       "prBlastRadius": {
-        "score": 10,
+        "score": 0,
         "max": 25,
-        "openPRs": 8,
-        "conflictedPRs": 1,
-        "labeledHighBlastRadius": ["#814"],
-        "note": "8 open PRs (up from 3 on Mar 22). Largest: #823 (303+62 lines, 5 files, docs), #814 (270+20 lines, 7 files, feature — labeled blast-radius:high). #822 CONFLICTING (labeled conflict:needs-human). Queue growing faster than review throughput. Most PRs are docs/chore but #814 is a multi-package feature change without review."
+        "openPRs": 0,
+        "conflictedPRs": 0,
+        "note": "PR queue empty. All 8 PRs from prior assessment have been merged or closed. Healthy state."
       },
       "testFailureRate": {
         "score": 2,
         "max": 25,
-        "ciRunsAnalyzed": 20,
-        "failures": 1,
-        "failureRate": "5% (1 transient failure out of 20 runs)",
-        "note": "1 CI failure on feat/subagent-identity at 03:33Z — succeeded on retry at 04:09Z (transient). All 8 open PRs have green CI. Issue #723 (identity gate regression) still open but functionally resolved. No persistent test failures."
+        "note": "Main branch CI green. No persistent test failures. Issue #868 (agent PRs merging with failing CI) is open as a governance enforcement gap but not a current regression."
       },
       "governanceDenialRate": {
-        "score": 7,
+        "score": 5,
         "max": 25,
-        "highPriorityIssuesOpen": 10,
-        "securityBypassVectors": ["#618 (credential bypass)", "#648 (read-only blocking)", "#815 (default-deny/fail-open)"],
-        "newSinceLastAssessment": ["#829 (pin GH Actions to SHA)", "#830 (required status checks)", "#815 (default-deny)", "#817 (KE-2 action context)"],
-        "note": "10 HIGH-priority issues open. Persistent security bypass vectors (#618, #648) still without assigned PRs. New supply-chain hardening issues created (#829, #830). #815 formalizes the fail-open evaluator gap (previously #638). No new runtime governance denials, but attack surface remains. Score up from 5 to 7 due to expanded issue count."
+        "highPriorityIssuesOpen": 8,
+        "securityBypassVectors": ["#618 (credential write bypass)", "#648 (read-only blocking)", "#640 (path manipulation)", "#639 (credential stripping)"],
+        "note": "8 HIGH-priority issues open (down from 10). #815 (default-deny) RESOLVED via PR #879. Security issues #618, #648, #640, #639 remain without assigned PRs."
       },
       "mergeConflictRate": {
-        "score": 4,
+        "score": 0,
         "max": 25,
-        "conflictedPRs": 1,
-        "openPRs": 8,
-        "conflictRate": "12.5%",
-        "note": "1 conflicted PR: #822 (v3.0 release prep, CONFLICTING — labeled conflict:needs-human). 7 other PRs MERGEABLE. Not a cascade but #822 is a release-critical PR that needs human rebase before v3.0 can ship."
+        "conflictedPRs": 0,
+        "openPRs": 0,
+        "note": "No open PRs, no conflicts. Clean state."
       }
     },
     "deltaFromPrior": {
-      "priorScore": 13,
-      "currentScore": 23,
-      "delta": 10,
-      "direction": "elevated",
-      "cause": "PR queue grew from 3 to 8 (+5 open PRs in 2 days). New conflict on #822 (v3.0 release prep). 4 new HIGH-priority issues created. No merges in 2 days while agent output continued — queue accumulation. Recommending ELEVATED mode until queue drains below 5 PRs and conflict resolves."
+      "priorScore": 23,
+      "currentScore": 10,
+      "delta": -13,
+      "direction": "improved",
+      "cause": "PR queue drained 8→0. Conflict on #822 resolved. Default-deny (#815) shipped via PR #879. KE-3 completed. Phase 6 completed. Risk profile significantly improved."
     }
   },
   "phaseTracking": {
-    "assessedAt": "2026-03-22T15:20:00Z",
+    "assessedAt": "2026-03-25T13:10:00Z",
     "completedPhases": [
       { "phase": "Phase 0", "name": "Architecture Clarity", "status": "STABLE", "completion": 1.0, "checkboxes": "6/6" },
       { "phase": "Phase 1", "name": "Canonical Event Model", "status": "STABLE", "completion": 1.0, "checkboxes": "8/8" },
@@ -60,336 +54,189 @@
       { "phase": "Phase 3", "name": "Event Persistence + Replay", "status": "STABLE", "completion": 1.0, "checkboxes": "9/9" },
       { "phase": "Phase 4", "name": "Plugin Ecosystem", "status": "STABLE", "completion": 1.0, "checkboxes": "5/5" },
       { "phase": "Phase 6.5", "name": "Invariant Expansion", "status": "STABLE", "completion": 1.0, "checkboxes": "11/11" },
-      { "phase": "KE-1", "name": "Invariant Engine Evolution", "status": "DONE", "completion": 1.0, "checkboxes": "6/6", "shippedAt": "2026-03-21" }
+      { "phase": "KE-1", "name": "Invariant Engine Evolution", "status": "DONE", "completion": 1.0, "checkboxes": "6/6", "shippedAt": "2026-03-21" },
+      { "phase": "KE-3", "name": "Governance Event Envelope", "status": "DONE", "completion": 1.0, "checkboxes": "5/5", "shippedAt": "2026-03-24" },
+      { "phase": "Phase 6", "name": "Reference Monitor Hardening", "status": "DONE", "completion": 1.0, "checkboxes": "7/7", "completedAt": "2026-03-24", "note": "All 7 roadmap items complete. Default-deny shipped 2026-03-24. PAUSE/ROLLBACK enforced 2026-03-18. Performance benchmark gate operational. Commit scope guard (#22) shipped v2.5.0." }
     ],
     "activePhases": [
-      {
-        "phase": "Phase 5",
-        "name": "Editor Integrations",
-        "status": "IN PROGRESS",
-        "completion": 0.60,
-        "checkboxes": "3/5",
-        "openIssues": [
-          { "number": 310, "title": "ROADMAP: JetBrains plugin (IntelliJ/WebStorm)", "status": "in-progress", "lastUpdated": "2026-03-18" },
-          { "number": 331, "title": "ROADMAP: Claude Code deep integration", "status": "in-progress", "lastUpdated": "2026-03-17" }
-        ],
-        "stallWarning": true,
-        "stallNote": "Both open items (#310, #331) marked in-progress but no new PR activity. Now 4 days without progress on #310, 5 days on #331. Stall threshold (14 days) not reached yet. Monitor closely.",
-        "transitionReady": false
-      },
-      {
-        "phase": "Phase 6",
-        "name": "Reference Monitor Hardening",
-        "status": "IN PROGRESS",
-        "completion": 0.75,
-        "checkboxes": "6/8",
-        "remaining": [
-          "Default-deny unknown actions in policy evaluator (evaluator.ts fail-open) — issue #638",
-          "Enforce intervention types beyond DENY (PAUSE/ROLLBACK behaviors) — issue #608"
-        ],
-        "openIssues": [
-          { "number": 638, "title": "HIGH: Policy evaluator fail-open mode", "severity": "high", "hasAssignedPR": false },
-          { "number": 608, "title": "ROADMAP: Enforce non-DENY intervention types", "severity": "medium", "hasAssignedPR": false },
-          { "number": 637, "title": "HIGH: AAB regex-based detection bypassable", "severity": "high", "hasAssignedPR": false },
-          { "number": 618, "title": "Claude hook: Bash tool bypasses credential write protection", "severity": "high", "hasAssignedPR": false, "label": "needs:refinement" }
-        ],
-        "closedIssues": [
-          { "number": 647, "title": "Protected branch bypass regression", "severity": "critical", "closedAt": "2026-03-22", "note": "CLOSED — was primary Phase 6 mode blocker" },
-          { "number": 636, "title": "CRITICAL: File adapter path traversal protection", "severity": "critical", "closedAt": "2026-03-22", "note": "CLOSED — resolved via another approach; PR #670 closed without merge" },
-          { "number": 627, "title": "refspec syntax bypasses protected branch", "severity": "high", "closedAt": "2026-03-22", "note": "RESOLVED — PR #724 merged (fix/issue-627-refspec-branch-extraction)" }
-        ],
-        "transitionReady": false,
-        "blockingReason": "Phase 6 cannot complete while fail-open evaluator (#638) remains unaddressed. All critical regressions resolved. #627 closed via merged PR #724."
-      },
       {
         "phase": "KE Sprint",
         "name": "Kernel Evolution Sprint",
         "status": "IN PROGRESS",
         "kePhases": {
           "KE-1": { "status": "DONE", "completion": 1.0, "checkboxes": "6/6", "shippedAt": "2026-03-21" },
-          "KE-2": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/4", "trackingIssue": 685 },
-          "KE-3": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/4", "trackingIssue": 686 },
-          "KE-4": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/5", "trackingIssue": 687 },
-          "KE-5": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/6" },
-          "KE-6": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/5" }
+          "KE-2": { "status": "IN PROGRESS", "completion": 0.0, "checkboxes": "0/4", "trackingIssue": 856, "note": "ActionContext design — in-progress, priority:high, last updated 2026-03-25" },
+          "KE-3": { "status": "DONE", "completion": 1.0, "checkboxes": "5/5", "shippedAt": "2026-03-24" },
+          "KE-4": { "status": "IN REVIEW", "completion": 0.0, "checkboxes": "0/5", "trackingIssue": 687, "note": "Plane Separation — status:review, last updated 2026-03-24" },
+          "KE-5": { "status": "IN PROGRESS", "completion": 0.0, "checkboxes": "0/6", "trackingIssue": 716, "note": "Semantic CLI Expansion — in-progress" },
+          "KE-6": { "status": "PLANNED", "completion": 0.0, "checkboxes": "0/5", "trackingIssue": 717 }
         },
-        "overallCompletion": 0.20,
-        "checkboxes": "6/30",
-        "note": "KE-1 shipped. KE-2, KE-3, KE-4 tracking issues created 2026-03-21. KE Sprint must complete before Phase 7 can fully execute."
+        "overallCompletion": 0.37,
+        "checkboxes": "11/30",
+        "note": "KE-1 and KE-3 complete. KE-2 is the critical path for v3.0. KE-4 in review. Sprint at 37% (up from 20%)."
       },
       {
-        "phase": "Phase 10",
-        "name": "Structured Storage Backend",
+        "phase": "v3.0",
+        "name": "v3.0 Major Release",
+        "status": "BLOCKED",
+        "completion": 0.0,
+        "checkboxes": "0/8",
+        "blockedBy": "KE-2 (ActionContext) must ship before v3.0 item 1 can be checked",
+        "openIssues": [
+          { "number": 857, "title": "Stranger test validation", "status": "pending", "priority": "high" },
+          { "number": 858, "title": "User capture funnel", "status": "pending", "priority": "high" }
+        ],
+        "transitionReady": false
+      },
+      {
+        "phase": "Phase 9",
+        "name": "Editor & Agent Integrations",
         "status": "IN PROGRESS",
-        "completion": 0.67,
-        "checkboxes": "8/12",
-        "remaining": [
-          "Migration utility for existing .jsonl files into SQLite",
-          "Migration v2: action_type + severity columns",
-          "Composite index (kind, timestamp)",
-          "Standalone index on decisions.action_type"
+        "completion": 0.25,
+        "checkboxes": "2/8",
+        "openIssues": [
+          { "number": 331, "title": "Claude Code deep integration", "status": "in-progress", "lastUpdated": "2026-03-25" }
         ],
         "transitionReady": false
       }
     ],
     "plannedPhases": [
-      { "phase": "Phase 7", "name": "Capability-Scoped Sessions", "completion": 0.22, "checkboxes": "2/9", "note": "ROADMAP discrepancy: 'Wire AgentRole to enforcement' shipped in PR #674 but not yet checked in ROADMAP." },
-      { "phase": "Phase 8", "name": "Policy Ecosystem", "completion": 0.71, "checkboxes": "5/7", "note": "Close to STABLE. Blocked by policy provider interface and remediation mode." },
-      { "phase": "Phase 9", "name": "Agent Integrations", "completion": 0.43, "checkboxes": "3/7", "openIssues": [331, 223] },
-      { "phase": "Phase 11", "name": "Runtime Tracing & Observability", "completion": 0.50, "checkboxes": "3/6" },
-      { "phase": "Phase 12", "name": "CI/CD Enforcement", "completion": 0.40, "checkboxes": "2/5" },
-      { "phase": "Phases 13-18", "completion": "0-15%", "note": "Aspirational/research-grade — not yet started" }
+      { "phase": "Phase 6.5 (new)", "name": "Pull-Based Runner", "completion": 0.0, "checkboxes": "0/10", "note": "Depends on v3.0 release + Cloud Phase 2A", "issues": [748, 751, 752] },
+      { "phase": "Phase 6.75", "name": "Studio Runtime", "completion": 0.0, "checkboxes": "0/3", "note": "Depends on v3.0 stranger test" },
+      { "phase": "Phase 7", "name": "Capability-Scoped Sessions", "completion": 0.0, "checkboxes": "0/6", "note": "Depends on Phase 6 (DONE) + KE-2", "issues": [728] },
+      { "phase": "Phase 8", "name": "Policy Ecosystem", "completion": 0.29, "checkboxes": "2/7", "issues": [729] },
+      { "phase": "Phase 10-11", "name": "Storage & Observability", "completion": 0.0, "checkboxes": "0/4", "issues": [727] },
+      { "phase": "Phase 12", "name": "CI/CD Enforcement", "completion": 0.40, "checkboxes": "2/5", "issues": [131] },
+      { "phase": "Phases 13-18", "name": "Advanced Research", "completion": 0.0, "checkboxes": "0/7" },
+      { "phase": "Go Kernel", "name": "Go Kernel Rewrite", "completion": 0.0, "checkboxes": "0/5" }
     ],
-    "roadmapDiscrepancies": [
+    "milestones": [
       {
-        "phase": "Phase 7",
-        "item": "Wire existing AgentRole and RoleDefinition types to enforcement layer",
-        "status": "shipped",
-        "evidence": "PR #674 (feat(issue-185): wire AgentRole to enforcement layer) merged 2026-03-21T04:13:01Z",
-        "action": "ROADMAP item should be checked — backlog steward or documentation agent should update"
+        "event": "PHASE_COMPLETED",
+        "phase": "Phase 6",
+        "name": "Reference Monitor Hardening",
+        "detectedAt": "2026-03-25T13:10:00Z",
+        "significance": "Phase 6 completion transforms AgentGuard from advisory interception to mandatory execution control. Default-deny is now the baseline. This unlocks KE-2 and v3.0 work."
+      },
+      {
+        "event": "KE_PHASE_COMPLETED",
+        "phase": "KE-3",
+        "name": "Governance Event Envelope",
+        "detectedAt": "2026-03-25T13:10:00Z",
+        "significance": "All telemetry now follows versioned schema. Cloud ingestion consumes envelopes directly with zero special cases."
       }
     ]
   },
   "backlogExpansionRate": {
-    "assessedAt": "2026-03-22T15:20:00Z",
-    "openImplementationIssues": 28,
-    "recentlyCreated": [
-      { "number": 723, "title": "fix(tests): identity gate causes cli-claude-hook + identity tests to fail in CI", "note": "Open but functionally resolved by #715 (wizard prompt replaced hard gate). PRs passing CI. Should be closed." }
-    ],
-    "recentlyClosed": [
-      { "number": 627, "title": "refspec syntax bypasses protected branch", "mergedPR": 724, "note": "Closed via merged PR #724" }
-    ],
+    "assessedAt": "2026-03-25T13:10:00Z",
+    "totalOpenIssues": 97,
+    "openWorkIssues": 89,
+    "last7Days": {
+      "created": 146,
+      "closed": 131,
+      "netExpansion": 15,
+      "expansionRatio": 1.11
+    },
     "expansionTrend": "stable",
-    "note": "Steady implementation progress. Issue #723 should be closed by human or CI-triage-agent — it's functionally resolved."
+    "note": "Backlog expanding at 1.11x rate (146 created vs 131 closed in 7 days). Most created issues are recurring agent reports (sprint plans, observability, governance reports) that get auto-closed. Net work issue expansion is modest. 97 total open issues, 89 non-report work items."
   },
   "stallDetection": {
     "stalledPhases": [],
-    "warningPhases": [
-      {
-        "phase": "Phase 5",
-        "name": "Editor Integrations",
-        "lastProgressAt": "2026-03-18",
-        "daysSinceProgress": 4,
-        "threshold": 14,
-        "note": "JetBrains plugin (#310) last updated 4 days ago, Claude Code deep integration (#331) last updated 5 days ago. No PRs in flight. Still within monitoring window (stall at 14 days). Alert if no activity by 2026-04-04.",
-        "recommendation": "If no PR activity on #310 or #331 by 2026-04-04, flag as stalled and escalate."
-      }
-    ]
+    "warningPhases": [],
+    "note": "No phases have exceeded the 14-day stall threshold. Phase 6 and KE-3 both completed in the last 24 hours. KE-2 (#856) is actively in-progress (updated today). Phase 9 (#331) updated 2026-03-25."
   },
   "healthChecks": {
     "prQueue": {
-      "status": "warning",
-      "openPRs": 8,
-      "conflictedPRs": 1,
-      "stuckPRs": 0,
-      "ciFailingPRs": 0,
-      "note": "8 open PRs — queue accumulation pattern. 0 merges in 2 days while agents continued producing PRs. 1 conflict (#822). 1 high-blast-radius feature PR (#814, labeled). All CI green. Fast-merge candidates: #820 (11 additions), #821 (20 additions), #818 (25 additions).",
-      "details": [
-        {
-          "number": 835,
-          "title": "fix(postinstall): use npx --no-install in generated hook commands",
-          "mergeable": true,
-          "ciStatus": "all-green",
-          "blastRadius": "small",
-          "additions": 108,
-          "deletions": 9,
-          "changedFiles": 3
-        },
-        {
-          "number": 834,
-          "title": "chore: recovery controller — refresh swarm state (2026-03-24)",
-          "mergeable": true,
-          "ciStatus": "all-green",
-          "blastRadius": "medium",
-          "additions": 200,
-          "deletions": 121,
-          "changedFiles": 1
-        },
-        {
-          "number": 823,
-          "title": "docs: sync with KE-2, KE-3, Copilot CLI parity, and postinstall auto-setup",
-          "mergeable": true,
-          "ciStatus": "all-green",
-          "blastRadius": "medium",
-          "additions": 303,
-          "deletions": 62,
-          "changedFiles": 5
-        },
-        {
-          "number": 822,
-          "title": "feat(issue-749): v3.0 release prep — site update, version bump",
-          "mergeable": false,
-          "ciStatus": "all-green",
-          "blastRadius": "small",
-          "additions": 81,
-          "deletions": 11,
-          "changedFiles": 3,
-          "labels": ["conflict:needs-human"],
-          "note": "CONFLICTING — needs human rebase. Release-critical for v3.0."
-        },
-        {
-          "number": 814,
-          "title": "feat: fix subagent identity resolution + hierarchical run support",
-          "mergeable": true,
-          "ciStatus": "all-green",
-          "blastRadius": "high",
-          "additions": 270,
-          "deletions": 20,
-          "changedFiles": 7,
-          "labels": ["blast-radius:high"],
-          "note": "Multi-package feature PR. 7 files changed. No review. Requires governance review before merge."
-        }
-      ]
+      "status": "healthy",
+      "openPRs": 0,
+      "conflictedPRs": 0,
+      "note": "PR queue empty. Significant improvement from 8 open PRs on 2026-03-24. All PRs merged or closed."
     },
     "ciOnMain": {
       "status": "healthy",
-      "note": "Main branch CI green. 1 transient failure on feat/subagent-identity (03:33Z) resolved on retry (04:09Z). All current PR CIs passing."
+      "note": "Main branch CI green. Most recent merge: PR #879 (fix: close write-then-execute governance bypass #862)."
     },
     "agentLiveness": {
       "status": "active",
-      "note": "Multiple agents active 2026-03-24: postinstall fix (#835), recovery controller (#834), docs sync (#823), backlog triage (#820). Swarm producing PRs at steady rate. Review throughput is the bottleneck."
+      "note": "Multiple agents active today: backlog steward, planning agent, observability agent, product agent, marketing agent. Swarm operational."
     },
     "mergeConflicts": {
-      "status": "warning",
-      "conflictedPRs": 1,
-      "note": "PR #822 (v3.0 release prep) is CONFLICTING. Labeled conflict:needs-human. Not yet a cascade but growing PR queue increases conflict risk for other PRs."
+      "status": "healthy",
+      "conflictedPRs": 0,
+      "note": "No open conflicts. PR #822 conflict from prior report has been resolved."
     },
     "swarmStateFreshness": {
-      "status": "stale",
-      "note": "Prior update: 2026-03-22T15:20Z (recovery-controller-agent, ~49 hours ago). This update: 2026-03-24T16:05Z (risk-escalation-agent). Cadence gap of 49 hours — should be <24 hours for healthy swarm monitoring."
+      "status": "healthy",
+      "note": "Prior update: 2026-03-24T16:05Z (risk-escalation-agent, ~21 hours ago). This update: 2026-03-25T13:10Z (progress-controller-agent). Cadence within 24-hour target."
     },
     "roadmapProgress": {
-      "status": "active",
-      "completedPhases": 7,
-      "activePhases": 4,
-      "openCriticalIssues": [
-        {
-          "number": 659,
-          "title": "fix(rust): update tool_action_map count assertion after #657",
-          "severity": "priority:critical",
-          "hasAssignedPR": false
-        }
-      ],
-      "newHighPriorityIssues": [
-        { "number": 815, "title": "Default-deny unknown actions (policy evaluator fallback)" },
-        { "number": 817, "title": "KE-2 Canonical Action Normalization — ActionContext contract" },
-        { "number": 829, "title": "Pin all GitHub Actions to SHA digests (supply chain hardening)" },
-        { "number": 830, "title": "Configure required status checks and PR approval on main branch" }
-      ]
+      "status": "milestone",
+      "completedPhases": 9,
+      "activePhases": 3,
+      "note": "Phase 6 and KE-3 completed since last assessment. KE Sprint at 37% (up from 20%). Critical path: KE-2 → v3.0."
     }
   },
   "recoveryActions": [
     {
       "type": "swarm-state-update",
-      "timestamp": "2026-03-21T11:35:00Z",
-      "description": "Updated swarm-state.json: PR #682 now MERGED (progress since 10:30Z), risk score 24→22, open PRs 3→2. Mode unchanged (conservative).",
-      "agent": "recovery-controller-agent"
-    },
-    {
-      "type": "swarm-state-update",
       "timestamp": "2026-03-22T08:30:00Z",
-      "description": "Updated swarm-state.json: Issues #647 and #636 CLOSED, PR #670 closed, risk score 22→8, escalation ELEVATED→NORMAL, mode recommendation conservative→normal. 10 PRs merged today. 1 open PR (#724, MERGEABLE, all CI green).",
+      "description": "Updated swarm-state.json: Issues #647 and #636 CLOSED, risk score 22→8, escalation ELEVATED→NORMAL.",
       "agent": "risk-escalation-agent"
-    },
-    {
-      "type": "mode-change",
-      "timestamp": "2026-03-22T12:00:00Z",
-      "description": "Mode changed conservative→normal. Accepted risk-escalation-agent recommendation from 08:30Z. PR #724 merged (issue #627 resolved). Main CI healthy. 1 new conflicted PR #731 (needs rebase, not stuck). No critical blockers.",
-      "agent": "recovery-controller-agent"
-    },
-    {
-      "type": "pr-closed",
-      "timestamp": "2026-03-22T15:20:00Z",
-      "description": "Closed PR #735 (chore: recovery controller run 2026-03-22 — mode conservative→normal). Superseded by this run. Both runs reached the same mode conclusion (normal) but this run has a more current assessment.",
-      "agent": "recovery-controller-agent"
-    },
-    {
-      "type": "label-removed",
-      "timestamp": "2026-03-22T15:20:00Z",
-      "description": "Removed stale conflict:needs-human label from PR #731. Conflict was resolved — PR is now MERGEABLE with 5/5 CI checks green. Label break-conflict-cascade remediation.",
-      "agent": "recovery-controller-agent"
-    },
-    {
-      "type": "swarm-state-update",
-      "timestamp": "2026-03-22T15:20:00Z",
-      "description": "Updated swarm-state.json: mode conservative→normal. Risk score 8→13 (3 open PRs including large #731). Overrides unpushed 11:45Z ELEVATED local assessment from risk-escalation-agent — current GitHub reality shows all PRs MERGEABLE, CI-green, CI regression #723 functionally resolved. Mode change approved.",
-      "agent": "recovery-controller-agent"
     },
     {
       "type": "risk-assessment",
       "timestamp": "2026-03-24T16:05:00Z",
-      "description": "Risk score 13→23 (NORMAL→ELEVATED). PR queue grew 3→8. #822 CONFLICTING (labeled conflict:needs-human). #814 labeled blast-radius:high. 10 HIGH-priority issues open. Queue accumulation pattern: no merges in 2 days while agents continued producing PRs. Recommending mode normal→elevated.",
+      "description": "Risk score 13→23 (NORMAL→ELEVATED). PR queue grew 3→8. #822 CONFLICTING.",
       "agent": "risk-escalation-agent"
     },
     {
-      "type": "label-added",
-      "timestamp": "2026-03-24T16:05:00Z",
-      "description": "Added blast-radius:high to PR #814 (feat: subagent identity resolution, 270 additions, 7 files, multi-package feature, no review). Added conflict:needs-human to PR #822 (v3.0 release prep, CONFLICTING state).",
-      "agent": "risk-escalation-agent"
+      "type": "progress-assessment",
+      "timestamp": "2026-03-25T13:10:00Z",
+      "description": "Phase 6 COMPLETED (7/7). KE-3 COMPLETED (5/5). KE Sprint 20%→37%. PR queue 8→0. Risk 23→10 (ELEVATED→NORMAL). Mode recommendation: normal.",
+      "agent": "progress-controller-agent"
     }
   ],
   "blockers": [
     {
-      "type": "queue-accumulation",
+      "type": "critical-path",
       "severity": "high",
-      "description": "8 open PRs with 0 merges in 2 days. Agent output exceeding human review throughput. Risk of conflict cascades and stale PRs increasing.",
-      "recommendation": "Prioritize merging reviewed PRs. Consider pausing agent PR creation until queue drops below 5. Triage: #820, #821, #818 are small docs/chore PRs — fast-merge candidates.",
-      "hasAssignedPR": false
-    },
-    {
-      "type": "merge-conflict",
-      "severity": "high",
-      "issueNumbers": [749],
-      "description": "PR #822 (v3.0 release prep) is CONFLICTING. This is a release-critical PR that blocks the v3.0 launch.",
-      "recommendation": "Human rebase required on PR #822. Labeled conflict:needs-human.",
-      "hasAssignedPR": false
+      "description": "KE-2 (ActionContext, #856) is the critical path blocker for v3.0. Currently in-progress with 0/4 checkboxes. v3.0 cannot ship until KE-2 completes.",
+      "recommendation": "Prioritize KE-2 implementation. This is the single most important work item for the project."
     },
     {
       "type": "security",
+      "severity": "medium",
+      "issueNumbers": [618, 648, 640, 639],
+      "description": "4 security issues without assigned PRs: #618 (credential write bypass), #648 (read-only blocking), #640 (path manipulation), #639 (credential stripping).",
+      "recommendation": "Assign implementation agent to highest-severity item (#618)."
+    },
+    {
+      "type": "governance-gap",
       "severity": "high",
-      "issueNumbers": [815, 618, 648, 829, 830],
-      "description": "Persistent security gaps: #815 (default-deny/fail-open evaluator), #618 (credential write bypass), #648 (read-only blocking), #829 (GH Actions not pinned to SHA), #830 (no required status checks on main).",
-      "recommendation": "#815 (default-deny) is the primary Phase 6 blocker. #829 and #830 are supply-chain hardening — high impact, low effort. Assign implementation agent to #815.",
-      "hasAssignedPR": false
-    },
-    {
-      "type": "blast-radius",
-      "severity": "medium",
-      "description": "PR #814 (subagent identity fix, 270 additions, 7 files) is a multi-package feature change with no review. Labeled blast-radius:high.",
-      "recommendation": "Requires governance review before merge. Assign code-review-agent.",
-      "hasAssignedPR": false
-    },
-    {
-      "type": "technical-debt",
-      "severity": "medium",
-      "issueNumber": 659,
-      "description": "Rust test count assertion outdated after #657 — CI will fail for rust-kernel if any agent touches that assertion.",
-      "recommendation": "Fix the count assertion in the rust test file before next KE sprint.",
-      "hasAssignedPR": false
+      "issueNumbers": [868],
+      "description": "Issue #868: Agent PRs merging with failing CI. Governance enforcement gap on main branch. Priority:critical.",
+      "recommendation": "Address #868 and #830 (required status checks) together — both relate to CI enforcement on main."
     }
   ],
   "systemSummary": {
-    "overallHealth": "elevated",
-    "escalationLevel": "ELEVATED",
-    "riskScore": 23,
-    "riskTrend": "rising",
+    "overallHealth": "healthy",
+    "escalationLevel": "NORMAL",
+    "riskScore": 10,
+    "riskTrend": "improving",
     "mainBranchCI": "green",
-    "openPRsCount": 8,
-    "conflictedPRsCount": 1,
+    "openPRsCount": 0,
+    "conflictedPRsCount": 0,
     "stuckPRsCount": 0,
     "ciFailingPRsCount": 0,
-    "criticalIssuesWithoutPR": 0,
-    "criticalIssuesWithPR": 0,
-    "highIssuesWithoutPR": 10,
-    "highIssuesWithPR": 0,
+    "highIssuesWithoutPR": 8,
     "regressionDetected": false,
-    "completedPhaseCount": 7,
-    "activePhaseCount": 4,
-    "progressSinceLastRun": "Risk score 13→23 (NORMAL→ELEVATED). PR queue grew 3→8 open PRs in 2 days. New conflict on #822 (v3.0 release prep). PR #814 labeled blast-radius:high (270 additions, 7 files, multi-package feature). 4 new HIGH-priority issues created (#815, #817, #829, #830). No merges observed in last 2 days while agent output continued — queue accumulation pattern. Main CI remains green. Recommending ELEVATED mode.",
+    "completedPhaseCount": 9,
+    "activePhaseCount": 3,
+    "progressSinceLastRun": "MILESTONE: Phase 6 (Reference Monitor Hardening) COMPLETED — 7/7 checkboxes. KE-3 (Governance Event Envelope) COMPLETED — 5/5 checkboxes. KE Sprint 20%→37%. PR queue 8→0. Risk 23→10 (ELEVATED→NORMAL). Default-deny + commit scope guard shipped. Critical path is now KE-2 → v3.0.",
     "modeChangeConditions": {
-      "toNormal": "PR queue drops below 5 open PRs, conflict on #822 resolves, and no new HIGH-priority security issues for 48 hours.",
-      "toElevated": "CURRENT STATE — risk score 23, 8 open PRs, 1 conflicted, 10 HIGH-priority issues, queue accumulation trend.",
-      "toCritical": "New security regression on main, main CI failure rate >30%, or 2+ unresolved critical issues without PRs, or merge conflict cascade (3+ PRs conflicting)."
+      "toNormal": "CURRENT STATE — risk score 10, 0 open PRs, no conflicts, main CI green.",
+      "toElevated": "Risk score exceeds 20, or PR queue grows above 5, or new critical security regression.",
+      "toCritical": "Main CI failure rate >30%, 2+ unresolved critical issues, or merge conflict cascade (3+ PRs)."
     }
   }
 }
