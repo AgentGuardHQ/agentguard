@@ -252,3 +252,63 @@ export function writeLessonStore(root: string, squad: string, store: LessonStore
     'utf8',
   );
 }
+
+// ── Bridge: denial-learner patterns → lessons ──
+
+/** Shape of DenialPattern from @red-codes/storage denial-learner */
+export interface DenialPatternLike {
+  readonly actionType: string;
+  readonly reason: string;
+  readonly occurrences: number;
+  readonly confidence: number;
+  readonly resolution: string;
+  readonly sessions: readonly string[];
+  readonly suggestion?: string;
+}
+
+/** Convert denial patterns from the denial-learner into lessons for squad memory.
+ *  High-confidence patterns (0.8+) become critical lessons. */
+export function patternsToLessons(
+  patterns: readonly DenialPatternLike[],
+  context: { agentId: string; squad: string },
+): Lesson[] {
+  return patterns.map((p) => {
+    // Map confidence to severity
+    let severity: 'info' | 'warning' | 'critical';
+    if (p.confidence >= 0.8) severity = 'critical';
+    else if (p.confidence >= 0.5) severity = 'warning';
+    else severity = 'info';
+
+    return generateLesson({
+      action: p.actionType,
+      rule: p.reason,
+      reason: p.reason,
+      suggestion: p.suggestion,
+      severity,
+      agentId: context.agentId,
+      squad: context.squad,
+    });
+  });
+}
+
+/** Run the full denial-learner → lesson pipeline: analyze patterns and merge into squad store */
+export function learnFromDenials(
+  patterns: readonly DenialPatternLike[],
+  root: string,
+  squad: string,
+  agentId: string,
+): { lessonsAdded: number; totalLessons: number } {
+  const lessons = patternsToLessons(patterns, { agentId, squad });
+  let store = readLessonStore(root, squad);
+
+  for (const lesson of lessons) {
+    store = mergeLesson(store, lesson);
+  }
+
+  writeLessonStore(root, squad, store);
+
+  return {
+    lessonsAdded: lessons.length,
+    totalLessons: store.lessons.length,
+  };
+}

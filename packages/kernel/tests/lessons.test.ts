@@ -6,7 +6,10 @@ import {
   formatLessonContext,
   readLessonStore,
   writeLessonStore,
+  patternsToLessons,
+  learnFromDenials,
 } from '../src/lessons.js';
+import type { DenialPatternLike } from '../src/lessons.js';
 import type { LessonInput, LessonStore } from '../src/lessons.js';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync as fsWriteFileSync } from 'fs';
 import { join } from 'path';
@@ -206,5 +209,128 @@ describe('file I/O', () => {
     writeLessonStore(dir, 'newteam', store);
     const loaded = readLessonStore(dir, 'newteam');
     expect(loaded.lessons).toHaveLength(1);
+  });
+});
+
+describe('denial-learner bridge', () => {
+  const makePattern = (overrides?: Partial<DenialPatternLike>): DenialPatternLike => ({
+    actionType: 'git.push',
+    reason: 'Direct push to protected branch',
+    occurrences: 5,
+    confidence: 0.85,
+    resolution: 'retried_differently',
+    sessions: ['run-1', 'run-2', 'run-3'],
+    suggestion: 'Push to a feature branch and open a pull request instead',
+    ...overrides,
+  });
+
+  it('converts denial patterns to lessons', () => {
+    const patterns = [makePattern()];
+    const lessons = patternsToLessons(patterns, { agentId: 'kernel-sr', squad: 'kernel' });
+    expect(lessons).toHaveLength(1);
+    expect(lessons[0].action).toBe('git.push');
+    expect(lessons[0].why).toBe('Direct push to protected branch');
+    expect(lessons[0].instead).toContain('feature branch');
+    expect(lessons[0].squad).toBe('kernel');
+  });
+
+  it('maps high confidence to critical severity', () => {
+    const lessons = patternsToLessons(
+      [makePattern({ confidence: 0.9 })],
+      { agentId: 'test', squad: 'kernel' },
+    );
+    expect(lessons[0].severity).toBe('critical');
+  });
+
+  it('maps medium confidence to warning severity', () => {
+    const lessons = patternsToLessons(
+      [makePattern({ confidence: 0.6 })],
+      { agentId: 'test', squad: 'kernel' },
+    );
+    expect(lessons[0].severity).toBe('warning');
+  });
+
+  it('maps low confidence to info severity', () => {
+    const lessons = patternsToLessons(
+      [makePattern({ confidence: 0.3 })],
+      { agentId: 'test', squad: 'kernel' },
+    );
+    expect(lessons[0].severity).toBe('info');
+  });
+
+  it('converts multiple patterns', () => {
+    const patterns = [
+      makePattern({ actionType: 'git.push', reason: 'A' }),
+      makePattern({ actionType: 'file.write', reason: 'B' }),
+      makePattern({ actionType: 'shell.exec', reason: 'C' }),
+    ];
+    const lessons = patternsToLessons(patterns, { agentId: 'test', squad: 'kernel' });
+    expect(lessons).toHaveLength(3);
+    expect(lessons.map((l) => l.action)).toEqual(['git.push', 'file.write', 'shell.exec']);
+  });
+});
+
+describe('learnFromDenials', () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'learn-'));
+    mkdirSync(join(dir, '.agentguard', 'squads', 'kernel'), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('writes patterns as lessons to squad learnings', () => {
+    const patterns: DenialPatternLike[] = [
+      {
+        actionType: 'git.push',
+        reason: 'Protected branch',
+        occurrences: 3,
+        confidence: 0.7,
+        resolution: 'retried_differently',
+        sessions: ['r1', 'r2'],
+        suggestion: 'Use a feature branch',
+      },
+      {
+        actionType: 'file.write',
+        reason: 'Secret exposure',
+        occurrences: 2,
+        confidence: 0.9,
+        resolution: 'session_abandoned',
+        sessions: ['r1'],
+      },
+    ];
+
+    const result = learnFromDenials(patterns, dir, 'kernel', 'kernel-em');
+    expect(result.lessonsAdded).toBe(2);
+    expect(result.totalLessons).toBe(2);
+
+    // Verify persisted
+    const store = readLessonStore(dir, 'kernel');
+    expect(store.lessons).toHaveLength(2);
+    expect(store.lessons.find((l) => l.action === 'git.push')).toBeDefined();
+    expect(store.lessons.find((l) => l.action === 'file.write')?.severity).toBe('critical');
+  });
+
+  it('deduplicates when run multiple times', () => {
+    const patterns: DenialPatternLike[] = [
+      {
+        actionType: 'git.push',
+        reason: 'Protected branch',
+        occurrences: 1,
+        confidence: 0.5,
+        resolution: 'retried_differently',
+        sessions: ['r1'],
+      },
+    ];
+
+    learnFromDenials(patterns, dir, 'kernel', 'kernel-em');
+    const result = learnFromDenials(patterns, dir, 'kernel', 'kernel-em');
+    expect(result.totalLessons).toBe(1); // Still 1, not 2
+
+    const store = readLessonStore(dir, 'kernel');
+    expect(store.lessons[0].hitCount).toBe(2); // Hit count incremented
   });
 });
