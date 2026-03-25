@@ -454,7 +454,7 @@ const COMMANDS: Record<string, CommandHelp> = {
   cloud: {
     name: 'agentguard cloud',
     description:
-      'Manage AgentGuard Cloud connection and query data (connect, status, disconnect, events, runs, summary)',
+      'Manage AgentGuard Cloud connection and query data (signup, connect, status, disconnect, events, runs, summary)',
     usage: 'agentguard cloud <command> [options]',
     flags: [
       {
@@ -468,6 +468,7 @@ const COMMANDS: Record<string, CommandHelp> = {
       { flag: '--status <status>', description: 'Filter runs by status' },
     ],
     examples: [
+      'agentguard cloud signup',
       'agentguard cloud connect ag_live_abc123def456xyz',
       'agentguard cloud connect ag_test_key1234567890 --endpoint https://custom.example.com',
       'agentguard cloud status',
@@ -1059,6 +1060,7 @@ function printHelp(): void {
     agentguard config keys                    List available config keys
 
   \x1b[1mCloud:\x1b[0m
+    agentguard cloud signup                   Sign up for AgentGuard Cloud
     agentguard cloud connect <api-key>        Connect to AgentGuard Cloud
     agentguard cloud connect ... --endpoint   Use a custom cloud endpoint
     agentguard cloud status                   Show cloud connection status

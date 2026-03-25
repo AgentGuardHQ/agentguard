@@ -136,6 +136,8 @@ export async function cloud(args: string[]): Promise<number> {
       return cloudRuns(args.slice(1));
     case 'summary':
       return cloudSummary();
+    case 'signup':
+      return cloudSignup();
     case 'help':
     case undefined:
       return showCloudHelp();
@@ -501,11 +503,29 @@ async function cloudSummary(): Promise<number> {
   }
 }
 
+const SIGNUP_URL = 'https://agentguard-cloud-dashboard.vercel.app/signup';
+const DISCUSSIONS_URL = 'https://github.com/AgentGuardHQ/agentguard/discussions';
+
+function cloudSignup(): number {
+  process.stderr.write('\n');
+  process.stderr.write(`  ${BOLD}AgentGuard Cloud — Early Access${RESET}\n\n`);
+  process.stderr.write(`  Sign up for AgentGuard Cloud to get team governance,\n`);
+  process.stderr.write(`  real-time telemetry, and multi-tenant management.\n\n`);
+  process.stderr.write(`  ${FG.cyan}${SIGNUP_URL}${RESET}\n\n`);
+  process.stderr.write(`  ${DIM}Already have an API key? Run:${RESET}\n`);
+  process.stderr.write(`  ${DIM}  agentguard cloud connect <api-key>${RESET}\n\n`);
+  process.stderr.write(`  ${BOLD}Community${RESET}\n\n`);
+  process.stderr.write(`  ${DIM}Join the discussion:${RESET}\n`);
+  process.stderr.write(`  ${FG.cyan}${DISCUSSIONS_URL}${RESET}\n\n`);
+  return 0;
+}
+
 function showCloudHelp(): number {
   process.stderr.write(`
   ${BOLD}agentguard cloud${RESET} — Manage AgentGuard Cloud connection and query data
 
   ${BOLD}Usage:${RESET}
+    agentguard cloud signup                         Sign up for AgentGuard Cloud
     agentguard cloud connect <api-key>              Connect to cloud
     agentguard cloud connect <api-key> --endpoint <url>  Use custom endpoint
     agentguard cloud status                         Show connection status

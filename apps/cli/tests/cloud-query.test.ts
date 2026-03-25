@@ -83,6 +83,37 @@ describe('cloud summary — not connected', () => {
   });
 });
 
+describe('cloud signup', () => {
+  it('returns 0 and shows signup URL', async () => {
+    const code = await cloud(['signup']);
+    expect(code).toBe(0);
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('agentguard-cloud-dashboard.vercel.app/signup')
+    );
+  });
+
+  it('shows early access heading', async () => {
+    await cloud(['signup']);
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('Early Access')
+    );
+  });
+
+  it('shows discussions link', async () => {
+    await cloud(['signup']);
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('github.com/AgentGuardHQ/agentguard/discussions')
+    );
+  });
+
+  it('suggests connect command for existing users', async () => {
+    await cloud(['signup']);
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('agentguard cloud connect')
+    );
+  });
+});
+
 describe('cloud help includes new subcommands', () => {
   it('help text mentions events subcommand', async () => {
     const code = await cloud(['help']);
@@ -100,5 +131,11 @@ describe('cloud help includes new subcommands', () => {
     const code = await cloud(['help']);
     expect(code).toBe(0);
     expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('cloud summary'));
+  });
+
+  it('help text mentions signup subcommand', async () => {
+    const code = await cloud(['help']);
+    expect(code).toBe(0);
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('cloud signup'));
   });
 });

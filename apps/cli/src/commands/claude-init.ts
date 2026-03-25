@@ -956,6 +956,19 @@ function showProtectionSummary(
   }
   process.stderr.write(`\n  ${DIM}ℹ Claude Desktop support coming soon.${RESET}\n`);
   process.stderr.write('\n');
+
+  // User capture funnel: cloud signup + community links
+  process.stderr.write(`  ${BOLD}Join the community:${RESET}\n`);
+  process.stderr.write(
+    `  ${DIM}Cloud dashboard:${RESET} ${FG.cyan}https://agentguard-cloud-dashboard.vercel.app/signup${RESET}\n`
+  );
+  process.stderr.write(
+    `  ${DIM}Discussions:${RESET}     ${FG.cyan}https://github.com/AgentGuardHQ/agentguard/discussions${RESET}\n`
+  );
+  process.stderr.write(
+    `\n  ${DIM}Run ${FG.cyan}agentguard cloud signup${RESET}${DIM} for early access to team governance.${RESET}\n`
+  );
+  process.stderr.write('\n');
 }
 
 function hasAgentGuardHook(settings: Settings): boolean {

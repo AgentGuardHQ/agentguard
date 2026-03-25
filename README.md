@@ -471,6 +471,21 @@ extends:
 | `strict` | Maximum restriction — all 22 invariants enforced |
 | `open-source` | OSS contribution-friendly defaults |
 
+## Community & Updates
+
+Stay in the loop and connect with other AgentGuard users:
+
+- **[Sign up for early access](https://agentguard-cloud-dashboard.vercel.app/signup)** — cloud dashboard, team governance, real-time telemetry
+- **[GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions)** — ask questions, share setups, give feedback
+- **[Issues](https://github.com/AgentGuardHQ/agentguard/issues)** — bug reports and feature requests
+
+From the CLI:
+
+```bash
+agentguard cloud signup    # Open cloud early access signup
+agentguard cloud login     # Connect after you have an API key
+```
+
 ## Links
 
 | Resource | URL |
