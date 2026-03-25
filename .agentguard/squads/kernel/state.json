@@ -2,17 +2,17 @@
   "squad": "kernel",
   "sprint": {
     "goal": "Fix security regression #924 (null byte bypass in canonicalizePath). Continue v3.0 release readiness.",
-    "issues": [924, 958, 959]
+    "issues": [924, 958, 959, 964]
   },
   "assignments": {
     "senior": {
-      "issue": [958, 959],
-      "title": "simulate: add shell.exec simulator and git.force-push action type",
+      "issue": 964,
+      "title": "fix(claude-init): write hooks with full binary path instead of bare 'agentguard'",
       "status": "pr_open",
-      "branch": "agent/kernel-sr-20260325-213002",
-      "pr": 961,
-      "claimedAt": "2026-03-25T21:30:00.000Z",
-      "note": "Added git.force-push to ACTION_TYPES (#958), created shell-simulator for general shell.exec (#959). 889+194 tests passing. PR #961 opened."
+      "branch": "agent/kernel-sr-20260325-230503",
+      "pr": 970,
+      "claimedAt": "2026-03-25T23:05:00.000Z",
+      "note": "Added hookCmd() helper to claude-init and copilot-init that resolves binary via ${AGENTGUARD_BIN:-./node_modules/.bin/agentguard}. 765 CLI tests passing. PR #970 opened."
     }
   },
   "blockers": [],
@@ -34,9 +34,18 @@
         "number": 961,
         "title": "fix(simulate): add shell.exec simulator and git.force-push action type",
         "branch": "agent/kernel-sr-20260325-213002",
+        "status": "merged",
+        "ciStatus": "passed",
+        "openedAt": "2026-03-25T21:37:00.000Z",
+        "mergedAt": "2026-03-25T22:00:00.000Z"
+      },
+      {
+        "number": 970,
+        "title": "fix(claude-init): resolve binary path in hook commands (closes #964)",
+        "branch": "agent/kernel-sr-20260325-230503",
         "status": "open",
         "ciStatus": "pending",
-        "openedAt": "2026-03-25T21:37:00.000Z"
+        "openedAt": "2026-03-25T23:11:00.000Z"
       }
     ]
   },
@@ -46,10 +55,10 @@
     "passed": 4120,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-25T21:36:00.000Z",
+    "lastRun": "2026-03-25T23:11:00.000Z",
     "status": "all_passing"
   },
   "lastEmRun": "2026-03-26T04:10:00.000Z",
   "lastQaRun": "2026-03-25T18:50:00.000Z",
-  "updatedAt": "2026-03-25T21:37:00.000Z"
+  "updatedAt": "2026-03-25T23:11:00.000Z"
 }
