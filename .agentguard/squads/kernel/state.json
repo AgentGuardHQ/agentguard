@@ -1,43 +1,27 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Land Go kernel rewrite (merged PR #870) and rust-kernel fix (merged PR #869); resolve lint CI failure on PR #888 (fix/npx-scoped-package-name)",
+    "goal": "Land Go kernel rewrite (merged PR #870) and rust-kernel fix (merged PR #869); PR #888 merged (fix/npx-scoped-package-name)",
     "issues": []
   },
-  "assignments": {
-    "pr-888-lint-fix": {
-      "task": "Fix lint CI failure on PR #888 (fix/848-npx-scoped-package-name)",
-      "assignee": "senior-coder",
-      "priority": "P1",
-      "pr": 888,
-      "status": "open",
-      "notes": "Lint job failing; test-and-build, rust-kernel, analyze, CodeQL all green. Tier C scope (4 files, ~8 lines). Likely a formatting or ESLint violation introduced in the patch."
-    }
-  },
-  "blockers": [
-    {
-      "id": "ci-failure-pr-888",
-      "description": "PR #888 (fix/npx-scoped-package-name) failing CI: lint job only",
-      "pr": 888,
-      "firstSeen": "2026-03-25T15:00:00.000Z",
-      "runCount": 1
-    }
-  ],
+  "assignments": {},
+  "blockers": [],
   "prQueue": {
-    "open": 1,
+    "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "prs": [
-      {
-        "number": 888,
-        "title": "fix: use npx @red-codes/agentguard in user-facing docs and messages",
-        "status": "ci_failing",
-        "ci": "failing",
-        "failingChecks": ["lint"]
-      }
-    ]
+    "prs": []
   },
-  "health": "yellow",
+  "health": "green",
+  "testHealth": {
+    "total": 4065,
+    "passed": 4065,
+    "failed": 0,
+    "packages": 18,
+    "lastRun": "2026-03-25T15:50:00.000Z",
+    "status": "all_passing"
+  },
   "lastEmRun": "2026-03-25T15:00:00.000Z",
-  "updatedAt": "2026-03-25T15:00:00.000Z"
+  "lastQaRun": "2026-03-25T15:50:00.000Z",
+  "updatedAt": "2026-03-25T15:50:00.000Z"
 }
