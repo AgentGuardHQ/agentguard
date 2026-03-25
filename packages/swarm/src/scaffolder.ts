@@ -10,7 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
 import { loadManifest, filterAgentsByTier, resolveSchedule, collectSkills } from './manifest.js';
-import type { SwarmConfig, ScaffoldResult, ScaffoldedAgent } from './types.js';
+import type { SwarmConfig, ScaffoldResult, ScaffoldedAgent, Squad, SquadState } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(__dirname, '..');
@@ -129,6 +129,31 @@ function writeConfigIfMissing(configPath: string): boolean {
   }
   copyFileSync(DEFAULT_CONFIG_TEMPLATE, configPath);
   return true;
+}
+
+export function scaffoldSquad(root: string, squadName: string, _squad: Squad): void {
+  const squadDir = join(root, '.agentguard', 'squads', squadName);
+  mkdirSync(squadDir, { recursive: true });
+
+  // Write initial squad state if not present
+  const statePath = join(squadDir, 'state.json');
+  if (!existsSync(statePath)) {
+    const initialState: SquadState = {
+      squad: squadName,
+      sprint: { goal: '', issues: [] },
+      assignments: {},
+      blockers: [],
+      prQueue: { open: 0, reviewed: 0, mergeable: 0 },
+      updatedAt: new Date().toISOString(),
+    };
+    writeFileSync(statePath, JSON.stringify(initialState, null, 2), 'utf8');
+  }
+
+  // Write learnings store if not present
+  const learningsPath = join(squadDir, 'learnings.json');
+  if (!existsSync(learningsPath)) {
+    writeFileSync(learningsPath, '[]', 'utf8');
+  }
 }
 
 function renderTemplate(content: string, config: SwarmConfig): string {

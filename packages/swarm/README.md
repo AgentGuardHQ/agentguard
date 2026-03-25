@@ -216,6 +216,117 @@ Every agent starts by invoking the `start-governance-runtime` skill, which activ
 - Violations escalate the system (NORMAL → ELEVATED → HIGH → LOCKDOWN)
 - Full audit trail in JSONL for every agent action
 
+## Squad Structure
+
+The swarm can be organized into **squads** — small, autonomous teams of AI agents with a reporting hierarchy. Each squad has an Engineering Manager (EM) overseeing 5 specialist agents, all reporting up to a single Director agent.
+
+### Squad Manifest Schema
+
+Squads are defined in a YAML manifest (`squad-manifest.yaml`):
+
+```yaml
+version: "1.0.0"
+
+org:
+  director:
+    id: director
+    rank: director
+    driver: claude-code
+    model: opus
+    cron: "0 7,19 * * *"
+    skills: [squad-status, director-brief, escalation-router]
+
+squads:
+  kernel:
+    repo: agent-guard
+    em:
+      id: kernel-em
+      rank: em
+      driver: claude-code
+      model: opus
+      cron: "0 */3 * * *"
+      skills: [squad-plan, squad-execute, squad-status]
+    agents:
+      product-lead: { id: kernel-pl, rank: product-lead, driver: claude-code, model: sonnet, ... }
+      architect:    { id: kernel-arch, rank: architect, driver: claude-code, model: opus, ... }
+      senior:       { id: kernel-sr, rank: senior, driver: copilot-cli, model: sonnet, ... }
+      junior:       { id: kernel-jr, rank: junior, driver: copilot-cli, model: copilot, ... }
+      qa:           { id: kernel-qa, rank: qa, driver: copilot-cli, model: sonnet, ... }
+
+loopGuards:
+  maxOpenPRsPerSquad: 3
+  maxRetries: 3
+  maxBlastRadius: 20
+  maxRunMinutes: 10
+```
+
+Each squad agent specifies a `driver` (`claude-code` or `copilot-cli`), a `model` (`opus`, `sonnet`, `haiku`, `copilot`), a `rank`, and a set of skills. Valid ranks: `director`, `em`, `product-lead`, `architect`, `senior`, `junior`, `qa`.
+
+### Identity Format
+
+Every agent in a squad has a 4-part identity string: `driver:model:squad:rank`. For example:
+
+- `claude-code:opus:kernel:em` — the kernel squad's EM running on Claude Code with Opus
+- `copilot-cli:sonnet:cloud:senior` — the cloud squad's senior dev running on Copilot CLI with Sonnet
+
+Identity strings are parsed from agent metadata at runtime and flow through telemetry, so the dashboard can attribute actions to specific agents within a squad.
+
+```typescript
+import { buildAgentIdentity, parseAgentIdentity } from '@red-codes/swarm';
+
+const identity = buildAgentIdentity(agent, 'kernel');
+// => "copilot-cli:sonnet:kernel:senior"
+
+const parsed = parseAgentIdentity('copilot-cli:sonnet:kernel:senior');
+// => { driver: 'copilot-cli', model: 'sonnet', squad: 'kernel', rank: 'senior' }
+```
+
+### Loop Guards
+
+Every agent checks **4 loop guards** at run start to prevent runaway behavior:
+
+| Guard | Config Key | Description |
+|-------|-----------|-------------|
+| Budget | `maxOpenPRsPerSquad` | Blocks new PRs when the squad has too many open |
+| Retry | `maxRetries` | Stops retrying after N consecutive failures |
+| Blast Radius | `maxBlastRadius` | Rejects changes touching too many files |
+| Time | `maxRunMinutes` | Kills runs that exceed the time limit |
+
+All four guards must pass for an agent to proceed. Violations are returned with the specific guard names that failed.
+
+### State File Locations
+
+Each squad maintains its own state directory under `.agentguard/squads/`:
+
+```
+.agentguard/
+  squads/
+    kernel/
+      state.json        # Current squad state (sprint goal, assignments, PR queue, blockers)
+      learnings.json    # Accumulated learnings from retrospectives
+      em-report.json    # Latest EM health report for the director
+    cloud/
+      state.json
+      learnings.json
+      em-report.json
+    qa/
+      state.json
+      learnings.json
+      em-report.json
+  director-brief.json   # Aggregated brief from all squad EM reports
+```
+
+Use `scaffoldSquad` to initialize these directories:
+
+```typescript
+import { loadSquadManifest, scaffoldSquad } from '@red-codes/swarm';
+
+const manifest = loadSquadManifest(yamlContent);
+for (const [name, squad] of Object.entries(manifest.squads)) {
+  scaffoldSquad('/path/to/project', name, squad);
+}
+```
+
 ## Programmatic API
 
 ```typescript
