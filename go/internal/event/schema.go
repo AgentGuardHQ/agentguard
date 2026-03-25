@@ -1,92 +1,121 @@
-// Package event provides the canonical event model for the AgentGuard Go kernel.
+// Package event defines the canonical event model for the AgentGuard Go kernel.
+// All system activity becomes events. The kernel produces governance events.
+// Subscribers (signals API, audit trail) consume them.
 package event
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"time"
 )
 
-// Kind represents the category of an event.
+// Kind represents the type of a domain event.
 type Kind string
 
+// Event kinds — canonical event types mirroring the TypeScript event model.
 const (
-	// Governance events
-	KindPolicyDenied       Kind = "PolicyDenied"
-	KindUnauthorizedAction Kind = "UnauthorizedAction"
-	KindInvariantViolation Kind = "InvariantViolation"
+	// Session lifecycle
+	RunStarted         Kind = "RunStarted"
+	RunEnded           Kind = "RunEnded"
+	StateChanged       Kind = "StateChanged"
+	CheckpointReached  Kind = "CheckpointReached"
 
-	// Lifecycle events
-	KindRunStarted        Kind = "RunStarted"
-	KindRunEnded          Kind = "RunEnded"
-	KindCheckpointReached Kind = "CheckpointReached"
-	KindStateChanged      Kind = "StateChanged"
+	// Reference Monitor (Agent Action Boundary)
+	ActionRequested Kind = "ActionRequested"
+	ActionAllowed   Kind = "ActionAllowed"
+	ActionDenied    Kind = "ActionDenied"
+	ActionEscalated Kind = "ActionEscalated"
+	ActionExecuted  Kind = "ActionExecuted"
+	ActionFailed    Kind = "ActionFailed"
 
-	// Reference monitor events
-	KindActionRequested Kind = "ActionRequested"
-	KindActionAllowed   Kind = "ActionAllowed"
-	KindActionDenied    Kind = "ActionDenied"
-	KindActionEscalated Kind = "ActionEscalated"
-	KindActionExecuted  Kind = "ActionExecuted"
-	KindActionFailed    Kind = "ActionFailed"
+	// Governance
+	PolicyDenied         Kind = "PolicyDenied"
+	UnauthorizedAction   Kind = "UnauthorizedAction"
+	InvariantViolation   Kind = "InvariantViolation"
+	BlastRadiusExceeded  Kind = "BlastRadiusExceeded"
+	MergeGuardFailure    Kind = "MergeGuardFailure"
+	EvidencePackGenerated Kind = "EvidencePackGenerated"
 
-	// Safety events
-	KindBlastRadiusExceeded Kind = "BlastRadiusExceeded"
+	// Decision & Simulation
+	DecisionRecorded    Kind = "DecisionRecorded"
+	SimulationCompleted Kind = "SimulationCompleted"
 
-	// Heartbeat events
-	KindHeartbeatEmitted   Kind = "HeartbeatEmitted"
-	KindHeartbeatMissed    Kind = "HeartbeatMissed"
-	KindAgentUnresponsive  Kind = "AgentUnresponsive"
+	// Policy
+	PolicyComposed      Kind = "PolicyComposed"
+	PolicyTraceRecorded Kind = "PolicyTraceRecorded"
+
+	// Pipeline
+	PipelineStarted    Kind = "PipelineStarted"
+	StageCompleted     Kind = "StageCompleted"
+	StageFailed        Kind = "StageFailed"
+	PipelineCompleted  Kind = "PipelineCompleted"
+	PipelineFailed     Kind = "PipelineFailed"
+	FileScopeViolation Kind = "FileScopeViolation"
+
+	// Developer Signals
+	FileSaved       Kind = "FileSaved"
+	TestCompleted   Kind = "TestCompleted"
+	BuildCompleted  Kind = "BuildCompleted"
+	CommitCreated   Kind = "CommitCreated"
+	CodeReviewed    Kind = "CodeReviewed"
+	DeployCompleted Kind = "DeployCompleted"
+	LintCompleted   Kind = "LintCompleted"
+
+	// Token Optimization
+	TokenOptimizationApplied Kind = "TokenOptimizationApplied"
+
+	// Agent Liveness
+	HeartbeatEmitted  Kind = "HeartbeatEmitted"
+	HeartbeatMissed   Kind = "HeartbeatMissed"
+	AgentUnresponsive Kind = "AgentUnresponsive"
+
+	// Integrity & Trust
+	HookIntegrityVerified Kind = "HookIntegrityVerified"
+	HookIntegrityFailed   Kind = "HookIntegrityFailed"
+	PolicyTrustVerified   Kind = "PolicyTrustVerified"
+	PolicyTrustDenied     Kind = "PolicyTrustDenied"
+
+	// Analytics & Learning
+	AdoptionAnalyzed       Kind = "AdoptionAnalyzed"
+	AdoptionAnalysisFailed Kind = "AdoptionAnalysisFailed"
+	DenialPatternDetected  Kind = "DenialPatternDetected"
+
+	// Drift & Validation
+	IntentDriftDetected  Kind = "IntentDriftDetected"
+	CapabilityValidated  Kind = "CapabilityValidated"
+	IdeSocketAccessBlocked Kind = "IdeSocketAccessBlocked"
 )
 
-// Category groups event kinds for filtering.
-type Category string
-
-const (
-	CategoryGovernance Category = "governance"
-	CategoryLifecycle  Category = "lifecycle"
-	CategoryRefMonitor Category = "ref_monitor"
-	CategorySafety     Category = "safety"
-	CategoryHeartbeat  Category = "heartbeat"
-)
-
-// CategoryOf returns the category for a given event kind.
-func CategoryOf(k Kind) Category {
-	switch k {
-	case KindPolicyDenied, KindUnauthorizedAction, KindInvariantViolation:
-		return CategoryGovernance
-	case KindRunStarted, KindRunEnded, KindCheckpointReached, KindStateChanged:
-		return CategoryLifecycle
-	case KindActionRequested, KindActionAllowed, KindActionDenied,
-		KindActionEscalated, KindActionExecuted, KindActionFailed:
-		return CategoryRefMonitor
-	case KindBlastRadiusExceeded:
-		return CategorySafety
-	case KindHeartbeatEmitted, KindHeartbeatMissed, KindAgentUnresponsive:
-		return CategoryHeartbeat
-	default:
-		return ""
-	}
-}
-
-// Event is the canonical event type that flows through the kernel event bus.
+// Event is the canonical domain event structure.
 type Event struct {
 	ID        string         `json:"id"`
 	Kind      Kind           `json:"kind"`
-	Timestamp time.Time      `json:"timestamp"`
-	RunID     string         `json:"runId"`
-	SessionID string         `json:"sessionId,omitempty"`
-	AgentID   string         `json:"agentId,omitempty"`
+	Timestamp int64          `json:"timestamp"`
 	Data      map[string]any `json:"data,omitempty"`
 }
 
-// NewEvent creates a new Event with the given kind and run ID.
-// The ID is set to a simple timestamp-based value; the timestamp is set to now.
-func NewEvent(kind Kind, runID string, data map[string]any) Event {
-	now := time.Now()
+// NewEvent creates a new event with a random ID and current timestamp.
+func NewEvent(kind Kind, data map[string]any) Event {
 	return Event{
-		ID:        now.Format("20060102T150405.000000000"),
+		ID:        randomID(),
 		Kind:      kind,
-		Timestamp: now,
-		RunID:     runID,
+		Timestamp: time.Now().UnixMilli(),
 		Data:      data,
 	}
+}
+
+// NewEventAt creates a new event with a specific timestamp (for testing).
+func NewEventAt(kind Kind, ts int64, data map[string]any) Event {
+	return Event{
+		ID:        randomID(),
+		Kind:      kind,
+		Timestamp: ts,
+		Data:      data,
+	}
+}
+
+func randomID() string {
+	b := make([]byte, 8)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)
 }
