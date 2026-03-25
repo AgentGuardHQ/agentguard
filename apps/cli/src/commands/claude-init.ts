@@ -221,7 +221,7 @@ export async function claudeInit(args: string[] = []): Promise<void> {
       'Enable a policy pack?',
       [
         `essentials ${DIM}— secrets, force push, protected branches, credentials${RESET}`,
-        `strict ${DIM}— all 21 invariants enforced${RESET}`,
+        `strict ${DIM}— all 22 invariants enforced${RESET}`,
         `none ${DIM}— monitor only, configure later${RESET}`,
       ],
       0
@@ -636,7 +636,7 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
 const STARTER_POLICY_TEMPLATE = (mode: EnforcementMode, pack?: string) => {
   const packLine = pack ? `pack: ${pack}` : '# pack: essentials';
   return `# AgentGuard policy — runtime protection for AI coding agents.
-# Docs: https://github.com/AgentGuardHQ/agent-guard
+# Docs: https://github.com/AgentGuardHQ/agentguard
 
 id: default-policy
 name: Default Safety Policy

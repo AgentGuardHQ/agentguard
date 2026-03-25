@@ -335,7 +335,7 @@ describe('writeStarterPolicy', () => {
     expect(existsSync(policyPath)).toBe(true);
 
     const content = readFileSync(policyPath, 'utf8');
-    expect(content).toContain('mode: monitor');
+    expect(content).toContain('mode: guide');
     expect(content).toContain('pack: essentials');
     expect(content).toContain('git.push');
     expect(content).toContain('git.force-push');
@@ -343,6 +343,13 @@ describe('writeStarterPolicy', () => {
     expect(content).toContain('rm -rf');
     expect(content).toContain('deploy.trigger');
     expect(content).toContain('infra.destroy');
+  });
+
+  it('starter policy links to correct GitHub URL', () => {
+    writeStarterPolicy(tempDir);
+    const content = readFileSync(join(tempDir, 'agentguard.yaml'), 'utf8');
+    expect(content).toContain('https://github.com/AgentGuardHQ/agentguard');
+    expect(content).not.toContain('agent-guard');
   });
 
   it('skips when agentguard.yaml already exists', () => {
@@ -413,7 +420,7 @@ describe('postinstall integration', () => {
 
     // Policy file
     const policy = readFileSync(join(tempDir, 'agentguard.yaml'), 'utf8');
-    expect(policy).toContain('mode: monitor');
+    expect(policy).toContain('mode: guide');
     expect(policy).toContain('pack: essentials');
   });
 

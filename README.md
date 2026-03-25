@@ -29,6 +29,13 @@ agentguard claude-init
 # → Creates agentguard.yaml, installs Claude Code hooks, and activates governance
 ```
 
+Or use `npx` without a global install:
+
+```bash
+cd your-project
+npx @red-codes/agentguard claude-init
+```
+
 The `claude-init` wizard walks you through setup interactively:
 
 ```
