@@ -595,6 +595,58 @@ describe('claudeInit', () => {
     expect(written.hooks.PreToolUse[0].hooks[0].command).toContain('claude-hook-wrapper.sh');
   });
 
+  // --- Binary path resolution (#964) ---
+
+  it('resolves ./node_modules/.bin/agentguard for project-level npm installs', async () => {
+    vi.mocked(existsSync).mockImplementation((p: unknown) => {
+      const path = String(p);
+      // Simulate npm-installed package: node_modules/.bin/agentguard exists,
+      // but NOT the local dev marker (apps/cli/src/bin.ts)
+      if (path.includes(join('node_modules', '.bin', 'agentguard'))) return true;
+      return false;
+    });
+
+    await claudeInit([]);
+
+    const written = writtenSettings();
+    // PostToolUse, Stop, Notification hooks should use resolved binary path
+    expect(written.hooks.PostToolUse[0].hooks[0].command).toContain(
+      './node_modules/.bin/agentguard'
+    );
+    expect(written.hooks.PostToolUse[0].hooks[0].command).not.toMatch(/^agentguard /);
+
+    // SessionStart status hook should also use resolved path
+    const statusHook = written.hooks.SessionStart[0].hooks.find(
+      (h: { command: string }) => h.command.includes('status')
+    );
+    expect(statusHook.command).toContain('./node_modules/.bin/agentguard');
+  });
+
+  it('uses bare agentguard for --global even when node_modules/.bin exists', async () => {
+    vi.mocked(existsSync).mockImplementation((p: unknown) => {
+      const path = String(p);
+      if (path.includes(join('node_modules', '.bin', 'agentguard'))) return true;
+      return false;
+    });
+
+    await claudeInit(['--global']);
+
+    const written = writtenSettings();
+    // Global hooks should use bare command (on PATH), not relative node_modules path
+    expect(written.hooks.PostToolUse[0].hooks[0].command).toMatch(/^agentguard /);
+    expect(written.hooks.PostToolUse[0].hooks[0].command).not.toContain('node_modules');
+  });
+
+  it('falls back to bare agentguard when node_modules/.bin does not exist', async () => {
+    vi.mocked(existsSync).mockReturnValue(false);
+
+    await claudeInit([]);
+
+    const written = writtenSettings();
+    // No node_modules binary, no local dev — should fall back to bare command
+    expect(written.hooks.PostToolUse[0].hooks[0].command).toMatch(/^agentguard /);
+  });
+
   it('adds SessionStart persona check hook', async () => {
     vi.mocked(existsSync).mockReturnValue(false);
 

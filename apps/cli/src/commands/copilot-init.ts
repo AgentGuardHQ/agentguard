@@ -11,12 +11,20 @@ import type { EnforcementMode } from '@red-codes/core';
 const HOOK_MARKER = 'copilot-hook';
 const LOCAL_BIN = 'node apps/cli/dist/bin.js';
 
-/** Detect if we're in the agentguard development repo (local dev) vs. globally installed. */
-function resolveCliPrefix(): { cli: string; isLocal: boolean } {
+/** Detect if we're in the agentguard development repo (local dev) vs. globally installed.
+ *  For project-level npm installs, resolves to ./node_modules/.bin/agentguard so hooks
+ *  work even when the binary isn't on PATH (#964). */
+function resolveCliPrefix(isGlobal: boolean): { cli: string; isLocal: boolean } {
   const mainRoot = resolveMainRepoRoot();
   const localMarker = join(mainRoot, 'apps', 'cli', 'src', 'bin.ts');
   if (existsSync(localMarker)) {
     return { cli: LOCAL_BIN, isLocal: true };
+  }
+  if (!isGlobal) {
+    const nmBin = join(mainRoot, 'node_modules', '.bin', 'agentguard');
+    if (existsSync(nmBin)) {
+      return { cli: './node_modules/.bin/agentguard', isLocal: false };
+    }
   }
   return { cli: 'agentguard', isLocal: false };
 }
@@ -108,7 +116,7 @@ export async function copilotInit(args: string[] = []): Promise<void> {
 
   if (!config.hooks) config.hooks = {};
 
-  const { cli } = resolveCliPrefix();
+  const { cli } = resolveCliPrefix(isGlobal);
 
   // preToolUse — governance enforcement (routes all tool calls through the kernel)
   if (!config.hooks.preToolUse) config.hooks.preToolUse = [];
