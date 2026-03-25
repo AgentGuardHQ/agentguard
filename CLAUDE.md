@@ -373,3 +373,12 @@ pnpm test --filter=@red-codes/kernel  # Test a single package
 | `codeql.yml` | PR to `main`/`master` + weekly schedule | CodeQL security analysis |
 | `deploy-pages.yml` | Push to `main` (paths: `site/**`) | Deploys site directory to GitHub Pages |
 | `bench-regression-gate.yml` | PR / scheduled | Performance benchmark regression gate |
+
+
+## Agent Identity
+
+At session start, if you see `[AgentGuard] No agent identity set`, ask the user:
+1. **Role**: developer / reviewer / ops / security / planner
+2. **Driver**: human / claude-code / copilot / ci
+
+Then run: `scripts/write-persona.sh <driver> <role>`
