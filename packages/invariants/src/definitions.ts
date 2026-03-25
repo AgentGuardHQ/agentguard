@@ -631,7 +631,8 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       const targetViolation = target !== '' && matchesSkillPath(target);
 
       const command = state.currentCommand || '';
-      const commandViolation = command !== '' && matchesSkillPath(command);
+      const WRITE_INDICATORS = /(?:>[^>]|\bsed\s+-i\b|\brm\s|\bmv\s|\bcp\s|\btee\s|\bwrite\b|\bedit\b|\bmodify\b)/i;
+      const commandViolation = command !== '' && matchesSkillPath(command) && WRITE_INDICATORS.test(command);
 
       const skillFiles = (state.modifiedFiles || []).filter((f) => matchesSkillPath(f));
 
@@ -683,7 +684,8 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       const targetViolation = target !== '' && matchesScheduledPath(target);
 
       const command = state.currentCommand || '';
-      const commandViolation = command !== '' && matchesScheduledPath(command);
+      const WRITE_INDICATORS = /(?:>[^>]|\bsed\s+-i\b|\brm\s|\bmv\s|\bcp\s|\btee\s|\bwrite\b|\bedit\b|\bmodify\b)/i;
+      const commandViolation = command !== '' && matchesScheduledPath(command) && WRITE_INDICATORS.test(command);
 
       const scheduledFiles = (state.modifiedFiles || []).filter((f) => matchesScheduledPath(f));
 
@@ -975,7 +977,8 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       const targetViolation = target !== '' && matchesCicdPath(target);
 
       const command = state.currentCommand || '';
-      const commandViolation = command !== '' && matchesCicdPath(command);
+      const WRITE_INDICATORS = /(?:>[^>]|\bsed\s+-i\b|\brm\s|\bmv\s|\bcp\s|\btee\s|\bwrite\b|\bedit\b|\bmodify\b)/i;
+      const commandViolation = command !== '' && matchesCicdPath(command) && WRITE_INDICATORS.test(command);
 
       const cicdFiles = (state.modifiedFiles || []).filter((f) => matchesCicdPath(f));
 
@@ -1128,7 +1131,7 @@ export const DEFAULT_INVARIANTS: AgentGuardInvariant[] = [
       // For shell.exec, only flag command violation if the command WRITES to governance paths.
       // Read-only references (echo, cat, ls, grep, git log mentioning governance files) are safe.
       // Check for write-indicative patterns: redirect (>), pipe to write (tee), sed -i, rm, mv, cp to target.
-      const WRITE_INDICATORS = /(?:>[^>]|\bsed\s+-i\b|\brm\s|\bmv\s.*\bagentguard\b|\bcp\s.*\bagentguard\b|\btee\s|\bwrite\b|\bedit\b|\bmodify\b)/i;
+      const WRITE_INDICATORS = /(?:>[^>]|\bsed\s+-i\b|\brm\s|\bmv\s|\bcp\s|\btee\s|\bwrite\b|\bedit\b|\bmodify\b)/i;
       const commandReferencesGovernance =
         command !== '' &&
         (matchesGovernancePath(command) ||

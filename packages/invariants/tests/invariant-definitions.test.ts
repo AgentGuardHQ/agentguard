@@ -430,13 +430,20 @@ describe('no-scheduled-task-modification', () => {
   it('detects all three violation vectors simultaneously', () => {
     const result = inv.check({
       currentTarget: '.claude/scheduled-tasks/task-a/SKILL.md',
-      currentCommand: 'cat .claude/scheduled-tasks/task-b/SKILL.md',
+      currentCommand: 'sed -i "s/old/new/" .claude/scheduled-tasks/task-b/SKILL.md',
       modifiedFiles: ['.claude/scheduled-tasks/task-c/SKILL.md'],
     });
     expect(result.holds).toBe(false);
     expect(result.actual).toContain('target');
     expect(result.actual).toContain('command');
     expect(result.actual).toContain('modified');
+  });
+
+  it('holds when command only reads scheduled task files', () => {
+    const result = inv.check({
+      currentCommand: 'cat .claude/scheduled-tasks/task-a/SKILL.md',
+    });
+    expect(result.holds).toBe(true);
   });
 
   it('has severity 5 (highest — DENY intervention)', () => {
@@ -985,9 +992,14 @@ describe('no-cicd-config-modification', () => {
     expect(result.actual).toContain('command');
   });
 
-  it('fails when currentCommand references Jenkinsfile', () => {
-    const result = inv.check({ currentCommand: 'cat Jenkinsfile' });
+  it('fails when currentCommand writes to Jenkinsfile', () => {
+    const result = inv.check({ currentCommand: 'sed -i "s/old/new/" Jenkinsfile' });
     expect(result.holds).toBe(false);
+  });
+
+  it('holds when currentCommand only reads Jenkinsfile', () => {
+    const result = inv.check({ currentCommand: 'cat Jenkinsfile' });
+    expect(result.holds).toBe(true);
   });
 
   it('fails when modifiedFiles includes CI/CD config files', () => {
@@ -1031,13 +1043,20 @@ describe('no-cicd-config-modification', () => {
   it('detects all three violation vectors simultaneously', () => {
     const result = inv.check({
       currentTarget: '.github/workflows/ci.yml',
-      currentCommand: 'cat .gitlab-ci.yml',
+      currentCommand: 'sed -i "s/old/new/" .gitlab-ci.yml',
       modifiedFiles: ['.travis.yml'],
     });
     expect(result.holds).toBe(false);
     expect(result.actual).toContain('target');
     expect(result.actual).toContain('command');
     expect(result.actual).toContain('modified');
+  });
+
+  it('holds when command only reads CI/CD files', () => {
+    const result = inv.check({
+      currentCommand: 'cat .github/workflows/ci.yml',
+    });
+    expect(result.holds).toBe(true);
   });
 
   it('has severity 5 (highest — DENY intervention)', () => {
@@ -1266,9 +1285,14 @@ describe('no-governance-self-modification', () => {
     expect(result.actual).toContain('command');
   });
 
-  it('fails when currentCommand references policies/', () => {
-    const result = inv.check({ currentCommand: 'cat policies/strict.yaml' });
+  it('fails when currentCommand writes to policies/', () => {
+    const result = inv.check({ currentCommand: 'cp malicious.yaml policies/strict.yaml' });
     expect(result.holds).toBe(false);
+  });
+
+  it('holds when currentCommand only reads policies/', () => {
+    const result = inv.check({ currentCommand: 'cat policies/strict.yaml' });
+    expect(result.holds).toBe(true);
   });
 
   it('fails when currentCommand references agentguard.yaml', () => {
@@ -1326,13 +1350,20 @@ describe('no-governance-self-modification', () => {
   it('detects all three violation vectors simultaneously', () => {
     const result = inv.check({
       currentTarget: 'agentguard.yaml',
-      currentCommand: 'cat .agentguard/events/latest.jsonl',
+      currentCommand: 'sed -i "s/enforce/monitor/" agentguard.yaml',
       modifiedFiles: ['policies/open-source.yaml'],
     });
     expect(result.holds).toBe(false);
     expect(result.actual).toContain('target');
     expect(result.actual).toContain('command');
     expect(result.actual).toContain('modified');
+  });
+
+  it('holds when command only reads governance files', () => {
+    const result = inv.check({
+      currentCommand: 'cat agentguard.yaml && ls .agentguard/events/',
+    });
+    expect(result.holds).toBe(true);
   });
 });
 

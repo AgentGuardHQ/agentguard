@@ -222,11 +222,18 @@ describe('invariant branch coverage', () => {
       expect(result.holds).toBe(false);
     });
 
-    it('detects command referencing governance file basenames', () => {
+    it('detects command writing to governance file basenames', () => {
+      const result = check('no-governance-self-modification', {
+        currentCommand: 'sed -i "s/guide/monitor/" agentguard.yml',
+      });
+      expect(result.holds).toBe(false);
+    });
+
+    it('holds when command only reads governance files', () => {
       const result = check('no-governance-self-modification', {
         currentCommand: 'cat agentguard.yml',
       });
-      expect(result.holds).toBe(false);
+      expect(result.holds).toBe(true);
     });
 
     it('detects .agentguard/ directory in modifiedFiles', () => {
@@ -287,11 +294,18 @@ describe('invariant branch coverage', () => {
       expect(result.holds).toBe(false);
     });
 
-    it('detects CI/CD in command references', () => {
+    it('detects CI/CD write in command', () => {
+      const result = check('no-cicd-config-modification', {
+        currentCommand: 'rm .github/workflows/ci.yml',
+      });
+      expect(result.holds).toBe(false);
+    });
+
+    it('holds when command only reads CI/CD files', () => {
       const result = check('no-cicd-config-modification', {
         currentCommand: 'cat .github/workflows/ci.yml',
       });
-      expect(result.holds).toBe(false);
+      expect(result.holds).toBe(true);
     });
 
     it('detects CI/CD in modifiedFiles', () => {
