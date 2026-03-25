@@ -1,48 +1,176 @@
-# AgentGuard — self-governed with essentials + engineering-standards policy packs.
-# This project dogfoods its own governance system.
-#
-# The essentials pack enforces:
-#   - Core safety invariants (secrets, force push, protected branches, credentials)
-#   - Worktree enforcement (requireWorktree on checkout/reset)
-#   - Blast radius limits
-#
-# The engineering-standards pack adds:
-#   - Test-before-push
-#   - Format-before-push
-#   - Credential file protection
-#   - Safe dependency management
+# AgentGuard policy — runtime protection for AI coding agents.
+# Docs: https://github.com/AgentGuardHQ/agent-guard
 
-extends:
-  - ./policies/essentials
-  - ./policies/engineering-standards
+id: default-policy
+name: Default Safety Policy
+description: Baseline safety rules for AI coding agents
 
-# Project-specific overrides
+# Enforcement mode: guide | educate | monitor | enforce
+#   guide   — block dangerous actions with corrective suggestions (recommended)
+#   educate — allow actions but teach correct patterns
+#   monitor — log threats, don't block
+#   enforce — block dangerous actions, no suggestions
+mode: guide
+
+# Agent identity: defaults to .agentguard-identity file (created by claude-init).
+# For CI/cron agents, set AGENTGUARD_AGENT_NAME env var to override.
+# e.g., AGENTGUARD_AGENT_NAME=ci:github-actions:ops
+
+# Policy pack — curated invariant enforcement profiles
+pack: essentials
+
 rules:
-  # Protect governance hooks from agent self-modification
+  # Protected branches — prevent direct push to main/master
+  - action: git.push
+    effect: deny
+    branches: [main, master]
+    reason: Direct push to protected branch
+    suggestion: Push to a feature branch and open a pull request instead
+    correctedCommand: "git push origin HEAD:feat/my-branch"
+
+  # No force push — prevent history rewriting
+  - action: git.force-push
+    effect: deny
+    reason: Force push rewrites shared history
+
+  # Secrets protection — block writes to sensitive files
   - action: file.write
     effect: deny
-    target: ".claude/settings.json"
-    reason: Agent must not modify its own hook configuration
+    target: .env
+    reason: Secrets files must not be modified
 
-  - action: file.write
+  # Destructive command protection
+  - action: shell.exec
     effect: deny
-    target: ".claude/settings.local.json"
-    reason: Agent must not modify its own hook configuration
+    target: rm -rf
+    reason: Destructive shell commands blocked
 
-  # Protect policy file from agent modification
-  - action: file.write
-    effect: deny
-    target: "agentguard.yaml"
-    reason: Governance policy must not be modified by agents
-
-  # Block deploy/infra — this project uses GitHub Actions for releases
+  # Deployment protection
   - action: deploy.trigger
     effect: deny
-    reason: Deploys use GitHub Actions release workflow
+    reason: Deploy actions require explicit authorization
 
   - action: infra.destroy
     effect: deny
-    reason: No infrastructure to destroy
+    reason: Infrastructure destruction requires explicit authorization
 
-telemetry:
-  enabled: true
+  # ─── Allowed operations ──────────────────────────────────────────────
+  # With default-deny enabled, actions without an explicit allow rule are
+  # denied. The rules below cover standard development workflows.
+
+  # Reading is always safe
+  - action: file.read
+    effect: allow
+    reason: Reading is always safe
+
+  # File writes (subject to deny rules above for secrets)
+  - action: file.write
+    effect: allow
+    reason: File writes allowed by default
+
+  # File deletion and move
+  - action: file.delete
+    effect: allow
+    reason: File deletion allowed by default
+
+  - action: file.move
+    effect: allow
+    reason: File move allowed by default
+
+  # Shell commands (subject to deny rules above for rm -rf)
+  - action: shell.exec
+    effect: allow
+    reason: Shell execution allowed by default
+
+  # Git operations (subject to deny rules for protected branches)
+  - action: git.diff
+    effect: allow
+    reason: Viewing diffs is always safe
+
+  - action: git.commit
+    effect: allow
+    reason: Commits allowed by default
+
+  - action: git.push
+    effect: allow
+    reason: Pushes allowed to non-protected branches
+
+  - action: git.checkout
+    effect: allow
+    reason: Branch checkout allowed by default
+
+  - action: git.branch.create
+    effect: allow
+    reason: Branch creation allowed by default
+
+  - action: git.merge
+    effect: allow
+    reason: Merge allowed by default
+
+  # Worktree operations
+  - action: git.worktree.list
+    effect: allow
+    reason: Worktree listing is read-only and safe
+
+  - action: git.worktree.add
+    effect: allow
+    reason: Worktree creation encouraged for isolated agent work
+
+  - action: git.worktree.remove
+    effect: allow
+    reason: Worktree cleanup needed for housekeeping
+
+  - action: git.branch.delete
+    effect: allow
+    reason: Branch cleanup allowed for non-protected branches
+
+  # Testing is always encouraged
+  - action:
+      - test.run
+      - test.run.unit
+      - test.run.integration
+    effect: allow
+    reason: Running tests is always safe
+
+  # Package management
+  - action: npm.install
+    effect: allow
+    reason: Package installation allowed by default
+
+  - action: npm.script.run
+    effect: allow
+    reason: NPM script execution allowed by default
+
+  # HTTP requests
+  - action: http.request
+    effect: allow
+    reason: HTTP requests allowed by default
+
+  # GitHub CLI operations (subject to deny rules above)
+  - action:
+      - github.pr.list
+      - github.pr.view
+      - github.pr.checks
+      - github.pr.create
+      - github.issue.list
+      - github.issue.create
+      - github.run.list
+      - github.run.view
+      - github.api
+    effect: allow
+    reason: GitHub CLI operations allowed by default
+
+  # GitHub state-changing operations require explicit allow
+  - action:
+      - github.pr.merge
+      - github.pr.close
+      - github.issue.close
+      - github.release.create
+    effect: allow
+    reason: GitHub state-changing operations allowed by default
+
+  # MCP tool invocations (add your MCP servers here)
+  # - action: mcp.call
+  #   effect: allow
+  #   target: "your-mcp-server"
+  #   reason: MCP server access allowed
