@@ -1,26 +1,40 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Post-v2.7.0 stabilization. Monitoring CI health, tracking proposed invariant issues (#908–#912).",
-    "issues": []
+    "goal": "v3.0 release readiness. Fix critical security regression #924. Land denial-retry-escalation PR #923 (lint fix needed). Continue proposed invariant implementation (#909–#912).",
+    "issues": [924, 923, 909, 910, 911, 912]
   },
   "assignments": {
     "senior": {
-      "issue": 640,
-      "title": "Policy scope matching vulnerable to path manipulation",
-      "status": "pr-created",
-      "branch": "agent/kernel-sr-20260325-193002",
-      "claimedAt": "2026-03-25T19:30:00.000Z"
+      "issue": 924,
+      "title": "fix(matchers): URL-encoded null byte (%00) bypasses canonicalizePath rejection",
+      "status": "assigned",
+      "branch": null,
+      "claimedAt": "2026-03-25T22:35:00.000Z"
     }
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "pr": 923,
+      "issue": "Prettier formatting failure in packages/kernel/src/monitor.ts — needs format:fix",
+      "since": "2026-03-25T19:40:00.000Z"
+    }
+  ],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
     "mergeable": 0,
-    "prs": []
+    "prs": [
+      {
+        "number": 923,
+        "title": "feat(kernel): denial-retry-escalation invariant",
+        "ci": "failing-lint",
+        "reviews": 0,
+        "closesIssue": 908
+      }
+    ]
   },
-  "health": "green",
+  "health": "yellow",
   "testHealth": {
     "total": 4065,
     "passed": 4065,
@@ -29,7 +43,7 @@
     "lastRun": "2026-03-25T18:50:00.000Z",
     "status": "all_passing"
   },
-  "lastEmRun": "2026-03-25T19:35:00.000Z",
+  "lastEmRun": "2026-03-25T22:35:00.000Z",
   "lastQaRun": "2026-03-25T18:50:00.000Z",
-  "updatedAt": "2026-03-25T19:35:00.000Z"
+  "updatedAt": "2026-03-25T22:35:00.000Z"
 }

@@ -1,36 +1,51 @@
 {
-  "generatedAt": "2026-03-25T19:35:00.000Z",
+  "generatedAt": "2026-03-25T22:35:00.000Z",
   "identity": "claude-code:opus:kernel:em",
   "runCycle": "3h",
-  "health": "green",
-  "summary": "Quiet cycle. Since last report, PR #914 (shell credential stripping fix, closes #639) and PR #913 (QA cycle report) both merged by jpleva91 at ~18:59Z. PR #906 (stale EM report) closed. Zero open PRs. No P0/P1 issues. CI fully green — all 5 recent runs passed. 5 open proposed-invariant issues (#908–#912) from analytics-invariant-researcher pending governance review. Squad idle and healthy.",
+  "health": "yellow",
+  "summary": "Active cycle. Since last report: PR #915 (matchers path manipulation fix, closes #640), PR #916 (SQLite migration v2 action_type/severity index), and PR #922 (last EM report) all merged. PR #923 (denial-retry-escalation invariant, closes #908) is open but failing CI — Prettier formatting issue in monitor.ts needs fix. Critical security issue #924 filed as regression from PR #915: URL-encoded null byte (%00) bypasses canonicalizePath rejection. Assigning #924 to senior coder as follow-up to their #640 work. Health yellow due to CI-failing PR + critical unassigned security bug.",
   "prQueue": {
-    "open": 0,
-    "prs": []
+    "open": 1,
+    "prs": [
+      {
+        "number": 923,
+        "title": "feat(kernel): denial-retry-escalation invariant",
+        "status": "lint-failing",
+        "ciIssue": "Prettier formatting error in packages/kernel/src/monitor.ts",
+        "reviews": 0,
+        "closesIssue": 908
+      }
+    ]
   },
   "mergedThisCycle": [
     {
-      "number": 914,
-      "title": "fix(adapters): add missing AI/k8s/vault credential patterns to shell stripping",
-      "mergedAt": "2026-03-25T18:59:04Z",
+      "number": 922,
+      "title": "chore(kernel-em): EM cycle report 2026-03-25T19:35Z",
+      "mergedAt": "2026-03-25T19:36:00Z",
       "mergedBy": "jpleva91"
     },
     {
-      "number": 913,
-      "title": "chore(kernel-qa): QA cycle report 2026-03-25T18:50Z",
-      "mergedAt": "2026-03-25T18:58:51Z",
+      "number": 916,
+      "title": "feat(storage): add decisions.action_type index (closes #727)",
+      "mergedAt": "2026-03-25T19:36:00Z",
+      "mergedBy": "jpleva91"
+    },
+    {
+      "number": 915,
+      "title": "fix(matchers): harden scope matching against path manipulation (closes #640)",
+      "mergedAt": "2026-03-25T19:36:00Z",
       "mergedBy": "jpleva91"
     }
   ],
   "closedThisCycle": [
     {
-      "number": 906,
-      "reason": "stale — duplicate EM cycle report superseded by #905"
+      "number": 640,
+      "reason": "Fixed by PR #915 — path manipulation hardening merged"
     }
   ],
   "loopGuards": {
     "prBudget": {
-      "open": 0,
+      "open": 1,
       "max": 3,
       "pass": true
     },
@@ -46,21 +61,41 @@
   "triage": {
     "p0Issues": 0,
     "p1Issues": 0,
-    "newAssignments": [],
+    "criticalIssues": 1,
+    "newAssignments": [
+      {
+        "issue": 924,
+        "title": "fix(matchers): URL-encoded null byte (%00) bypasses canonicalizePath rejection",
+        "assignee": "senior",
+        "reason": "Critical security regression from PR #915 — senior has full context on matchers/canonicalizePath from #640 work"
+      }
+    ],
     "notableIssues": [
       {
         "numbers": [908, 909, 910, 911, 912],
-        "note": "5 proposed invariants from analytics-invariant-researcher awaiting governance review"
+        "note": "5 proposed invariants from analytics-invariant-researcher. #908 has PR #923 (pending lint fix). Rest awaiting governance review."
+      },
+      {
+        "numbers": [919, 920],
+        "note": "v3.0 GATE items (stranger test, KE-2 ActionContext) — high priority but not yet sprint-assigned"
       }
     ]
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "type": "ci-failure",
+      "pr": 923,
+      "issue": "Prettier formatting in monitor.ts — needs --write fix and force-push",
+      "severity": "low",
+      "action": "Author needs to run pnpm format:fix on monitor.ts"
+    }
+  ],
   "escalations": [],
   "metrics": {
-    "prsOpened": 0,
-    "prsMerged": 2,
-    "prsClosed": 1,
-    "issuesClosed": 0,
+    "prsOpened": 1,
+    "prsMerged": 3,
+    "prsClosed": 0,
+    "issuesClosed": 1,
     "governanceDenials": 0,
     "retries": 0
   },
@@ -70,6 +105,6 @@
       "persistentBlocker": false,
       "governanceDenialsExceeded": false
     },
-    "notes": "All clear. Zero open PRs, no blockers, CI fully green, no denials."
+    "notes": "Health yellow: 1 PR failing CI (lint only — tests/build pass) + 1 critical security issue (#924) newly filed. No escalation triggers hit."
   }
 }
