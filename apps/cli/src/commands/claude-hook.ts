@@ -414,21 +414,58 @@ async function handlePreToolUse(
   cliArgs: string[],
   parentSessionId?: string
 ): Promise<boolean> {
+  // Ensure hook field is set (cheap — no imports needed)
+  const normalizedPayload: ClaudeCodeHookPayload = {
+    ...payload,
+    hook: 'PreToolUse',
+  };
+
+  // Extract target path for path-aware policy resolution (cheap — regex only).
+  const targetPath = extractTargetPath(normalizedPayload);
+
+  // --- Go kernel fast path ---
+  // When the Go binary is available, delegate policy evaluation to it for read-only tools.
+  // This saves ~280ms per call by avoiding Node.js module loading and TS kernel construction.
+  // Safety: restricted to read-only tools (Read, Glob, Grep, LS, etc.) because the Go binary
+  // evaluates policy rules only — it does not check invariants. Write/execute tools always
+  // go through the full TS kernel for complete invariant enforcement.
+  if (process.env.AGENTGUARD_SKIP_GO !== '1') {
+    const {
+      resolveGoBinary,
+      tryGoEvaluation,
+      findPolicyFileLightweight,
+      GO_FAST_PATH_TOOLS,
+    } = await import('../go-kernel.js');
+
+    if (GO_FAST_PATH_TOOLS.has(normalizedPayload.tool_name)) {
+      const goBinary = resolveGoBinary();
+      if (goBinary) {
+        const policyPath = findPolicyFileLightweight(targetPath);
+        const goResult = tryGoEvaluation(
+          goBinary,
+          normalizedPayload.tool_name,
+          normalizedPayload.tool_input || {},
+          normalizedPayload.session_id,
+          policyPath ?? undefined,
+        );
+
+        if (goResult?.allowed) {
+          // Go says allow for read-only tool — skip full TS kernel.
+          return false; // allowed
+        }
+        // Go denied or failed — fall through to full TS evaluation
+        // (needed for enforcement modes, suggestions, storage, telemetry)
+      }
+    }
+  }
+  // --- End Go kernel fast path ---
+
   const { processClaudeCodeHook, formatHookResponse } = await import('@red-codes/adapters');
   const { createKernel } = await import('@red-codes/kernel');
   const { DEFAULT_INVARIANTS } = await import('@red-codes/invariants');
   const { loadPolicyDefs, findPolicyForPath } = await import('../policy-resolver.js');
   const { resolveStorageConfig, createStorageBundle } = await import('@red-codes/storage');
 
-  // Ensure hook field is set
-  const normalizedPayload: ClaudeCodeHookPayload = {
-    ...payload,
-    hook: 'PreToolUse',
-  };
-
-  // Extract target path for path-aware policy resolution.
-  // This fixes the governance bypass when Claude Code runs from a parent directory.
-  const targetPath = extractTargetPath(normalizedPayload);
   let projectRoot: string | undefined;
 
   // If we have a target path, try to find the project root and policy together (one walk-up)
