@@ -14,7 +14,7 @@ func TestBusSubscribeAndPublish(t *testing.T) {
 		received = append(received, e)
 	})
 
-	evt := NewEvent(KindActionDenied, "sess-1", map[string]any{"reason": "test"})
+	evt := NewEvent(ActionDenied, "sess-1", map[string]any{"reason": "test"})
 	bus.Publish(evt)
 
 	if len(received) != 1 {
@@ -32,7 +32,7 @@ func TestBusMultipleHandlers(t *testing.T) {
 	bus.Subscribe(func(e Event) { a++ })
 	bus.Subscribe(func(e Event) { b++ })
 
-	bus.Publish(NewEvent(KindRunStarted, "s", nil))
+	bus.Publish(NewEvent(RunStarted, "s", nil))
 
 	if a != 1 || b != 1 {
 		t.Fatalf("expected both handlers called once, got a=%d b=%d", a, b)
@@ -47,9 +47,9 @@ func TestBusMultipleEvents(t *testing.T) {
 		all = append(all, e)
 	})
 
-	bus.Publish(NewEvent(KindActionDenied, "s", nil))
-	bus.Publish(NewEvent(KindRunStarted, "s", nil))
-	bus.Publish(NewEvent(KindPolicyDenied, "s", nil))
+	bus.Publish(NewEvent(ActionDenied, "s", nil))
+	bus.Publish(NewEvent(RunStarted, "s", nil))
+	bus.Publish(NewEvent(PolicyDenied, "s", nil))
 
 	if len(all) != 3 {
 		t.Fatalf("expected 3 events, got %d", len(all))
@@ -73,7 +73,7 @@ func TestBusConcurrentPublish(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < eventsPerGoroutine; j++ {
-				bus.Publish(NewEvent(KindActionExecuted, "s", nil))
+				bus.Publish(NewEvent(ActionExecuted, "s", nil))
 			}
 		}()
 	}
@@ -88,5 +88,5 @@ func TestBusConcurrentPublish(t *testing.T) {
 func TestBusNoSubscribers(t *testing.T) {
 	bus := NewBus()
 	// Publishing with no subscribers should not panic.
-	bus.Publish(NewEvent(KindRunStarted, "s", nil))
+	bus.Publish(NewEvent(RunStarted, "s", nil))
 }

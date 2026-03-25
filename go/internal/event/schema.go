@@ -86,20 +86,50 @@ const (
 	IdeSocketAccessBlocked Kind = "IdeSocketAccessBlocked"
 )
 
+// Category groups event kinds for filtering.
+type Category string
+
+const (
+	CategoryGovernance  Category = "governance"
+	CategoryLifecycle   Category = "lifecycle"
+	CategoryRefMonitor  Category = "ref_monitor"
+	CategorySafety      Category = "safety"
+	CategoryHeartbeat   Category = "heartbeat"
+)
+
+// CategoryOf returns the category for an event kind.
+func CategoryOf(k Kind) Category {
+	switch k {
+	case RunStarted, RunEnded, CheckpointReached, StateChanged:
+		return CategoryLifecycle
+	case ActionRequested, ActionAllowed, ActionDenied, ActionEscalated, ActionExecuted, ActionFailed:
+		return CategoryRefMonitor
+	case PolicyDenied, UnauthorizedAction, InvariantViolation, BlastRadiusExceeded, MergeGuardFailure, EvidencePackGenerated:
+		return CategoryGovernance
+	case HeartbeatEmitted, HeartbeatMissed, AgentUnresponsive:
+		return CategoryHeartbeat
+	default:
+		return ""
+	}
+}
+
 // Event is the canonical domain event structure.
 type Event struct {
 	ID        string         `json:"id"`
 	Kind      Kind           `json:"kind"`
 	Timestamp int64          `json:"timestamp"`
+	RunID     string         `json:"runId,omitempty"`
+	SessionID string         `json:"sessionId,omitempty"`
 	Data      map[string]any `json:"data,omitempty"`
 }
 
 // NewEvent creates a new event with a random ID and current timestamp.
-func NewEvent(kind Kind, data map[string]any) Event {
+func NewEvent(kind Kind, runID string, data map[string]any) Event {
 	return Event{
 		ID:        randomID(),
 		Kind:      kind,
 		Timestamp: time.Now().UnixMilli(),
+		RunID:     runID,
 		Data:      data,
 	}
 }

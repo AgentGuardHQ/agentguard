@@ -11,18 +11,18 @@ func TestNewEvent(t *testing.T) {
 		"target":     "main",
 		"reason":     "protected branch",
 	}
-	evt := NewEvent(KindActionDenied, "sess-1", payload)
+	evt := NewEvent(ActionDenied, "sess-1", payload)
 
 	if evt.ID == "" {
 		t.Fatal("expected non-empty ID")
 	}
-	if evt.Kind != KindActionDenied {
-		t.Fatalf("expected kind %s, got %s", KindActionDenied, evt.Kind)
+	if evt.Kind != ActionDenied {
+		t.Fatalf("expected kind %s, got %s", ActionDenied, evt.Kind)
 	}
 	if evt.RunID != "sess-1" {
 		t.Fatalf("expected runID sess-1, got %s", evt.RunID)
 	}
-	if evt.Timestamp.IsZero() {
+	if evt.Timestamp == 0 {
 		t.Fatal("expected non-zero timestamp")
 	}
 	if evt.Data["actionType"] != "git.push" {
@@ -33,7 +33,7 @@ func TestNewEvent(t *testing.T) {
 func TestNewEventUniqueIDs(t *testing.T) {
 	ids := make(map[string]struct{}, 100)
 	for i := 0; i < 100; i++ {
-		evt := NewEvent(KindRunStarted, "sess", nil)
+		evt := NewEvent(RunStarted, "sess", nil)
 		if _, dup := ids[evt.ID]; dup {
 			t.Fatalf("duplicate ID on iteration %d: %s", i, evt.ID)
 		}
@@ -42,12 +42,12 @@ func TestNewEventUniqueIDs(t *testing.T) {
 }
 
 func TestNewEventTimestamp(t *testing.T) {
-	before := time.Now()
-	evt := NewEvent(KindRunStarted, "sess", nil)
-	after := time.Now()
+	before := time.Now().UnixMilli()
+	evt := NewEvent(RunStarted, "sess", nil)
+	after := time.Now().UnixMilli()
 
-	if evt.Timestamp.Before(before) || evt.Timestamp.After(after) {
-		t.Fatalf("timestamp %v not between %v and %v", evt.Timestamp, before, after)
+	if evt.Timestamp < before || evt.Timestamp > after {
+		t.Fatalf("timestamp %d not between %d and %d", evt.Timestamp, before, after)
 	}
 }
 
@@ -56,10 +56,10 @@ func TestCategoryOf(t *testing.T) {
 		kind Kind
 		want Category
 	}{
-		{KindRunStarted, CategoryLifecycle},
-		{KindPolicyDenied, CategoryGovernance},
-		{KindActionAllowed, CategoryRefMonitor},
-		{KindActionDenied, CategoryRefMonitor},
+		{RunStarted, CategoryLifecycle},
+		{PolicyDenied, CategoryGovernance},
+		{ActionAllowed, CategoryRefMonitor},
+		{ActionDenied, CategoryRefMonitor},
 		{Kind("Unknown"), ""},
 	}
 	for _, tt := range tests {
@@ -71,7 +71,7 @@ func TestCategoryOf(t *testing.T) {
 }
 
 func TestNewEventNilData(t *testing.T) {
-	evt := NewEvent(KindRunStarted, "sess", nil)
+	evt := NewEvent(RunStarted, "sess", nil)
 	if evt.Data != nil {
 		t.Fatalf("expected nil data, got %v", evt.Data)
 	}

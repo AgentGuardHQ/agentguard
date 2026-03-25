@@ -24,7 +24,7 @@ func testEvent(kind event.Kind) event.Event {
 	return event.Event{
 		ID:        fmt.Sprintf("test-%d", time.Now().UnixNano()),
 		Kind:      kind,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UnixMilli(),
 		RunID:     "run-1",
 		Data:      map[string]any{"test": true},
 	}
@@ -36,7 +36,7 @@ func TestStdoutShipperWritesJSON(t *testing.T) {
 	var buf bytes.Buffer
 	s := shipper.NewStdoutShipperTo(&buf)
 
-	e := testEvent(event.KindActionAllowed)
+	e := testEvent(event.ActionAllowed)
 	if err := s.Ship(e); err != nil {
 		t.Fatalf("Ship: %v", err)
 	}
@@ -47,8 +47,8 @@ func TestStdoutShipperWritesJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(line), &decoded); err != nil {
 		t.Fatalf("unmarshal output: %v", err)
 	}
-	if decoded.Kind != event.KindActionAllowed {
-		t.Errorf("expected kind %s, got %s", event.KindActionAllowed, decoded.Kind)
+	if decoded.Kind != event.ActionAllowed {
+		t.Errorf("expected kind %s, got %s", event.ActionAllowed, decoded.Kind)
 	}
 	if decoded.RunID != "run-1" {
 		t.Errorf("expected runID run-1, got %s", decoded.RunID)
@@ -60,7 +60,7 @@ func TestStdoutShipperMultipleEvents(t *testing.T) {
 	s := shipper.NewStdoutShipperTo(&buf)
 
 	for i := 0; i < 3; i++ {
-		if err := s.Ship(testEvent(event.KindActionRequested)); err != nil {
+		if err := s.Ship(testEvent(event.ActionRequested)); err != nil {
 			t.Fatalf("Ship %d: %v", i, err)
 		}
 	}
@@ -94,9 +94,9 @@ func TestFileShipperWritesJSONL(t *testing.T) {
 	defer s.Close()
 
 	events := []event.Event{
-		testEvent(event.KindActionRequested),
-		testEvent(event.KindPolicyDenied),
-		testEvent(event.KindActionExecuted),
+		testEvent(event.ActionRequested),
+		testEvent(event.PolicyDenied),
+		testEvent(event.ActionExecuted),
 	}
 	for _, e := range events {
 		if err := s.Ship(e); err != nil {
@@ -144,7 +144,7 @@ func TestFileShipperRotation(t *testing.T) {
 
 	// Ship enough events to trigger rotation
 	for i := 0; i < 5; i++ {
-		if err := s.Ship(testEvent(event.KindActionRequested)); err != nil {
+		if err := s.Ship(testEvent(event.ActionRequested)); err != nil {
 			t.Fatalf("Ship %d: %v", i, err)
 		}
 	}
@@ -170,7 +170,7 @@ func TestFileShipperAppend(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewFileShipper 1: %v", err)
 	}
-	if err := s1.Ship(testEvent(event.KindRunStarted)); err != nil {
+	if err := s1.Ship(testEvent(event.RunStarted)); err != nil {
 		t.Fatalf("Ship 1: %v", err)
 	}
 	s1.Close()
@@ -179,7 +179,7 @@ func TestFileShipperAppend(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewFileShipper 2: %v", err)
 	}
-	if err := s2.Ship(testEvent(event.KindRunEnded)); err != nil {
+	if err := s2.Ship(testEvent(event.RunEnded)); err != nil {
 		t.Fatalf("Ship 2: %v", err)
 	}
 	s2.Close()
@@ -199,8 +199,8 @@ func TestFileShipperAppend(t *testing.T) {
 func TestBatchFlushOnSize(t *testing.T) {
 	b := shipper.NewBatch(3, 1*time.Hour) // Large maxAge so it won't trigger
 
-	b.Add(testEvent(event.KindActionRequested))
-	b.Add(testEvent(event.KindActionAllowed))
+	b.Add(testEvent(event.ActionRequested))
+	b.Add(testEvent(event.ActionAllowed))
 
 	if b.Full() {
 		t.Error("batch should not be full with 2/3 events")
@@ -209,7 +209,7 @@ func TestBatchFlushOnSize(t *testing.T) {
 		t.Error("batch should not flush with 2/3 events and large maxAge")
 	}
 
-	b.Add(testEvent(event.KindActionExecuted))
+	b.Add(testEvent(event.ActionExecuted))
 
 	if !b.Full() {
 		t.Error("batch should be full with 3/3 events")
@@ -230,7 +230,7 @@ func TestBatchFlushOnSize(t *testing.T) {
 func TestBatchFlushOnAge(t *testing.T) {
 	b := shipper.NewBatch(100, 50*time.Millisecond) // Large maxSize so it won't trigger by size
 
-	b.Add(testEvent(event.KindActionRequested))
+	b.Add(testEvent(event.ActionRequested))
 
 	if b.ShouldFlush() {
 		t.Error("batch should not flush immediately")
@@ -272,7 +272,7 @@ func TestBatchConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			b.Add(testEvent(event.KindActionRequested))
+			b.Add(testEvent(event.ActionRequested))
 		}()
 	}
 	wg.Wait()
@@ -315,7 +315,7 @@ func TestHTTPShipperSendsBatch(t *testing.T) {
 
 	// Ship 3 events to fill batch and trigger flush
 	for i := 0; i < 3; i++ {
-		if err := s.Ship(testEvent(event.KindActionRequested)); err != nil {
+		if err := s.Ship(testEvent(event.ActionRequested)); err != nil {
 			t.Fatalf("Ship %d: %v", i, err)
 		}
 	}
@@ -356,7 +356,7 @@ func TestHTTPShipperFlush(t *testing.T) {
 		MaxAge:    1 * time.Hour,
 	})
 
-	if err := s.Ship(testEvent(event.KindPolicyDenied)); err != nil {
+	if err := s.Ship(testEvent(event.PolicyDenied)); err != nil {
 		t.Fatalf("Ship: %v", err)
 	}
 
@@ -394,7 +394,7 @@ func TestHTTPShipperRetry(t *testing.T) {
 		MaxAge:     1 * time.Hour,
 	})
 
-	if err := s.Ship(testEvent(event.KindActionFailed)); err != nil {
+	if err := s.Ship(testEvent(event.ActionFailed)); err != nil {
 		t.Fatalf("Ship: %v", err)
 	}
 
@@ -425,7 +425,7 @@ func TestHTTPShipperCustomHeaders(t *testing.T) {
 		Headers:   map[string]string{"X-API-Key": "secret"},
 	})
 
-	if err := s.Ship(testEvent(event.KindActionAllowed)); err != nil {
+	if err := s.Ship(testEvent(event.ActionAllowed)); err != nil {
 		t.Fatalf("Ship: %v", err)
 	}
 
@@ -442,7 +442,7 @@ func TestPipelineFanOut(t *testing.T) {
 
 	p := shipper.NewPipeline([]shipper.Shipper{s1, s2})
 
-	e := testEvent(event.KindActionRequested)
+	e := testEvent(event.ActionRequested)
 	p.Handle(e)
 
 	if buf1.Len() == 0 {
@@ -461,7 +461,7 @@ func TestPipelineAttachToBus(t *testing.T) {
 	bus := event.NewBus()
 	p.Attach(bus)
 
-	bus.Publish(testEvent(event.KindActionAllowed))
+	bus.Publish(testEvent(event.ActionAllowed))
 
 	if buf.Len() == 0 {
 		t.Error("expected pipeline to receive event from bus")
@@ -478,13 +478,13 @@ func TestPipelineFilter(t *testing.T) {
 	)
 
 	// This should be filtered out (ref_monitor, not governance)
-	p.Handle(testEvent(event.KindActionAllowed))
+	p.Handle(testEvent(event.ActionAllowed))
 	if buf.Len() != 0 {
 		t.Error("expected ActionAllowed to be filtered out by GovernanceOnly")
 	}
 
 	// This should pass through (governance)
-	p.Handle(testEvent(event.KindPolicyDenied))
+	p.Handle(testEvent(event.PolicyDenied))
 	if buf.Len() == 0 {
 		t.Error("expected PolicyDenied to pass GovernanceOnly filter")
 	}
@@ -499,12 +499,12 @@ func TestPipelineSkipHeartbeats(t *testing.T) {
 		shipper.WithFilter(shipper.SkipHeartbeats),
 	)
 
-	p.Handle(testEvent(event.KindHeartbeatEmitted))
+	p.Handle(testEvent(event.HeartbeatEmitted))
 	if buf.Len() != 0 {
 		t.Error("expected heartbeat to be filtered out")
 	}
 
-	p.Handle(testEvent(event.KindActionRequested))
+	p.Handle(testEvent(event.ActionRequested))
 	if buf.Len() == 0 {
 		t.Error("expected non-heartbeat to pass through")
 	}
@@ -516,15 +516,15 @@ func TestPipelineKindFilter(t *testing.T) {
 
 	p := shipper.NewPipeline(
 		[]shipper.Shipper{s},
-		shipper.WithFilter(shipper.KindFilter(event.KindPolicyDenied, event.KindInvariantViolation)),
+		shipper.WithFilter(shipper.KindFilter(event.PolicyDenied, event.InvariantViolation)),
 	)
 
-	p.Handle(testEvent(event.KindActionRequested))
+	p.Handle(testEvent(event.ActionRequested))
 	if buf.Len() != 0 {
 		t.Error("expected ActionRequested to be filtered")
 	}
 
-	p.Handle(testEvent(event.KindPolicyDenied))
+	p.Handle(testEvent(event.PolicyDenied))
 	if buf.Len() == 0 {
 		t.Error("expected PolicyDenied to pass kind filter")
 	}
@@ -539,12 +539,12 @@ func TestPipelineCategoryFilter(t *testing.T) {
 		shipper.WithFilter(shipper.CategoryFilter(event.CategoryGovernance, event.CategorySafety)),
 	)
 
-	p.Handle(testEvent(event.KindActionRequested)) // ref_monitor — filtered
+	p.Handle(testEvent(event.ActionRequested)) // ref_monitor — filtered
 	if buf.Len() != 0 {
 		t.Error("expected ref_monitor to be filtered")
 	}
 
-	p.Handle(testEvent(event.KindBlastRadiusExceeded)) // safety — passes
+	p.Handle(testEvent(event.BlastRadiusExceeded)) // safety — passes
 	if buf.Len() == 0 {
 		t.Error("expected safety event to pass category filter")
 	}
@@ -569,7 +569,7 @@ func TestPipelineErrorHandling(t *testing.T) {
 		shipper.WithLogger(silentLogger),
 	)
 
-	p.Handle(testEvent(event.KindActionRequested))
+	p.Handle(testEvent(event.ActionRequested))
 
 	// Good shipper should still receive the event despite bad shipper failing
 	if buf.Len() == 0 {
@@ -591,8 +591,8 @@ func TestPipelineMultipleErrors(t *testing.T) {
 		shipper.WithLogger(silentLogger),
 	)
 
-	p.Handle(testEvent(event.KindActionRequested))
-	p.Handle(testEvent(event.KindActionAllowed))
+	p.Handle(testEvent(event.ActionRequested))
+	p.Handle(testEvent(event.ActionAllowed))
 
 	// 2 events * 2 bad shippers = 4 errors
 	if p.ErrorCount() != 4 {
@@ -609,7 +609,7 @@ func TestPipelineFlushAndClose(t *testing.T) {
 	}
 
 	p := shipper.NewPipeline([]shipper.Shipper{fs})
-	p.Handle(testEvent(event.KindRunStarted))
+	p.Handle(testEvent(event.RunStarted))
 
 	if err := p.Flush(); err != nil {
 		t.Errorf("Flush: %v", err)
@@ -638,17 +638,17 @@ func TestPipelineMultipleFilters(t *testing.T) {
 		shipper.WithFilter(shipper.GovernanceOnly),
 	)
 
-	p.Handle(testEvent(event.KindHeartbeatEmitted)) // Fails first filter
+	p.Handle(testEvent(event.HeartbeatEmitted)) // Fails first filter
 	if buf.Len() != 0 {
 		t.Error("heartbeat should be filtered")
 	}
 
-	p.Handle(testEvent(event.KindActionRequested)) // Passes first, fails second
+	p.Handle(testEvent(event.ActionRequested)) // Passes first, fails second
 	if buf.Len() != 0 {
 		t.Error("ref_monitor event should be filtered by GovernanceOnly")
 	}
 
-	p.Handle(testEvent(event.KindPolicyDenied)) // Passes both
+	p.Handle(testEvent(event.PolicyDenied)) // Passes both
 	if buf.Len() == 0 {
 		t.Error("governance event should pass both filters")
 	}
@@ -670,11 +670,11 @@ func TestEndToEndBusToPipeline(t *testing.T) {
 	p.Attach(bus)
 
 	// Publish governance events
-	bus.Publish(testEvent(event.KindPolicyDenied))
-	bus.Publish(testEvent(event.KindActionAllowed))
+	bus.Publish(testEvent(event.PolicyDenied))
+	bus.Publish(testEvent(event.ActionAllowed))
 
 	// Publish heartbeat (should be filtered)
-	bus.Publish(testEvent(event.KindHeartbeatEmitted))
+	bus.Publish(testEvent(event.HeartbeatEmitted))
 
 	lines1 := strings.Split(strings.TrimSpace(buf1.String()), "\n")
 	lines2 := strings.Split(strings.TrimSpace(buf2.String()), "\n")

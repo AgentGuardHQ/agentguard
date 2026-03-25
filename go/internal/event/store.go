@@ -30,8 +30,8 @@ func (s *Store) All() []Event {
 	return out
 }
 
-// Count returns the number of events. Thread-safe.
-func (s *Store) Count() int {
+// Len returns the number of events. Thread-safe.
+func (s *Store) Len() int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return len(s.events)
