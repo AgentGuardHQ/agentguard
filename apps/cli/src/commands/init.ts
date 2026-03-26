@@ -1539,11 +1539,19 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
   const detection = detectProject(projectRoot);
 
   console.log(`  ${bold('Project detected:')}`);
-  console.log(`    ${dim('Type:')}          ${detection.projectType}${detection.isMonorepo ? ' (monorepo)' : ''}`);
+  console.log(
+    `    ${dim('Type:')}          ${detection.projectType}${detection.isMonorepo ? ' (monorepo)' : ''}`
+  );
   console.log(`    ${dim('Package mgr:')}   ${detection.packageManager}`);
-  console.log(`    ${dim('CI/CD:')}         ${detection.cicd.length ? detection.cicd.join(', ') : dim('none detected')}`);
-  console.log(`    ${dim('Test:')}          ${detection.testFrameworks.length ? detection.testFrameworks.join(', ') : dim('none detected')}`);
-  console.log(`    ${dim('Agent runtimes:')} ${detection.agentRuntimes.length ? detection.agentRuntimes.join(', ') : dim('none detected')}`);
+  console.log(
+    `    ${dim('CI/CD:')}         ${detection.cicd.length ? detection.cicd.join(', ') : dim('none detected')}`
+  );
+  console.log(
+    `    ${dim('Test:')}          ${detection.testFrameworks.length ? detection.testFrameworks.join(', ') : dim('none detected')}`
+  );
+  console.log(
+    `    ${dim('Agent runtimes:')} ${detection.agentRuntimes.length ? detection.agentRuntimes.join(', ') : dim('none detected')}`
+  );
 
   // Step 2: Select execution profile
   const profileNames = Object.keys(PROFILE_DESCRIPTIONS);
@@ -1595,19 +1603,27 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
   if (existsSync(templatePath)) {
     const content = readFileSync(templatePath, 'utf8');
     if (existsSync(outputPath)) {
-      const overwrite = nonInteractive || (await studioConfirm(`  agentguard.yaml already exists. Overwrite?`, false));
+      const overwrite =
+        nonInteractive ||
+        (await studioConfirm(`  agentguard.yaml already exists. Overwrite?`, false));
       if (!overwrite) {
         console.log(`  ${dim('Keeping existing agentguard.yaml')}`);
       } else {
         writeFileSync(outputPath, content, 'utf8');
-        console.log(`\n  ${color('✓', 'green')} Policy: ${bold(selectedProfile)} profile written to agentguard.yaml`);
+        console.log(
+          `\n  ${color('✓', 'green')} Policy: ${bold(selectedProfile)} profile written to agentguard.yaml`
+        );
       }
     } else {
       writeFileSync(outputPath, content, 'utf8');
-      console.log(`\n  ${color('✓', 'green')} Policy: ${bold(selectedProfile)} profile written to agentguard.yaml`);
+      console.log(
+        `\n  ${color('✓', 'green')} Policy: ${bold(selectedProfile)} profile written to agentguard.yaml`
+      );
     }
   } else {
-    console.error(`  ${color('⚠', 'yellow')} Template ${selectedProfile}.yaml not found — skipping policy scaffold`);
+    console.error(
+      `  ${color('⚠', 'yellow')} Template ${selectedProfile}.yaml not found — skipping policy scaffold`
+    );
   }
 
   // Step 5: Scaffold swarm (if selected)
@@ -1620,7 +1636,9 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
       const swarmModule = await import('@red-codes/swarm');
       scaffoldFn = swarmModule.scaffold;
     } catch {
-      console.error(`\n  ${color('⚠', 'yellow')} @red-codes/swarm not found — skipping swarm scaffold`);
+      console.error(
+        `\n  ${color('⚠', 'yellow')} @red-codes/swarm not found — skipping swarm scaffold`
+      );
       scaffoldFn = null as unknown as typeof import('@red-codes/swarm').scaffold;
     }
 
@@ -1643,7 +1661,9 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
 
   // Step 6: Set up Claude Code hooks (if Claude Code detected)
   if (detection.agentRuntimes.includes('Claude Code')) {
-    const setupHooks = nonInteractive || (await studioConfirm(`\n  ${bold('Configure Claude Code governance hooks?')}`, true));
+    const setupHooks =
+      nonInteractive ||
+      (await studioConfirm(`\n  ${bold('Configure Claude Code governance hooks?')}`, true));
     if (setupHooks) {
       try {
         const { claudeInit } = await import('./claude-init.js');
@@ -1657,7 +1677,10 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
 
   // Step 7: Offer Cloud connection
   if (!nonInteractive) {
-    const connectCloud = await studioConfirm(`\n  ${bold('Connect to AgentGuard Cloud?')} (telemetry + fleet dashboard)`, false);
+    const connectCloud = await studioConfirm(
+      `\n  ${bold('Connect to AgentGuard Cloud?')} (telemetry + fleet dashboard)`,
+      false
+    );
     if (connectCloud) {
       console.log(`\n  ${dim('Run:')} aguard cloud connect`);
     }
@@ -1669,7 +1692,9 @@ async function initStudio(parsed: ReturnType<typeof parseArgs>): Promise<number>
   console.log(`    ${dim('Policy:')}    ${selectedProfile} execution profile`);
   if (includeSwarm) {
     const selectedPreset = presetNames[swarmPresetIdx];
-    console.log(`    ${dim('Swarm:')}     ${selectedPreset} preset (${SWARM_PRESETS[selectedPreset].join(', ')})`);
+    console.log(
+      `    ${dim('Swarm:')}     ${selectedPreset} preset (${SWARM_PRESETS[selectedPreset].join(', ')})`
+    );
   }
   if (detection.agentRuntimes.includes('Claude Code')) {
     console.log(`    ${dim('Hooks:')}     Claude Code governance hooks`);

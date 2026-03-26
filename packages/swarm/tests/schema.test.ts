@@ -4,8 +4,6 @@ import {
   validateSquadManifest,
   validateSwarmConfig,
   SWARM_MANIFEST_SCHEMA,
-  SQUAD_MANIFEST_SCHEMA,
-  SWARM_CONFIG_SCHEMA,
 } from '../src/schema.js';
 import { loadManifest } from '../src/manifest.js';
 

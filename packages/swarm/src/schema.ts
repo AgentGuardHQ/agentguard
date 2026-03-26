@@ -84,12 +84,7 @@ export const SQUAD_MANIFEST_SCHEMA = {
     squads: { type: 'object', additionalProperties: SQUAD_SCHEMA },
     loopGuards: {
       type: 'object',
-      required: [
-        'maxOpenPRsPerSquad',
-        'maxRetries',
-        'maxBlastRadius',
-        'maxRunMinutes',
-      ],
+      required: ['maxOpenPRsPerSquad', 'maxRetries', 'maxBlastRadius', 'maxRunMinutes'],
       additionalProperties: false,
       properties: {
         maxOpenPRsPerSquad: { type: 'number', minimum: 1 },
@@ -180,7 +175,7 @@ export interface ValidationResult {
 function validateValue(
   value: unknown,
   schema: Record<string, unknown>,
-  path: string,
+  path: string
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
@@ -198,7 +193,8 @@ function validateValue(
       }
     }
 
-    const properties = (schema.properties as Record<string, Record<string, unknown>> | undefined) ?? {};
+    const properties =
+      (schema.properties as Record<string, Record<string, unknown>> | undefined) ?? {};
     for (const [key, propSchema] of Object.entries(properties)) {
       if (key in obj) {
         errors.push(...validateValue(obj[key], propSchema, `${path}.${key}`));
@@ -267,7 +263,10 @@ function validateValue(
 
     if (schema.enum && Array.isArray(schema.enum)) {
       if (!schema.enum.includes(value)) {
-        errors.push({ path, message: `Value must be one of: ${(schema.enum as string[]).join(', ')}` });
+        errors.push({
+          path,
+          message: `Value must be one of: ${(schema.enum as string[]).join(', ')}`,
+        });
       }
     }
 
@@ -290,19 +289,31 @@ function validateValue(
 
 /** Validate a swarm manifest object against its schema. */
 export function validateSwarmManifest(manifest: unknown): ValidationResult {
-  const errors = validateValue(manifest, SWARM_MANIFEST_SCHEMA as unknown as Record<string, unknown>, '$');
+  const errors = validateValue(
+    manifest,
+    SWARM_MANIFEST_SCHEMA as unknown as Record<string, unknown>,
+    '$'
+  );
   return { valid: errors.length === 0, errors };
 }
 
 /** Validate a squad manifest object against its schema. */
 export function validateSquadManifest(manifest: unknown): ValidationResult {
-  const errors = validateValue(manifest, SQUAD_MANIFEST_SCHEMA as unknown as Record<string, unknown>, '$');
+  const errors = validateValue(
+    manifest,
+    SQUAD_MANIFEST_SCHEMA as unknown as Record<string, unknown>,
+    '$'
+  );
   return { valid: errors.length === 0, errors };
 }
 
 /** Validate a swarm config object against its schema. */
 export function validateSwarmConfig(config: unknown): ValidationResult {
-  const errors = validateValue(config, SWARM_CONFIG_SCHEMA as unknown as Record<string, unknown>, '$');
+  const errors = validateValue(
+    config,
+    SWARM_CONFIG_SCHEMA as unknown as Record<string, unknown>,
+    '$'
+  );
   return { valid: errors.length === 0, errors };
 }
 
