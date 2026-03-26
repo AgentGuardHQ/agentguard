@@ -8,12 +8,12 @@ The system has one architectural spine: the **canonical event model**. All syste
 
 **Key characteristics:**
 - Governed action kernel: propose → normalize → evaluate → execute → emit
-- 22 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard)
+- 23 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard, script execution tracking)
 - YAML/JSON policy format with pattern matching, scopes, and branch conditions
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - SQLite event persistence for audit trail and replay (JSONL export still supported)
 - Claude Code adapter for PreToolUse/PostToolUse hooks
-- **pnpm monorepo** with Turbo orchestration: 15 packages under `packages/`, 3 apps under `apps/`
+- **pnpm monorepo** with Turbo orchestration: 16 packages under `packages/`, 3 apps under `apps/`
 - Each package compiles independently via `tsc`; CLI bundle via `esbuild` in `apps/cli`
 - Scoped npm packages: `@red-codes/*` for workspace modules, `@red-codes/agentguard` for published CLI
 - CLI has runtime dependencies (`chokidar`, `commander`, `pino`); optional `better-sqlite3` for SQLite storage backend
@@ -73,7 +73,7 @@ packages/
 │   ├── policy-trust.ts         # Policy trust verification
 │   └── yaml-loader.ts          # YAML policy parser
 ├── invariants/src/             # @red-codes/invariants — Invariant system
-│   ├── definitions.ts          # 22 built-in invariant definitions
+│   ├── definitions.ts          # 23 built-in invariant definitions
 │   └── checker.ts              # Invariant evaluation engine
 ├── matchers/src/               # @red-codes/matchers — Structured matchers (KE-1)
 │   ├── path-matcher.ts         # Glob-based path matching (picomatch)
@@ -149,10 +149,17 @@ packages/
 │   ├── session.ts              # Session management
 │   ├── types.ts                # SDK type definitions
 │   └── index.ts                # Module re-exports
-└── invariant-data-protection/src/ # @red-codes/invariant-data-protection — Data protection invariant plugin
-    ├── index.ts                # Module re-exports
-    ├── invariants.ts           # Data protection invariant definitions
-    └── patterns.ts             # Data protection patterns
+├── invariant-data-protection/src/ # @red-codes/invariant-data-protection — Data protection invariant plugin
+│   ├── index.ts                # Module re-exports
+│   ├── invariants.ts           # Data protection invariant definitions
+│   └── patterns.ts             # Data protection patterns
+└── scheduler/src/              # @red-codes/scheduler — Task scheduler, queue, lease manager, and worker orchestration
+    ├── dispatcher.ts          # Task dispatcher
+    ├── lease-manager.ts       # Distributed lease management
+    ├── metrics.ts             # Scheduler metrics
+    ├── task-store.ts          # Task persistence
+    ├── types.ts               # Scheduler type definitions
+    └── index.ts               # Module re-exports
 
 apps/
 ├── cli/src/                    # @red-codes/agentguard — CLI (published npm package)
@@ -246,6 +253,7 @@ Each workspace package maps to a single architectural concept:
 - **packages/telemetry-client/** — Telemetry client (identity, signing, queue, sender)
 - **packages/sdk/** — Agent SDK for programmatic governance integration
 - **packages/swarm/** — Shareable agent swarm templates (config, manifest, scaffolder)
+- **packages/scheduler/** — Task scheduler, queue, lease manager, and worker orchestration for swarm
 - **apps/cli/** — CLI entry point and commands (published as `@red-codes/agentguard`)
 - **packages/invariant-data-protection/** — Data protection invariant plugin
 - **apps/mcp-server/** — MCP governance server (15 governance tools)
@@ -285,6 +293,8 @@ Each workspace package maps to a single architectural concept:
 - `agentguard cloud login|connect|status|events|runs|summary|disconnect` — Cloud governance analytics
 - `agentguard copilot-hook` — Handle GitHub Copilot PreToolUse/PostToolUse hook events
 - `agentguard copilot-init` — Set up GitHub Copilot hook integration
+- `agentguard team-report` — Team-level governance observability across agents
+- `agentguard telemetry [on|off|status]` — Manage anonymous telemetry settings
 
 ### Event Model
 The canonical event model is the architectural spine. Event kinds defined in `packages/events/src/schema.ts`:
