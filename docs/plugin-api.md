@@ -1,199 +1,426 @@
 # Plugin API
 
-The system supports extension through four plugin categories: event sources, renderers, policy packs, and replay processors. Each category has a defined contract and integration point.
+AgentGuard supports extension through six plugin types: **renderers**, **replay processors**, **policy packs**, **invariants**, **adapters**, and **simulators**. Each type has a defined manifest contract, capability model, and integration point.
 
-## Plugin Categories
+## Plugin Manifest
 
-### 1. Event Sources
-
-Event sources feed raw signals into the normalization pipeline. Any system that produces error output, failure notifications, or action traces can be an event source.
-
-**Contract:** An event source must implement `{ name, start(onRawSignal), stop() }`. The `onRawSignal(rawText)` callback feeds raw text into the ingestion pipeline.
-
-**Implementation:** `packages/plugins/src/registry.ts` — the plugin registry manages source lifecycle.
-
-**Quick Start:**
+Every plugin must provide a `PluginManifest`. The manifest is validated at install time before the plugin is registered.
 
 ```typescript
-import { EventBus } from '@red-codes/events';
-
-const bus = new EventBus();
-
-registry.register({
-  name: 'my-custom-source',
-  start(onRawSignal) {
-    // onRawSignal(rawText) feeds into the pipeline
-  },
-  stop() {},
-});
-
-registry.start();
-```
-
-**Built-in sources:**
-| Source | Adapter | Path |
-|--------|---------|------|
-| stderr (watch mode) | Watch source | `packages/adapters/src/` |
-| Claude Code errors | Claude hook source | `packages/adapters/src/claude-code.ts` |
-| Project scan | Scan source | `packages/plugins/src/discovery.ts` |
-
-**SourceRegistry API:**
-
-| Method | Description |
-|--------|-------------|
-| `register(config)` | Register a source. Returns an unregister function. |
-| `start(name?)` | Start one source by name, or all if omitted. |
-| `stop(name?)` | Stop one source by name, or all if omitted. |
-| `list()` | Returns `[{ name, running, meta }]` for all sources. |
-| `unregister(name)` | Remove a source. Stops it first if running. |
-
-**Planned sources:**
-| Source | Description |
-|--------|-------------|
-| GitHub Actions webhook | CI pipeline failure events |
-| ESLint daemon | Real-time lint error streaming |
-| Jest watch mode | Test failure events as they occur |
-| Sentry webhook | Production error events |
-| AgentGuard AAB | Governance violation events |
-| VS Code diagnostics | Editor error interception |
-
-**Implementing a custom event source:**
-
-```javascript
-// Example: GitHub Actions webhook source
-export function createGitHubActionsSource(options) {
-  let server = null;
-
-  return {
-    name: 'github-actions',
-
-    start(onRawSignal) {
-      // Start a webhook listener
-      // When a workflow fails, call:
-      // onRawSignal(failureOutput)
-    },
-
-    stop() {
-      if (server) server.close();
-    },
-
-    meta: {
-      description: 'Receives CI failure events from GitHub Actions webhooks',
-    },
-  };
+interface PluginManifest {
+  /** Unique identifier, e.g. "agentguard-renderer-json" */
+  readonly id: string;
+  /** Human-readable display name */
+  readonly name: string;
+  /** Plugin version (semver, e.g. "1.2.0") */
+  readonly version: string;
+  /** Brief description */
+  readonly description?: string;
+  /** Plugin type — one of the six supported types */
+  readonly type: 'renderer' | 'replay-processor' | 'policy-pack' | 'invariant' | 'adapter' | 'simulator';
+  /** Required AgentGuard API version (semver range, e.g. "^1.0.0") */
+  readonly apiVersion: string;
+  /** Capabilities this plugin requires at runtime */
+  readonly capabilities?: readonly PluginCapability[];
+  /** Other plugin IDs this plugin depends on */
+  readonly dependencies?: readonly string[];
 }
 ```
 
-### 2. Renderers
+**Required fields:** `id`, `name`, `version`, `type`, `apiVersion`.
 
-Renderers subscribe to governance events and present them to the developer in real time.
+**Capabilities** are declared up-front. The sandbox grants only what is declared:
 
-**Contract:** A renderer subscribes to EventBus events and presents the appropriate output for each event type.
+| Capability | Description |
+|------------|-------------|
+| `filesystem:read` | Read from the filesystem |
+| `filesystem:write` | Write to the filesystem |
+| `network` | Make outbound network requests |
+| `process:spawn` | Spawn child processes |
+| `events:emit` | Emit events onto the event bus |
+| `events:subscribe` | Subscribe to events from the event bus |
 
-**Integration point:** Subscribe to events via `@red-codes/events` (`EventBus`).
+## Plugin Registry API
+
+`packages/plugins/src/registry.ts` — persists installed plugins to `.agentguard/plugins.json`.
+
+| Method | Description |
+|--------|-------------|
+| `install(manifest, source)` | Validate and register a plugin. Returns `PluginValidationResult`. |
+| `remove(pluginId)` | Remove a plugin. Returns `false` if another plugin depends on it. |
+| `get(pluginId)` | Get an installed plugin by ID. |
+| `has(pluginId)` | Check if a plugin is installed. |
+| `enable(pluginId)` | Enable a plugin. Returns `false` if not found. |
+| `disable(pluginId)` | Disable a plugin. Returns `false` if not found. |
+| `list()` | Returns all installed plugins. |
+| `listByType(type)` | Returns installed plugins filtered by type. |
+| `save()` | Persist the registry to disk. |
+| `reload()` | Reload the registry from disk. |
+
+```typescript
+import { createPluginRegistry } from '@red-codes/plugins';
+
+const registry = createPluginRegistry({ storageDir: '.agentguard', hostVersion: '1.0.0' });
+
+const result = registry.install(manifest, 'my-plugin');
+if (!result.valid) {
+  console.error(result.errors);
+}
+```
+
+## Plugin Discovery
+
+`packages/plugins/src/discovery.ts` — read-only search for available plugins. Discovery finds plugins but does not install them; use the registry for installation.
+
+**npm registry search** — finds packages with the `agentguard-plugin` keyword:
+
+```typescript
+import { searchNpmPlugins } from '@red-codes/plugins';
+
+const plugins = await searchNpmPlugins('renderer', { limit: 20 });
+```
+
+**Local directory search** — scans subdirectories for `package.json` files that include an `agentguard` field:
+
+```json
+// package.json
+{
+  "name": "my-agentguard-plugin",
+  "agentguard": { "type": "renderer" }
+}
+```
+
+```typescript
+import { searchLocalPlugins } from '@red-codes/plugins';
+
+const plugins = searchLocalPlugins({ directory: './plugins' });
+```
+
+## Plugin Sandbox
+
+`packages/plugins/src/sandbox.ts` — runtime capability enforcement. Each plugin runs inside a sandbox created from its manifest. Undeclared capability access is recorded as a violation.
+
+```typescript
+import { createPluginSandbox } from '@red-codes/plugins';
+
+const sandbox = createPluginSandbox(manifest);
+
+if (sandbox.hasCapability('filesystem:read')) {
+  // safe to proceed
+}
+
+const result = sandbox.execute(() => plugin.doWork());
+if (!result.success) {
+  console.error(result.error);
+}
+```
+
+**Sandbox API:**
+
+| Method | Description |
+|--------|-------------|
+| `hasCapability(cap)` | Returns `true` if the capability is declared |
+| `getCapabilities()` | Returns all granted capabilities |
+| `assertCapability(cap)` | Returns `true` and records a violation if not declared |
+| `execute(fn)` | Run a callback with error isolation. Returns `{ success, value, error, durationMs }` |
+| `executeAsync(fn)` | Async version of `execute` |
+| `getViolations()` | Returns all recorded sandbox violations |
+
+## Plugin Categories
+
+### 1. Renderers
+
+Renderers receive lifecycle callbacks as actions flow through the kernel and produce output (terminal, file, dashboard, etc.).
+
+**Integration point:** `packages/renderers/src/` — register with the `RendererRegistry`.
 
 **Built-in renderers:**
 | Renderer | Platform | Path |
 |----------|----------|------|
 | TUI renderer | CLI / terminal | `packages/renderers/src/tui-renderer.ts` |
-| JSONL sink | Persistence | `packages/events/src/jsonl.ts` |
 
-**Planned renderers:**
-| Renderer | Platform |
-|----------|----------|
-| VS Code sidebar | VS Code extension webview |
-| JetBrains tool window | IntelliJ/WebStorm plugin |
-| Minimal / headless | CI environments (text-only output) |
+**`GovernanceRenderer` interface** (all methods optional):
+
+```typescript
+interface GovernanceRenderer {
+  readonly id: string;
+  readonly name: string;
+
+  onRunStarted?(config: RendererConfig): void;
+  onActionResult?(result: KernelResult): void;
+  onMonitorStatus?(decision: MonitorDecision): void;
+  onSimulation?(simulation: SimulationResult): void;
+  onDecisionRecord?(record: GovernanceDecisionRecord): void;
+  onPolicyTrace?(trace: PolicyTracePayload): void;
+  onRunEnded?(summary: RunSummary): void;
+  dispose?(): void;
+}
+```
+
+**`RendererRegistry` API:**
+
+| Method | Description |
+|--------|-------------|
+| `register(renderer)` | Register a renderer. Throws if ID already exists. |
+| `unregister(id)` | Unregister and call `dispose()` if defined. Returns `true` if found. |
+| `get(id)` | Get a renderer by ID. |
+| `list()` | List all registered renderer IDs. |
+| `notifyRunStarted(config)` | Dispatch run-started to all renderers. |
+| `notifyActionResult(result)` | Dispatch action result to all renderers. |
+| `notifyPolicyTrace(trace)` | Dispatch policy trace to all renderers. |
+| `notifyRunEnded(summary)` | Dispatch run-ended to all renderers. |
+| `disposeAll()` | Dispose all renderers and clear the registry. |
 
 **Implementing a custom renderer:**
 
 ```typescript
-import { EventBus } from '@red-codes/events';
-import { EventKind } from '@red-codes/events';
+import type { GovernanceRenderer, RendererConfig, RunSummary } from '@red-codes/renderers';
+import type { KernelResult } from '@red-codes/kernel';
 
-const bus = new EventBus();
+export const myRenderer: GovernanceRenderer = {
+  id: 'my-custom-renderer',
+  name: 'My Custom Renderer',
 
-// Subscribe to governance events
-bus.on(EventKind.ACTION_REQUESTED, (event) => {
-  // Display action proposal
-});
+  onRunStarted(config: RendererConfig) {
+    console.log(`Run started: ${config.runId}`);
+  },
 
-bus.on(EventKind.ACTION_DENIED, (event) => {
-  // Display denial with reason
-});
+  onActionResult(result: KernelResult) {
+    const status = result.allowed ? '✅ ALLOW' : '❌ DENY';
+    console.log(`${status} ${result.action} → ${result.target}`);
+  },
 
-bus.on(EventKind.ACTION_EXECUTED, (event) => {
-  // Display execution result
-});
+  onRunEnded(summary: RunSummary) {
+    console.log(`Run ended: ${summary.allowed} allowed, ${summary.denied} denied`);
+  },
+};
 ```
 
-### 3. Policy Packs
+### 2. Policy Packs
 
-Policy packs define governance rules for AgentGuard. Each pack declares what actions are allowed, denied, or constrained for specific agent scopes.
+Policy packs are YAML files that define governance rules — what actions are allowed, denied, or constrained.
 
-**Contract:** A policy pack provides declarative policy definitions that AgentGuard evaluates deterministically.
+**Integration point:** `packages/policy/src/pack-loader.ts` — loaded via `pack: <id>` in policy files or the CLI `--policy` flag.
 
-**Integration point:** Loaded by the AgentGuard policy loader (planned).
-
-**Planned policy packs:**
+**Shipped policy packs** (`policies/`):
 | Pack | Description |
 |------|-------------|
-| Default | Basic file scope, no force-push, no secret commits |
-| Documentation-only | Agent limited to `.md` files and `docs/` directory |
-| Test-safe | Agent can only modify test files and run tests |
-| CI-aware | Agent can trigger CI but not modify CI config |
-| Production-guard | Prevents modifications to production config and deployment files |
+| `essentials` | Core safety — secrets, force push, protected branches, credentials |
+| `ci-safe` | CI-safe rules for automated agents |
+| `engineering-standards` | Code quality and engineering best practices |
+| `enterprise` | Enterprise governance with strict controls |
+| `hipaa` | HIPAA-compliant rules for healthcare environments |
+| `open-source` | Rules for open-source project maintainers |
+| `soc2` | SOC 2-aligned governance rules |
+| `strict` | Maximum enforcement for high-risk environments |
 
-**Policy definition format (target):**
+**Policy pack format:**
 
 ```yaml
-policy:
-  name: "test-safe"
-  version: "1.0"
-  scope:
-    include:
-      - "tests/**"
-      - "**/*.test.js"
-      - "**/*.spec.js"
-    exclude:
-      - "tests/fixtures/production/**"
-  permissions:
-    file_create: allow
-    file_edit: allow
-    file_delete: deny
-    git_commit: allow
-    git_push: deny
-    ci_trigger: allow
-  limits:
-    max_files_per_action: 20
-    max_lines_changed: 1000
-  invariants:
-    - "test_suite_passes_after_change"
+id: my-pack
+name: My Policy Pack
+description: Custom governance rules for my team
+severity: 3
+
+invariants:
+  no-secret-exposure: enforce
+  no-force-push: enforce
+
+rules:
+  - action: git.push
+    effect: deny
+    branches: [main, master]
+    reason: Direct push to protected branch blocked
+
+  - action: file.write
+    effect: deny
+    target: "**/.env*"
+    reason: Secrets files must not be modified
+
+  - action: file.write
+    effect: allow
+    scope:
+      include: ["src/**", "tests/**"]
 ```
 
-### 4. Replay Processors
+**Using a pack in a policy file:**
 
-Replay processors transform event streams for analysis, visualization, or testing.
+```yaml
+# agentguard.yaml
+pack: essentials
 
-**Contract:** A replay processor takes an ordered event stream as input and produces a transformed output.
+rules:
+  - action: file.write
+    effect: allow
+    scope:
+      include: ["docs/**"]
+```
 
-**Integration point:** Consumes persisted event streams from the event store.
+### 3. Invariant Plugins
 
-**Planned replay processors:**
+Invariant plugins add custom safety checks evaluated before every action. AgentGuard ships 23 built-in invariants; plugins extend this with domain-specific checks.
+
+**Integration point:** `packages/invariants/src/` — implement the `AgentGuardInvariant` interface.
+
+**Example: `invariant-data-protection` plugin** (`packages/invariant-data-protection/`):
+
+This plugin adds PII detection, secret scanning (entropy-based), and log exposure invariants. It follows the same shape as built-in invariants.
+
+**`AgentGuardInvariant` interface:**
+
+```typescript
+interface AgentGuardInvariant {
+  readonly id: string;
+  readonly description: string;
+  check(state: SystemState): InvariantCheckResult;
+}
+
+interface InvariantCheckResult {
+  readonly passed: boolean;
+  readonly reason?: string;
+}
+```
+
+**Plugin manifest for an invariant:**
+
+```typescript
+const manifest: PluginManifest = {
+  id: 'agentguard-invariant-pii-check',
+  name: 'PII Detection Invariant',
+  version: '1.0.0',
+  type: 'invariant',
+  apiVersion: '^1.0.0',
+  capabilities: ['filesystem:read'],
+};
+```
+
+### 4. Simulators
+
+Simulator plugins add pre-execution impact forecasting for custom action types. The kernel runs simulators before executing an action to produce a predicted blast radius and risk level.
+
+**Integration point:** `packages/plugins/src/simulator-loader.ts` — loaded from the plugin registry via `loadSimulatorPlugins()`.
+
+**`ActionSimulator` contract:**
+
+```typescript
+interface SimulatorPlugin {
+  readonly id: string;
+
+  /** Return true if this simulator handles the given action */
+  supports(intent: { action: string; target?: string }): boolean;
+
+  /** Predict the impact of an action without executing it */
+  simulate(
+    intent: { action: string; target?: string },
+    context: Record<string, unknown>
+  ): Promise<{
+    predictedChanges: string[];
+    blastRadius: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    details: Record<string, unknown>;
+    simulatorId: string;
+    durationMs: number;
+  }>;
+}
+```
+
+**Plugin module export contract:**
+
+```typescript
+// my-simulator-plugin/index.ts
+export function createSimulator(): SimulatorPlugin {
+  return {
+    id: 'my-custom-simulator',
+
+    supports(intent) {
+      return intent.action === 'deploy.trigger';
+    },
+
+    async simulate(intent, context) {
+      return {
+        predictedChanges: [`deploy ${intent.target}`],
+        blastRadius: 0.6,
+        riskLevel: 'medium',
+        details: { environment: context.env },
+        simulatorId: 'my-custom-simulator',
+        durationMs: 1,
+      };
+    },
+  };
+}
+```
+
+**Loading simulator plugins:**
+
+```typescript
+import { loadSimulatorPlugins } from '@red-codes/plugins';
+import { createPluginRegistry } from '@red-codes/plugins';
+import { simulatorRegistry } from '@red-codes/kernel';
+
+const pluginRegistry = createPluginRegistry();
+await loadSimulatorPlugins(pluginRegistry, (sim) => simulatorRegistry.register(sim));
+```
+
+**Plugin manifest for a simulator:**
+
+```typescript
+const manifest: PluginManifest = {
+  id: 'my-custom-simulator',
+  name: 'Deploy Simulator',
+  version: '1.0.0',
+  type: 'simulator',
+  apiVersion: '^1.0.0',
+};
+```
+
+### 5. Adapters
+
+Adapter plugins add execution handlers for custom action classes. Built-in adapters cover `file`, `shell`, `git`, `npm`, `http`, `deploy`, `infra`, and `mcp` actions.
+
+**Integration point:** `packages/adapters/src/registry.ts` — register via `AdapterRegistry`.
+
+**Plugin manifest for an adapter:**
+
+```typescript
+const manifest: PluginManifest = {
+  id: 'agentguard-adapter-jira',
+  name: 'Jira Adapter',
+  version: '1.0.0',
+  type: 'adapter',
+  apiVersion: '^1.0.0',
+  capabilities: ['network'],
+};
+```
+
+### 6. Replay Processors
+
+Replay processors transform persisted event streams for analysis, visualization, or testing.
+
+**Integration point:** `packages/kernel/src/replay-processor.ts` — implement the `ReplayProcessor` interface.
+
+**Scaffold a replay processor:**
+
+```bash
+agentguard init replay-processor
+```
+
+**Planned community processors:**
 | Processor | Description |
 |-----------|-------------|
-| Session summarizer | Aggregate session events into a summary report |
-| Error pattern detector | Identify recurring error patterns across sessions |
-| Governance auditor | Extract and format governance decisions for review |
+| Session summarizer | Aggregate session events into a report |
+| Error pattern detector | Identify recurring violation patterns |
+| Governance auditor | Extract and format decisions for compliance review |
 
 ## Extension Guidelines
 
-1. **Zero runtime dependencies.** Plugins must not introduce runtime dependencies. This is a hard constraint inherited from the project's architecture.
+1. **Declare capabilities up-front.** Every capability used at runtime must be declared in the manifest. The sandbox denies undeclared access and records a violation.
 
-2. **Event-driven integration.** Plugins communicate through the EventBus. No direct function calls between plugins and core systems.
+2. **Export `createSimulator` for simulator plugins.** The simulator loader expects a named `createSimulator` export. Other plugin types integrate via their respective registries.
 
-3. **Schema compliance.** Plugins must conform to existing event and policy schemas.
+3. **Schema compliance.** Plugins must conform to existing event, policy, and manifest schemas. Manifests are validated before registration.
 
-4. **Deterministic behavior.** Policy packs and replay processors must be deterministic. Given the same input, they must produce the same output.
+4. **Deterministic behavior.** Policy packs, invariants, and replay processors must be deterministic. Given the same input they must produce the same output.
 
 5. **Independent operation.** Each plugin must work in isolation. Removing a plugin must not break the core system or other plugins.
+
+6. **Publish with keyword.** Publish npm packages with the `agentguard-plugin` keyword so `agentguard plugin search` can discover them.
