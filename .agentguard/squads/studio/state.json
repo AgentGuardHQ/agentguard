@@ -7,8 +7,8 @@
   },
   "assignments": {
     "studio-sr": {
-      "issue": 41,
-      "status": "in-progress",
+      "issue": "P0-dashboard-wiring",
+      "status": "ready",
       "currentPR": null,
       "completedWork": [
         {
@@ -40,22 +40,30 @@
           "prs": [83],
           "status": "done",
           "summary": "AGENTGUARD_WORKSPACE env var resolves correctly in git worktrees."
+        },
+        {
+          "issue": 41,
+          "prs": [89, 91],
+          "status": "done",
+          "summary": "Conference readiness tooling — demo scenario verification (59 commands, all passing) and pre-flight checklist (13 checks across all hard deps). Cloud API unreachable from readybench — flagged."
+        },
+        {
+          "issue": 87,
+          "prs": [92],
+          "status": "done",
+          "summary": "Pre-conference governance credibility — created SKILL.md for all 24 disabled agents, re-enabled them. Swarm now 118/120 agents with scope definitions."
+        },
+        {
+          "issue": 86,
+          "prs": [93],
+          "status": "done",
+          "summary": "Agent Observability MVP spec — 5-question framework, gap analysis, 14-item capability backlog (P0-P3), 3-minute design partner walkthrough script. PR #93 merged."
         }
       ],
-      "nextAssignment": "Conference readiness (#41) — dangerous command detection coverage for demo scenarios. Then pivot to dashboard wiring sprint goal."
+      "nextAssignment": "P0 dashboard wiring from observability spec: Wire violations, events, and runs pages to live Cloud API data. Items 1-3 from the priority backlog. These are Cloud-repo changes — studio-sr should file tracking issues in agentguard-cloud or coordinate with Cloud squad."
     }
   },
   "blockers": [
-    {
-      "issue": "24 enabled agents missing SKILL.md files",
-      "ref": "agentguard-workspace#78",
-      "severity": "P1"
-    },
-    {
-      "issue": "3 cron collisions on jared box",
-      "ref": "agentguard-workspace#79",
-      "severity": "P2"
-    },
     {
       "issue": "Cloud PR #400 (Go kernel HTTP ingest) CONFLICTING — critical path for #60",
       "ref": "agentguard-cloud#400",
@@ -65,35 +73,35 @@
       "issue": "Cloud PRs #405, #406 Build & Test FAILING",
       "ref": "agentguard-cloud#405, #406",
       "severity": "P2"
+    },
+    {
+      "issue": "Issue #50 (Go kernel rewrite impact assessment) needs human review — blocks strategy clarity",
+      "ref": "workspace#50",
+      "severity": "P1"
     }
   ],
   "prQueue": {
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "mergedThisCycle": [],
+    "mergedThisCycle": ["workspace#93"],
     "crossRepo": {
       "agentGuard": {
-        "mergedSinceLastReport": [],
-        "open": []
+        "open": [
+          { "number": 1002, "title": "feat(invariants): add no-verify-bypass invariant", "status": "OPEN" }
+        ]
       },
       "agentGuardCloud": [
         { "number": 400, "title": "Go kernel HTTP ingest endpoint", "status": "CONFLICTING", "criticality": "P2 — critical path for #60" },
-        { "number": 405, "title": "Test: provider-keys route", "status": "CI_FAILING" },
         { "number": 406, "title": "Audit log query enrichment", "status": "CI_FAILING" }
-      ],
-      "closedThisCycle": [
-        { "number": 402, "reason": "Duplicate of merged #399" },
-        { "number": 403, "reason": "Duplicate of merged #398" }
       ]
     }
   },
   "infraHealth": "green",
   "lastQACycle": {
-    "at": "2026-03-26T06:55:00.000Z",
-    "health": "red",
-    "reason": "P0 persists: all 32 workers stale, no agent activity in ~10h. Issue #979 open, awaiting human restart.",
-    "note": "P0 resolved since QA cycle — PR #82 merged stale PID cleanup, workers now running normally."
+    "at": "2026-03-26T14:55:00.000Z",
+    "health": "green",
+    "reason": "All systems nominal. Workers stable (32/32, 2.5h uptime). Queue empty. No new failures. Zero cron collisions."
   },
-  "updatedAt": "2026-03-26T12:15:00.000Z"
+  "updatedAt": "2026-03-26T20:00:00.000Z"
 }
