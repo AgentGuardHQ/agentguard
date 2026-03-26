@@ -1,0 +1,723 @@
+{
+  "lastUpdated": "2026-03-26T17:06:13Z",
+  "windowDays": 7,
+  "actualDataDays": 2,
+  "note": "Only 2 days of log data available (2026-03-25 to 2026-03-26)",
+  "agents": [
+    {
+      "name": "design-auditor",
+      "repo": "agentguard-cloud",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 77,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "design-em",
+      "repo": "agentguard-cloud",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 50,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "marketing-content-agent",
+      "repo": "agent-guard",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 283,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123152Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "marketing-content-agent-cloud",
+      "repo": "agentguard-cloud",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 54,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "marketing-em",
+      "repo": "agent-guard",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 213,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-backlog-steward",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 485,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123152Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-coder-agent",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 1491,
+      "timeoutSeconds": 1800,
+      "timeoutRisk": true,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123152Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-escalation-agent",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 230,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T124001Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-flaky-test-detector",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 467,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123151Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-issue-fixer-agent",
+      "repo": "bench-devs-platform",
+      "totalRuns": 3,
+      "successCount": 2,
+      "failCount": 1,
+      "successRate": 0.667,
+      "flakinessRate": 0.5,
+      "reliabilityClass": "unreliable",
+      "flakinessClass": "moderate",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 95,
+      "timeoutSeconds": 1800,
+      "timeoutRisk": false,
+      "timeoutHits": 1,
+      "isRegression": true,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "fail",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-issue-generator",
+      "repo": "bench-devs-platform",
+      "totalRuns": 3,
+      "successCount": 3,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 3
+      },
+      "avgDurationSeconds": 103,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-observability-agent",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 425,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123152Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-pr-review-agent",
+      "repo": "bench-devs-platform",
+      "totalRuns": 9,
+      "successCount": 9,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 9
+      },
+      "avgDurationSeconds": 64,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-pr-review-responder",
+      "repo": "bench-devs-platform",
+      "totalRuns": 3,
+      "successCount": 3,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 3
+      },
+      "avgDurationSeconds": 227,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-regression-analyzer",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 0,
+      "failCount": 2,
+      "successRate": 0.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "broken",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "failure",
+        "count": 2
+      },
+      "avgDurationSeconds": 0,
+      "timeoutSeconds": 1800,
+      "timeoutRisk": false,
+      "timeoutHits": 2,
+      "isRegression": true,
+      "lastSuccess": null,
+      "history": [
+        "fail",
+        "fail"
+      ]
+    },
+    {
+      "name": "qa-slack-reporter",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 149,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-smoke-runner",
+      "repo": "bench-devs-platform",
+      "totalRuns": 4,
+      "successCount": 4,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 4
+      },
+      "avgDurationSeconds": 491,
+      "timeoutSeconds": 1800,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123151Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "qa-test-architect",
+      "repo": "bench-devs-platform",
+      "totalRuns": 2,
+      "successCount": 1,
+      "failCount": 1,
+      "successRate": 0.5,
+      "flakinessRate": 1.0,
+      "reliabilityClass": "unreliable",
+      "flakinessClass": "high",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 744,
+      "timeoutSeconds": 1800,
+      "timeoutRisk": false,
+      "timeoutHits": 1,
+      "isRegression": false,
+      "lastSuccess": "20260326T123152Z",
+      "history": [
+        "fail",
+        "pass"
+      ]
+    },
+    {
+      "name": "site-em",
+      "repo": "agent-guard",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 180,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "studio-designer",
+      "repo": ".",
+      "totalRuns": 3,
+      "successCount": 3,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 3
+      },
+      "avgDurationSeconds": 179,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170612Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "studio-em",
+      "repo": ".",
+      "totalRuns": 10,
+      "successCount": 10,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 10
+      },
+      "avgDurationSeconds": 231,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170612Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "studio-product",
+      "repo": ".",
+      "totalRuns": 1,
+      "successCount": 1,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 1
+      },
+      "avgDurationSeconds": 445,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T122501Z",
+      "history": [
+        "pass"
+      ]
+    },
+    {
+      "name": "studio-qa",
+      "repo": ".",
+      "totalRuns": 10,
+      "successCount": 10,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 10
+      },
+      "avgDurationSeconds": 191,
+      "timeoutSeconds": 600,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170612Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "studio-sr",
+      "repo": ".",
+      "totalRuns": 12,
+      "successCount": 10,
+      "failCount": 2,
+      "successRate": 0.833,
+      "flakinessRate": 0.364,
+      "reliabilityClass": "mostly-reliable",
+      "flakinessClass": "moderate",
+      "currentStreak": {
+        "type": "success",
+        "count": 7
+      },
+      "avgDurationSeconds": 460,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 2,
+      "isRegression": false,
+      "lastSuccess": "20260326T163501Z",
+      "history": [
+        "pass",
+        "fail",
+        "pass",
+        "pass",
+        "fail",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "workspace-agent-reliability",
+      "repo": "agent-guard",
+      "totalRuns": 2,
+      "successCount": 2,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 2
+      },
+      "avgDurationSeconds": 344,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123151Z",
+      "history": [
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "workspace-config-validator",
+      "repo": "agent-guard",
+      "totalRuns": 3,
+      "successCount": 3,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 3
+      },
+      "avgDurationSeconds": 243,
+      "timeoutSeconds": 600,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T123002Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    {
+      "name": "workspace-pr-review-agent",
+      "repo": "agent-guard",
+      "totalRuns": 8,
+      "successCount": 8,
+      "failCount": 0,
+      "successRate": 1.0,
+      "flakinessRate": 0.0,
+      "reliabilityClass": "reliable",
+      "flakinessClass": "stable",
+      "currentStreak": {
+        "type": "success",
+        "count": 8
+      },
+      "avgDurationSeconds": 94,
+      "timeoutSeconds": 900,
+      "timeoutRisk": false,
+      "timeoutHits": 0,
+      "isRegression": false,
+      "lastSuccess": "20260326T170613Z",
+      "history": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    }
+  ]
+}
