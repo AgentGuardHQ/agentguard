@@ -55,7 +55,7 @@ var lifecycleScripts = []string{
 }
 
 // Read-only action types that are exempt from write-guard invariants.
-var readOnlyActions = []string{"file.read", "git.diff"}
+var readOnlyActions = []string{"file.read", "git.diff", "git.status", "git.stage", "git.log", "git.show"}
 
 // Read-only shell commands.
 var readOnlyCmds = []string{

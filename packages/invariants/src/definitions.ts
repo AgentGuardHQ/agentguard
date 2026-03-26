@@ -254,8 +254,17 @@ export function hasFileRedirect(command: string): boolean {
 }
 
 /** Action types that are always read-only — exempt from write-guard invariants.
- * Read, Glob, and Grep tools all map to file.read; git.diff is structural comparison only. */
-const READ_ONLY_ACTIONS: string[] = ['file.read', 'git.diff'];
+ * Read, Glob, and Grep tools all map to file.read; git.diff/status/log/show are read-only
+ * inspection ops; git.stage (git add) only marks existing changes for commit — it never
+ * modifies file content on protected paths. */
+const READ_ONLY_ACTIONS: string[] = [
+  'file.read',
+  'git.diff',
+  'git.status',
+  'git.stage',
+  'git.log',
+  'git.show',
+];
 
 /** Shell command basenames that perform read-only operations.
  * Used by write-guard invariants to skip commands that cannot modify protected paths. */

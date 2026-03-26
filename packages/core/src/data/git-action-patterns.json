@@ -6,5 +6,10 @@
   { "patterns": ["\\bgit\\s+push\\b"], "actionType": "git.push" },
   { "patterns": ["\\bgit\\s+branch\\s+-[dD]\\b"], "actionType": "git.branch.delete" },
   { "patterns": ["\\bgit\\s+merge\\b"], "actionType": "git.merge" },
-  { "patterns": ["\\bgit\\s+commit\\b"], "actionType": "git.commit" }
+  { "patterns": ["\\bgit\\s+commit\\b"], "actionType": "git.commit" },
+  { "patterns": ["\\bgit\\s+diff\\b"], "actionType": "git.diff" },
+  { "patterns": ["\\bgit\\s+status\\b"], "actionType": "git.status" },
+  { "patterns": ["\\bgit\\s+add\\b"], "actionType": "git.stage" },
+  { "patterns": ["\\bgit\\s+log\\b"], "actionType": "git.log" },
+  { "patterns": ["\\bgit\\s+show\\b"], "actionType": "git.show" }
 ]

@@ -362,6 +362,16 @@ describe('execution-log/event-projections', () => {
       expect(risk.failureCount).toBe(0);
     });
 
+    it('returns score 0 and level low for a run with no events', () => {
+      const log = createExecutionEventLog();
+      const risk = scoreAgentRun(log, 'empty-run');
+      expect(risk.score).toBe(0);
+      expect(risk.level).toBe('low');
+      expect(risk.failureCount).toBe(0);
+      expect(risk.violationCount).toBe(0);
+      expect(risk.factors).toHaveLength(0);
+    });
+
     it('scores failures', () => {
       const log = createExecutionEventLog();
       log.append(
@@ -422,6 +432,115 @@ describe('execution-log/event-projections', () => {
       expect(risk.score).toBe(0);
       expect(risk.level).toBe('low');
     });
+
+    it('risk level is medium for score 15–39', () => {
+      const log = createExecutionEventLog();
+      // POLICY_VIOLATION_DETECTED counts as both failure (10) and violation (25) = 35 pts → medium
+      log.append(
+        createExecutionEvent(POLICY_VIOLATION_DETECTED, {
+          actor: 'system',
+          source: 'governance',
+          context: { agentRunId: 'run-medium' },
+        })
+      );
+      const risk = scoreAgentRun(log, 'run-medium');
+      expect(risk.score).toBe(35);
+      expect(risk.level).toBe('medium');
+    });
+
+    it('risk level is high for score 40–74', () => {
+      const log = createExecutionEventLog();
+      // 2 x POLICY_VIOLATION_DETECTED: 2 failures (20) + 2 violations (50) = 70 pts → high
+      for (let i = 0; i < 2; i++) {
+        log.append(
+          createExecutionEvent(POLICY_VIOLATION_DETECTED, {
+            actor: 'system',
+            source: 'governance',
+            context: { agentRunId: 'run-high' },
+          })
+        );
+      }
+      const risk = scoreAgentRun(log, 'run-high');
+      expect(risk.score).toBe(70);
+      expect(risk.level).toBe('high');
+    });
+
+    it('risk level is critical for score >=75', () => {
+      const log = createExecutionEventLog();
+      // 3 x POLICY_VIOLATION_DETECTED: 3 failures (30) + 3 violations (75) = 105 pts → critical
+      for (let i = 0; i < 3; i++) {
+        log.append(
+          createExecutionEvent(POLICY_VIOLATION_DETECTED, {
+            actor: 'system',
+            source: 'governance',
+            context: { agentRunId: 'run-critical' },
+          })
+        );
+      }
+      const risk = scoreAgentRun(log, 'run-critical');
+      expect(risk.score).toBe(105);
+      expect(risk.level).toBe('critical');
+    });
+
+    it('flags high action rate (>50 agent actions)', () => {
+      const log = createExecutionEventLog();
+      for (let i = 0; i < 51; i++) {
+        log.append(
+          createExecutionEvent(AGENT_EDIT_FILE, {
+            actor: 'agent',
+            source: 'cli',
+            context: { agentRunId: 'run-velocity', file: `src/file${i}.ts` },
+          })
+        );
+      }
+      const risk = scoreAgentRun(log, 'run-velocity');
+      expect(risk.factors.some((f) => f.name === 'high_action_rate')).toBe(true);
+    });
+
+    it('detects sensitive file patterns: .env, token, password, key, credential', () => {
+      const sensitiveFiles = ['.env', 'auth-token.ts', 'password-utils.ts', 'api-key.ts', 'credentials.json'];
+      for (const file of sensitiveFiles) {
+        const log = createExecutionEventLog();
+        log.append(
+          createExecutionEvent(AGENT_EDIT_FILE, {
+            actor: 'agent',
+            source: 'cli',
+            context: { agentRunId: 'run-sensitive', file },
+          })
+        );
+        const risk = scoreAgentRun(log, 'run-sensitive');
+        expect(risk.factors.some((f) => f.name === 'sensitive_file_edits')).toBe(
+          true,
+          `Expected sensitive file detection for: ${file}`
+        );
+      }
+    });
+
+    it('mixes failures and violations for combined score', () => {
+      const log = createExecutionEventLog();
+      // BUILD_FAILED = failure only (10 pts)
+      // POLICY_VIOLATION_DETECTED = failure (10) + violation (25) = 35 pts
+      // Total: 45 pts → high
+      log.append(
+        createExecutionEvent(BUILD_FAILED, {
+          actor: 'system',
+          source: 'ci',
+          context: { agentRunId: 'run-mixed' },
+        })
+      );
+      log.append(
+        createExecutionEvent(POLICY_VIOLATION_DETECTED, {
+          actor: 'system',
+          source: 'governance',
+          context: { agentRunId: 'run-mixed' },
+        })
+      );
+      const risk = scoreAgentRun(log, 'run-mixed');
+      expect(risk.score).toBe(45);
+      expect(risk.level).toBe('high');
+      expect(risk.failureCount).toBe(2); // BUILD_FAILED + POLICY_VIOLATION_DETECTED both in FAILURE_KINDS
+      expect(risk.violationCount).toBe(1);
+    });
   });
 
   describe('clusterFailures', () => {
@@ -470,6 +589,138 @@ describe('execution-log/event-projections', () => {
       log.append(createExecutionEvent(AGENT_EDIT_FILE, { actor: 'agent', source: 'cli' }));
       expect(clusterFailures(log)).toHaveLength(0);
     });
+
+    it('returns empty for empty log', () => {
+      const log = createExecutionEventLog();
+      expect(clusterFailures(log)).toHaveLength(0);
+    });
+
+    it('produces single cluster for single failure', () => {
+      const log = createExecutionEventLog();
+      log.append(
+        createExecutionEvent(RUNTIME_EXCEPTION, {
+          actor: 'system',
+          source: 'runtime',
+          context: { file: 'index.ts' },
+          payload: { message: 'crash' },
+        })
+      );
+      const clusters = clusterFailures(log);
+      expect(clusters).toHaveLength(1);
+      expect(clusters[0].events).toHaveLength(1);
+      expect(clusters[0].severity).toBe(1);
+    });
+
+    it('groups same-file failures within the time window into one cluster', () => {
+      const log = createExecutionEventLog();
+      const now = 1_000_000;
+      for (let i = 0; i < 3; i++) {
+        log.append(
+          createExecutionEvent(TEST_SUITE_FAILED, {
+            actor: 'system',
+            source: 'ci',
+            context: { file: 'app.ts' },
+            timestamp: now + i * 1000,
+          })
+        );
+      }
+      const clusters = clusterFailures(log, { windowMs: 60_000 });
+      expect(clusters).toHaveLength(1);
+      expect(clusters[0].events).toHaveLength(3);
+    });
+
+    it('splits same-file failures outside the time window into separate clusters', () => {
+      const log = createExecutionEventLog();
+      const now = 1_000_000;
+      log.append(
+        createExecutionEvent(TEST_SUITE_FAILED, {
+          actor: 'system',
+          source: 'ci',
+          context: { file: 'app.ts' },
+          timestamp: now,
+        })
+      );
+      log.append(
+        createExecutionEvent(TEST_SUITE_FAILED, {
+          actor: 'system',
+          source: 'ci',
+          context: { file: 'app.ts' },
+          timestamp: now + 120_000, // 2 minutes later — outside 1-minute window
+        })
+      );
+      const clusters = clusterFailures(log, { windowMs: 60_000 });
+      const appClusters = clusters.filter((c) => c.commonFile === 'app.ts');
+      expect(appClusters).toHaveLength(2);
+    });
+
+    it('clusters failures without file context by time proximity', () => {
+      const log = createExecutionEventLog();
+      const now = 2_000_000;
+      log.append(
+        createExecutionEvent(RUNTIME_EXCEPTION, {
+          actor: 'system',
+          source: 'runtime',
+          payload: { message: 'crash A' },
+          timestamp: now,
+        })
+      );
+      log.append(
+        createExecutionEvent(RUNTIME_EXCEPTION, {
+          actor: 'system',
+          source: 'runtime',
+          payload: { message: 'crash B' },
+          timestamp: now + 5000,
+        })
+      );
+      const clusters = clusterFailures(log, { windowMs: 60_000 });
+      expect(clusters).toHaveLength(1);
+      expect(clusters[0].events).toHaveLength(2);
+      expect(clusters[0].commonFile).toBeUndefined();
+    });
+
+    it('caps cluster severity at 5', () => {
+      const log = createExecutionEventLog();
+      const now = 3_000_000;
+      for (let i = 0; i < 10; i++) {
+        log.append(
+          createExecutionEvent(BUILD_FAILED, {
+            actor: 'system',
+            source: 'ci',
+            context: { file: 'build.ts' },
+            timestamp: now + i * 1000,
+          })
+        );
+      }
+      const clusters = clusterFailures(log, { windowMs: 60_000 });
+      expect(clusters[0].severity).toBe(5);
+    });
+
+    it('sorts clusters by descending severity', () => {
+      const log = createExecutionEventLog();
+      const now = 4_000_000;
+      // 3-event cluster on file A
+      for (let i = 0; i < 3; i++) {
+        log.append(
+          createExecutionEvent(BUILD_FAILED, {
+            actor: 'system',
+            source: 'ci',
+            context: { file: 'a.ts' },
+            timestamp: now + i * 1000,
+          })
+        );
+      }
+      // 1-event cluster on file B
+      log.append(
+        createExecutionEvent(BUILD_FAILED, {
+          actor: 'system',
+          source: 'ci',
+          context: { file: 'b.ts' },
+          timestamp: now,
+        })
+      );
+      const clusters = clusterFailures(log, { windowMs: 60_000 });
+      expect(clusters[0].severity).toBeGreaterThanOrEqual(clusters[1].severity);
+    });
   });
 
   describe('mapToEncounter', () => {
@@ -488,6 +739,31 @@ describe('execution-log/event-projections', () => {
       expect(mapping!.severity).toBe(3);
     });
 
+    it('maps TestSuiteFailed to monster encounter', () => {
+      const event = createExecutionEvent(TEST_SUITE_FAILED, {
+        actor: 'system',
+        source: 'ci',
+        payload: { message: 'auth tests failed' },
+      });
+      const mapping = mapToEncounter(event);
+      expect(mapping).not.toBeNull();
+      expect(mapping!.encounterType).toBe('monster');
+      expect(mapping!.name).toBe('Test Phantom');
+      expect(mapping!.severity).toBe(2);
+    });
+
+    it('maps BuildFailed to monster encounter', () => {
+      const event = createExecutionEvent(BUILD_FAILED, {
+        actor: 'system',
+        source: 'ci',
+        payload: { message: 'type error in index.ts' },
+      });
+      const mapping = mapToEncounter(event);
+      expect(mapping).not.toBeNull();
+      expect(mapping!.encounterType).toBe('monster');
+      expect(mapping!.name).toBe('Build Specter');
+    });
+
     it('maps DeploymentFailed to boss encounter', () => {
       const event = createExecutionEvent(DEPLOYMENT_FAILED, {
         actor: 'system',
@@ -501,12 +777,33 @@ describe('execution-log/event-projections', () => {
       expect(mapping!.name).toBe('Deploy Colossus');
     });
 
+    it('uses fallback description when no message in payload', () => {
+      const event = createExecutionEvent(RUNTIME_EXCEPTION, {
+        actor: 'system',
+        source: 'runtime',
+        context: { file: 'server.ts' },
+        // no payload.message
+      });
+      const mapping = mapToEncounter(event);
+      expect(mapping).not.toBeNull();
+      expect(mapping!.description).toContain('server.ts');
+    });
+
     it('returns null for non-failure events', () => {
       const event = createExecutionEvent(AGENT_EDIT_FILE, {
         actor: 'agent',
         source: 'cli',
       });
       expect(mapToEncounter(event)).toBeNull();
+    });
+
+    it('populates eventId in the encounter mapping', () => {
+      const event = createExecutionEvent(RUNTIME_EXCEPTION, {
+        actor: 'system',
+        source: 'runtime',
+      });
+      const mapping = mapToEncounter(event);
+      expect(mapping!.eventId).toBe(event.id);
     });
   });
 });

@@ -1334,6 +1334,87 @@ describe('no-governance-self-modification', () => {
     expect(result.actual).toContain('command');
     expect(result.actual).toContain('modified');
   });
+
+  // Issue #648 — read-only git ops must not be blocked on governance paths
+  it('holds when currentActionType is git.diff on governance path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.diff',
+      currentTarget: 'agentguard.yaml',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.status (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.status',
+      currentCommand: 'git status agentguard.yaml',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.stage (git add) on governance path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.stage',
+      currentCommand: 'git add agentguard.yaml',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.log on governance path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.log',
+      currentCommand: 'git log --oneline agentguard.yaml',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.show on governance path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.show',
+      currentCommand: 'git show HEAD:agentguard.yaml',
+    });
+    expect(result.holds).toBe(true);
+  });
+});
+
+describe('no-skill-modification read-only git ops (#648)', () => {
+  const inv = findInvariant('no-skill-modification');
+
+  it('holds when currentActionType is git.stage on skill path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.stage',
+      currentCommand: 'git add .claude/skills/my-skill/SKILL.md',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.status on skill path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.status',
+      currentCommand: 'git status .claude/skills/',
+    });
+    expect(result.holds).toBe(true);
+  });
+});
+
+describe('no-cicd-config-modification read-only git ops (#648)', () => {
+  const inv = findInvariant('no-cicd-config-modification');
+
+  it('holds when currentActionType is git.stage on CI/CD path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.stage',
+      currentCommand: 'git add .github/workflows/ci.yml',
+    });
+    expect(result.holds).toBe(true);
+  });
+
+  it('holds when currentActionType is git.diff on CI/CD path (#648)', () => {
+    const result = inv.check({
+      currentActionType: 'git.diff',
+      currentTarget: '.github/workflows/ci.yml',
+    });
+    expect(result.holds).toBe(true);
+  });
 });
 
 describe('lockfile-integrity', () => {

@@ -267,3 +267,69 @@ describe('Kernel integration — event ordering', () => {
     expect(lifecycleKinds[1]).toBe('ActionDenied');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Kernel LOCKDOWN state enforcement (issue #643)
+// ---------------------------------------------------------------------------
+
+describe('Kernel integration — LOCKDOWN state enforcement', () => {
+  it('denies ALL subsequent actions once LOCKDOWN is triggered', async () => {
+    // Use denialThreshold: 2 so LOCKDOWN triggers after 4 denials (2 * threshold)
+    const kernel = createKernel({
+      dryRun: true,
+      denialThreshold: 2,
+      policyDefs: [
+        {
+          id: 'deny-writes',
+          name: 'Deny Writes',
+          rules: [{ action: 'file.write', effect: 'deny', reason: 'Locked down' }],
+          severity: 5,
+        },
+      ],
+      evaluateOptions: { defaultDeny: false },
+    });
+
+    // Drive to LOCKDOWN: 4 denied actions (2 * denialThreshold = 4)
+    for (let i = 0; i < 4; i++) {
+      await kernel.propose({ tool: 'Write', file: `src/file${i}.ts`, agent: 'test' });
+    }
+
+    // Monitor should now be in LOCKDOWN — all actions denied
+    const readResult = await kernel.propose({ tool: 'Read', file: 'safe.ts', agent: 'test' });
+    expect(readResult.allowed).toBe(false);
+    expect(readResult.decision.monitor.escalationLevel).toBe(3); // ESCALATION.LOCKDOWN = 3
+    expect(readResult.decision.decision.reason).toContain('LOCKDOWN');
+  });
+
+  it('LOCKDOWN blocks actions that would otherwise be allowed', async () => {
+    const kernel = createKernel({
+      dryRun: true,
+      denialThreshold: 2,
+      policyDefs: [
+        {
+          id: 'deny-writes',
+          name: 'Deny Writes',
+          rules: [
+            { action: 'file.write', effect: 'deny', reason: 'Write denied' },
+            { action: 'file.read', effect: 'allow' },
+          ],
+          severity: 5,
+        },
+      ],
+    });
+
+    // Drive to LOCKDOWN
+    for (let i = 0; i < 4; i++) {
+      await kernel.propose({ tool: 'Write', file: `src/file${i}.ts`, agent: 'test' });
+    }
+
+    // Even a read (normally allowed by policy) should be denied in LOCKDOWN
+    const shellResult = await kernel.propose({
+      tool: 'Bash',
+      command: 'npm test',
+      agent: 'test',
+    });
+    expect(shellResult.allowed).toBe(false);
+    expect(shellResult.decision.monitor.escalationLevel).toBe(3);
+  });
+});

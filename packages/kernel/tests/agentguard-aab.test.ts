@@ -1161,4 +1161,53 @@ describe('agentguard/core/aab', () => {
       expect(intent.action).toBe('shell.exec');
     });
   });
+
+  // Issue #648 — read-only git operations on protected paths
+  describe('normalizeIntent — read-only git ops (#648)', () => {
+    it('classifies git diff as git.diff', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git diff agentguard.yaml' });
+      expect(intent.action).toBe('git.diff');
+    });
+
+    it('classifies git diff --cached as git.diff', () => {
+      const intent = normalizeIntent({
+        tool: 'Bash',
+        command: 'git diff --cached .env',
+      });
+      expect(intent.action).toBe('git.diff');
+    });
+
+    it('classifies git status as git.status', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git status' });
+      expect(intent.action).toBe('git.status');
+    });
+
+    it('classifies git status --short as git.status', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git status --short .env' });
+      expect(intent.action).toBe('git.status');
+    });
+
+    it('classifies git add as git.stage', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git add .env' });
+      expect(intent.action).toBe('git.stage');
+    });
+
+    it('classifies git add . as git.stage', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git add .' });
+      expect(intent.action).toBe('git.stage');
+    });
+
+    it('classifies git log as git.log', () => {
+      const intent = normalizeIntent({
+        tool: 'Bash',
+        command: 'git log --oneline agentguard.yaml',
+      });
+      expect(intent.action).toBe('git.log');
+    });
+
+    it('classifies git show as git.show', () => {
+      const intent = normalizeIntent({ tool: 'Bash', command: 'git show HEAD:.env' });
+      expect(intent.action).toBe('git.show');
+    });
+  });
 });
