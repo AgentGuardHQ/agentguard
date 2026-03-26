@@ -2,14 +2,14 @@
   "squad": "studio",
   "sprint": {
     "goal": "Dashboard wiring — Phase 1: 3 working pages by April 17",
-    "issues": [43, 50],
+    "issues": [43, 50, 106],
     "daysRemaining": 21
   },
   "assignments": {
     "studio-sr": {
-      "issue": "P0-dashboard-wiring",
-      "status": "ready",
-      "currentPR": null,
+      "issue": 100,
+      "status": "assigned",
+      "currentPR": "pending",
       "completedWork": [
         {
           "issue": 72,
@@ -58,20 +58,49 @@
           "prs": [93],
           "status": "done",
           "summary": "Agent Observability MVP spec — 5-question framework, gap analysis, 14-item capability backlog (P0-P3), 3-minute design partner walkthrough script. PR #93 merged."
+        },
+        {
+          "issue": 97,
+          "prs": [99],
+          "status": "done",
+          "summary": "Dashboard wiring verification — 20-check API-to-UI verification script, wiring spec, 4 cloud issues filed (#410-413). PR #99 merged."
+        },
+        {
+          "issue": 101,
+          "prs": [],
+          "status": "done",
+          "summary": "Phase 1 security bug verification — all 3 bugs confirmed fixed (path traversal, JWT revocation, RLS fallback). Created scripts/verify-security-bugs.sh for regression detection."
         }
       ],
-      "nextAssignment": "P0 dashboard wiring from observability spec: Wire violations, events, and runs pages to live Cloud API data. Items 1-3 from the priority backlog. These are Cloud-repo changes — studio-sr should file tracking issues in agentguard-cloud or coordinate with Cloud squad."
+      "currentWork": {
+        "issue": 100,
+        "description": "Stranger test dry-run — full demo on clean machine. Prep work while dashboard deployment (#106) progresses.",
+        "dependencies": ["workspace#106 — dashboard must be deployed before full stranger test"]
+      },
+      "nextAssignment": "#98 (Go kernel fast-path) after #100 completes. Blocked by #50 human review."
     }
   },
   "blockers": [
     {
-      "issue": "Cloud PR #400 (Go kernel HTTP ingest) CONFLICTING — critical path for #60",
+      "issue": "Cloud events API outcome filter broken — PR #414 filed but CI FAILING",
+      "ref": "agentguard-cloud#410, PR#414",
+      "severity": "P0",
+      "progress": "PR #414 exists but Build & Test and Vercel API deploy both failing. Needs Cloud squad fix."
+    },
+    {
+      "issue": "Cloud dashboard pages not deployed — /events, /violations, /runs all 404",
+      "ref": "workspace#106, agentguard-cloud#411-413",
+      "severity": "P0",
+      "progress": "Issue #106 filed with April 7 deadline. Vercel dashboard deploy succeeding (preview exists). Needs route wiring."
+    },
+    {
+      "issue": "Cloud PR #400 (Go kernel HTTP ingest) still CONFLICTING",
       "ref": "agentguard-cloud#400",
       "severity": "P2"
     },
     {
-      "issue": "Cloud PRs #405, #406 Build & Test FAILING",
-      "ref": "agentguard-cloud#405, #406",
+      "issue": "Cloud PR #406 (audit log query enrichment) still open, CI status unclear",
+      "ref": "agentguard-cloud#406",
       "severity": "P2"
     },
     {
@@ -84,24 +113,25 @@
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "mergedThisCycle": ["workspace#93"],
+    "mergedThisCycle": ["workspace#108", "workspace#109"],
     "crossRepo": {
       "agentGuard": {
-        "open": [
-          { "number": 1002, "title": "feat(invariants): add no-verify-bypass invariant", "status": "OPEN" }
+        "merged": [
+          { "number": 1002, "title": "feat(invariants): add no-verify-bypass invariant", "status": "MERGED" }
         ]
       },
       "agentGuardCloud": [
         { "number": 400, "title": "Go kernel HTTP ingest endpoint", "status": "CONFLICTING", "criticality": "P2 — critical path for #60" },
-        { "number": 406, "title": "Audit log query enrichment", "status": "CI_FAILING" }
+        { "number": 406, "title": "Audit log query enrichment", "status": "OPEN" },
+        { "number": 414, "title": "fix: apply outcome filter to GET /v1/events query", "status": "CI_FAILING", "criticality": "P0 — fixes cloud#410" }
       ]
     }
   },
   "infraHealth": "green",
   "lastQACycle": {
-    "at": "2026-03-26T14:55:00.000Z",
+    "at": "2026-03-26T19:55:00.000Z",
     "health": "green",
-    "reason": "All systems nominal. Workers stable (32/32, 2.5h uptime). Queue empty. No new failures. Zero cron collisions."
+    "reason": "All systems nominal. Workers 32/32 active. Queue empty. Telemetry healthy. 118/118 agents with SKILL.md. Zero cron collisions."
   },
-  "updatedAt": "2026-03-26T20:00:00.000Z"
+  "updatedAt": "2026-03-26T20:15:00.000Z"
 }

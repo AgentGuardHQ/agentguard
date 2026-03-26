@@ -1,68 +1,84 @@
 {
   "squad": "studio",
   "em": "claude-code:opus:studio:em",
-  "runAt": "2026-03-26T20:00:00.000Z",
+  "runAt": "2026-03-26T20:15:00.000Z",
   "health": "green",
-  "summary": "Studio squad in strong position. PR #93 (observability MVP spec) merged — closes #86 and provides a clear P0-P3 backlog for dashboard wiring. Sprint goal (3 working pages by April 17) has 21 days remaining with all planning work complete. Next cycle: studio-sr pivots to P0 dashboard wiring (violations, events, runs pages wired to live Cloud API). Swarm healthy at 118/120 agents. No open workspace PRs. Cross-repo blockers remain in Cloud (PR #400 conflicting, #405/#406 CI failing).",
+  "summary": "Studio squad healthy. Two workspace PRs merged this cycle (#108 demo critical path update, #109 stale repo ref fix). studio-sr completed #101 (security bug verification) — all 3 Phase 1 bugs confirmed fixed with regression script. Reassigned studio-sr to #100 (stranger test dry-run prep). Kernel PR #1002 (--no-verify bypass invariant) merged — strengthens enforcement story for May 6 talk. Cloud PR #414 filed to fix P0 events API filter (cloud#410) but has CI failures. Product agent filed #106 (dashboard deployment gate, April 7 deadline) and #107 (enforcement story curation, April 22 deadline). Swarm healthy. No governance issues.",
   "sprintProgress": {
     "goal": "Dashboard wiring — Phase 1: 3 working pages by April 17",
     "daysRemaining": 21,
     "status": "on-track",
     "completedThisCycle": [
-      "PR #93 merged: Agent Observability MVP spec with 5-question framework, gap analysis, and 14-item capability backlog"
+      "PR #108 merged: demo critical path updated with 3 new cloud features shipped",
+      "PR #109 merged: stale jpleva91/* repo refs fixed across server infra (swarm-metrics, webhooks, sitrep)",
+      "studio-sr #101 done: security bug verification complete, regression script created",
+      "Kernel PR #1002 merged: --no-verify bypass invariant now in codebase"
     ],
     "nextCycle": [
-      "studio-sr: begin P0 dashboard wiring — items 1-3 (wire violations/events/runs pages to live API)",
-      "Coordinate with Cloud team on P0 item 4 (high-risk allow filter) — requires events API filter param"
+      "studio-sr: prep stranger test dry-run (#100) — enumerate demo steps, identify gaps before #106 is resolved",
+      "Track Cloud PR #414 CI fix — unblocks P0 events API filter (cloud#410)",
+      "Track #106 dashboard deployment — hard deadline April 7 for stranger test"
     ]
   },
   "prQueue": {
     "workspaceOpen": 0,
-    "mergedThisCycle": ["#93 (observability MVP spec, closes #86)"],
-    "crossRepoStatus": "Cloud PRs #400 (conflicting), #406 (CI failing) remain unresolved. Kernel PR #1002 (no-verify-bypass invariant) open."
+    "mergedThisCycle": ["#108 (demo critical path)", "#109 (stale repo refs fix)"],
+    "crossRepoStatus": "Cloud PR #414 (events API filter fix) has CI failures — needs Cloud squad attention. Cloud PR #400 still conflicting. Kernel PR #1002 merged."
   },
   "blockers": [
     {
-      "description": "Issue #50 (Go kernel rewrite impact assessment) still open — needs human review to clarify integration model, distribution, and conference demo impact",
+      "description": "Cloud PR #414 (events API outcome filter fix) has Build & Test and Vercel API deploy failures — blocks P0 dashboard wiring",
+      "severity": "P0",
+      "action": "Cloud squad must fix CI failures on PR #414"
+    },
+    {
+      "description": "Dashboard pages not deployed (#106) — /events, /violations, /runs return 404. Vercel preview deploys succeeding but routes not wired.",
+      "severity": "P0",
+      "action": "Cloud squad to deploy dashboard routes. Hard deadline April 7."
+    },
+    {
+      "description": "Issue #50 (Go kernel rewrite impact assessment) still needs human review",
       "severity": "P1",
       "action": "Escalate to human for architectural decision"
     },
     {
-      "description": "Cloud PR #400 (Go kernel HTTP ingest) has merge conflicts — critical path for telemetry E2E (#60)",
+      "description": "Cloud PR #400 (Go kernel HTTP ingest) still conflicting",
       "severity": "P2",
       "action": "Cloud squad needs to resolve conflicts"
-    },
-    {
-      "description": "Cloud PRs #405, #406 have failing CI",
-      "severity": "P2",
-      "action": "Cloud squad needs to fix build/test failures"
     }
   ],
   "crossSquadHealth": {
     "kernel": {
       "health": "yellow",
-      "reason": "Idle — no sprint goal, no assignments. State last updated 2026-03-25. May need EM activation or is intentionally dormant."
+      "reason": "Idle — no sprint goal, no assignments. State last updated 2026-03-25. PR #1002 merged (good) but squad has no active work. May need EM activation."
     },
     "qa": {
       "health": "yellow",
-      "reason": "Idle — no sprint goal, no assignments. State last updated 2026-03-25. Last QA cycle was green (2026-03-26 14:55 UTC)."
+      "reason": "Idle — no sprint goal, no assignments. State last updated 2026-03-25. Last QA health cycle was green. 5 failures in last 24h all transient."
     },
     "studio": {
       "health": "green",
-      "reason": "Active. Sprint on-track. Planning complete, execution phase beginning."
+      "reason": "Active. Sprint on-track. Planning complete, entering execution phase. studio-sr reassigned to #100."
     }
   },
   "swarmHealth": {
     "status": "green",
-    "agents": "118 enabled (0 checked on this host — log dirs not present in worktree)",
-    "telemetry": "healthy (latest event 0.0h ago)",
-    "copilotEvents": "verified (pipeline functional)",
-    "workers": "stable per last QA cycle (32/32, 2.5h uptime)"
+    "agents": "118 enabled, all healthy",
+    "telemetry": "healthy (latest event 0.1h ago)",
+    "copilotEvents": "16 events verified in pipeline",
+    "workers": "32/32 active per last QA cycle"
   },
+  "newIssuesFiled": [
+    "#106: conference: cloud dashboard deployment gate — deadline April 7 (filed by studio-product)",
+    "#107: conference: curate enforcement stories for May 6 talk — deadline April 22 (filed by studio-product)"
+  ],
   "dogfoodIssues": "None this cycle. No governance blocks, crashes, or unexpected behavior encountered.",
   "decisions": [
-    "Marked PR #93 as done in state.json — was already merged on master",
-    "Assigned studio-sr to P0 dashboard wiring (observability backlog items 1-3) as next work",
-    "Flagged #50 (Go kernel rewrite) as P1 blocker needing human review — blocks strategy clarity for conference and design partner onboarding"
+    "Marked studio-sr #101 (security bug verification) as complete — all 3 bugs confirmed fixed",
+    "Assigned studio-sr to #100 (stranger test dry-run) — can prep demo steps while #106 deployment progresses",
+    "Added #106 to sprint issues — dashboard deployment is a hard dependency for stranger test and design partner onboarding",
+    "Updated cross-repo PR tracking: kernel #1002 merged, cloud #414 added (CI failing)",
+    "Removed cloud #405 from blockers (no longer in open PR list)",
+    "Cloud issues #411-413 consolidated under #106 deployment blocker"
   ]
 }
