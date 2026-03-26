@@ -3,44 +3,67 @@
   "sprint": {
     "goal": "Dashboard wiring — Phase 1: 3 working pages by April 17",
     "issues": [43, 50],
-    "daysRemaining": 22
+    "daysRemaining": 21
   },
   "assignments": {
     "studio-sr": {
-      "issue": null,
-      "status": "available",
+      "issue": 41,
+      "status": "in-progress",
+      "currentPR": null,
       "completedWork": [
         {
           "issue": 72,
           "prs": [75, 76],
           "status": "done",
           "summary": "Double-start race condition fully resolved — Phase 1 (flock guard + queue dedup) and Phase 2 (PID-file tracking) both merged."
+        },
+        {
+          "issue": 977,
+          "prs": [987],
+          "status": "done",
+          "summary": "Studio wizard + execution profiles + swarm template schema — PR #987 merged by Studio EM."
+        },
+        {
+          "issue": 43,
+          "prs": [77, 81],
+          "status": "done",
+          "summary": "Dashboard wiring Phase 1 — pipeline tooling (seed + health) and Copilot CLI event verification. 50 copilot events confirmed in API from 2 agent types."
+        },
+        {
+          "issue": "workspace#82",
+          "prs": [82],
+          "status": "done",
+          "summary": "Stale PID cleanup — worker.pids now cleaned on worker exit. Resolved P0 stale workers."
+        },
+        {
+          "issue": "workspace#83",
+          "prs": [83],
+          "status": "done",
+          "summary": "AGENTGUARD_WORKSPACE env var resolves correctly in git worktrees."
         }
       ],
-      "nextAssignment": "Reopen v3.1 PR (was #977 in agent-guard, closed without merge — fix lint errors and rebase). Then pivot to sprint goal #43 (dashboard wiring)."
+      "nextAssignment": "Conference readiness (#41) — dangerous command detection coverage for demo scenarios. Then pivot to dashboard wiring sprint goal."
     }
   },
   "blockers": [
     {
-      "issue": "P0: All 32 worker PIDs stale on readybench — no live workers",
-      "ref": "agent-guard#979",
-      "severity": "P0",
-      "status": "escalated to human"
+      "issue": "24 enabled agents missing SKILL.md files",
+      "ref": "agentguard-workspace#78",
+      "severity": "P1"
     },
     {
-      "issue": "8 enabled agents on readybench missing SKILL.md files",
-      "ref": "agent-guard#980",
+      "issue": "3 cron collisions on jared box",
+      "ref": "agentguard-workspace#79",
       "severity": "P2"
     },
     {
-      "issue": "PR #977 closed without merge — lint failure + merge conflicts",
-      "ref": "agent-guard#977",
-      "severity": "P1",
-      "action": "studio-sr to fix and reopen"
+      "issue": "Cloud PR #400 (Go kernel HTTP ingest) CONFLICTING — critical path for #60",
+      "ref": "agentguard-cloud#400",
+      "severity": "P2"
     },
     {
-      "issue": "Cloud PRs #400, #402, #403 all CONFLICTING",
-      "ref": "agentguard-cloud",
+      "issue": "Cloud PRs #405, #406 Build & Test FAILING",
+      "ref": "agentguard-cloud#405, #406",
       "severity": "P2"
     }
   ],
@@ -48,38 +71,29 @@
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "mergedThisCycle": [76],
+    "mergedThisCycle": [],
     "crossRepo": {
-      "agentGuard": [],
+      "agentGuard": {
+        "mergedSinceLastReport": [],
+        "open": []
+      },
       "agentGuardCloud": [
-        { "number": 400, "title": "Go kernel HTTP ingest endpoint", "status": "CONFLICTING", "criticality": "P1 — critical path for #60" },
-        { "number": 402, "title": "Agent performance API endpoint", "status": "CONFLICTING" },
-        { "number": 403, "title": "Onboarding wizard fix", "status": "CONFLICTING" }
+        { "number": 400, "title": "Go kernel HTTP ingest endpoint", "status": "CONFLICTING", "criticality": "P2 — critical path for #60" },
+        { "number": 405, "title": "Test: provider-keys route", "status": "CI_FAILING" },
+        { "number": 406, "title": "Audit log query enrichment", "status": "CI_FAILING" }
+      ],
+      "closedThisCycle": [
+        { "number": 402, "reason": "Duplicate of merged #399" },
+        { "number": 403, "reason": "Duplicate of merged #398" }
       ]
     }
   },
-  "infraHealth": "red",
+  "infraHealth": "green",
   "lastQACycle": {
-    "at": "2026-03-26T04:00:00.000Z",
-    "findings": {
-      "workers": "all 32 PIDs stale — no live workers (P0 #979 open, escalated to human)",
-      "queueDepth": 0,
-      "failures24h": [
-        "qa-coder-agent: 2 failures (1x timeout exit 124, 1x API 500 exit 1)",
-        "qa-issue-fixer-agent: 1 failure (timeout exit 124)",
-        "qa-regression-analyzer: 2 failures (timeout exit 124)"
-      ],
-      "schedule": "valid JSON, 111 enabled / 2 disabled, 8 readybench agents missing SKILL.md (#980), 5 cron collisions",
-      "cronCollisions": [
-        "0 */6 * * *: swarm-health-agent + rollout-canary-validator",
-        "20 */2 * * *: coder-agent + tier-c-copilot-implementer",
-        "22 */3 * * *: qa-em + office-sim-em",
-        "50 */2 * * *: tier-c-copilot-implementer-oss + coder-agent-cloud",
-        "55 */3 * * *: studio-qa + office-sim-qa"
-      ]
-    },
+    "at": "2026-03-26T06:55:00.000Z",
     "health": "red",
-    "reason": "stale workers + 5 agent failures in 24h (3 timeouts likely caused by dead workers)"
+    "reason": "P0 persists: all 32 workers stale, no agent activity in ~10h. Issue #979 open, awaiting human restart.",
+    "note": "P0 resolved since QA cycle — PR #82 merged stale PID cleanup, workers now running normally."
   },
-  "updatedAt": "2026-03-26T04:00:00.000Z"
+  "updatedAt": "2026-03-26T12:15:00.000Z"
 }

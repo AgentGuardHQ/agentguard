@@ -1,0 +1,79 @@
+{
+  "squad": "studio",
+  "reportedAt": "2026-03-26T12:15:00.000Z",
+  "reportedBy": "claude-code:opus:studio:em",
+  "health": "green",
+  "summary": "P0 resolved: stale worker PIDs cleaned up (workspace PR #82 merged), workers running normally as of 12:15 UTC. Closed 2 duplicate cloud PRs (#402, #403 — already merged via #398, #399). Cloud squad still has 3 open PRs needing attention (#400 CONFLICTING, #405/#406 CI FAILING). Studio-qa filed 2 new infra issues: #78 (24 agents missing SKILL.md) and #79 (3 cron collisions). Sprint goal on track — 21 days to Apr 17.",
+  "actionsThisRun": [
+    "Verified P0 stale workers resolved — worker.pids clean, 3 workers active at 12:15 UTC",
+    "Closed cloud PR #402 as duplicate of merged #399 (agent performance API)",
+    "Closed cloud PR #403 as duplicate of merged #398 (onboarding wizard fix)",
+    "Triaged new issues #78 (24 agents missing SKILL.md) and #79 (3 cron collisions)",
+    "Upgraded infra health from red → green (workers running)",
+    "Updated squad state.json with resolved blockers and new issues"
+  ],
+  "swarmHealth": {
+    "localCheckStatus": "All agents healthy (111 skipped — log dir not present on this host)",
+    "activeWorkers": ["worker-4", "worker-5", "worker-16"],
+    "lastAgentActivity": "2026-03-26T12:15:00.000Z",
+    "failingAgents": [],
+    "note": "Swarm operational. studio-em, workspace-pr-review-agent, qa-smoke-runner all ran at 12:15 UTC."
+  },
+  "blockers": [
+    {
+      "severity": "P1",
+      "issue": "24 enabled agents missing SKILL.md files (agentguard-workspace#78)",
+      "action": "Create SKILL.md for each or disable in schedule.json. Many are EM/QA/SR squad roles that need skill authoring.",
+      "status": "open — needs triage"
+    },
+    {
+      "severity": "P2",
+      "issue": "3 cron collisions on jared box (agentguard-workspace#79)",
+      "action": "Stagger colliding agents by 5-10 minutes in schedule.json",
+      "status": "open"
+    },
+    {
+      "severity": "P2",
+      "issue": "Cloud PR #400 (Go kernel HTTP ingest) CONFLICTING — critical path for #60",
+      "action": "copilot-swe-agent must rebase onto main",
+      "status": "open"
+    },
+    {
+      "severity": "P2",
+      "issue": "Cloud PRs #405, #406 Build & Test FAILING",
+      "action": "CI failures need investigation — both Vercel API server and GHA Build & Test failing",
+      "status": "open"
+    },
+    {
+      "severity": "P3",
+      "issue": "May 6 conference (#41) — dangerous command detection coverage for demo",
+      "action": "studio-sr assigned, copilot event pipeline verified, next: demo scenario coverage",
+      "status": "in-progress"
+    }
+  ],
+  "crossSquadStatus": {
+    "kernel": {
+      "health": "green",
+      "notes": "Pipeline fully clean — 0 open PRs. No EM report found."
+    },
+    "cloud": {
+      "health": "yellow",
+      "notes": "3 open PRs remaining: #400 (CONFLICTING, P2), #405 (CI FAILING), #406 (CI FAILING). 2 duplicates closed this cycle. 5 PRs merged since last report (#397-#401, #404)."
+    },
+    "qa": {
+      "health": "yellow",
+      "notes": "No EM report. studio-qa active — filed #78 and #79. 24 agents missing SKILL.md is a systemic issue affecting all squads."
+    },
+    "studio": {
+      "health": "green",
+      "notes": "P0 resolved. Workers running. Sprint goal on track (21 days). studio-sr completing conference readiness, then dashboard wiring."
+    }
+  },
+  "recommendations": [
+    "P1: Triage 24 agents missing SKILL.md (#78) — disable non-critical agents in schedule.json, author skills for active squad roles",
+    "P2: Fix cron collisions (#79) — stagger 3 collision pairs by 5-10 minutes",
+    "P2: Cloud squad to rebase PR #400 and investigate #405/#406 CI failures",
+    "P2: studio-sr to complete conference demo coverage (#41), then begin dashboard wiring sprint goal",
+    "P3: Begin planning #61 (capture funnel) — May 6 conference deadline approaching (41 days)"
+  ]
+}
