@@ -21,13 +21,23 @@ const HOOK_MARKER = 'claude-hook';
 const BUILD_MARKER = 'apps/cli/dist/bin.js';
 const LOCAL_BIN = 'node apps/cli/dist/bin.js';
 
-/** Detect if we're in the agentguard development repo (local dev) vs. globally installed. */
-function resolveCliPrefix(): { cli: string; isLocal: boolean } {
+/** Detect if we're in the agentguard development repo (local dev) vs. globally installed.
+ *  For project-level npm installs, resolves to ./node_modules/.bin/agentguard so hooks
+ *  work even when the binary isn't on PATH (#964). */
+function resolveCliPrefix(isGlobal: boolean): { cli: string; isLocal: boolean } {
   // If apps/cli/src/bin.ts exists, we're in the agentguard source repo (works in worktrees too)
   const mainRoot = resolveMainRepoRoot();
   const localMarker = join(mainRoot, 'apps', 'cli', 'src', 'bin.ts');
   if (existsSync(localMarker)) {
     return { cli: LOCAL_BIN, isLocal: true };
+  }
+  // For project-level settings, prefer the local node_modules binary.
+  // Global settings apply across projects, so they must use a bare command (on PATH).
+  if (!isGlobal) {
+    const nmBin = join(mainRoot, 'node_modules', '.bin', 'agentguard');
+    if (existsSync(nmBin)) {
+      return { cli: './node_modules/.bin/agentguard', isLocal: false };
+    }
   }
   return { cli: 'agentguard', isLocal: false };
 }
@@ -250,7 +260,7 @@ export async function claudeInit(args: string[] = []): Promise<void> {
 
   if (!settings.hooks) settings.hooks = {};
 
-  const { cli, isLocal } = resolveCliPrefix();
+  const { cli, isLocal } = resolveCliPrefix(isGlobal);
 
   // PreToolUse — governance enforcement (routes all tool calls through the kernel)
   if (!settings.hooks.PreToolUse) settings.hooks.PreToolUse = [];
