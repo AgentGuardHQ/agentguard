@@ -8,7 +8,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 
 **Key characteristics:**
 - Governed action kernel: propose → normalize → evaluate → execute → emit
-- 23 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard, script execution tracking)
+- 24 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard, script execution tracking, no-verify bypass)
 - YAML/JSON policy format with pattern matching, scopes, and branch conditions
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - SQLite event persistence for audit trail and replay (JSONL export still supported)
@@ -43,7 +43,7 @@ This is a **pnpm monorepo** orchestrated by **Turbo**. Workspace packages live i
 packages/
 ├── core/src/                   # @red-codes/core — Shared utilities
 │   ├── types.ts                # Shared TypeScript type definitions (includes RunManifest)
-│   ├── actions.ts              # 27 canonical action types across 9 classes
+│   ├── actions.ts              # 41 canonical action types across 10 classes
 │   ├── governance-data.ts      # Governance data loader (typed access to shared JSON data)
 │   ├── data/                   # JSON governance data (actions, blast-radius, destructive-patterns, escalation, git-action-patterns, invariant-patterns, tool-action-map)
 │   ├── hash.ts                 # Content hashing utilities
@@ -73,7 +73,7 @@ packages/
 │   ├── policy-trust.ts         # Policy trust verification
 │   └── yaml-loader.ts          # YAML policy parser
 ├── invariants/src/             # @red-codes/invariants — Invariant system
-│   ├── definitions.ts          # 23 built-in invariant definitions
+│   ├── definitions.ts          # 24 built-in invariant definitions
 │   └── checker.ts              # Invariant evaluation engine
 ├── matchers/src/               # @red-codes/matchers — Structured matchers (KE-1)
 │   ├── path-matcher.ts         # Glob-based path matching (picomatch)
@@ -317,10 +317,11 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **Environmental Enforcement**: `IdeSocketAccessBlocked`
 
 ### Action Classes & Types
-27 canonical action types across 9 classes, defined in `packages/core/src/actions.ts`:
+41 canonical action types across 10 classes, defined in `packages/core/src/actions.ts`:
 - **file**: `file.read`, `file.write`, `file.delete`, `file.move`
 - **test**: `test.run`, `test.run.unit`, `test.run.integration`
-- **git**: `git.diff`, `git.commit`, `git.push`, `git.branch.create`, `git.branch.delete`, `git.checkout`, `git.reset`, `git.merge`, `git.worktree.add`, `git.worktree.remove`, `git.worktree.list`
+- **git**: `git.diff`, `git.commit`, `git.push`, `git.force-push`, `git.branch.create`, `git.branch.delete`, `git.checkout`, `git.reset`, `git.merge`, `git.worktree.add`, `git.worktree.remove`, `git.worktree.list`
+- **github**: `github.pr.list`, `github.pr.create`, `github.pr.merge`, `github.pr.close`, `github.pr.view`, `github.pr.checks`, `github.issue.list`, `github.issue.create`, `github.issue.close`, `github.release.create`, `github.run.list`, `github.run.view`, `github.api`
 - **shell**: `shell.exec`
 - **npm**: `npm.install`, `npm.script.run`, `npm.publish`
 - **http**: `http.request`
