@@ -65,6 +65,10 @@ AgentGuard is the **Execution Control Plane for autonomous AI agents** — the i
 | OpenCode driver support | **Shipped v2.7.0** | Agent driver registry (PR #1019) |
 | Codex CLI adapter (PreToolUse/PostToolUse hook commands) | **Shipped v2.8.0** | `packages/adapters/src/codex-cli.ts` (PR #1024) |
 | Gemini CLI adapter (BeforeTool/AfterTool hook commands) | **Shipped v2.8.0** | `packages/adapters/src/gemini-cli.ts` (PR #1024) |
+| Credential file write detection via shell commands (closes #618) | **Shipped (main)** | `packages/invariants/src/definitions.ts` (PR #1032) |
+| Agent identity in `agentguard inspect` output (closes #1030) | **Shipped (main)** | `apps/cli/src/commands/inspect.ts` (PR #1078) |
+| agentId filter in storage aggregation queries (closes #1029) | **Shipped (main)** | `packages/storage/` (PR #1081) |
+| Site user capture funnel — hero CTA, quick start CTA, early access section (closes #938) | **Shipped (main)** | `site/` (PR #1076) |
 | Go kernel rewrite (Phase 1 — velocity-first) | **In Progress** | Fast-path delegation operational in `apps/cli` (PRs #1000, #1001) |
 | Rust kernel research (types, AAB, policy) | Paused | Experimental — informs Go design |
 
@@ -180,10 +184,12 @@ This sprint implements the architectural upgrades required for AgentGuard to fun
 - [ ] Default-deny finalized + KE-2 ActionContext shipped
 - [ ] **Stranger test validation** — Have someone with zero context install and configure AgentGuard from the README alone. Every friction point found is a v3.0 blocker. The individual governance experience (`npm install → agentguard claude-init → governance active`) must work flawlessly before anything else is promoted.
 - [ ] **User capture funnel** — Without this, installs vanish into the void:
-  - README call-to-action: "Join early access / updates" link
-  - Cloud waitlist / signup link in CLI output after `agentguard claude-init`
-  - Enable GitHub Discussions on the repo (category: "Show & Tell", "Q&A")
-  - `agentguard cloud signup` prompt during first-run flow (non-blocking, skippable)
+  - [x] ~~Site hero CTA, quick start CTA, early access section~~ — ✅ Done 2026-03-27 (closes #938, PR #1076)
+  - [ ] README call-to-action: "Join early access / updates" link
+  - [ ] Cloud waitlist / signup link in CLI output after `agentguard claude-init`
+  - [ ] Enable GitHub Discussions on the repo (category: "Show & Tell", "Q&A")
+  - [ ] `agentguard cloud signup` prompt during first-run flow (non-blocking, skippable)
+  - Remaining CLI/community items tracked in #1084
 - [x] ~~**Install attribution tracking**~~ — ✅ Done 2026-03-26 (v2.7.x) — opt-in postinstall ping reports version, OS, Node, CI environment, anonymous install ID; respects `AGENTGUARD_TELEMETRY=off` and `DO_NOT_TRACK=1`; fails silently; never breaks installs (closes #892, PR #991)
 - [ ] 30-second demo video (install → configure → govern → Cloud dashboard)
 - [ ] Site update with demo embed
@@ -308,7 +314,7 @@ Depends on: KE-2 (ActionContext provides vendor-neutral normalization).
 
 **Architecture for replaceability**: The kernel is a specification, not just code. Canonical Action Model (CAR), policy engine semantics, enforcement contract, decision outputs, event schema, and invariants are all language-independent. The kernel exposes a narrow boundary (gRPC / local socket / WASM / FFI / CLI contract) so implementations can be swapped.
 
-**Phase 1 — Go Kernel (Ship Fast)**:
+**Phase 1 — Go Kernel (Ship Fast)** (tracking: #1086):
 - [x] ~~Go binary fast-path delegation operational~~ — ✅ Done 2026-03-26 — `go/cmd/agentguard/evaluate` wired as fast-path in claude-hook; normalized ActionContext accepted (PRs #1000, #1001)
 - [ ] Validate architecture end-to-end in Go
 - [ ] Harden semantics and find edge cases with real users

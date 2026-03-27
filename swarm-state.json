@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-03-27T02:45:00Z",
+  "updatedAt": "2026-03-27T05:15:00Z",
   "updatedBy": "backlog-hygiene--roadmap-triage-agent",
   "mode": "normal",
   "recommendedMode": "normal",
-  "modeReason": "Roadmap triage agent confirms normal mode. v2.8.0 shipped (Codex CLI + Gemini CLI adapters). Phase 6.75 (Studio Runtime) completed ahead of schedule. Install attribution (v3.0 blocker) shipped in v2.7.x. Go kernel fast-path delegation operational. Security issue #648 (read-only ops) RESOLVED via PR #982. Risk profile steady.",
+  "modeReason": "Roadmap triage agent confirms normal mode. v2.8.0 shipped (Codex CLI + Gemini CLI adapters). Phase 6.75 (Studio Runtime) completed ahead of schedule. Install attribution (v3.0 blocker) shipped in v2.7.x. Go kernel fast-path delegation operational. Security issue #648 RESOLVED (PR #982). Security issue #618 (credential write bypass) RESOLVED (PR #1032). Site capture funnel CTA shipped (PR #1076, closes #938). Risk profile steady.",
   "riskAssessment": {
-    "compositeScore": 8,
+    "compositeScore": 7,
     "escalationLevel": "NORMAL",
-    "assessedAt": "2026-03-27T02:45:00Z",
+    "assessedAt": "2026-03-27T05:15:00Z",
     "dimensions": {
       "prBlastRadius": {
         "score": 0,
@@ -23,15 +23,14 @@
         "note": "Main branch CI green. No persistent test failures."
       },
       "governanceDenialRate": {
-        "score": 3,
+        "score": 2,
         "max": 25,
-        "highPriorityIssuesOpen": 6,
+        "highPriorityIssuesOpen": 5,
         "securityBypassVectors": [
-          "#618 (credential write bypass)",
           "#640 (path manipulation)",
           "#639 (credential stripping)"
         ],
-        "note": "6 HIGH-priority issues open (down from 8). #648 (read-only blocking) RESOLVED via PR #982. #618, #640, #639 remain without assigned PRs."
+        "note": "5 HIGH-priority issues open (down from 6). #618 (credential write bypass) RESOLVED via PR #1032. #640, #639 remain without assigned PRs."
       },
       "mergeConflictRate": {
         "score": 0,
@@ -42,11 +41,11 @@
       }
     },
     "deltaFromPrior": {
-      "priorScore": 10,
-      "currentScore": 8,
-      "delta": -2,
+      "priorScore": 8,
+      "currentScore": 7,
+      "delta": -1,
       "direction": "improved",
-      "cause": "v2.8.0 released (Codex+Gemini CLI). Phase 6.75 DONE. Install attribution shipped. #648 RESOLVED. Security issue count 8->6."
+      "cause": "#618 (credential write bypass) RESOLVED via PR #1032. Site capture funnel CTA shipped (#938). agentId storage filter + inspect identity shipped. Security bypass count 6->5. Risk 8->7."
     }
   },
   "phaseTracking": {
@@ -376,13 +375,28 @@
           1024,
           1025
         ]
+      },
+      {
+        "event": "SECURITY_ISSUE_RESOLVED",
+        "issue": 618,
+        "title": "Credential file write detection via shell commands",
+        "resolvedAt": "2026-03-27T05:15:00Z",
+        "significance": "#618 CLOSED \u2014 credential write bypass via shell commands now detected by invariant system (PR #1032). Security bypass vector count drops from 3 to 2."
+      },
+      {
+        "event": "CAPTURE_FUNNEL_PARTIAL",
+        "pr": 1076,
+        "issue": 938,
+        "title": "Site user capture funnel \u2014 hero CTA, early access section",
+        "shippedAt": "2026-03-27T05:15:00Z",
+        "significance": "Site CTA / early access section shipped (PR #1076). Remaining capture funnel items (README CTA, CLI prompt, GitHub Discussions) tracked in #1084."
       }
     ]
   },
   "backlogExpansionRate": {
-    "assessedAt": "2026-03-27T02:45:00Z",
+    "assessedAt": "2026-03-27T05:15:00Z",
     "totalOpenIssues": 50,
-    "note": "50 open issues at triage. ~15 actionable work items. Key triaged: #1048 (install attribution \u2014 closed, shipped via PR #991), #1049 (JetBrains plugin \u2014 Phase 9), #1055 (DeepAgents adapter \u2014 Phase 9 new), #1047 (KE-6 \u2014 already tracked), #1048 closed as duplicate of PR #991."
+    "note": "~50 open issues at triage. ~15 actionable work items. Key triaged: #618 CLOSED (shipped via PR #1032), #938 CLOSED (site CTA shipped PR #1076), #1030 CLOSED (PR #1078), #1029 CLOSED (PR #1081). New issues: #1086 (Go Kernel Phase 1 - tracked), #1085 (Phase 9 sandbox adapters - tracked), #1084 (remaining capture funnel - in progress), #1073 (Python SDK - later), #1072 (complete Go kernel - tracked). #1027 (governance self-mod escape hatch - bug, medium), #1026 (educate mode bug - medium)."
   },
   "stallDetection": {
     "stalledPhases": [],
@@ -416,7 +430,7 @@
     },
     "swarmStateFreshness": {
       "status": "healthy",
-      "note": "Updated by backlog-hygiene--roadmap-triage-agent 2026-03-27T02:45Z."
+      "note": "Updated by backlog-hygiene--roadmap-triage-agent 2026-03-27T05:15Z."
     },
     "roadmapProgress": {
       "status": "on-track",
@@ -455,6 +469,12 @@
       "timestamp": "2026-03-27T02:45:00Z",
       "description": "ROADMAP.md and swarm-state.json updated: v2.8.0 release (Codex+Gemini CLI), Phase 6.75 DONE (studio wizard, execution profiles, swarm template schema), install attribution checked off in v3.0 (1/8), Go kernel fast-path delegation operational, #648 resolved. Issue #1048 closed (shipped via PR #991).",
       "agent": "backlog-hygiene--roadmap-triage-agent"
+    },
+    {
+      "type": "roadmap-triage",
+      "timestamp": "2026-03-27T05:15:00Z",
+      "description": "ROADMAP.md and swarm-state.json updated: #618 RESOLVED (credential write bypass via PR #1032), site capture funnel CTA shipped (PR #1076, closes #938), agentId storage filter shipped (PR #1081, closes #1029), inspect agent identity shipped (PR #1078, closes #1030). New issues triaged: #1086 (Go Kernel Phase 1 \u2014 tracked), #1085 (Phase 9 sandbox adapters \u2014 tracked), #1084 (remaining capture funnel \u2014 pending), #1072/#1073 (Go/Python SDK \u2014 later). Security bypass count 6->5. Risk score 8->7.",
+      "agent": "backlog-hygiene--roadmap-triage-agent"
     }
   ],
   "blockers": [
@@ -468,12 +488,11 @@
       "type": "security",
       "severity": "medium",
       "issueNumbers": [
-        618,
         640,
         639
       ],
-      "description": "3 security issues without assigned PRs: #618 (credential write bypass), #640 (path manipulation), #639 (credential stripping). #648 resolved via PR #982.",
-      "recommendation": "Assign implementation agent to #618 (highest severity)."
+      "description": "2 security issues without assigned PRs: #640 (path manipulation), #639 (credential stripping). #618 (credential write bypass) resolved via PR #1032. #648 resolved via PR #982.",
+      "recommendation": "Assign implementation agent to #640 (path manipulation \u2014 next highest severity)."
     },
     {
       "type": "governance-gap",
@@ -488,18 +507,18 @@
   "systemSummary": {
     "overallHealth": "healthy",
     "escalationLevel": "NORMAL",
-    "riskScore": 8,
+    "riskScore": 7,
     "riskTrend": "improving",
     "mainBranchCI": "green",
     "openPRsCount": 0,
     "conflictedPRsCount": 0,
     "stuckPRsCount": 0,
     "ciFailingPRsCount": 0,
-    "highIssuesWithoutPR": 6,
+    "highIssuesWithoutPR": 5,
     "regressionDetected": false,
     "completedPhaseCount": 10,
     "activePhaseCount": 4,
-    "progressSinceLastRun": "v2.8.0 released (Codex+Gemini CLI adapters). Phase 6.75 (Studio Runtime) DONE 3/3. Install attribution v3.0 item checked (1/8). Go kernel fast-path delegation shipped. #648 resolved. Security bypass count 8->6. Risk 10->8.",
+    "progressSinceLastRun": "#618 RESOLVED (credential write bypass \u2014 PR #1032). Site capture funnel CTA shipped (PR #1076). agentId storage filter (PR #1081) + inspect agent identity (PR #1078) shipped. Security bypass count 6->5. Risk 8->7.",
     "modeChangeConditions": {
       "toNormal": "CURRENT STATE \u2014 risk score 8, 0 open PRs, no conflicts, main CI green.",
       "toElevated": "Risk score exceeds 20, or PR queue grows above 5, or new critical security regression.",
