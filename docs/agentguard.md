@@ -47,18 +47,15 @@ action    emit PolicyDenied
 
 ### Invariant Monitoring
 
-Invariants are conditions that must always hold true. AgentGuard monitors these continuously, not just at action boundaries.
+Invariants are conditions that must always hold true. AgentGuard monitors these continuously, not just at action boundaries. There are 24 built-in invariants covering secrets exposure, force push, protected branches, package script injection, blast radius, test-before-push, lockfile integrity, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migrations, transitive effect analysis, IDE socket access, commit scope, script execution tracking, no-verify bypass, and more.
 
-**System invariants:**
-- Test suite passes after modifications
-- No secrets or credentials in committed files
-- Protected files are not modified without explicit authorization
-
-**Operational invariants:**
-- Agent stays within declared scope (specific directories, file patterns)
-- Blast radius limits are respected (max files modified per action)
-- No destructive operations without confirmation
-- No force-push to protected branches
+**Example invariants:**
+- No secrets or credentials in committed files (`no-secret-exposure`)
+- No force-push to protected branches (`no-force-push`)
+- Blast radius limits are respected — max files modified per action (`blast-radius-limit`)
+- Tests must pass before git push (`test-before-push`)
+- Agent stays within declared scope (`commit-scope-guard`)
+- No `--no-verify` bypass on git push/commit (`no-verify-bypass`)
 
 ### Policy Evaluation
 
@@ -141,7 +138,7 @@ Evidence packs enable:
 
 ## Event Production
 
-AgentGuard produces canonical events (see [Event Model](event-model.md)) that flow into the shared event store. Subscribers (TUI renderer, JSONL sink, CLI inspect) consume these events.
+AgentGuard produces canonical events (see [Event Model](event-model.md)) that flow into the shared event store. Subscribers (TUI renderer, SQLite sink, CLI inspect) consume these events.
 
 | Outcome | Event Type | Severity |
 |---------|------------|----------|
@@ -196,73 +193,114 @@ AgentGuard is **implemented and operational**. The governed action kernel connec
 ### Kernel Loop (Core)
 | Component | File | Status |
 |-----------|------|--------|
-| Governed action kernel | `agentguard/kernel.ts` | Complete |
-| AAB (normalization) | `agentguard/core/aab.ts` | Complete |
-| RTA decision engine | `agentguard/core/engine.ts` | Complete |
-| Runtime monitor (escalation) | `agentguard/monitor.ts` | Complete |
+| Governed action kernel | `packages/kernel/src/kernel.ts` | Complete |
+| AAB (normalization) | `packages/kernel/src/aab.ts` | Complete |
+| RTA decision engine | `packages/kernel/src/decision.ts` | Complete |
+| Runtime monitor (escalation) | `packages/kernel/src/monitor.ts` | Complete |
 
 ### Policy Engine
 | Component | File | Status |
 |-----------|------|--------|
-| Policy evaluator | `agentguard/policies/evaluator.ts` | Complete |
-| JSON policy loader | `agentguard/policies/loader.ts` | Complete |
-| YAML policy loader | `agentguard/policies/yaml-loader.ts` | Complete |
+| Policy evaluator | `packages/policy/src/evaluator.ts` | Complete |
+| JSON policy loader | `packages/policy/src/loader.ts` | Complete |
+| YAML policy loader | `packages/policy/src/yaml-loader.ts` | Complete |
 
 ### Safety Infrastructure
 | Component | File | Status |
 |-----------|------|--------|
-| Invariant checker | `agentguard/invariants/checker.ts` | Complete |
-| 6 default invariants | `agentguard/invariants/definitions.ts` | Complete |
+| Invariant checker | `packages/invariants/src/checker.ts` | Complete |
+| 24 built-in invariants | `packages/invariants/src/definitions.ts` | Complete |
 | Evidence pack generation | `agentguard/evidence/pack.ts` | Complete |
 
 ### Execution Adapters
 | Component | File | Status |
 |-----------|------|--------|
-| File adapter (read/write/delete) | `agentguard/adapters/file.ts` | Complete |
-| Shell adapter (exec with timeout) | `agentguard/adapters/shell.ts` | Complete |
-| Git adapter (commit/push/branch) | `agentguard/adapters/git.ts` | Complete |
-| Adapter registry | `agentguard/adapters/registry.ts` | Complete |
-| Claude Code adapter | `agentguard/adapters/claude-code.ts` | Complete |
+| File adapter (read/write/delete) | `packages/adapters/src/file.ts` | Complete |
+| Shell adapter (exec with timeout) | `packages/adapters/src/shell.ts` | Complete |
+| Git adapter (commit/push/branch) | `packages/adapters/src/git.ts` | Complete |
+| Adapter registry | `packages/adapters/src/registry.ts` | Complete |
+| Claude Code adapter | `packages/adapters/src/claude-code.ts` | Complete |
 
 ### Observability
 | Component | File | Status |
 |-----------|------|--------|
-| JSONL event sink | `agentguard/sinks/jsonl.ts` | Complete |
-| TUI renderer | `agentguard/renderers/tui.ts` | Complete |
+| SQLite event sink (primary) | `packages/storage/src/sqlite-sink.ts` | Complete |
+| JSONL export (portability) | `apps/cli/src/commands/export.ts` | Complete |
+| TUI renderer | `packages/renderers/src/tui-renderer.ts` | Complete |
 
 ### CLI Commands
 | Component | File | Status |
 |-----------|------|--------|
-| `agentguard guard` | `cli/commands/guard.ts` | Complete |
-| `agentguard inspect` | `cli/commands/inspect.ts` | Complete |
-| `agentguard events` | `cli/commands/inspect.ts` | Complete |
+| `agentguard guard` | `apps/cli/src/commands/guard.ts` | Complete |
+| `agentguard inspect` | `apps/cli/src/commands/inspect.ts` | Complete |
+| `agentguard events` | `apps/cli/src/commands/inspect.ts` | Complete |
+| `agentguard replay` | `apps/cli/src/replay.ts` | Complete |
+| `agentguard export` | `apps/cli/src/commands/export.ts` | Complete |
+| `agentguard import` | `apps/cli/src/commands/import.ts` | Complete |
+| `agentguard simulate` | `apps/cli/src/commands/simulate.ts` | Complete |
+| `agentguard ci-check` | `apps/cli/src/commands/ci-check.ts` | Complete |
+| `agentguard policy` | `apps/cli/src/commands/policy.ts` | Complete |
+| `agentguard diff` | `apps/cli/src/commands/diff.ts` | Complete |
+| `agentguard plugin` | `apps/cli/src/commands/plugin.ts` | Complete |
+| `agentguard evidence-pr` | `apps/cli/src/commands/evidence-pr.ts` | Complete |
+| `agentguard traces` | `apps/cli/src/commands/traces.ts` | Complete |
+| `agentguard init` | `apps/cli/src/commands/init.ts` | Complete |
+| `agentguard session-viewer` | `apps/cli/src/commands/session-viewer.ts` | Complete |
+| `agentguard status` | `apps/cli/src/commands/status.ts` | Complete |
+| `agentguard audit-verify` | `apps/cli/src/commands/audit-verify.ts` | Complete |
+| `agentguard analytics` | `apps/cli/src/commands/analytics.ts` | Complete |
+| `agentguard team-report` | `apps/cli/src/commands/team-report.ts` | Complete |
+| `agentguard adoption` | `apps/cli/src/commands/adoption.ts` | Complete |
+| `agentguard learn` | `apps/cli/src/commands/learn.ts` | Complete |
+| `agentguard migrate` | `apps/cli/src/commands/migrate.ts` | Complete |
+| `agentguard trust` | `apps/cli/src/commands/trust.ts` | Complete |
+| `agentguard telemetry` | `apps/cli/src/bin.ts` | Complete |
+| `agentguard demo` | `apps/cli/src/commands/demo.ts` | Complete |
+| `agentguard auto-setup` | `apps/cli/src/commands/auto-setup.ts` | Complete |
+| `agentguard config` | `apps/cli/src/commands/config.ts` | Complete |
+| `agentguard cloud` | `apps/cli/src/commands/cloud.ts` | Complete |
+| `agentguard claude-init` | `apps/cli/src/commands/claude-init.ts` | Complete |
+| `agentguard claude-hook` | `apps/cli/src/commands/claude-hook.ts` | Complete |
+| `agentguard copilot-init` | `apps/cli/src/commands/copilot-init.ts` | Complete |
+| `agentguard copilot-hook` | `apps/cli/src/commands/copilot-hook.ts` | Complete |
+| `agentguard deepagents-init` | `apps/cli/src/commands/deepagents-init.ts` | Complete |
+| `agentguard deepagents-hook` | `apps/cli/src/commands/deepagents-hook.ts` | Complete |
 
 ### Directory Structure
 
 ```
-agentguard/
-├── kernel.ts              # Governed action kernel (orchestrator)
-├── monitor.ts             # Runtime monitor (escalation tracking)
-├── core/
-│   ├── aab.ts             # Action Authorization Boundary
-│   └── engine.ts          # RTA decision engine
-├── policies/
-│   ├── evaluator.ts       # Policy rule matching
-│   ├── loader.ts          # JSON policy loader
-│   └── yaml-loader.ts     # YAML policy loader
-├── invariants/
-│   ├── checker.ts         # Invariant evaluation engine
-│   └── definitions.ts     # 6 default invariants
-├── evidence/
-│   └── pack.ts            # Evidence pack builder
-├── adapters/
-│   ├── file.ts            # File operations (fs)
-│   ├── shell.ts           # Shell execution (child_process)
-│   ├── git.ts             # Git operations
-│   ├── registry.ts        # Adapter wiring
-│   └── claude-code.ts     # Claude Code hook adapter
-├── renderers/
-│   └── tui.ts             # Terminal action stream
-└── sinks/
-    └── jsonl.ts           # JSONL event persistence
+packages/
+├── kernel/src/
+│   ├── kernel.ts              # Governed action kernel (orchestrator)
+│   ├── monitor.ts             # Runtime monitor (escalation tracking)
+│   ├── aab.ts                 # Action Authorization Boundary
+│   ├── decision.ts            # RTA decision engine
+│   └── evidence.ts            # Evidence pack builder
+├── policy/src/
+│   ├── evaluator.ts           # Policy rule matching
+│   ├── loader.ts              # JSON policy loader
+│   └── yaml-loader.ts         # YAML policy loader
+├── invariants/src/
+│   ├── checker.ts             # Invariant evaluation engine
+│   └── definitions.ts         # 24 built-in invariants
+├── adapters/src/
+│   ├── file.ts                # File operations (fs)
+│   ├── shell.ts               # Shell execution (child_process)
+│   ├── git.ts                 # Git operations
+│   ├── registry.ts            # Adapter wiring
+│   ├── claude-code.ts         # Claude Code hook adapter
+│   └── copilot-cli.ts         # Copilot CLI hook adapter
+├── renderers/src/
+│   └── tui-renderer.ts        # Terminal action stream
+├── storage/src/
+│   ├── sqlite-sink.ts         # SQLite event/decision sink (primary)
+│   └── sqlite-store.ts        # SQLite event store
+└── events/src/
+    ├── schema.ts              # Event kinds (47 total), factory, validation
+    └── bus.ts                 # Generic typed EventBus
+
+apps/
+└── cli/src/
+    ├── bin.ts                 # CLI entry point (34 commands)
+    └── commands/              # Individual command implementations
 ```
