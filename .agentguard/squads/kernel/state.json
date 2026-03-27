@@ -2,29 +2,38 @@
   "squad": "kernel",
   "sprint": {
     "goal": "Fix P0 hook-breaking bugs (#972, #973), then resume Go kernel wire-up (#955). Hook path must work before Go delegation can ship.",
-    "issues": [972, 973, 955, 957, 964]
+    "issues": [
+      972,
+      973,
+      955,
+      957,
+      964
+    ]
   },
   "assignments": {
     "senior": {
-      "issue": [972, 973],
+      "issue": [
+        972,
+        973
+      ],
       "title": "P0: Fix hook deny reason retry metadata (#972) + bundle essentials pack in npm (#973)",
       "status": "unassigned",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason → Claude Code blocks all tool use). #973 compounds it (essentials pack missing → default-deny on everything). Fix both before resuming #955 Go delegation."
+      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason \u2192 Claude Code blocks all tool use). #973 compounds it (essentials pack missing \u2192 default-deny on everything). Fix both before resuming #955 Go delegation."
     }
   },
   "blockers": [
     {
       "issue": 972,
-      "description": "Hook deny reason includes '(attempt N/N)' — Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
+      "description": "Hook deny reason includes '(attempt N/N)' \u2014 Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
       "severity": "P0",
       "since": "2026-03-26T00:00:00.000Z"
     },
     {
       "issue": 973,
-      "description": "essentials policy pack not bundled in npm — all hook invocations hit default-deny",
+      "description": "essentials policy pack not bundled in npm \u2014 all hook invocations hit default-deny",
       "severity": "P0",
       "since": "2026-03-26T00:00:00.000Z"
     }
@@ -47,42 +56,94 @@
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T15:57:00.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
+    "delta": "same as previous run (4273)",
     "coverageGaps": [],
+    "prCoverage": {
+      "checked": [
+        1121,
+        1117,
+        1109,
+        1104,
+        1098,
+        1090,
+        1087,
+        1083
+      ],
+      "missingTests": [],
+      "note": "All open PRs have test coverage"
+    },
     "fixes": [
       {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
+        "pr": 1123,
+        "files": [
+          "packages/storage/src/aggregation-queries.ts",
+          "packages/storage/src/migrations.ts",
+          "packages/storage/src/sqlite-store.ts",
+          "apps/cli/src/commands/inspect.ts",
+          "apps/cli/src/commands/claude-hook.ts",
+          "apps/cli/tests/go-fast-path.test.ts"
+        ],
+        "note": "Fixed 4 Prettier violations blocking all PR CI runs. Added AGENTGUARD_GO_TIMEOUT env var for configurable Go fast-path timeout. Supersedes PR #1121."
       }
     ],
     "openPrNotes": [
       {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
+        "pr": 1123,
+        "title": "fix(qa): Prettier regressions + AGENTGUARD_GO_TIMEOUT configurable (QA 2026-03-27T15:57Z)",
+        "issue": "Supersedes PR #1121. Should unblock CI for all blocked PRs.",
+        "status": "open"
       },
       {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
-        "status": "needs-format-fix"
-      },
-      {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
+        "pr": 1121,
+        "title": "fix(qa): go-fast-path flaky test + Prettier regressions (QA 2026-03-27T14:10Z)",
+        "issue": "Still has CI failure on go-fast-path.test.ts:225. Superseded by PR #1123.",
         "status": "stale"
+      },
+      {
+        "pr": 1109,
+        "title": "feat: OpenCode framework adapter",
+        "issue": "Has tests. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
+      },
+      {
+        "pr": 1104,
+        "title": "fix(adapters): educate mode always allows",
+        "issue": "Has tests. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
+      },
+      {
+        "pr": 1098,
+        "title": "feat(storage): driver_type to sessions",
+        "issue": "Has tests. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
+      },
+      {
+        "pr": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "issue": "Tests only PR. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
+      },
+      {
+        "pr": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent",
+        "issue": "Has tests. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
+      },
+      {
+        "pr": 1083,
+        "title": "test(storage): agentId, agent helpers, v5 migration backfill",
+        "issue": "Tests only PR. Blocked by Prettier CI failure (fixed by #1123).",
+        "status": "ready-pending-ci"
       }
     ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastQaRun": "2026-03-27T15:57:00.000Z",
+  "updatedAt": "2026-03-27T15:57:00.000Z"
 }
