@@ -65,9 +65,7 @@ export async function codexInit(args: string[] = []): Promise<void> {
   // Codex CLI hooks location:
   // Repo-level: .codex/hooks.json
   // Global: ~/.codex/hooks.json
-  const hooksDir = isGlobal
-    ? join(homedir(), '.codex')
-    : join(process.cwd(), '.codex');
+  const hooksDir = isGlobal ? join(homedir(), '.codex') : join(process.cwd(), '.codex');
   const hooksPath = join(hooksDir, 'hooks.json');
   const hooksLabel = isGlobal ? '~/.codex/hooks.json' : '.codex/hooks.json';
 
@@ -138,7 +136,9 @@ export async function codexInit(args: string[] = []): Promise<void> {
   process.stderr.write(
     `  ${FG.green}\u2713${RESET}  Hooks installed in ${FG.cyan}${hooksLabel}${RESET}\n`
   );
-  process.stderr.write(`  ${DIM}PreToolUse:    governance enforcement (Bash, Write, Edit)${RESET}\n`);
+  process.stderr.write(
+    `  ${DIM}PreToolUse:    governance enforcement (Bash, Write, Edit)${RESET}\n`
+  );
   process.stderr.write(`  ${DIM}PostToolUse:   error monitoring (Bash)${RESET}\n`);
   if (storeBackend) {
     process.stderr.write(`  ${DIM}Storage:       ${storeBackend}${RESET}\n`);
@@ -403,10 +403,7 @@ function showProtectionSummary(policyGenerated: boolean, mode: EnforcementMode =
 }
 
 function hasAgentGuardHook(config: CodexHooksConfig): boolean {
-  const allGroups = [
-    ...(config.hooks?.PreToolUse || []),
-    ...(config.hooks?.PostToolUse || []),
-  ];
+  const allGroups = [...(config.hooks?.PreToolUse || []), ...(config.hooks?.PostToolUse || [])];
   return allGroups.some((group) => {
     const hooks = group.hooks || [];
     return hooks.some((h) => (h.command || '').includes(HOOK_MARKER));

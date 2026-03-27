@@ -65,9 +65,7 @@ export async function geminiInit(args: string[] = []): Promise<void> {
   // Gemini CLI hooks location:
   // Repo-level: .gemini/settings.json
   // Global: ~/.gemini/settings.json
-  const settingsDir = isGlobal
-    ? join(homedir(), '.gemini')
-    : join(process.cwd(), '.gemini');
+  const settingsDir = isGlobal ? join(homedir(), '.gemini') : join(process.cwd(), '.gemini');
   const settingsPath = join(settingsDir, 'settings.json');
   const settingsLabel = isGlobal ? '~/.gemini/settings.json' : '.gemini/settings.json';
 
@@ -136,7 +134,9 @@ export async function geminiInit(args: string[] = []): Promise<void> {
   process.stderr.write(
     `  ${FG.green}\u2713${RESET}  Hooks installed in ${FG.cyan}${settingsLabel}${RESET}\n`
   );
-  process.stderr.write(`  ${DIM}BeforeTool:    governance enforcement (Shell, WriteFile, EditFile)${RESET}\n`);
+  process.stderr.write(
+    `  ${DIM}BeforeTool:    governance enforcement (Shell, WriteFile, EditFile)${RESET}\n`
+  );
   process.stderr.write(`  ${DIM}AfterTool:     error monitoring (Shell)${RESET}\n`);
   if (storeBackend) {
     process.stderr.write(`  ${DIM}Storage:       ${storeBackend}${RESET}\n`);
@@ -403,10 +403,7 @@ function showProtectionSummary(policyGenerated: boolean, mode: EnforcementMode =
 }
 
 function hasAgentGuardHook(config: GeminiSettingsConfig): boolean {
-  const allGroups = [
-    ...(config.hooks?.BeforeTool || []),
-    ...(config.hooks?.AfterTool || []),
-  ];
+  const allGroups = [...(config.hooks?.BeforeTool || []), ...(config.hooks?.AfterTool || [])];
   return allGroups.some((group) => {
     const hooks = group.hooks || [];
     return hooks.some((h) => (h.command || '').includes(HOOK_MARKER));

@@ -38,10 +38,7 @@ function readSessionState(sessionId: string | undefined): CodexSessionState {
   }
 }
 
-function writeSessionState(
-  sessionId: string | undefined,
-  patch: Partial<CodexSessionState>
-): void {
+function writeSessionState(sessionId: string | undefined, patch: Partial<CodexSessionState>): void {
   const key = sessionId || String(process.ppid) || 'default';
   try {
     mkdirSync(join(tmpdir(), 'agentguard'), { recursive: true });
@@ -184,10 +181,7 @@ function parseCodexPayload(data: Record<string, unknown>): CodexCliHookPayload {
 }
 
 /** Returns true if the action was denied. */
-async function handlePreToolUse(
-  payload: CodexCliHookPayload,
-  cliArgs: string[]
-): Promise<boolean> {
+async function handlePreToolUse(payload: CodexCliHookPayload, cliArgs: string[]): Promise<boolean> {
   const { processCodexCliHook, formatCodexHookResponse } = await import('@red-codes/adapters');
   const { createKernel } = await import('@red-codes/kernel');
   const { DEFAULT_INVARIANTS } = await import('@red-codes/invariants');
