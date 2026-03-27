@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agentguard codex-hook pre",
+            "command": "node apps/cli/dist/bin.js codex-hook pre",
             "statusMessage": "AgentGuard governance check"
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agentguard codex-hook post",
+            "command": "node apps/cli/dist/bin.js codex-hook post",
             "statusMessage": "AgentGuard error monitoring"
           }
         ]

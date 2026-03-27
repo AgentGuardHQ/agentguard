@@ -4,14 +4,14 @@
     "preToolUse": [
       {
         "type": "command",
-        "bash": "agentguard copilot-hook pre",
+        "bash": "node apps/cli/dist/bin.js copilot-hook pre",
         "timeoutSec": 30
       }
     ],
     "postToolUse": [
       {
         "type": "command",
-        "bash": "agentguard copilot-hook post",
+        "bash": "node apps/cli/dist/bin.js copilot-hook post",
         "timeoutSec": 10
       }
     ]

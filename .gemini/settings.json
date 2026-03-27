@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agentguard gemini-hook pre"
+            "command": "node apps/cli/dist/bin.js gemini-hook pre"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agentguard gemini-hook post"
+            "command": "node apps/cli/dist/bin.js gemini-hook post"
           }
         ]
       }
