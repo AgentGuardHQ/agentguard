@@ -1037,7 +1037,7 @@
               </tbody>
             </table>
           </div>
-          <p class="text-muted/70 text-xs mt-4">Agents get 8% more productive time per session. Ships automatically via <code class="text-text/60">npm install</code> &mdash; a postinstall script downloads the prebuilt binary for your platform. Works with both Claude Code and GitHub Copilot hooks.</p>
+          <p class="text-muted/70 text-xs mt-4">Agents get 8% more productive time per session. Ships automatically via <code class="text-text/60">npm install</code> &mdash; a postinstall script downloads the prebuilt binary for your platform. Works with Claude Code, GitHub Copilot, Codex CLI, and Gemini CLI hooks.</p>
         </div>
       </div>
     </section>
@@ -1649,6 +1649,10 @@ rules:
               <li class="text-muted"><span class="text-text">claude-hook</span> &mdash; Claude Code hook handler</li>
               <li class="text-muted"><span class="text-text">copilot-init</span> &mdash; GitHub Copilot hooks</li>
               <li class="text-muted"><span class="text-text">copilot-hook</span> &mdash; Copilot hook handler</li>
+              <li class="text-muted"><span class="text-text">codex-init</span> &mdash; OpenAI Codex CLI hooks</li>
+              <li class="text-muted"><span class="text-text">codex-hook</span> &mdash; Codex CLI hook handler</li>
+              <li class="text-muted"><span class="text-text">gemini-init</span> &mdash; Google Gemini CLI hooks</li>
+              <li class="text-muted"><span class="text-text">gemini-hook</span> &mdash; Gemini CLI hook handler</li>
               <li class="text-muted"><span class="text-text">cloud login</span> &mdash; Device code auth (browser OAuth)</li>
               <li class="text-muted"><span class="text-text">cloud events/runs</span> &mdash; Query cloud data</li>
               <li class="text-muted"><span class="text-text">auto-setup</span> &mdash; Auto-detect &amp; configure</li>
@@ -1852,7 +1856,7 @@ rules:
           <p class="text-muted text-lg max-w-2xl mx-auto">Governance where your agents already work.</p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 reveal-stagger">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 reveal-stagger">
           <!-- Claude Code -->
           <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
@@ -1883,6 +1887,38 @@ rules:
             <div class="flex flex-wrap gap-2">
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">preToolUse</span>
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">postToolUse</span>
+            </div>
+          </div>
+
+          <!-- Codex CLI -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
+              <svg class="w-6 h-6 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+            <h3 class="font-mono font-bold text-text text-lg mb-2">OpenAI Codex CLI</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">Full governance parity for Codex CLI. PreToolUse/PostToolUse hooks with the same policy evaluation and invariant enforcement as Claude Code.</p>
+            <div class="relative group mb-4">
+              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> agentguard codex-init</code></pre>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PreToolUse</span>
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PostToolUse</span>
+            </div>
+          </div>
+
+          <!-- Gemini CLI -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
+              <svg class="w-6 h-6 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <h3 class="font-mono font-bold text-text text-lg mb-2">Google Gemini CLI</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">Full governance parity for Gemini CLI. Same canonical action normalization, policies, and invariants applied to every Gemini tool call.</p>
+            <div class="relative group mb-4">
+              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> agentguard gemini-init</code></pre>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PreToolUse</span>
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PostToolUse</span>
             </div>
           </div>
 
@@ -1999,7 +2035,7 @@ rules:
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-mono font-semibold text-text text-sm">Go Kernel &mdash; go/</h3>
-              <p class="text-muted text-sm mt-1">High-performance governance kernel in Go. 3.2 MB static binary, &lt;3ms hook evaluation, ~100x faster than Node.js. Now the default enforcement runtime for Claude Code and Copilot hooks.</p>
+              <p class="text-muted text-sm mt-1">High-performance governance kernel in Go. 3.2 MB static binary, &lt;3ms hook evaluation, ~100x faster than Node.js. Now the default enforcement runtime for Claude Code, GitHub Copilot, Codex CLI, and Gemini CLI hooks.</p>
             </div>
           </div>
 
