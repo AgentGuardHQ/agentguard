@@ -30,9 +30,9 @@
     }
   ],
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "mergeable": 0,
+    "open": 5,
+    "reviewed": 5,
+    "mergeable": 1,
     "prs": [
       {
         "number": 969,
@@ -42,47 +42,101 @@
         "ciStatus": "passed",
         "mergedAt": "2026-03-26T00:30:00.000Z",
         "note": "Merged successfully. All CI checks passed."
+      },
+      {
+        "number": 1108,
+        "title": "fix(format): fix prettier violations in storage and inspect (QA 2026-03-27T12:50Z)",
+        "branch": "agent/kernel-qa-20260327-125004",
+        "status": "open",
+        "ciStatus": "pending",
+        "note": "QA fix: Prettier regression in 4 files blocking CI lint on all open PRs. No behavior changes."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence",
+        "branch": "fix/1026-educate-mode-always-allow",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "lint: Prettier regression (needs rebase after #1108). test-and-build: go-fast-path tests fail in CI (pre-existing env issue, clears after rebase). Has tests. QA commented."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity format, add driver_type to sessions",
+        "branch": "feat/1034-driver-type-sessions",
+        "status": "open",
+        "ciStatus": "partial",
+        "note": "lint: Prettier regression (needs rebase after #1108). test-and-build: passes. Has tests."
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "branch": "agent/copilot-test-writer-oss-20260327-053002",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "lint+test-and-build failing due to Prettier regression on main. Test-only PR, all coverage present. QA commented."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "branch": "feat/telemetry-driver-type-1031",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "lint+test-and-build failing due to Prettier regression on main. Has tests. QA commented."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId, agent helpers, and v5 migration backfill (QA 2026-03-27T03:50Z)",
+        "branch": "agent/kernel-qa-20260327-035000",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Previous QA PR. lint+test-and-build failing due to Prettier regression on main. QA did not comment (stale)."
       }
     ]
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T12:50:10.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
+    "delta": "+38 tests since last run (4235 → 4273)",
     "coverageGaps": [],
-    "fixes": [
-      {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
-      }
-    ],
     "openPrNotes": [
       {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
+        "pr": 1108,
+        "title": "fix(format): fix prettier violations in storage and inspect (QA 2026-03-27T12:50Z)",
+        "issue": "Prettier regression fix. Merge ASAP to unblock all other PRs.",
+        "status": "needs-merge"
       },
       {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
-        "status": "needs-format-fix"
+        "pr": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence",
+        "issue": "Needs rebase after #1108 merges. go-fast-path CI failures are env-related.",
+        "status": "needs-rebase"
       },
       {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
+        "pr": 1098,
+        "title": "feat(storage): parse driver:agent identity format, add driver_type to sessions",
+        "issue": "Needs rebase after #1108 merges. test-and-build passes.",
+        "status": "needs-rebase"
+      },
+      {
+        "pr": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "issue": "Needs rebase after #1108 merges.",
+        "status": "needs-rebase"
+      },
+      {
+        "pr": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "issue": "Needs rebase after #1108 merges.",
+        "status": "needs-rebase"
       }
     ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastQaRun": "2026-03-27T12:50:10.000Z",
+  "updatedAt": "2026-03-27T12:50:10.000Z"
 }
