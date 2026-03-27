@@ -30,59 +30,115 @@
     }
   ],
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
+    "open": 7,
+    "reviewed": 7,
     "mergeable": 0,
     "prs": [
       {
-        "number": 969,
-        "title": "fix(claude-init): write hooks with full binary path (closes #964)",
-        "branch": "agent/kernel-sr-20260325-230535",
-        "status": "merged",
-        "ciStatus": "passed",
-        "mergedAt": "2026-03-26T00:30:00.000Z",
-        "note": "Merged successfully. All CI checks passed."
+        "number": 1109,
+        "title": "feat: OpenCode framework adapter — governance hooks for opencode.ai agent",
+        "status": "open",
+        "ciStatus": "lint-fail",
+        "note": "Has tests (opencode-adapter.test.ts). Lint failing. test-and-build passes."
+      },
+      {
+        "number": 1108,
+        "title": "fix(format): fix prettier violations in storage and inspect (QA 2026-03-27T12:50Z)",
+        "status": "open",
+        "ciStatus": "test-build-fail",
+        "note": "Was fixing format issues that are now fixed on main branch by this QA run. May be superseded."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence",
+        "status": "open",
+        "ciStatus": "lint-fail,test-build-fail",
+        "note": "Both lint and test-and-build failing. Needs attention."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity format, add driver_type to sessions",
+        "status": "open",
+        "ciStatus": "lint-fail",
+        "note": "Lint failing. test-and-build passes. Format fix needed."
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "status": "open",
+        "ciStatus": "lint-fail",
+        "note": "Adds test coverage for telemetry. Lint failing."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "status": "open",
+        "ciStatus": "lint-fail,test-build-fail",
+        "note": "Both lint and test-and-build failing. Needs attention."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId, agent helpers, and v5 migration backfill",
+        "status": "open",
+        "ciStatus": "lint-fail",
+        "note": "Adds storage test coverage. Lint failing."
       }
     ]
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T14:10:23.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
+    "delta": "0 net new tests vs last run (4273 → 4273); regression fixed",
     "coverageGaps": [],
     "fixes": [
       {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
-      }
-    ],
-    "openPrNotes": [
-      {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
+        "file": "apps/cli/src/commands/claude-hook.ts",
+        "note": "Added AGENTGUARD_GO_TIMEOUT env var (default 200ms) to tryGoFastPath so tests can prevent execFileSync timeouts under system load."
       },
       {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
+        "file": "apps/cli/tests/go-fast-path.test.ts",
+        "note": "Added beforeEach setting AGENTGUARD_GO_TIMEOUT=5000 to prevent flaky timeout failures in full parallel suite. Test was passing in isolation but failing under load."
+      },
+      {
+        "files": ["packages/storage/src/aggregation-queries.ts", "packages/storage/src/migrations.ts", "packages/storage/src/sqlite-store.ts", "apps/cli/src/commands/inspect.ts"],
+        "note": "Fixed 4 pre-existing Prettier violations on main. Supersedes PR #1108."
+      }
+    ],
+    "regression": {
+      "detected": true,
+      "test": "go-fast-path.test.ts > tryGoFastPath > handles Go binary that allows an action",
+      "cause": "execFileSync 200ms timeout fires under full parallel suite load; mock shell script exceeds threshold",
+      "fixed": true,
+      "commit": "ccf1b60"
+    },
+    "openPrNotes": [
+      {
+        "pr": 1109,
+        "title": "feat: OpenCode framework adapter",
+        "issue": "Lint failing. Has tests. Needs format fix before merge.",
         "status": "needs-format-fix"
       },
       {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
+        "pr": 1104,
+        "title": "fix(adapters): educate mode fix",
+        "issue": "Both lint and test-and-build failing. Needs investigation.",
+        "status": "needs-attention"
+      },
+      {
+        "pr": 1087,
+        "title": "feat(telemetry): driverType field",
+        "issue": "Both lint and test-and-build failing. Needs investigation.",
+        "status": "needs-attention"
       }
     ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastQaRun": "2026-03-27T14:10:23.000Z",
+  "updatedAt": "2026-03-27T14:10:23.000Z"
 }
+
