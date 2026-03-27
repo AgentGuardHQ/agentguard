@@ -17,9 +17,9 @@
         1142
       ],
       "title": "P0: --no-sqlite flag for guard (#1118) + fix go-fast-path CI timeout (#1142)",
-      "status": "implementing",
+      "status": "pr-created",
       "branch": "agent/kernel-sr-20260327-213002",
-      "pr": null,
+      "pr": 1143,
       "claimedAt": "2026-03-27T21:30:08Z",
       "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason \u2192 Claude Code blocks all tool use). #973 compounds it (essentials pack missing \u2192 default-deny on everything). Fix both before resuming #955 Go delegation."
     }
@@ -39,7 +39,7 @@
     }
   ],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
@@ -51,6 +51,17 @@
         "ciStatus": "passed",
         "mergedAt": "2026-03-26T00:30:00.000Z",
         "note": "Merged successfully. All CI checks passed."
+      },
+      {
+        "number": 1143,
+        "title": "fix(storage): add --no-sqlite flag + fix go-fast-path CI timeout",
+        "branch": "agent/kernel-sr-20260327-213002",
+        "status": "open",
+        "ciStatus": "pending",
+        "closes": [
+          1118,
+          1142
+        ]
       }
     ]
   },
@@ -69,5 +80,5 @@
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
   "lastQaRun": "2026-03-27T03:50:00.000Z",
-  "updatedAt": "2026-03-27T21:30:08Z"
+  "updatedAt": "2026-03-27T21:40:00Z"
 }
