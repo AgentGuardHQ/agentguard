@@ -2,11 +2,20 @@
 
 This document describes the architecture for extending AgentGuard beyond Claude Code to support multiple AI agent frameworks.
 
+## Current State
+
+AgentGuard supports two framework adapters with full hook integration:
+
+| Framework | Adapter | Init Command | Hook Command | Status |
+|-----------|---------|-------------|--------------|--------|
+| **Claude Code** | `packages/adapters/src/claude-code.ts` | `claude-init` | `claude-hook pre\|post` | ✅ Shipped |
+| **GitHub Copilot CLI** | `packages/adapters/src/copilot-cli.ts` | `copilot-init` | `copilot-hook pre\|post` | ✅ Shipped |
+
+The governance kernel is framework-agnostic. It accepts `RawAgentAction` objects and returns `GovernanceDecisionRecord` results. Each adapter is responsible only for translating framework-specific payloads into this canonical format.
+
 ## Context
 
-AgentGuard currently supports a single framework adapter: Claude Code (`src/adapters/claude-code.ts`). The adapter registry (`src/adapters/registry.ts`) maps action classes to execution handlers, but the ingestion side — translating framework-specific payloads into `RawAgentAction` — is tightly coupled to Claude Code's PreToolUse/PostToolUse hook pattern.
-
-The governance kernel is already framework-agnostic. It accepts `RawAgentAction` objects and returns `GovernanceDecisionRecord` results. The gap is in the translation layer: each framework has a different mechanism for tool invocation, and each needs a bridge to the kernel.
+The adapter registry (`packages/adapters/src/registry.ts`) maps action classes to execution handlers. The ingestion side — translating framework-specific payloads into `RawAgentAction` — is handled by per-framework adapters. Each framework has a different mechanism for tool invocation, and each needs a bridge to the kernel.
 
 ## FrameworkAdapter Interface
 
@@ -43,13 +52,13 @@ src/adapters/
 
 ## Adapter Priority & Complexity
 
-| Framework | Priority | Complexity | Integration Mechanism |
-|-----------|----------|------------|----------------------|
-| MCP (Model Context Protocol) | P0 | Medium | Intercept `call_tool` requests; MCP tools map naturally to `RawAgentAction` |
-| LangChain / LangGraph | P0 | Medium | Wrap `BaseTool.invoke()` with governance middleware |
-| OpenAI Agents SDK | P1 | Medium | Function calling interception via middleware |
-| AutoGen | P1 | Medium | Agent message interception |
-| Copilot CLI | P2 | Low | Hook-based pattern similar to Claude Code |
+| Framework | Priority | Complexity | Integration Mechanism | Status |
+|-----------|----------|------------|----------------------|--------|
+| Copilot CLI | — | Low | Hook-based pattern similar to Claude Code | ✅ Shipped |
+| MCP (Model Context Protocol) | P0 | Medium | Intercept `call_tool` requests; MCP tools map naturally to `RawAgentAction` | Planned |
+| LangChain / LangGraph | P0 | Medium | Wrap `BaseTool.invoke()` with governance middleware | Planned |
+| OpenAI Agents SDK | P1 | Medium | Function calling interception via middleware | Planned |
+| AutoGen | P1 | Medium | Agent message interception | Planned |
 
 ## Adapter Details
 

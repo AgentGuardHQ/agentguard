@@ -1,4 +1,17 @@
-# Hook Architecture — How AgentGuard Integrates with Claude Code
+# Hook Architecture — How AgentGuard Integrates with AI Coding Agents
+
+## Supported Agents
+
+AgentGuard currently integrates with two AI coding agent runtimes via inline hooks:
+
+| Agent | Init Command | Hook Command | Hook Config | Fail Mode |
+|-------|-------------|--------------|-------------|-----------|
+| **Claude Code** | `agentguard claude-init` | `agentguard claude-hook pre\|post` | `.claude/settings.json` | Fail-closed |
+| **GitHub Copilot CLI** | `agentguard copilot-init` | `agentguard copilot-hook pre\|post` | `.github/hooks/hooks.json` | Fail-open |
+
+**OpenCode** (`opencode.ai`) is supported as an agent driver for identity and persona attribution (auto-detected via `OPENCODE_HOME`) but does not yet have its own hook integration.
+
+---
 
 ## Design: Inline Hooks, Not a Daemon
 
@@ -94,6 +107,30 @@ Options:
 - `agentguard claude-init --store sqlite` — use SQLite storage backend
 - `agentguard claude-init --remove` — uninstall hooks
 
+### Copilot CLI Hook Configuration
+
+Running `agentguard copilot-init` writes this to `.github/hooks/hooks.json`:
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": {
+      "type": "command",
+      "bash": "agentguard copilot-hook pre",
+      "timeoutSec": 10
+    },
+    "postToolUse": {
+      "type": "command",
+      "bash": "agentguard copilot-hook post",
+      "timeoutSec": 10
+    }
+  }
+}
+```
+
+The Copilot CLI adapter normalizes Copilot-specific tool payloads into `RawAgentAction` objects before passing them to the governance kernel. Copilot hooks are **fail-open** — if the hook errors, Copilot continues normally.
+
 ## How PreToolUse Governance Works
 
 Each PreToolUse invocation runs through this sequence:
@@ -187,8 +224,11 @@ echo '{"tool":"Bash","input":{"command":"git push origin main"}}' | agentguard c
 
 | File | Purpose |
 |------|---------|
-| `apps/cli/src/commands/claude-hook.ts` | Hook command (PreToolUse governance + PostToolUse monitoring) |
-| `apps/cli/src/commands/claude-init.ts` | Hook setup and teardown |
-| `packages/adapters/src/claude-code.ts` | Payload normalization and action mapping |
+| `apps/cli/src/commands/claude-hook.ts` | Claude Code hook command (PreToolUse governance + PostToolUse monitoring) |
+| `apps/cli/src/commands/claude-init.ts` | Claude Code hook setup and teardown |
+| `apps/cli/src/commands/copilot-hook.ts` | Copilot CLI hook command (preToolUse governance + postToolUse monitoring) |
+| `apps/cli/src/commands/copilot-init.ts` | Copilot CLI hook setup and teardown |
+| `packages/adapters/src/claude-code.ts` | Claude Code payload normalization and action mapping |
+| `packages/adapters/src/copilot-cli.ts` | Copilot CLI payload normalization and action mapping |
 | `packages/kernel/src/kernel.ts` | Governed action kernel (policy + invariant evaluation) |
 | `packages/kernel/src/aab.ts` | Action Authorization Boundary (tool → action type) |

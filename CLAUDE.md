@@ -8,7 +8,7 @@ The system has one architectural spine: the **canonical event model**. All syste
 
 **Key characteristics:**
 - Governed action kernel: propose → normalize → evaluate → execute → emit
-- 23 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard, script execution tracking)
+- 24 built-in invariants (secret exposure, protected branches, blast radius, test-before-push, no force push, no skill modification, no scheduled task modification, credential file creation, package script injection, lockfile integrity, recursive operation guard, large file write, CI/CD config modification, permission escalation, governance self-modification, container config modification, environment variable modification, network egress, destructive migration, transitive effect analysis, IDE socket access, commit scope guard, script execution tracking, no-verify bypass)
 - YAML/JSON policy format with pattern matching, scopes, and branch conditions
 - Escalation tracking: NORMAL → ELEVATED → HIGH → LOCKDOWN
 - SQLite event persistence for audit trail and replay (JSONL export still supported)
@@ -73,7 +73,7 @@ packages/
 │   ├── policy-trust.ts         # Policy trust verification
 │   └── yaml-loader.ts          # YAML policy parser
 ├── invariants/src/             # @red-codes/invariants — Invariant system
-│   ├── definitions.ts          # 23 built-in invariant definitions
+│   ├── definitions.ts          # 24 built-in invariant definitions
 │   └── checker.ts              # Invariant evaluation engine
 ├── matchers/src/               # @red-codes/matchers — Structured matchers (KE-1)
 │   ├── path-matcher.ts         # Glob-based path matching (picomatch)
@@ -389,6 +389,6 @@ pnpm test --filter=@red-codes/kernel  # Test a single package
 
 At session start, if you see `[AgentGuard] No agent identity set`, ask the user:
 1. **Role**: developer / reviewer / ops / security / planner
-2. **Driver**: human / claude-code / copilot / ci
+2. **Driver**: human / claude-code / copilot / opencode / ci
 
 Then run: `scripts/write-persona.sh <driver> <role>`
