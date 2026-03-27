@@ -30,10 +30,19 @@
     }
   ],
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "mergeable": 0,
+    "open": 1,
+    "reviewed": 1,
+    "mergeable": 1,
     "prs": [
+      {
+        "number": 1028,
+        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
+        "branch": "agent/kernel-qa-20260327-005002",
+        "status": "open",
+        "ciStatus": "pending",
+        "mergedAt": null,
+        "note": "QA fix: PR #1002 added 24th invariant but didn't update engine test assertion. 1-line fix."
+      },
       {
         "number": 969,
         "title": "fix(claude-init): write hooks with full binary path (closes #964)",
@@ -47,21 +56,45 @@
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4134,
-    "passed": 4134,
-    "failed": 0,
+    "total": 4235,
+    "passed": 4233,
+    "failed": 2,
     "packages": 19,
-    "lastRun": "2026-03-26T00:51:00.000Z",
-    "status": "all_passing",
-    "delta": "+5 tests since last run (4129 → 4134)",
+    "lastRun": "2026-03-27T00:50:00.000Z",
+    "status": "regression_found_and_fixed",
+    "delta": "+101 tests since last run (4134 → 4235)",
+    "regressions": [
+      {
+        "test": "agentguard-engine.test.ts > creates an engine with defaults",
+        "package": "@red-codes/kernel",
+        "cause": "PR #1002 added no-verify-bypass invariant (24th) without updating count assertion",
+        "fix": "PR #1028 — updated assertion 23→24",
+        "severity": "low"
+      },
+      {
+        "test": "go-fast-path.test.ts > merges rules from multiple policies",
+        "package": "@red-codes/agentguard",
+        "cause": "Flaky — passed on retry. Intermittent timing/ordering issue.",
+        "fix": null,
+        "severity": "low"
+      }
+    ],
     "coverageGaps": [
       {
         "file": "apps/cli/src/commands/copilot-init.ts",
-        "note": "No dedicated test file. Recently modified in PR #969 (same hook path fix as claude-init). claude-init has 39 tests; copilot-init has zero."
+        "note": "No dedicated test file. claude-init has 39 tests; copilot-init has zero."
+      },
+      {
+        "file": "packages/adapters/src/codex-cli.ts",
+        "note": "New in PR #1025 (334 lines). No test file. Commented on PR requesting tests."
+      },
+      {
+        "file": "packages/adapters/src/gemini-cli.ts",
+        "note": "New in PR #1025 (309 lines). No test file. Commented on PR requesting tests."
       }
     ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-26T00:51:00.000Z",
-  "updatedAt": "2026-03-26T00:51:00.000Z"
+  "lastQaRun": "2026-03-27T00:50:00.000Z",
+  "updatedAt": "2026-03-27T00:50:00.000Z"
 }
