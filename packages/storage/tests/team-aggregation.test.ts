@@ -23,6 +23,18 @@ function insertEvent(
   ).run(id, runId, kind, timestamp, 'fp_test', JSON.stringify(data));
 }
 
+function insertSession(
+  db: Database.Database,
+  runId: string,
+  agentId: string | null,
+  startedAt?: number
+): void {
+  const ts = startedAt ? new Date(startedAt).toISOString() : new Date().toISOString();
+  db.prepare(
+    'INSERT OR IGNORE INTO sessions (id, started_at, ended_at, command, repo, agent_id, data) VALUES (?, ?, NULL, ?, ?, ?, ?)'
+  ).run(runId, ts, 'guard', '/repo', agentId, '{}');
+}
+
 function insertDecision(
   db: Database.Database,
   overrides: {
@@ -63,35 +75,24 @@ describe('Team Aggregation Queries', () => {
       expect(agentSummaries(db)).toEqual([]);
     });
 
-    it('groups sessions by agent name from RunStarted events', () => {
+    it('groups sessions by agent name from sessions.agent_id', () => {
       const now = Date.now();
 
       // Agent 1: two sessions
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now - 3000,
-        data: { agentName: 'agent-alpha' },
-      });
+      insertSession(db, 'run_1', 'agent-alpha', now - 3000);
       insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now - 2000 });
       insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now - 1000 });
+      // Insert events so the run_id appears in the events table
+      insertEvent(db, { runId: 'run_1', kind: 'ActionAllowed', timestamp: now - 2000 });
 
-      insertEvent(db, {
-        runId: 'run_2',
-        kind: 'RunStarted',
-        timestamp: now - 500,
-        data: { agentName: 'agent-alpha' },
-      });
+      insertSession(db, 'run_2', 'agent-alpha', now - 500);
       insertDecision(db, { runId: 'run_2', outcome: 'denied', timestamp: now - 400 });
+      insertEvent(db, { runId: 'run_2', kind: 'ActionDenied', timestamp: now - 400 });
 
       // Agent 2: one session
-      insertEvent(db, {
-        runId: 'run_3',
-        kind: 'RunStarted',
-        timestamp: now - 200,
-        data: { agentName: 'agent-beta' },
-      });
+      insertSession(db, 'run_3', 'agent-beta', now - 200);
       insertDecision(db, { runId: 'run_3', outcome: 'allowed', timestamp: now - 100 });
+      insertEvent(db, { runId: 'run_3', kind: 'ActionAllowed', timestamp: now - 100 });
 
       const summaries = agentSummaries(db);
 
@@ -112,31 +113,11 @@ describe('Team Aggregation Queries', () => {
       expect(beta!.denied).toBe(0);
     });
 
-    it('falls back to agentId when agentName is absent', () => {
-      const now = Date.now();
-
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentId: 'user-123' },
-      });
-      insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now });
-
-      const summaries = agentSummaries(db);
-      expect(summaries).toHaveLength(1);
-      expect(summaries[0].agent).toBe('user-123');
-    });
-
     it('labels sessions without agent identity as "unknown"', () => {
       const now = Date.now();
 
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: {},
-      });
+      insertSession(db, 'run_1', null, now);
+      insertEvent(db, { runId: 'run_1', kind: 'ActionAllowed', timestamp: now });
       insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now });
 
       const summaries = agentSummaries(db);
@@ -147,12 +128,8 @@ describe('Team Aggregation Queries', () => {
     it('computes compliance rate correctly', () => {
       const now = Date.now();
 
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'test-agent' },
-      });
+      insertSession(db, 'run_1', 'test-agent', now);
+      insertEvent(db, { runId: 'run_1', kind: 'ActionAllowed', timestamp: now });
       // 7 allowed, 3 denied = 70% compliance
       for (let i = 0; i < 7; i++) {
         insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now + i });
@@ -168,12 +145,7 @@ describe('Team Aggregation Queries', () => {
     it('counts violations from InvariantViolation events', () => {
       const now = Date.now();
 
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'risky-agent' },
-      });
+      insertSession(db, 'run_1', 'risky-agent', now);
       insertEvent(db, {
         runId: 'run_1',
         kind: 'InvariantViolation',
@@ -195,27 +167,16 @@ describe('Team Aggregation Queries', () => {
     it('sorts agents by session count descending', () => {
       const now = Date.now();
 
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'few-sessions' },
-      });
+      insertSession(db, 'run_1', 'few-sessions', now);
+      insertEvent(db, { runId: 'run_1', kind: 'ActionAllowed', timestamp: now });
       insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now });
 
-      insertEvent(db, {
-        runId: 'run_2',
-        kind: 'RunStarted',
-        timestamp: now + 1,
-        data: { agentName: 'many-sessions' },
-      });
+      insertSession(db, 'run_2', 'many-sessions', now + 1);
+      insertEvent(db, { runId: 'run_2', kind: 'ActionAllowed', timestamp: now + 1 });
       insertDecision(db, { runId: 'run_2', outcome: 'allowed', timestamp: now + 1 });
-      insertEvent(db, {
-        runId: 'run_3',
-        kind: 'RunStarted',
-        timestamp: now + 2,
-        data: { agentName: 'many-sessions' },
-      });
+
+      insertSession(db, 'run_3', 'many-sessions', now + 2);
+      insertEvent(db, { runId: 'run_3', kind: 'ActionAllowed', timestamp: now + 2 });
       insertDecision(db, { runId: 'run_3', outcome: 'allowed', timestamp: now + 2 });
 
       const summaries = agentSummaries(db);
@@ -228,12 +189,7 @@ describe('Team Aggregation Queries', () => {
     it('returns a complete report structure', () => {
       const now = Date.now();
 
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'dev-agent' },
-      });
+      insertSession(db, 'run_1', 'dev-agent', now);
       insertEvent(db, {
         runId: 'run_1',
         kind: 'ActionAllowed',
@@ -264,20 +220,12 @@ describe('Team Aggregation Queries', () => {
       const now = Date.now();
 
       // Two agents, each with one session
-      insertEvent(db, {
-        runId: 'run_1',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'agent-a' },
-      });
+      insertSession(db, 'run_1', 'agent-a', now);
+      insertEvent(db, { runId: 'run_1', kind: 'ActionAllowed', timestamp: now });
       insertDecision(db, { runId: 'run_1', outcome: 'allowed', timestamp: now });
 
-      insertEvent(db, {
-        runId: 'run_2',
-        kind: 'RunStarted',
-        timestamp: now + 1,
-        data: { agentName: 'agent-b' },
-      });
+      insertSession(db, 'run_2', 'agent-b', now + 1);
+      insertEvent(db, { runId: 'run_2', kind: 'ActionDenied', timestamp: now + 1 });
       insertDecision(db, { runId: 'run_2', outcome: 'denied', timestamp: now + 1 });
       insertDecision(db, {
         runId: 'run_2',
@@ -299,20 +247,12 @@ describe('Team Aggregation Queries', () => {
       const oneHourAgo = now - 3_600_000;
       const twoHoursAgo = now - 7_200_000;
 
-      insertEvent(db, {
-        runId: 'run_old',
-        kind: 'RunStarted',
-        timestamp: twoHoursAgo,
-        data: { agentName: 'old-agent' },
-      });
+      insertSession(db, 'run_old', 'old-agent', twoHoursAgo);
+      insertEvent(db, { runId: 'run_old', kind: 'ActionAllowed', timestamp: twoHoursAgo });
       insertDecision(db, { runId: 'run_old', outcome: 'allowed', timestamp: twoHoursAgo });
 
-      insertEvent(db, {
-        runId: 'run_new',
-        kind: 'RunStarted',
-        timestamp: now,
-        data: { agentName: 'new-agent' },
-      });
+      insertSession(db, 'run_new', 'new-agent', now);
+      insertEvent(db, { runId: 'run_new', kind: 'ActionAllowed', timestamp: now });
       insertDecision(db, { runId: 'run_new', outcome: 'allowed', timestamp: now });
 
       const report = teamReport(db, { since: oneHourAgo });

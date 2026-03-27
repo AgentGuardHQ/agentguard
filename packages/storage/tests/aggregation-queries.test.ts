@@ -392,4 +392,75 @@ describe('Aggregation Queries', () => {
       expect(result).toHaveLength(2);
     });
   });
+
+  describe('agentId filter', () => {
+    function insertSession(db: Database.Database, runId: string, agentId: string | null): void {
+      db.prepare(
+        'INSERT OR IGNORE INTO sessions (id, started_at, ended_at, command, repo, agent_id, data) VALUES (?, ?, NULL, ?, ?, ?, ?)'
+      ).run(runId, new Date().toISOString(), 'guard', '/repo', agentId, '{}');
+    }
+
+    it('filters countEventsByKind to a specific agent', () => {
+      const store1 = createSqliteEventStore(db, 'run_agent_a');
+      store1.append(makeEvent({ id: 'e1', kind: 'ActionAllowed', timestamp: 100 }));
+      store1.append(makeEvent({ id: 'e2', kind: 'ActionDenied', timestamp: 200 }));
+      insertSession(db, 'run_agent_a', 'agent-alpha');
+
+      const store2 = createSqliteEventStore(db, 'run_agent_b');
+      store2.append(makeEvent({ id: 'e3', kind: 'ActionAllowed', timestamp: 300 }));
+      insertSession(db, 'run_agent_b', 'agent-beta');
+
+      const result = countEventsByKind(db, { agentId: 'agent-alpha' });
+      const kinds = result.map((r) => r.kind);
+      expect(kinds).toContain('ActionAllowed');
+      expect(kinds).toContain('ActionDenied');
+
+      // agent-beta's event should not appear
+      const betaResult = countEventsByKind(db, { agentId: 'agent-beta' });
+      expect(betaResult).toHaveLength(1);
+      expect(betaResult[0].kind).toBe('ActionAllowed');
+      expect(betaResult[0].count).toBe(1);
+    });
+
+    it('filters countDecisionsByOutcome to a specific agent', () => {
+      insertSession(db, 'run_a', 'agent-alpha');
+      insertSession(db, 'run_b', 'agent-beta');
+
+      insertDecision(db, { recordId: 'd1', runId: 'run_a', outcome: 'denied' });
+      insertDecision(db, { recordId: 'd2', runId: 'run_a', outcome: 'allowed' });
+      insertDecision(db, { recordId: 'd3', runId: 'run_b', outcome: 'denied' });
+      insertDecision(db, { recordId: 'd4', runId: 'run_b', outcome: 'denied' });
+
+      const alphaResult = countDecisionsByOutcome(db, { agentId: 'agent-alpha' });
+      expect(alphaResult).toHaveLength(2);
+      const alphaAllowed = alphaResult.find((r) => r.outcome === 'allowed');
+      expect(alphaAllowed?.count).toBe(1);
+      const alphaDenied = alphaResult.find((r) => r.outcome === 'denied');
+      expect(alphaDenied?.count).toBe(1);
+
+      const betaResult = countDecisionsByOutcome(db, { agentId: 'agent-beta' });
+      expect(betaResult).toHaveLength(1);
+      expect(betaResult[0]).toEqual({ outcome: 'denied', count: 2 });
+    });
+
+    it('returns empty when agentId does not match any session', () => {
+      const store = createSqliteEventStore(db, 'run_1');
+      store.append(makeEvent({ id: 'e1', kind: 'ActionAllowed' }));
+      insertSession(db, 'run_1', 'known-agent');
+
+      const result = countEventsByKind(db, { agentId: 'nonexistent-agent' });
+      expect(result).toEqual([]);
+    });
+
+    it('combines agentId with time range filter', () => {
+      insertSession(db, 'run_1', 'agent-alpha');
+      const store = createSqliteEventStore(db, 'run_1');
+      store.append(makeEvent({ id: 'e1', kind: 'ActionAllowed', timestamp: 100 }));
+      store.append(makeEvent({ id: 'e2', kind: 'ActionDenied', timestamp: 500 }));
+
+      const result = countEventsByKind(db, { agentId: 'agent-alpha', since: 300 });
+      expect(result).toHaveLength(1);
+      expect(result[0].kind).toBe('ActionDenied');
+    });
+  });
 });

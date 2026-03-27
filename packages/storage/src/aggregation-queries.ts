@@ -11,6 +11,8 @@ export interface AggregationTimeFilter {
   readonly until?: number;
   /** Restrict to the N most recent sessions */
   readonly sessionLimit?: number;
+  /** Restrict to sessions belonging to a specific agent (matches sessions.agent_id) */
+  readonly agentId?: string;
 }
 
 /** Event count grouped by kind */
@@ -92,6 +94,10 @@ function buildTimeConditions(
   }
   if (filter?.sessionLimit !== undefined && filter.sessionLimit > 0) {
     conditions.push(buildRunIdSubquery(filter.sessionLimit));
+  }
+  if (filter?.agentId !== undefined) {
+    conditions.push(`${table}.run_id IN (SELECT id FROM sessions WHERE agent_id = ?)`);
+    params.push(filter.agentId);
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -346,7 +352,7 @@ export interface DenialPatternEntry {
 /**
  * Per-agent governance summaries.
  *
- * Resolves agent identity from RunStarted events (agentName field in JSON data),
+ * Resolves agent identity from the indexed sessions.agent_id column,
  * then joins with decision outcomes to compute per-agent compliance metrics.
  */
 export function agentSummaries(
@@ -355,17 +361,16 @@ export function agentSummaries(
 ): AgentSummary[] {
   const { where, params } = buildTimeConditions(filter, 'events');
 
-  // Step 1: Map run_id → agent name from RunStarted events
+  // Step 1: Map run_id → agent name from the indexed sessions.agent_id column
   const agentMapSql = `
     SELECT
-      run_id,
-      COALESCE(
-        json_extract(data, '$.agentName'),
-        json_extract(data, '$.agentId'),
-        'unknown'
-      ) as agent
-    FROM events
-    ${where ? `${where} AND kind = 'RunStarted'` : "WHERE kind = 'RunStarted'"}
+      s.id as run_id,
+      COALESCE(s.agent_id, 'unknown') as agent
+    FROM sessions s
+    WHERE s.id IN (
+      SELECT DISTINCT run_id FROM events
+      ${where}
+    )
   `;
   const agentMap = db.prepare(agentMapSql).all(...params) as Array<{
     run_id: string;
