@@ -1,71 +1,90 @@
 {
   "squad": "marketing",
-  "timestamp": "2026-03-26T20:10:00.000Z",
+  "timestamp": "2026-03-27T20:10:00.000Z",
   "health": "yellow",
-  "summary": "3rd consecutive cycle with zero content agent output. Marketing-content-agent blocked by governance catch-22 (#995). Site stats partially fixed (PRs #1005, #1009) but test counter still stale (2,637 vs 4,134). Demo video placeholder and capture funnel remain unaddressed.",
+  "summary": "4th cycle. Content agents still blocked by governance catch-22 (#995). EM executed directly: (1) OWASP blog draft complete (#925), (2) site test counter fixed 2637→4195 (4195 verified via grep), (3) terminal animation updated. PR review: #1117, #1126 blocked by pre-existing CI failures (Prettier formatting in unrelated TS files). #1109 has do-not-merge label — not touched. Weekly content pack #1074 has excellent v2.8.0 material (4 CLI adapters) awaiting publication.",
   "contentPipeline": {
-    "drafts": 0,
+    "drafts": 1,
     "published": 0,
     "scheduled": 5,
-    "weeklyContentPack": "#1004 generated but agent blocked — no execution"
+    "weeklyContentPack": "#1074 generated (2026-03-27) — v2.8.0 multi-driver governance, Go kernel fast-path, studio wizard, security hardening. Ready to publish.",
+    "emDraftedDirectly": "OWASP Agentic Top 10 blog post drafted → docs/blog-drafts/owasp-agentic-top10-coverage.md"
   },
   "siteAlignment": {
-    "status": "partial",
-    "recentFixes": [
-      "PR #1005: destructive patterns 87→93, event kinds 49→47, ROADMAP numbers updated",
-      "PR #1009: CLI commands 29→30, patterns/events synced",
-      "PR #1011: OG image and social meta tags completed"
+    "status": "improved",
+    "thisRun": [
+      "Test counter updated 2637→4195 (grep-verified current count)",
+      "Terminal animation updated from '2,637 passed' to '4,195 passed'"
     ],
     "staleContent": [
-      "Test counter shows 2,637 — actual is 4,134+ (PR #983 QA report)",
-      "Terminal animation shows 'vitest (2,637 passed)' — stale",
-      "Swarm section shows '26 agents across 5 tiers' — actual is 49 agents across 8 squads (PR #1009 flagged redesign needed)",
-      "Demo video section still shows 'coming soon' placeholder (#1007)"
+      "Swarm section: '26 agents across 5 tiers' — actual 9+ squads, needs redesign (#1009 prior flag)",
+      "Demo video section: placeholder removed per #1007 (CLOSED) — verify status"
     ],
-    "missing": [
-      "User capture funnel — zero capture mechanisms on site (#938, v3.0 blocker)",
-      "Office-sim screenshot/embed (#941)"
-    ]
+    "prQueueNote": "PR #1117 (2637→4161) blocked by pre-existing CI failures; this run applied 4195 directly to the branch. PR #1130 (docs: OpenCode/DeepAgents) blocked by #1109 and #1126 dependencies not merged."
   },
   "sprintIssues": {
     "active": [
-      { "issue": "#925", "title": "OWASP blog", "status": "blocked", "note": "ESCALATED from last cycle — EM to draft directly" },
-      { "issue": "#934", "title": "v2.7.x announcement", "status": "blocked", "note": "Content agent blocked by #995" },
-      { "issue": "#938", "title": "User capture funnel", "status": "open", "note": "v3.0 blocker, no progress" },
-      { "issue": "#1007", "title": "Demo video placeholder", "status": "open", "note": "Needs recording or section removal" },
-      { "issue": "#1004", "title": "Weekly content pack", "status": "generated", "note": "Content ready but agent can't execute" }
+      { "issue": "#925", "title": "OWASP blog", "status": "drafted", "note": "EM drafted directly — docs/blog-drafts/owasp-agentic-top10-coverage.md. Ready for founder review and LinkedIn publish." },
+      { "issue": "#934", "title": "v2.7.x announcement", "status": "superseded", "note": "v2.8.0 and v2.8.1 now shipped (4 CLI adapters). Content pack #1074 covers this. Recommend closing #934 and promoting #1074 content instead." },
+      { "issue": "#938", "title": "User capture funnel", "status": "closed", "note": "CLOSED — confirmed. Sprint plan #1105 tracks as #1084 (v3.0 GATE: user capture funnel)." },
+      { "issue": "#1084", "title": "v3.0 User capture funnel", "status": "open-high", "note": "v3.0 gate. Site still has zero capture mechanisms. 4 touchpoints: hero CTA, CLI prompt, GitHub Discussions, cloud waitlist." },
+      { "issue": "#1074", "title": "Weekly content pack 2026-03-27", "status": "ready", "note": "Excellent material. 5 LinkedIn posts, 5 Twitter threads, 2 blog outlines covering v2.8.0, Go kernel, security hardening." }
     ]
   },
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
+    "open": 7,
+    "reviewed": 4,
     "mergeable": 0,
-    "recentlyMerged": ["#1011", "#1009", "#1005"]
+    "notMergedReason": "All open PRs blocked by pre-existing CI failures (Prettier in unrelated storage/adapters TS files) or explicit do-not-merge labels",
+    "perPR": [
+      { "pr": "#1130", "title": "docs: OpenCode/DeepAgents", "status": "blocked-dependency", "note": "Depends on #1109 + #1126 being merged first" },
+      { "pr": "#1126", "title": "DeepAgents adapter", "status": "ci-failing", "note": "lint + test-and-build failures (pre-existing Prettier issues)" },
+      { "pr": "#1117", "title": "fix(site): sync test count", "status": "ci-failing", "note": "Pre-existing CI failures. This run applied 4195 fix directly to branch (vs 4161 in PR, which was stale)." },
+      { "pr": "#1109", "title": "OpenCode adapter", "status": "do-not-merge", "note": "Labels: do-not-merge + needs:careful-review. Not touched." },
+      { "pr": "#1104", "title": "fix: educate mode", "status": "ci-failing", "note": "Engineering issue. Not marketing scope." },
+      { "pr": "#1098", "title": "feat(storage): driver identity", "status": "ci-failing", "note": "Engineering issue. Not marketing scope." },
+      { "pr": "#1090", "title": "test: telemetry runtimeLogger", "status": "open", "note": "Engineering issue. Not marketing scope." }
+    ],
+    "recentlyMerged": ["#1011", "#1009", "#1005", "#1083", "#1087", "#1133"]
   },
   "blockers": [
     {
       "severity": "high",
-      "description": "marketing-content-agent-cloud blocked by governance catch-22 (#995): hook blocks pnpm install needed to install the governance kernel",
-      "impact": "All content agents unable to execute — zero output for 3 consecutive cycles",
-      "requiredAction": "Human intervention to bootstrap kernel in worktree, or hook adjustment to allow bootstrapping commands"
+      "description": "Pre-existing CI failures block all PRs: Prettier formatting in packages/storage/src/{aggregation-queries.ts,migrations.ts,sqlite-store.ts} and apps/cli/src/commands/inspect.ts",
+      "impact": "No PRs can merge until these files are formatted. Engineering team must fix before any PR lands.",
+      "requiredAction": "Run `pnpm format:fix` on affected files and push to fix CI across all open PRs"
+    },
+    {
+      "severity": "high",
+      "description": "marketing-content-agent blocked by governance catch-22 (#995) — 4th consecutive cycle with zero content agent output",
+      "impact": "Weekly content pack #1074 ready but no agent can publish it",
+      "requiredAction": "Ops/HQ intervention to bootstrap kernel in agent worktrees, OR hook adjustment to allow bootstrapping commands"
     },
     {
       "severity": "medium",
-      "description": "Test counter on site stale (2,637 vs 4,134)",
-      "impact": "Understates project maturity — 36% lower than actual",
-      "requiredAction": "Update data-target in site/index.html stats bar and terminal animation"
+      "description": "Swarm section on site claims '26 agents across 5 tiers' — actual topology is 9 squads",
+      "impact": "Understates project scale and organizational structure",
+      "requiredAction": "Site redesign for swarm section — needs accurate agent count and squad structure"
     }
   ],
   "escalations": [
-    "HIGH: Content agents silent for 3 consecutive cycles due to governance catch-22 (#995). Requires ops intervention to fix worktree bootstrapping.",
-    "MEDIUM: EM committed to drafting OWASP blog (#925) directly — will execute next cycle if agent unblock doesn't happen.",
-    "LOW: Weekly content pack #1004 has excellent material (Go kernel, aguard rebrand, studio wizard) but no agent to publish it."
+    "HIGH: CI broken across all open PRs — pre-existing Prettier formatting failures block entire merge queue. Engineering must fix `pnpm format:fix` before anything can land.",
+    "HIGH: Content agents silent for 4 consecutive cycles (#995). EM is now the sole content executor. Requires ops/HQ intervention for permanent fix.",
+    "MEDIUM: OWASP blog (#925) drafted directly by EM after 3 cycles of escalation. Requires founder review + LinkedIn publish to close.",
+    "MEDIUM: Weekly content pack #1074 (v2.8.0 / Go kernel) has 5 LinkedIn posts and 2 blog outlines — high-value material going to waste without a publishing agent.",
+    "LOW: #1084 (v3.0 user capture funnel) is a v3.0 gate. Zero capture mechanisms on site. This must ship before v3.0 announce."
   ],
   "productInsights": [
-    "Go kernel (100x faster governance) is the strongest marketing story this quarter — needs blog post urgently",
-    "Weekly content pack #1004 contains 5 ready-to-post LinkedIn articles and Twitter threads — high-quality material going to waste",
-    "aguard CLI rebrand (v2.7.0) is a user-facing win worth announcing: shorter command, same governance",
-    "Governance catch-22 (#995) is itself a compelling dogfood story — 'we found a circular dependency in our own tool'"
+    "v2.8.0 (4 CLI adapters: Claude, Codex, Copilot, Gemini) is the strongest marketing story this month — 'one policy file governs all major AI coding agents'",
+    "Go kernel fast-path (~100x faster) + v2.8.0 multi-driver governance = a compelling dual story for platform engineers",
+    "The CI breakage from Prettier is a dogfood story: our own governance didn't catch unformatted code — highlighting why pre-commit hooks matter",
+    "OWASP blog angle: honest 64/100 vs competitors claiming self-reported 10/10 across the board — authenticity is the differentiator",
+    "OpenCode adapter (#1109) has do-not-merge — important not to publicize until it lands cleanly"
   ],
+  "dogfoodReport": {
+    "governanceDenials": 0,
+    "issues": "None this cycle",
+    "note": "Persona set successfully (claude-code:unknown:planner). No governance denials during EM run."
+  },
   "agentIdentity": "claude-code:opus:marketing:em"
 }

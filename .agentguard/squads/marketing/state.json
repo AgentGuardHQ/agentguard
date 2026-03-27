@@ -1,13 +1,13 @@
 {
   "squad": "marketing",
   "sprint": {
-    "goal": "Unblock content agents and publish Go kernel launch content",
-    "issues": ["#925", "#934", "#938", "#1004", "#1007"]
+    "goal": "Publish Go kernel / v2.8.0 launch content and ship v3.0 capture funnel",
+    "issues": ["#925", "#934", "#1074", "#1084", "#1109"]
   },
   "assignments": {
-    "marketing-launch-agent": ["#1007", "#941"],
-    "marketing-content-agent": ["#925", "#934", "#1004"],
-    "em-direct": ["#925"]
+    "marketing-launch-agent": ["#1074", "#1084"],
+    "marketing-content-agent": ["#925-DRAFTED", "#934"],
+    "em-direct": ["#925-blog-drafted", "site-test-counter-fix"]
   },
   "blockers": [
     {
@@ -15,12 +15,25 @@
       "description": "Governance catch-22 blocks all content agents — pnpm install blocked by hook before kernel exists",
       "owner": "ops/hq-em",
       "severity": "high"
+    },
+    {
+      "description": "Pre-existing CI failures (Prettier formatting) block all open PRs from merging",
+      "affectedPRs": ["#1117", "#1126", "#1104", "#1098"],
+      "owner": "engineering",
+      "severity": "high",
+      "fix": "pnpm format:fix on packages/storage/src/{aggregation-queries.ts,migrations.ts,sqlite-store.ts} and apps/cli/src/commands/inspect.ts"
     }
   ],
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "mergeable": 0
+    "open": 7,
+    "reviewed": 4,
+    "mergeable": 0,
+    "doNotMerge": ["#1109"]
   },
-  "updatedAt": "2026-03-26T20:10:00.000Z"
+  "completedThisRun": [
+    "site/index.html test counter updated 2637→4195",
+    "site/index.html terminal animation updated 2,637→4,195",
+    "docs/blog-drafts/owasp-agentic-top10-coverage.md drafted (issue #925)"
+  ],
+  "updatedAt": "2026-03-27T20:10:00.000Z"
 }
