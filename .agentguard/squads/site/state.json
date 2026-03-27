@@ -4,12 +4,30 @@
     "goal": "Keep site numeric claims in sync with codebase",
     "issues": []
   },
-  "assignments": {},
-  "blockers": [],
-  "prQueue": {
-    "open": 1,
-    "reviewed": 0,
-    "mergeable": 0
+  "assignments": {
+    "site-em": {
+      "cycle": "2026-03-27T20:40:00.000Z",
+      "completed": [
+        "Verified all numeric claims (93 patterns, 47 events, 41 actions, 24 invariants, 32 commands)",
+        "Fixed test counter 2637→4195 in site/index.html + terminal animation",
+        "Reviewed PR queue: #1117 superseded, #1134 blocked by lint",
+        "Escalated lint blocker to engineering squad"
+      ]
+    }
   },
-  "updatedAt": "2026-03-26T20:40:00.000Z"
+  "blockers": [
+    {
+      "id": "lint-formatter",
+      "description": "Pre-existing Prettier failures in packages/storage + apps/cli blocking all PR merges",
+      "owner": "engineering",
+      "since": "2026-03-27"
+    }
+  ],
+  "prQueue": {
+    "open": 2,
+    "reviewed": 2,
+    "mergeable": 0,
+    "thisRun": "agent/site-em-20260327-204002"
+  },
+  "updatedAt": "2026-03-27T20:40:00.000Z"
 }

@@ -1,51 +1,81 @@
 {
   "squad": "site",
-  "timestamp": "2026-03-26T20:40:00.000Z",
-  "health": "green",
-  "summary": "Site healthy. Fixed invariant count drift (23→24) and CLI commands count (29→32) after recent codebase changes. No open issues or PRs. OG image and meta tags intact after recent PR #1011 fix.",
+  "timestamp": "2026-03-27T20:40:00.000Z",
+  "health": "yellow",
+  "summary": "Test counter drifted 2637→4195 (+1558 tests). Fixed in this cycle. All other numeric claims verified accurate. Merge queue blocked by pre-existing Prettier lint failures in engineering files. Escalated to engineering squad.",
   "siteBuild": {
     "status": "pass",
-    "notes": "Static site structure valid: index.html, posts.html, posts.json, sitemap.xml, robots.txt, og-image.png all present and well-formed."
+    "notes": "Static site valid. All assets present: index.html, posts.html, posts.json, sitemap.xml, robots.txt, og-image.png. OpenCode + DeepAgents logos added (PR from main branch)."
   },
   "contentFreshness": {
     "status": "fixed",
     "drift": [
       {
-        "claim": "invariants count",
-        "was": 23,
-        "now": 24,
-        "cause": "PR #1002 added no-verify-bypass invariant",
-        "fixed": true
-      },
-      {
-        "claim": "CLI commands count",
-        "was": 29,
-        "now": 32,
-        "cause": "New commands added since last site sync",
+        "claim": "tests count",
+        "was": 2637,
+        "now": 4195,
+        "cause": "1558 new tests added since last site sync (PR #1117 target was stale at 4161)",
         "fixed": true
       }
     ],
     "verified": [
-      "93 destructive patterns — matches codebase",
-      "47 event kinds — matches codebase",
-      "41 action types — matches codebase"
+      "93 destructive patterns — matches packages/core/src/data/destructive-patterns.json (93 items)",
+      "47 event kinds — matches packages/events/src/schema.ts (47 EventKind exports)",
+      "41 action types — matches packages/core/src/data/actions.json (types array len=41)",
+      "10 action classes — matches packages/core/src/data/actions.json (classes array len=10)",
+      "24 invariants — matches packages/invariants/src/definitions.ts",
+      "32 CLI commands — matches apps/cli/src/commands/ (32 files)",
+      "93 destructive patterns — verified",
+      "8 built-in policy packs — verified"
     ]
   },
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "merged": [
-      "#1015 — marketing EM report",
-      "#1011 — OG image PNG + social meta tags",
-      "#1009 — site stats sync",
-      "#1005 — stale numeric claims fix"
+    "open": 2,
+    "reviewed": 2,
+    "mergeable": 0,
+    "details": [
+      {
+        "pr": 1117,
+        "title": "fix(site): sync test count 2637→4161",
+        "status": "superseded",
+        "action": "close — stale count (4161 vs actual 4195); blocked by lint+test-and-build failures",
+        "blocker": "pre-existing Prettier lint in packages/storage + apps/cli"
+      },
+      {
+        "pr": 1134,
+        "title": "chore(marketing-em): EM cycle — site fix + OWASP blog draft",
+        "status": "4/5 checks pass",
+        "action": "waiting on lint fix to merge",
+        "blocker": "pre-existing Prettier lint in packages/storage + apps/cli (engineering squad)",
+        "note": "Contains correct 2637→4195 fix but mixed with marketing content"
+      }
     ]
   },
-  "blockers": [],
-  "escalations": [],
+  "blockers": [
+    {
+      "id": "lint-formatter",
+      "description": "Pre-existing Prettier formatting failures in packages/storage and apps/cli block all PRs from merging",
+      "severity": "medium",
+      "owner": "engineering",
+      "action": "Run pnpm format:fix on packages/storage/src/aggregation-queries.ts, packages/storage/src/migrations.ts, packages/storage/src/sqlite-store.ts, apps/cli/src/commands/inspect.ts",
+      "impact": "Blocks entire merge queue including site counter fix"
+    }
+  ],
+  "escalations": [
+    "Lint failure blocking merge queue — needs engineering squad attention (pnpm format:fix)"
+  ],
   "governanceDenials": 0,
+  "dogfoodIssues": [
+    {
+      "issue": 1008,
+      "description": "site-builder agent denied despite explicit allow rules in policy — false positive default-deny",
+      "status": "open",
+      "owner": "engineering"
+    }
+  ],
   "nextActions": [
-    "Open PR for invariant + CLI command count fix",
-    "Monitor for further invariant additions that cause site drift"
+    "Close PR #1117 (superseded by correct 4195 count)",
+    "Engineering squad to run pnpm format:fix to unblock merge queue",
+    "This cycle's PR: site counter fix 2637→4195 + OpenCode/DeepAgents logos"
   ]
 }
