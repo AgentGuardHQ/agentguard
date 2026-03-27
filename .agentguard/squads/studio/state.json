@@ -1,21 +1,31 @@
 {
   "squad": "studio",
   "sprint": {
-    "goal": "Ship agentguard init studio wizard + execution profiles + swarm template schema formalization (v3.1 prep)",
-    "issues": [
-      "Formalize swarm template schema (JSON Schema validation)",
-      "Implement agentguard init studio interactive wizard",
-      "Define execution profiles (development, ci-safe, strict, enterprise)",
-      "Runner / Cloud protocol integration",
-      "Sync studio worktree with master (33 commits behind - DONE 2026-03-25)"
+    "goal": "AG Studio Portfolio Framework + First Asset — define asset template, scoring system, governance rules; research Guitar Jam Partner architecture; propose 10 highest-ROI starter projects",
+    "issues": []
+  },
+  "assignments": {
+    "studio-sr": "Research AG Studio asset template: governance (kernel+policies), telemetry, CI/CD, landing page, analytics hook; draft portfolio scoring system (usage, revenue, strategic value, maintenance cost, demo value)",
+    "studio-qa": "Validate portfolio governance rules: max 3 new projects/month, max 20 active, monthly prune scoring criteria",
+    "workspace-config-validator": "Ensure schedule.json schema is consistent across all 10 squads",
+    "workspace-agent-reliability": "Track agent success rates across last 24h, flag any agents with >20% failure"
+  },
+  "blockers": [
+    {
+      "id": "quota-exhaustion",
+      "description": "Claude API daily quota exhausted ~02:45 UTC 2026-03-27 — affected 29 agents including all studio squad members (studio-em, studio-sr, studio-qa, studio-jr, studio-designer). All studio agents STALE (9h+). Quota resets 11:00 UTC daily.",
+      "severity": "P1",
+      "action": "Escalate to human: increase Claude API quota or spread agent schedules to avoid morning pile-up"
+    }
+  ],
+  "prQueue": {
+    "open": 2,
+    "reviewed": 0,
+    "mergeable": 0,
+    "prs": [
+      { "number": 131, "title": "fix: use dynamic workspace path in run-studio-agent.sh", "status": "awaiting-review", "risk": "low" },
+      { "number": 133, "title": "docs: sync org chart for ShellForge Go rewrite", "status": "awaiting-review", "risk": "low" }
     ]
   },
-  "assignments": {},
-  "blockers": [],
-  "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "mergeable": 0
-  },
-  "updatedAt": "2026-03-25T23:50:00.000Z"
+  "updatedAt": "2026-03-27T14:10:00.000Z"
 }

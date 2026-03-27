@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-03-27T14:10:00.000Z",
+  "identity": "claude-code:opus:studio:em",
+  "runCycle": "3h",
+  "health": "yellow",
+  "summary": "Swarm-wide Claude API quota exhaustion hit at ~02:45 UTC — 29 agents rate-limited, including all studio squad members (studio-em, studio-sr, studio-qa, studio-jr, studio-designer). All studio agents are STALE (9h). This is the root cause of P0 #119 (56% failure rate). Quota resets at 11:00 UTC daily; agents should auto-recover. Two PRs need human review (#131 dynamic path fix, #133 org chart sync). Sprint goal unchanged; execution blocked until quota recovery.",
+  "prQueue": {
+    "open": 2,
+    "reviewed": 0,
+    "mergeable": 0,
+    "prs": [
+      {
+        "number": 131,
+        "title": "fix: use dynamic workspace path in run-studio-agent.sh",
+        "author": "jpleva91",
+        "risk": "low",
+        "recommendation": "merge — replaces hardcoded /home/readybench path with env var + dynamic detection; low risk, good portability fix"
+      },
+      {
+        "number": 133,
+        "title": "docs: sync org chart for ShellForge Go rewrite",
+        "author": "jpleva91",
+        "risk": "low",
+        "recommendation": "merge — docs-only, org chart accuracy update"
+      }
+    ]
+  },
+  "loopGuards": {
+    "prBudget": {
+      "open": 2,
+      "max": 3,
+      "pass": true
+    },
+    "retryLoops": {
+      "stuckAgents": 5,
+      "pass": true,
+      "note": "studio-jr, sr, qa, designer, designer stale due to quota exhaustion — not stuck in retry loops, waiting on quota reset"
+    },
+    "blastRadius": {
+      "withinLimits": true,
+      "pass": true
+    }
+  },
+  "triage": {
+    "p0Issues": 1,
+    "p1Issues": 1,
+    "p0": [
+      {
+        "issue": 119,
+        "title": "swarm reliability — 56% failure rate",
+        "status": "root cause identified: Claude API quota exhaustion (~02:45 UTC). 59/125 agents healthy now (47%, up from 17%). Partial recovery expected after 11:00 UTC quota reset.",
+        "action": "Escalate to human: increase Claude API quota tier or redistribute agent schedules to avoid morning concentration"
+      }
+    ],
+    "p1": [
+      {
+        "issue": "quota-scheduling",
+        "title": "Agent schedules concentrate between 02:00-10:00 UTC causing daily quota exhaustion",
+        "action": "Spread agent cron schedules across 24h window to flatten API call curve"
+      }
+    ]
+  },
+  "blockers": [
+    {
+      "id": "claude-api-quota",
+      "description": "29 agents rate-limited by Claude API daily quota at ~02:45 UTC. All studio agents (studio-em, studio-sr, studio-qa, studio-jr, studio-designer) affected. Sprint work blocked.",
+      "severity": "P1",
+      "owner": "human",
+      "resolution": "Increase Claude API quota tier OR spread agent cron schedules across 24h to avoid morning exhaustion"
+    }
+  ],
+  "escalations": [
+    "ESCALATE TO HUMAN: Claude API daily quota is exhausted before 10am UTC daily — 29/125 agents failing. This is the root cause of P0 #119. Requires quota increase or schedule redistribution. Current daily spend is compressing into a 7h window instead of spreading across 24h."
+  ],
+  "crossSquad": {
+    "kernel": {
+      "health": "degraded",
+      "note": "kernel-em rate-limited (2026-03-27 09:10 UTC). Last known state: green (2026-03-26). kernel-qa timed out (exit_code=124). Needs investigation after quota recovery."
+    },
+    "cloud": {
+      "health": "degraded",
+      "note": "cloud-em rate-limited (2026-03-27 09:12 UTC). design-em, tier-a-architect-review, tier-b-senior-review, cloud-qa-coder-agent, cloud-qa all failing. No EM report on file."
+    },
+    "hq": {
+      "health": "degraded",
+      "note": "hq-em rate-limited (2026-03-27 09:18 UTC). No EM report on file."
+    },
+    "qa": {
+      "health": "unknown",
+      "note": "bench-devs-platform repo not present on this host. 12 QA agents (qa-backlog-steward, qa-escalation-agent, qa-flaky-test-detector, etc.) have no log files — never run from this machine. qa-em STALE (39h, bench-devs-platform missing). This is a deployment gap, not a failure."
+    },
+    "analytics": {
+      "health": "degraded",
+      "note": "analytics-em rate-limited (2026-03-27 09:28 UTC). analytics-pipeline, analytics-reporter, analytics-invariant-researcher all FAILING (exit_code != 0). 10 open issues in agentguard-analytics including ETL hardening (#14), per-agent reports (#26), enforcement latency (#22)."
+    },
+    "marketing": {
+      "health": "unknown",
+      "note": "marketing-em rate-limited (2026-03-27 02:48 UTC). Scheduled daily at 20:10, may not have run yet today."
+    },
+    "site": {
+      "health": "unknown",
+      "note": "site-em rate-limited (2026-03-27 02:48 UTC). Scheduled daily at 20:40."
+    },
+    "design": {
+      "health": "unknown",
+      "note": "design-em rate-limited (2026-03-27 02:48 UTC). Scheduled daily at 22:10."
+    }
+  },
+  "swarmHealth": {
+    "checkResult": "97 agents checked, 29 skipped (log dir not present on this host). Telemetry pipeline healthy. All agents healthy per telemetry.",
+    "telemetryVsLogs": "DIVERGENCE: telemetry-based check shows healthy, log-based analysis (#137) shows 47/125 failing. Telemetry check measures successful events; log check measures last exit code. Quota failures don't block telemetry writes — they fail before the agent does meaningful work.",
+    "totalAgents": 125,
+    "healthy": 59,
+    "stale": 6,
+    "failing": 47,
+    "missing": 13,
+    "rootCauseBreakdown": {
+      "claudeApiQuota": 29,
+      "geminiApiQuota": 7,
+      "timeout": 1,
+      "otherFailures": 10
+    },
+    "boxes": ["jared", "readybench"]
+  },
+  "analyticsCoordination": {
+    "openIssues": 10,
+    "blockingItems": [
+      { "issue": 14, "title": "Pipeline: ETL error handling and retry hardening", "priority": "needed for reliability" },
+      { "issue": 26, "title": "feat: add agent_name and driver_type to analytics models", "priority": "needed for per-agent reporting" },
+      { "issue": 22, "title": "Data request: Enforcement latency distribution (p50/p95/p99)", "priority": "needed for May 6 talk" }
+    ],
+    "note": "analytics-pipeline failing today (quota + other failures). ETL hardening (#14) should be prioritized to handle quota-exhaustion gracefully."
+  },
+  "metrics": {
+    "prsOpened": 0,
+    "prsMerged": 0,
+    "issuesClosed": 0,
+    "governanceDenials": 0,
+    "retries": 0
+  },
+  "sprintGoal": "AG Studio Portfolio Framework + First Asset — define asset template, scoring system, governance rules; research Guitar Jam Partner architecture; propose 10 highest-ROI starter projects",
+  "stateChanges": [
+    "Health downgraded: green → yellow (quota-driven agent failures across all squads)",
+    "Blocker added: Claude API daily quota exhaustion affecting all studio agents",
+    "PR queue updated: 2 open PRs identified (#131, #133) — both low risk, both awaiting human review",
+    "Telemetry divergence noted: check-swarm-health.sh reports healthy, log analysis shows 47/125 failing"
+  ],
+  "nextActions": [
+    "HUMAN ESCALATION: Increase Claude API quota or redistribute agent cron schedules across 24h (root cause of P0 #119)",
+    "Human review + merge PR #131 (dynamic workspace path fix — low risk, high value for portability)",
+    "Human review + merge PR #133 (ShellForge org chart sync — docs only)",
+    "After 11:00 UTC quota reset: verify studio-sr, studio-qa resume sprint work on portfolio framework",
+    "Analytics coordination: prioritize ETL hardening (#14) to handle quota failures gracefully",
+    "Next cycle: verify >60% swarm health after quota recovery; if still <60%, investigate other-failure agents (audit-merged-prs, retrospective-agent, design-auditor)"
+  ]
+}
