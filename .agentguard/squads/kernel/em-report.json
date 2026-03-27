@@ -1,54 +1,102 @@
 {
-  "generatedAt": "2026-03-26T09:00:00.000Z",
-  "identity": "claude-code:opus:kernel:em",
+  "generatedAt": "2026-03-27T15:00:00.000Z",
+  "identity": "claude-code:unknown:em",
   "runCycle": "3h",
   "health": "yellow",
-  "summary": "Health downgraded to YELLOW. Three new dogfood bugs discovered (#971, #972, #973). #972 is P0 — hook deny reason includes retry metadata text that causes Claude Code to block ALL tool use in governed sessions. #973 compounds it — essentials pack not bundled in npm, so every hook invocation hits default-deny. Sprint reprioritized: fix #972 + #973 first, then resume #955 (Go kernel delegation). PR #969 (closes #964) has merge conflicts — needs rebase. Closed stale EM PR #966.",
+  "summary": "Health YELLOW — systemic CI failure blocking all 8 open PRs (Prettier violations + flaky go-fast-path timeout). Root cause identified and fix PR #1121 opened this cycle. Previous sprint P0s (#972, #973) are CLOSED. Go kernel wire-up (#955) CLOSED. KE-2 ActionContext (#856) also CLOSED — v3.0 gate cleared. Sprint transition: from P0 firefighting to #1026 educate mode + #1086 Go Kernel Phase 1. Three new dogfood bugs filed (#1118, #1119, #1120) — no sprint-blocking severity but #1118 (SQLite in worktrees) is P1 and affects all governed swarm runs. PR queue over budget (8 open vs. 3 max) — closed superseded #1108, others pending CI fix.",
+
   "prQueue": {
-    "open": 1,
+    "open": 8,
+    "reviewed": 0,
+    "mergeable": 0,
     "prs": [
       {
-        "number": 969,
-        "title": "fix(claude-init): write hooks with full binary path (closes #964)",
-        "ciStatus": "passed",
-        "mergeState": "CONFLICTING",
-        "note": "CI green but merge conflicts — needs rebase before merge"
+        "number": 1121,
+        "title": "fix(qa): go-fast-path flaky test + Prettier regressions",
+        "ciStatus": "pending",
+        "note": "OPENED THIS CYCLE. Priority merge — unblocks all other PRs once CI green."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows (closes #1026)",
+        "ciStatus": "failing",
+        "note": "Important P1 bug fix. Rebase on main after #1121 merges."
+      },
+      {
+        "number": 1117,
+        "title": "fix(site): sync test count 2637→4161",
+        "ciStatus": "failing",
+        "note": "Minor site update. Should pass CI after #1121 + rebase."
+      },
+      {
+        "number": 1109,
+        "title": "feat: OpenCode framework adapter",
+        "ciStatus": "failing",
+        "note": "Lint + CodeQL failures. CodeQL failure is an additional concern beyond Prettier — needs deeper review."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): driver_type sessions (closes #1034)",
+        "ciStatus": "failing",
+        "note": "Good feature. Should pass CI after #1121 + rebase."
+      },
+      {
+        "number": 1090,
+        "title": "test: telemetry/runtimeLogger tests",
+        "ciStatus": "failing",
+        "note": "Test coverage. Should pass after #1121 + rebase."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): driverType field in AgentEvent",
+        "ciStatus": "failing",
+        "note": "Nice feature. Should pass after #1121 + rebase."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): agentId and v5 migration coverage",
+        "ciStatus": "failing",
+        "note": "Test coverage. Should pass after #1121 + rebase."
       }
     ]
   },
+
   "closedThisCycle": [
     {
-      "number": 966,
-      "title": "chore(kernel-em): EM cycle report 2026-03-26T07:10Z",
-      "note": "Stale EM report — superseded by current cycle"
+      "number": 1108,
+      "title": "fix(format): fix prettier violations in storage and inspect (QA 2026-03-27T12:50Z)",
+      "note": "Superseded by #1121 — closed to reduce PR queue"
     }
   ],
   "mergedThisCycle": [],
+
   "newIssues": [
     {
-      "number": 972,
-      "title": "Hook deny reason includes '(attempt N/N)' text that Claude Code misinterprets as blocking error",
-      "severity": "P0",
-      "note": "Breaks ALL governed sessions. Deny reason text causes Claude Code to block all tool use. Sprint-blocking."
-    },
-    {
-      "number": 973,
-      "title": "claude-init --reset references essentials pack not bundled in npm package",
-      "severity": "P0",
-      "note": "Essentials pack only exists in repo source tree, not npm. Every hook invocation warns 'Pack not found' → default-deny."
-    },
-    {
-      "number": 971,
-      "title": "Hook crash after aguard rename + cross-user queue lock permission",
+      "number": 1118,
+      "title": "[dogfood] agentguard guard fails with SQLite bindings error in worktrees",
       "severity": "P1",
-      "note": "Two dogfood bugs: (1) hook config references old 'agentguard' binary after rename to 'aguard', (2) cross-user queue.lock permission denied on jared box. Bug 1 is kernel, Bug 2 is ops."
+      "note": "Governance runtime cannot start in scheduler-spawned worktrees. better-sqlite3 not compiled for Node v22 ABI v127. Affects all swarm agents. Suggested fix: rebuild bindings or add --no-sqlite fail-open mode."
+    },
+    {
+      "number": 1119,
+      "title": "[dogfood] False positive: destructive command detection fires on report content",
+      "severity": "P2",
+      "note": "Pattern matcher scans full shell command including heredoc/inline content. Writing a report that mentions blocked command names gets blocked. Needs base-command vs content distinction."
+    },
+    {
+      "number": 1120,
+      "title": "Dogfood: Stop hook fails in sub-repos without node_modules",
+      "severity": "P3",
+      "note": "Stop hook uses relative path ./node_modules/.bin/agentguard — fails when CWD is a sub-repo. Non-blocking but noisy."
     }
   ],
+
   "loopGuards": {
     "prBudget": {
-      "open": 1,
+      "open": 8,
       "max": 3,
-      "pass": true
+      "pass": false,
+      "note": "OVER BUDGET. All 8 PRs failing CI due to same root cause (fixed by #1121). Once #1121 merges, PRs should be rebased and merged in priority order. No new PRs should be opened until queue drains to <3."
     },
     "retryLoops": {
       "stuckAgents": 0,
@@ -59,75 +107,96 @@
       "pass": true
     }
   },
+
   "triage": {
-    "p0Issues": 2,
-    "p1Issues": 1,
+    "p0Issues": 0,
+    "p1Issues": 2,
+    "p2Issues": 1,
     "sprintReprioritized": true,
-    "reprioritizationReason": "Can't ship Go kernel delegation (#955) if the TS hook path itself is broken. #972 + #973 must be fixed first — they affect every npm user running governed sessions.",
+    "reprioritizationReason": "Previous sprint P0s (#972, #973) and Go wire-up (#955, #957, #964) are ALL CLOSED. KE-2 (#856) is also closed — v3.0 gate cleared. Sprint transitions to: educate mode fix (#1026), Go Kernel Phase 1 (#1086), Stranger test (#919), and KE-4 design (#918).",
     "newAssignments": [
       {
         "agent": "senior",
-        "issues": [972, 973],
-        "note": "P0 fast-track: fix deny reason retry text (#972) + bundle essentials pack (#973). Both break the hook integration path."
+        "issues": [1026],
+        "note": "PR #1104 open and ready — rebase on main after #1121 merges. This is the next merge target."
       }
     ],
     "deferredWork": [
       {
-        "issues": [955, 957, 964],
-        "note": "Go kernel wire-up — resume after #972/#973 are fixed. PR #969 (closes #964) needs rebase."
+        "issues": [1086, 919],
+        "note": "Go Kernel Phase 1 (#1086) and Stranger test (#919) are next after CI unblocks. Can be started in parallel."
+      },
+      {
+        "issues": [918],
+        "note": "KE-4 Plane Separation (#918) — begin design spec now while v3.0 work completes."
       }
     ],
     "notableIssues": [
       {
-        "number": 965,
-        "note": "Dogfood gap: direct push to master not blocked. Needs investigation but lower priority than #972/#973."
+        "number": 1118,
+        "note": "P1 dogfood: SQLite bindings error in all swarm worktrees. Governance runtime cannot start — needs kernel team fix."
       },
       {
-        "number": 971,
-        "note": "Two bugs: aguard rename compat (kernel) + queue lock perms (ops). Bug 2 should be escalated to ops."
+        "number": 1119,
+        "note": "P2 dogfood: False positive on destructive pattern in heredoc content. Kernel/matchers team should scope the fix."
       }
     ]
   },
+
   "blockers": [
     {
-      "issue": 972,
-      "description": "P0: Hook deny reason retry text breaks Claude Code integration",
-      "since": "2026-03-26"
+      "description": "Systemic CI: 4 Prettier violations + flaky go-fast-path test blocking all 8 open PRs",
+      "severity": "P1",
+      "resolution": "PR #1121 (opened this cycle) — awaiting CI green. Once merged, rebase all other PRs.",
+      "since": "2026-03-27"
     },
     {
-      "issue": 973,
-      "description": "P0: Essentials pack not in npm → all hooks default-deny",
-      "since": "2026-03-26"
+      "issue": 1118,
+      "description": "SQLite bindings error in scheduler-spawned worktrees — governance runtime cannot start",
+      "severity": "P1",
+      "since": "2026-03-27"
     }
   ],
+
   "escalations": [
     {
-      "target": "ops",
-      "issue": 971,
-      "reason": "Bug 2 (cross-user queue.lock permission denied) is an ops/deploy issue — jared workers can't dequeue"
+      "target": "director",
+      "reason": "PR queue at 8 (budget: 3). All blocked by same CI failure. Not a runaway loop — single root cause (Prettier regression). Fix is in flight (#1121). No action needed beyond awareness.",
+      "severity": "info"
     }
   ],
+
+  "dogfoodReport": {
+    "issuesFiled": [1118, 1119, 1120],
+    "governanceDenialsHit": 0,
+    "notes": "No governance denials hit by EM agent this cycle. Three dogfood issues filed from observing other agents: #1118 (SQLite in worktrees), #1119 (false positive destructive), #1120 (stop hook CWD). All filed as issues."
+  },
+
   "metrics": {
-    "prsOpened": 0,
+    "prsOpened": 1,
     "prsMerged": 0,
     "prsClosed": 1,
     "issuesClosed": 0,
     "governanceDenials": 0,
     "retries": 0
   },
+
   "testHealth": {
-    "total": 4129,
-    "passed": 4129,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
-    "packages": 19,
-    "status": "all_passing"
+    "packages": 18,
+    "status": "all_passing",
+    "lastRun": "2026-03-27T14:10:00.000Z",
+    "delta": "+38 tests since last EM run (4235 → 4273)"
   },
+
   "escalationRules": {
     "triggered": {
-      "twoPlusFailingCI": false,
+      "twoPlusFailingCI": true,
       "persistentBlocker": false,
       "governanceDenialsExceeded": false
     },
-    "notes": "No CI escalation triggers, but #972 is a P0 production blocker discovered via dogfooding. Health set to YELLOW per severity."
+    "notes": "twoPlusFailingCI triggered (8 PRs failing) → YELLOW health. Blocker is systemic (single root cause) not loop-based. PR #1121 is the fix. No lockdown warranted."
   }
 }

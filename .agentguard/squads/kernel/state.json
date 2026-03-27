@@ -1,88 +1,143 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Fix P0 hook-breaking bugs (#972, #973), then resume Go kernel wire-up (#955). Hook path must work before Go delegation can ship.",
-    "issues": [972, 973, 955, 957, 964]
+    "goal": "Unblock CI across all open PRs (#1121), merge educate-mode fix (#1104), advance Go Kernel Phase 1 (#1086) and Stranger test (#919). KE-2 (#856) complete — v3.0 gate cleared.",
+    "issues": [1026, 1086, 919, 918, 1121]
   },
   "assignments": {
     "senior": {
-      "issue": [972, 973],
-      "title": "P0: Fix hook deny reason retry metadata (#972) + bundle essentials pack in npm (#973)",
-      "status": "unassigned",
-      "branch": null,
-      "pr": null,
-      "claimedAt": null,
-      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason → Claude Code blocks all tool use). #973 compounds it (essentials pack missing → default-deny on everything). Fix both before resuming #955 Go delegation."
+      "issue": [1026],
+      "title": "fix(adapters): educate mode always allows regardless of suggestion (PR #1104)",
+      "status": "pr-open",
+      "branch": "fix/1026-educate-mode-always-allow",
+      "pr": 1104,
+      "claimedAt": "2026-03-27T00:00:00.000Z",
+      "note": "PR #1104 has educate mode fix. Blocked on CI: lint (Prettier) + test-and-build (flaky go-fast-path). PR #1121 will fix both — once #1121 merges, rebase #1104 to unblock."
     }
   },
   "blockers": [
     {
-      "issue": 972,
-      "description": "Hook deny reason includes '(attempt N/N)' — Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
+      "issue": null,
+      "description": "Systemic CI failure: 4 Prettier violations + flaky go-fast-path test (200ms timeout under load) causing lint+test failures on all 8 open PRs. PR #1121 fixes both — awaiting CI green.",
+      "severity": "P1",
+      "since": "2026-03-27T12:00:00.000Z",
+      "resolution": "Merge #1121, then rebase affected PRs"
     },
     {
-      "issue": 973,
-      "description": "essentials policy pack not bundled in npm — all hook invocations hit default-deny",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
+      "issue": 1118,
+      "description": "SQLite native bindings missing in scheduler-spawned worktrees — governance runtime cannot start (better-sqlite3 not compiled for Node v22 ABI v127 in sub-worktrees)",
+      "severity": "P1",
+      "since": "2026-03-27T14:19:00.000Z",
+      "resolution": "Options: rebuild bindings, expose CLI on PATH, or add --no-sqlite fail-open flag"
+    },
+    {
+      "issue": 1119,
+      "description": "False positive: destructive command detection fires on shell heredoc/python content that mentions blocked command patterns (report text, not execution)",
+      "severity": "P2",
+      "since": "2026-03-27T14:22:00.000Z",
+      "resolution": "Distinguish base command from argument/content in destructive pattern matcher"
     }
   ],
   "prQueue": {
-    "open": 0,
+    "open": 8,
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
+      {
+        "number": 1121,
+        "title": "fix(qa): go-fast-path flaky test + Prettier regressions (QA 2026-03-27T14:10Z)",
+        "branch": "agent/kernel-qa-20260327-141016",
+        "status": "open",
+        "ciStatus": "pending",
+        "note": "PRIORITY MERGE — fixes systemic CI blocker for all other PRs. Opened this EM cycle."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence (closes #1026)",
+        "branch": "fix/1026-educate-mode-always-allow",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Important P1 bug fix. Needs rebase after #1121 merges."
+      },
+      {
+        "number": 1117,
+        "title": "fix(site): sync test count 2637→4161",
+        "branch": "agent/site-em-20260327-141017",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Minor site update. Should pass CI after #1121 merges."
+      },
+      {
+        "number": 1109,
+        "title": "feat: OpenCode framework adapter — governance hooks for opencode.ai agent",
+        "branch": "feat/opencode-adapter-1054",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "New adapter feature. Has CodeQL failure (additional concern beyond Prettier). Needs review."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity format, add driver_type to sessions",
+        "branch": "feat/1034-driver-type-sessions",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Storage feature, test-and-build failing (go-fast-path). Should pass after #1121."
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "branch": "agent/copilot-test-writer-oss-20260327-053002",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Test coverage PR. Will need rebase after #1121."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "branch": "feat/telemetry-driver-type-1031",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Telemetry feature. Will need rebase after #1121."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId, agent helpers, and v5 migration backfill",
+        "branch": "agent/kernel-qa-20260327-035000",
+        "status": "open",
+        "ciStatus": "failing",
+        "note": "Storage test coverage. Will need rebase after #1121."
+      },
+      {
+        "number": 1108,
+        "title": "fix(format): fix prettier violations in storage and inspect",
+        "branch": "agent/kernel-qa-20260327-125004",
+        "status": "closed",
+        "ciStatus": "n/a",
+        "mergedAt": null,
+        "note": "Closed — superseded by #1121 which includes same fixes plus go-fast-path fix."
+      },
       {
         "number": 969,
         "title": "fix(claude-init): write hooks with full binary path (closes #964)",
         "branch": "agent/kernel-sr-20260325-230535",
         "status": "merged",
         "ciStatus": "passed",
-        "mergedAt": "2026-03-26T00:30:00.000Z",
-        "note": "Merged successfully. All CI checks passed."
+        "mergedAt": "2026-03-26T00:30:00.000Z"
       }
     ]
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T14:10:00.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
-    "coverageGaps": [],
-    "fixes": [
-      {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
-      }
-    ],
-    "openPrNotes": [
-      {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
-      },
-      {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
-        "status": "needs-format-fix"
-      },
-      {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
-      }
-    ]
+    "delta": "+38 tests since last run (4235 → 4273)",
+    "notes": "go-fast-path test fixed (AGENTGUARD_GO_TIMEOUT=5000 in beforeEach); Prettier fixed in 4 files"
   },
-  "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastEmRun": "2026-03-27T15:00:00.000Z",
+  "lastQaRun": "2026-03-27T14:10:00.000Z",
+  "updatedAt": "2026-03-27T15:00:00.000Z"
 }
