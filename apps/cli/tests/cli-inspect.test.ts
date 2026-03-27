@@ -92,6 +92,61 @@ describe('inspect', () => {
     expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('Recorded Runs'));
   });
 
+  it('shows agent name in --list when RunStarted has agentName', async () => {
+    seedEvents('run_001', [
+      makeActionEvent('RunStarted', { agentName: 'kernel-sr' }),
+      makeActionEvent('ActionAllowed'),
+    ]);
+
+    await inspect(['--list'], storageConfig);
+
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('kernel-sr'));
+  });
+
+  it('shows agent identity in run detail view', async () => {
+    seedEvents('run_001', [
+      makeActionEvent('RunStarted', { agentName: 'cloud-em' }),
+      makeActionEvent('ActionAllowed'),
+      makeActionEvent('ActionExecuted'),
+    ]);
+
+    await inspect(['run_001'], storageConfig);
+
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('Agent:'));
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('cloud-em'));
+  });
+
+  it('filters runs by --agent flag', async () => {
+    seedEvents('run_001', [
+      makeActionEvent('RunStarted', { agentName: 'kernel-sr' }),
+      makeActionEvent('ActionAllowed'),
+    ]);
+    seedEvents('run_002', [
+      makeActionEvent('RunStarted', { agentName: 'cloud-em', timestamp: 2000 }),
+      makeActionEvent('ActionAllowed', { timestamp: 2001 }),
+    ]);
+
+    await inspect(['--list', '--agent', 'kernel-sr'], storageConfig);
+
+    expect(process.stderr.write).toHaveBeenCalledWith(expect.stringContaining('kernel-sr'));
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('agent: kernel-sr')
+    );
+  });
+
+  it('shows no runs message when --agent filter has no matches', async () => {
+    seedEvents('run_001', [
+      makeActionEvent('RunStarted', { agentName: 'kernel-sr' }),
+      makeActionEvent('ActionAllowed'),
+    ]);
+
+    await inspect(['--list', '--agent', 'nonexistent'], storageConfig);
+
+    expect(process.stderr.write).toHaveBeenCalledWith(
+      expect.stringContaining('No runs found for agent: nonexistent')
+    );
+  });
+
   it('loads specific run by ID', async () => {
     seedEvents('run_001', [makeActionEvent('ActionAllowed'), makeActionEvent('ActionExecuted')]);
 

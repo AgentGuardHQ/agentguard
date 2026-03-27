@@ -214,6 +214,55 @@ export function queryEventsByKindAcrossRuns(
   }));
 }
 
+/** Resolve agent identity for a run from its RunStarted event */
+export function getRunAgent(db: Database.Database, runId: string): string | null {
+  const row = db
+    .prepare(
+      `SELECT COALESCE(
+        json_extract(data, '$.agentName'),
+        json_extract(data, '$.agentId'),
+        NULL
+      ) as agent FROM events WHERE run_id = ? AND kind = 'RunStarted' LIMIT 1`
+    )
+    .get(runId) as { agent: string | null } | undefined;
+  return row?.agent ?? null;
+}
+
+/** Resolve agent identity for multiple runs in a single query */
+export function getRunAgents(
+  db: Database.Database,
+  runIds: string[]
+): Map<string, string> {
+  if (runIds.length === 0) return new Map();
+  const placeholders = runIds.map(() => '?').join(', ');
+  const rows = db
+    .prepare(
+      `SELECT run_id, COALESCE(
+        json_extract(data, '$.agentName'),
+        json_extract(data, '$.agentId'),
+        'unknown'
+      ) as agent FROM events WHERE run_id IN (${placeholders}) AND kind = 'RunStarted'`
+    )
+    .all(...runIds) as Array<{ run_id: string; agent: string }>;
+  const result = new Map<string, string>();
+  for (const row of rows) {
+    result.set(row.run_id, row.agent);
+  }
+  return result;
+}
+
+/** List run IDs that belong to a specific agent */
+export function listRunIdsByAgent(db: Database.Database, agentName: string): string[] {
+  const rows = db
+    .prepare(
+      `SELECT run_id FROM events WHERE kind = 'RunStarted' AND (
+        json_extract(data, '$.agentName') = ? OR json_extract(data, '$.agentId') = ?
+      ) ORDER BY timestamp DESC`
+    )
+    .all(agentName, agentName) as { run_id: string }[];
+  return rows.map((r) => r.run_id);
+}
+
 /** Extract run_id from event metadata if present */
 function extractRunId(event: DomainEvent): string | undefined {
   const meta = event.metadata as Record<string, unknown> | undefined;

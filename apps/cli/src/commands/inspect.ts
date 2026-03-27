@@ -33,38 +33,60 @@ async function openSqliteDb(storageConfig?: StorageConfig) {
 export async function inspect(args: string[], storageConfig?: StorageConfig): Promise<void> {
   const showDecisions = args.includes('--decisions');
   const showTraces = args.includes('--traces');
+  const agentIdx = args.indexOf('--agent');
+  const agentFilter = agentIdx !== -1 ? args[agentIdx + 1] : undefined;
   const filteredArgs = args.filter(
-    (a) =>
-      a !== '--decisions' && a !== '--traces' && a !== '--store' && a !== 'sqlite' && a !== 'jsonl'
+    (a, i) =>
+      a !== '--decisions' &&
+      a !== '--traces' &&
+      a !== '--agent' &&
+      a !== '--store' &&
+      a !== 'sqlite' &&
+      a !== 'jsonl' &&
+      (agentIdx === -1 || i !== agentIdx + 1)
   );
   const targetArg = filteredArgs[0];
 
   if (!targetArg || targetArg === '--list') {
     const storage = await openSqliteDb(storageConfig);
     if (!storage) return;
-    const { listRunIds } = await import('@red-codes/storage');
+    const { listRunIds, listRunIdsByAgent, getRunAgents, loadRunEvents } = await import(
+      '@red-codes/storage'
+    );
     const db = storage.db as import('better-sqlite3').Database;
-    const runs = listRunIds(db);
-    storage.close();
+    const runs = agentFilter ? listRunIdsByAgent(db, agentFilter) : listRunIds(db);
 
     if (runs.length === 0) {
-      process.stderr.write('\n  \x1b[2mNo runs recorded yet.\x1b[0m\n');
-      process.stderr.write('  Run \x1b[1magentguard guard\x1b[0m to start recording.\n\n');
+      if (agentFilter) {
+        process.stderr.write(
+          `\n  \x1b[2mNo runs found for agent: ${agentFilter}\x1b[0m\n\n`
+        );
+      } else {
+        process.stderr.write('\n  \x1b[2mNo runs recorded yet.\x1b[0m\n');
+        process.stderr.write('  Run \x1b[1magentguard guard\x1b[0m to start recording.\n\n');
+      }
+      storage.close();
       return;
     }
 
-    process.stderr.write('\n  \x1b[1mRecorded Runs\x1b[0m\n');
+    const displayRuns = runs.slice(0, 20);
+    const agentMap = getRunAgents(db, displayRuns);
+
+    const header = agentFilter
+      ? `\x1b[1mRecorded Runs\x1b[0m \x1b[2m(agent: ${agentFilter})\x1b[0m`
+      : '\x1b[1mRecorded Runs\x1b[0m';
+    process.stderr.write(`\n  ${header}\n`);
     process.stderr.write(`  ${'\x1b[2m'}${'─'.repeat(50)}${'\x1b[0m'}\n`);
 
-    const storage2 = await openSqliteDb(storageConfig);
-    if (!storage2) return;
-    const { loadRunEvents } = await import('@red-codes/storage');
-    const db2 = storage2.db as import('better-sqlite3').Database;
-    for (const id of runs.slice(0, 20)) {
-      const events = loadRunEvents(db2, id);
-      process.stderr.write(`  ${id}  ${'\x1b[2m'}(${events.length} events)${'\x1b[0m'}\n`);
+    for (const id of displayRuns) {
+      const evts = loadRunEvents(db, id);
+      const agent = agentMap.get(id);
+      const agentLabel = agent ? `  \x1b[36m${agent}\x1b[0m` : '';
+      process.stderr.write(
+        `  ${id}${agentLabel}  ${'\x1b[2m'}(${evts.length} events)${'\x1b[0m'}\n`
+      );
     }
-    storage2.close();
+    storage.close();
 
     process.stderr.write('\n');
     return;
@@ -91,18 +113,21 @@ export async function inspect(args: string[], storageConfig?: StorageConfig): Pr
   // Load events
   const storage = await openSqliteDb(storageConfig);
   if (!storage) return;
-  const { loadRunEvents, loadRunDecisions } = await import('@red-codes/storage');
+  const { loadRunEvents, loadRunDecisions, getRunAgent } = await import('@red-codes/storage');
   const db = storage.db as import('better-sqlite3').Database;
   const eventList = loadRunEvents(db, targetRunId);
+  const agent = getRunAgent(db, targetRunId);
 
   if (eventList.length === 0) {
     process.stderr.write(`  \x1b[31mError:\x1b[0m No events found for run: ${targetRunId}\n`);
   }
 
+  const agentLine = agent ? `  \x1b[1mAgent:\x1b[0m ${agent}\n` : '';
+
   // Show decision records if --decisions flag is present
   if (showDecisions) {
     const decisions = loadRunDecisions(db, targetRunId);
-    process.stderr.write(`\n  \x1b[1mRun:\x1b[0m ${targetRunId}\n`);
+    process.stderr.write(`\n  \x1b[1mRun:\x1b[0m ${targetRunId}\n${agentLine}`);
     if (decisions.length > 0) {
       process.stderr.write(renderDecisionTable(decisions));
     } else {
@@ -113,7 +138,7 @@ export async function inspect(args: string[], storageConfig?: StorageConfig): Pr
   storage.close();
 
   if (!showDecisions) {
-    process.stderr.write(`\n  \x1b[1mRun:\x1b[0m ${targetRunId}\n`);
+    process.stderr.write(`\n  \x1b[1mRun:\x1b[0m ${targetRunId}\n${agentLine}`);
   }
 
   // Show policy evaluation traces if --traces flag is present
