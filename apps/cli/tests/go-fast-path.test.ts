@@ -53,24 +53,32 @@ describe('resolveGoBinaryPath', () => {
 describe('tryGoFastPath', () => {
   const origEnv = { ...process.env };
 
+  beforeEach(() => {
+    // Use a generous timeout so mock shell scripts don't time out under system load
+    // (e.g. when running the full 4000+ test suite in parallel across packages).
+    process.env.AGENTGUARD_GO_TIMEOUT = '5000';
+  });
+
   afterEach(() => {
     process.env = { ...origEnv };
   });
 
   it('returns { used: false } when AGENTGUARD_SKIP_GO=1', () => {
     process.env.AGENTGUARD_SKIP_GO = '1';
-    const result = tryGoFastPath(
-      [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-      { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-    );
+    const result = tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+      hook: 'PreToolUse',
+      tool_name: 'Read',
+      tool_input: { file_path: 'test.ts' },
+    } as ClaudeCodeHookPayload);
     expect(result.used).toBe(false);
   });
 
   it('returns { used: false } when no policies loaded', () => {
-    const result = tryGoFastPath(
-      [],
-      { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-    );
+    const result = tryGoFastPath([], {
+      hook: 'PreToolUse',
+      tool_name: 'Read',
+      tool_input: { file_path: 'test.ts' },
+    } as ClaudeCodeHookPayload);
     expect(result.used).toBe(false);
   });
 
@@ -78,10 +86,11 @@ describe('tryGoFastPath', () => {
     delete process.env.AGENTGUARD_GO_BIN;
     // Point to nonexistent binary to force "not found"
     process.env.AGENTGUARD_GO_BIN = '/nonexistent/agentguard-go';
-    const result = tryGoFastPath(
-      [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-      { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-    );
+    const result = tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+      hook: 'PreToolUse',
+      tool_name: 'Read',
+      tool_input: { file_path: 'test.ts' },
+    } as ClaudeCodeHookPayload);
     expect(result.used).toBe(false);
   });
 
@@ -97,10 +106,11 @@ describe('tryGoFastPath', () => {
 
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
-      const result = tryGoFastPath(
-        [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-        { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-      );
+      const result = tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+        hook: 'PreToolUse',
+        tool_name: 'Read',
+        tool_input: { file_path: 'test.ts' },
+      } as ClaudeCodeHookPayload);
       expect(result.used).toBe(true);
       expect(result.allowed).toBe(true);
     } finally {
@@ -121,8 +131,19 @@ describe('tryGoFastPath', () => {
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
       const result = tryGoFastPath(
-        [{ id: 'test', name: 'Test', rules: [{ action: ['git.push'], effect: 'deny' }], severity: 5 }],
-        { hook: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'git push' } } as ClaudeCodeHookPayload
+        [
+          {
+            id: 'test',
+            name: 'Test',
+            rules: [{ action: ['git.push'], effect: 'deny' }],
+            severity: 5,
+          },
+        ],
+        {
+          hook: 'PreToolUse',
+          tool_name: 'Bash',
+          tool_input: { command: 'git push' },
+        } as ClaudeCodeHookPayload
       );
       expect(result.used).toBe(true);
       expect(result.allowed).toBe(false);
@@ -139,10 +160,11 @@ describe('tryGoFastPath', () => {
 
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
-      const result = tryGoFastPath(
-        [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-        { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-      );
+      const result = tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+        hook: 'PreToolUse',
+        tool_name: 'Read',
+        tool_input: { file_path: 'test.ts' },
+      } as ClaudeCodeHookPayload);
       expect(result.used).toBe(false);
     } finally {
       unlinkSync(tmpBin);
@@ -156,10 +178,11 @@ describe('tryGoFastPath', () => {
 
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
-      const result = tryGoFastPath(
-        [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-        { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
-      );
+      const result = tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+        hook: 'PreToolUse',
+        tool_name: 'Read',
+        tool_input: { file_path: 'test.ts' },
+      } as ClaudeCodeHookPayload);
       expect(result.used).toBe(false);
     } finally {
       unlinkSync(tmpBin);
@@ -180,10 +203,24 @@ describe('tryGoFastPath', () => {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
       const result = tryGoFastPath(
         [
-          { id: 'p1', name: 'Policy 1', rules: [{ action: ['file.read'], effect: 'allow' }], severity: 3 },
-          { id: 'p2', name: 'Policy 2', rules: [{ action: ['git.push'], effect: 'deny' }], severity: 7 },
+          {
+            id: 'p1',
+            name: 'Policy 1',
+            rules: [{ action: ['file.read'], effect: 'allow' }],
+            severity: 3,
+          },
+          {
+            id: 'p2',
+            name: 'Policy 2',
+            rules: [{ action: ['git.push'], effect: 'deny' }],
+            severity: 7,
+          },
         ],
-        { hook: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: 'test.ts' } } as ClaudeCodeHookPayload
+        {
+          hook: 'PreToolUse',
+          tool_name: 'Read',
+          tool_input: { file_path: 'test.ts' },
+        } as ClaudeCodeHookPayload
       );
       expect(result.used).toBe(true);
       expect(result.allowed).toBe(true);
@@ -199,10 +236,11 @@ describe('tryGoFastPath', () => {
 
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;
-      tryGoFastPath(
-        [{ id: 'test', name: 'Test', rules: [], severity: 5 }],
-        { hook: 'PreToolUse', tool_name: 'Read', tool_input: {} } as ClaudeCodeHookPayload
-      );
+      tryGoFastPath([{ id: 'test', name: 'Test', rules: [], severity: 5 }], {
+        hook: 'PreToolUse',
+        tool_name: 'Read',
+        tool_input: {},
+      } as ClaudeCodeHookPayload);
 
       // Verify no temp files left behind (approximate: check no agentguard-policy files)
       const tmpFiles = readdirSync(tmpdir()).filter((f: string) =>
