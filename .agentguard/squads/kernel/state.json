@@ -47,42 +47,47 @@
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T06:50:00.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
+    "delta": "+38 tests since last run (4235 → 4273)",
     "coverageGaps": [],
     "fixes": [
       {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
+        "files": [
+          "packages/storage/src/aggregation-queries.ts",
+          "packages/storage/src/migrations.ts",
+          "packages/storage/src/sqlite-store.ts",
+          "apps/cli/src/commands/inspect.ts"
+        ],
+        "note": "4 pre-existing Prettier regressions in main (introduced by recent storage/inspect merges). Fixed in PR #1095."
       }
     ],
     "openPrNotes": [
       {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
+        "pr": 1083,
+        "title": "test(storage): agentId, agent helpers, v5 migration backfill (+63 tests)",
+        "issue": "Previous QA PR. Still open. No CI issues seen.",
+        "status": "open"
       },
       {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
+        "pr": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "issue": "CI failing: Prettier on cloud-sink.ts (PR-introduced). QA commented. Unblocked from shared files once #1095 merges.",
         "status": "needs-format-fix"
       },
       {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
+        "pr": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger (+16 tests)",
+        "issue": "CI failing: Prettier on 4 shared files (pre-existing main regressions, fixed in #1095). Will auto-pass after #1095 merges.",
+        "status": "blocked-by-1095"
       }
     ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastQaRun": "2026-03-27T06:50:00.000Z",
+  "updatedAt": "2026-03-27T06:50:00.000Z"
 }
