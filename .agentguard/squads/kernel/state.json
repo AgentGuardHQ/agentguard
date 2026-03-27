@@ -56,18 +56,31 @@
   },
   "health": "yellow",
   "testHealth": {
-    "total": 4298,
-    "passed": 4298,
+    "total": 4350,
+    "passed": 4350,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T03:50:00.000Z",
+    "lastRun": "2026-03-27T21:56:43.000Z",
     "status": "all_passing",
-    "delta": "+63 tests since last run (4235 \u2192 4298); +25 new storage tests this cycle",
+    "delta": "+52 tests since last run (4298 \u2192 4350); +28 adapters (DeepAgents PR #1126), +15 telemetry (#1087/#1090)",
     "coverageGaps": [],
     "fixes": [],
-    "openPrNotes": []
+    "openPrNotes": [
+      {
+        "pr": 1143,
+        "issue": "CI test failure: go-fast-path.test.ts:188 \u2014 tryGoFastPath returns used:false due to shell subprocess timing in CI. Commented requesting execFileSync mock.",
+        "severity": "medium",
+        "ciStatus": "test-and-build FAILED"
+      },
+      {
+        "pr": 1137,
+        "issue": "CI lint failure: pre-existing Prettier violations (not introduced by this PR). Blocked until #1141 lands. Commented.",
+        "severity": "low",
+        "ciStatus": "lint FAILED \u2014 pre-existing, fixed by #1141"
+      }
+    ]
   },
   "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T03:50:00.000Z",
-  "updatedAt": "2026-03-27T03:50:00.000Z"
+  "lastQaRun": "2026-03-27T21:56:43.000Z",
+  "updatedAt": "2026-03-27T21:56:43.000Z"
 }
