@@ -1,47 +1,105 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Fix P0 hook-breaking bugs (#972, #973), then resume Go kernel wire-up (#955). Hook path must work before Go delegation can ship.",
-    "issues": [972, 973, 955, 957, 964]
+    "goal": "Restore CI baseline (systemic test-and-build failure on all PRs), then resume Go kernel wire-up (#955). P0 hook bugs (#972, #973) are resolved — path to #955 is clear once CI is green.",
+    "issues": [955, 957, 1026, 1031, 1034, 1054]
   },
   "assignments": {
-    "senior": {
-      "issue": [972, 973],
-      "title": "P0: Fix hook deny reason retry metadata (#972) + bundle essentials pack in npm (#973)",
-      "status": "unassigned",
+    "qa": {
+      "issue": null,
+      "title": "Investigate systemic test-and-build CI failure on all open PRs",
+      "status": "needed",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason → Claude Code blocks all tool use). #973 compounds it (essentials pack missing → default-deny on everything). Fix both before resuming #955 Go delegation."
+      "note": "All 8 open PRs fail test-and-build. rust-kernel and lint pass on most. Root cause: likely main-branch regression from recent merges (storage/inspect PRs #1078, #1081). QA agent needs to run pnpm test locally on main and identify the failing test(s)."
+    },
+    "senior": {
+      "issue": [955, 957],
+      "title": "Go kernel wire-up + delegation (#955, #957) — unblocked after CI fix",
+      "status": "blocked-on-ci",
+      "branch": null,
+      "pr": null,
+      "claimedAt": null,
+      "note": "P0s cleared. Resume after CI baseline is restored. Do not open new PRs until test-and-build is green."
     }
   },
   "blockers": [
     {
-      "issue": 972,
-      "description": "Hook deny reason includes '(attempt N/N)' — Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
-    },
-    {
-      "issue": 973,
-      "description": "essentials policy pack not bundled in npm — all hook invocations hit default-deny",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
+      "description": "Systemic test-and-build CI failure across all 8 open PRs",
+      "severity": "P1",
+      "since": "2026-03-27T14:30:00.000Z",
+      "note": "rust-kernel and CodeQL pass. Failure is in TS test-and-build. Likely main-branch regression. QA must diagnose before any PR can merge."
     }
   ],
   "prQueue": {
-    "open": 0,
+    "open": 8,
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
       {
-        "number": 969,
-        "title": "fix(claude-init): write hooks with full binary path (closes #964)",
-        "branch": "agent/kernel-sr-20260325-230535",
-        "status": "merged",
-        "ciStatus": "passed",
-        "mergedAt": "2026-03-26T00:30:00.000Z",
-        "note": "Merged successfully. All CI checks passed."
+        "number": 1117,
+        "title": "fix(site): sync test count 2637→4161",
+        "branch": "agent/site-em-20260327-141017",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail test-and-build:fail",
+        "note": "Site-only. Not kernel squad priority."
+      },
+      {
+        "number": 1109,
+        "title": "feat: OpenCode framework adapter (closes #1054)",
+        "branch": "feat/opencode-adapter-1054",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail CodeQL:fail test-and-build:pass",
+        "note": "test-and-build passes. Lint + CodeQL failures need fix. Closes #1054."
+      },
+      {
+        "number": 1108,
+        "title": "fix(format): prettier violations in storage and inspect (QA)",
+        "branch": "agent/kernel-qa-20260327-125004",
+        "status": "ci-failing",
+        "ciStatus": "lint:pass test-and-build:fail",
+        "note": "Stale QA fix PR — may be superseded. Consider closing."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows (closes #1026)",
+        "branch": "fix/1026-educate-mode-always-allow",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail test-and-build:fail",
+        "note": "Closes real bug #1026. Needs rebase + lint fix."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity, add driver_type (closes #1034)",
+        "branch": "feat/1034-driver-type-sessions",
+        "status": "ci-failing",
+        "ciStatus": "lint:pass test-and-build:fail",
+        "note": "Closes #1034. Lint clean. test-and-build fails — merge base drift."
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "branch": "agent/copilot-test-writer-oss-20260327-053002",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail test-and-build:fail",
+        "note": "Additive test coverage. Needs lint fix + rebase."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent (closes #1031)",
+        "branch": "feat/telemetry-driver-type-1031",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail test-and-build:fail",
+        "note": "Closes #1031. Both lint and test-and-build failing."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId helpers and v5 migration (QA)",
+        "branch": "agent/kernel-qa-20260327-035000",
+        "status": "ci-failing",
+        "ciStatus": "lint:fail test-and-build:fail",
+        "note": "QA report PR — stale, consider closing."
       }
     ]
   },
@@ -53,36 +111,15 @@
     "packages": 18,
     "lastRun": "2026-03-27T02:39:00.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
+    "delta": "unknown — CI test-and-build failing on all open PRs; local main may still be clean",
     "coverageGaps": [],
-    "fixes": [
-      {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
-      }
-    ],
-    "openPrNotes": [
-      {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
-      },
-      {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
-        "status": "needs-format-fix"
-      },
-      {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
-      }
-    ]
+    "fixes": []
   },
-  "lastEmRun": "2026-03-26T09:00:00.000Z",
+  "resolvedBlockers": [
+    { "issue": 972, "resolvedAt": "2026-03-26T00:16:03Z" },
+    { "issue": 973, "resolvedAt": "2026-03-26T00:57:46Z" }
+  ],
+  "lastEmRun": "2026-03-27T14:30:00.000Z",
   "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "updatedAt": "2026-03-27T14:30:00.000Z"
 }

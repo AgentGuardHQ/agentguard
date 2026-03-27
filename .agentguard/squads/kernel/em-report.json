@@ -1,54 +1,93 @@
 {
-  "generatedAt": "2026-03-26T09:00:00.000Z",
+  "generatedAt": "2026-03-27T14:30:00.000Z",
   "identity": "claude-code:opus:kernel:em",
   "runCycle": "3h",
   "health": "yellow",
-  "summary": "Health downgraded to YELLOW. Three new dogfood bugs discovered (#971, #972, #973). #972 is P0 — hook deny reason includes retry metadata text that causes Claude Code to block ALL tool use in governed sessions. #973 compounds it — essentials pack not bundled in npm, so every hook invocation hits default-deny. Sprint reprioritized: fix #972 + #973 first, then resume #955 (Go kernel delegation). PR #969 (closes #964) has merge conflicts — needs rebase. Closed stale EM PR #966.",
+  "summary": "P0 blockers #972 and #973 are CLOSED/COMPLETED — the hook deny reason retry metadata bug and essentials pack bundling issue are both resolved. However, all 8 open PRs are failing CI (test-and-build or lint), indicating a systemic baseline issue on main that needs a QA fix cycle before any PR can merge. PR budget is exceeded (8 open vs max 3), though most PRs are cross-squad. Sprint goal can now advance: with P0s cleared, #955 (Go kernel delegation) is unblocked once CI baseline is restored.",
   "prQueue": {
-    "open": 1,
+    "open": 8,
+    "mergeable": 0,
     "prs": [
       {
-        "number": 969,
-        "title": "fix(claude-init): write hooks with full binary path (closes #964)",
-        "ciStatus": "passed",
-        "mergeState": "CONFLICTING",
-        "note": "CI green but merge conflicts — needs rebase before merge"
+        "number": 1117,
+        "title": "fix(site): sync test count 2637→4161",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Site-only change; lint+test failing — likely merge base drift"
+      },
+      {
+        "number": 1109,
+        "title": "feat: OpenCode framework adapter (closes #1054)",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "pass", "rust-kernel": "pass", "CodeQL": "fail" },
+        "note": "test-and-build passes, but lint and CodeQL failing. Lint fix needed."
+      },
+      {
+        "number": 1108,
+        "title": "fix(format): prettier violations in storage and inspect (QA)",
+        "ciStatus": "failing",
+        "checks": { "lint": "pass", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Lint passes, test-and-build fails — merge base drift since main moved"
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows (closes #1026)",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Both lint and test-and-build failing. Needs rebase."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity format (closes #1034)",
+        "ciStatus": "failing",
+        "checks": { "lint": "pass", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Lint clean, test-and-build fails — merge base drift"
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Lint and test-and-build failing."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent (closes #1031)",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Both lint and test-and-build failing."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId helpers and v5 migration (QA)",
+        "ciStatus": "failing",
+        "checks": { "lint": "fail", "test-and-build": "fail", "rust-kernel": "pass", "CodeQL": "pass" },
+        "note": "Lint and test-and-build failing. QA report PR — stale candidate."
       }
     ]
   },
-  "closedThisCycle": [
-    {
-      "number": 966,
-      "title": "chore(kernel-em): EM cycle report 2026-03-26T07:10Z",
-      "note": "Stale EM report — superseded by current cycle"
-    }
-  ],
+  "closedThisCycle": [],
   "mergedThisCycle": [],
-  "newIssues": [
+  "resolvedBlockers": [
     {
       "number": 972,
-      "title": "Hook deny reason includes '(attempt N/N)' text that Claude Code misinterprets as blocking error",
-      "severity": "P0",
-      "note": "Breaks ALL governed sessions. Deny reason text causes Claude Code to block all tool use. Sprint-blocking."
+      "title": "Hook deny reason includes '(attempt N/N)' text — Claude Code blocks all tool use",
+      "resolvedAt": "2026-03-26T00:16:03Z",
+      "note": "Closed/completed. P0 cleared."
     },
     {
       "number": 973,
-      "title": "claude-init --reset references essentials pack not bundled in npm package",
-      "severity": "P0",
-      "note": "Essentials pack only exists in repo source tree, not npm. Every hook invocation warns 'Pack not found' → default-deny."
-    },
-    {
-      "number": 971,
-      "title": "Hook crash after aguard rename + cross-user queue lock permission",
-      "severity": "P1",
-      "note": "Two dogfood bugs: (1) hook config references old 'agentguard' binary after rename to 'aguard', (2) cross-user queue.lock permission denied on jared box. Bug 1 is kernel, Bug 2 is ops."
+      "title": "claude-init --reset references essentials pack not bundled in npm",
+      "resolvedAt": "2026-03-26T00:57:46Z",
+      "note": "Closed/completed. P0 cleared."
     }
   ],
   "loopGuards": {
     "prBudget": {
-      "open": 1,
+      "open": 8,
       "max": 3,
-      "pass": true
+      "pass": false,
+      "note": "8 open PRs vs max 3 — budget exceeded. Most are cross-squad (adapters, telemetry, storage, site). Kernel squad should not open new PRs until backlog clears."
     },
     "retryLoops": {
       "stuckAgents": 0,
@@ -60,74 +99,66 @@
     }
   },
   "triage": {
-    "p0Issues": 2,
-    "p1Issues": 1,
-    "sprintReprioritized": true,
-    "reprioritizationReason": "Can't ship Go kernel delegation (#955) if the TS hook path itself is broken. #972 + #973 must be fixed first — they affect every npm user running governed sessions.",
-    "newAssignments": [
+    "p0Issues": 0,
+    "p1Issues": 0,
+    "note": "No open P0 or P1 issues found with those labels. Both tracked P0s (#972, #973) are closed.",
+    "sprintUpdate": "P0s resolved — sprint can now progress to #955 (Go kernel delegation) and #957. However, CI must be restored first before any new PR can land.",
+    "recommendedNextActions": [
       {
-        "agent": "senior",
-        "issues": [972, 973],
-        "note": "P0 fast-track: fix deny reason retry text (#972) + bundle essentials pack (#973). Both break the hook integration path."
-      }
-    ],
-    "deferredWork": [
-      {
-        "issues": [955, 957, 964],
-        "note": "Go kernel wire-up — resume after #972/#973 are fixed. PR #969 (closes #964) needs rebase."
-      }
-    ],
-    "notableIssues": [
-      {
-        "number": 965,
-        "note": "Dogfood gap: direct push to master not blocked. Needs investigation but lower priority than #972/#973."
+        "priority": 1,
+        "action": "QA cycle: identify root cause of systemic test-and-build failure across all PRs on main",
+        "note": "All 8 PRs fail test-and-build. Likely a main-branch regression or a dependency change after recent merges. Fix CI baseline before pushing new work."
       },
       {
-        "number": 971,
-        "note": "Two bugs: aguard rename compat (kernel) + queue lock perms (ops). Bug 2 should be escalated to ops."
+        "priority": 2,
+        "action": "Close stale QA report PRs (#1083, possibly #1108)",
+        "note": "QA report PRs accumulate and inflate PR budget. Close stale ones."
+      },
+      {
+        "priority": 3,
+        "action": "Rebase and fix lint on #1104 (educate mode), #1087 (telemetry driverType), #1109 (OpenCode adapter)",
+        "note": "These close real issues and should land once CI baseline is restored."
+      },
+      {
+        "priority": 4,
+        "action": "Resume #955 (Go kernel delegation) after CI is green",
+        "note": "P0 path is clear. This is the sprint goal."
       }
     ]
   },
   "blockers": [
     {
-      "issue": 972,
-      "description": "P0: Hook deny reason retry text breaks Claude Code integration",
-      "since": "2026-03-26"
-    },
-    {
-      "issue": 973,
-      "description": "P0: Essentials pack not in npm → all hooks default-deny",
-      "since": "2026-03-26"
+      "description": "Systemic test-and-build CI failure across all 8 open PRs",
+      "severity": "P1",
+      "since": "2026-03-27",
+      "note": "rust-kernel and CodeQL pass on most PRs — failure is in TS test-and-build job. Likely main-branch regression from recent merges. Needs QA investigation."
     }
   ],
-  "escalations": [
-    {
-      "target": "ops",
-      "issue": 971,
-      "reason": "Bug 2 (cross-user queue.lock permission denied) is an ops/deploy issue — jared workers can't dequeue"
-    }
-  ],
+  "escalations": [],
   "metrics": {
     "prsOpened": 0,
     "prsMerged": 0,
-    "prsClosed": 1,
+    "prsClosed": 0,
     "issuesClosed": 0,
     "governanceDenials": 0,
-    "retries": 0
+    "retries": 0,
+    "p0sResolved": 2
   },
   "testHealth": {
-    "total": 4129,
-    "passed": 4129,
+    "total": 4235,
+    "passed": 4235,
     "failed": 0,
-    "packages": 19,
-    "status": "all_passing"
+    "packages": 18,
+    "status": "all_passing",
+    "lastKnownRun": "2026-03-27T02:39:00.000Z",
+    "note": "Last local run was clean. CI test-and-build failures are on PR branches with older merge bases — main itself may still be clean."
   },
   "escalationRules": {
     "triggered": {
-      "twoPlusFailingCI": false,
+      "twoPlusFailingCI": true,
       "persistentBlocker": false,
       "governanceDenialsExceeded": false
     },
-    "notes": "No CI escalation triggers, but #972 is a P0 production blocker discovered via dogfooding. Health set to YELLOW per severity."
+    "notes": "2+ PRs failing CI → health stays YELLOW. P0 blockers resolved so no director escalation needed. PR budget exceeded but cross-squad context mitigates urgency."
   }
 }
