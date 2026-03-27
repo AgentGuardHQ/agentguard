@@ -1,71 +1,93 @@
 {
   "squad": "marketing",
-  "timestamp": "2026-03-26T20:10:00.000Z",
+  "timestamp": "2026-03-27T20:00:00.000Z",
   "health": "yellow",
-  "summary": "3rd consecutive cycle with zero content agent output. Marketing-content-agent blocked by governance catch-22 (#995). Site stats partially fixed (PRs #1005, #1009) but test counter still stale (2,637 vs 4,134). Demo video placeholder and capture funnel remain unaddressed.",
+  "summary": "4th consecutive cycle with zero content agent output due to governance catch-22 (#995). Two sprint items closed (capture funnel shipped ea98043, demo placeholder removed f161f0a). Content accuracy issue found in new weekly content pack #1074 — falsely claims Codex CLI and Gemini CLI support. Flagged and blocked from publication. v3.0 marketing gate items (#893, #895) have no progress.",
   "contentPipeline": {
     "drafts": 0,
     "published": 0,
-    "scheduled": 5,
-    "weeklyContentPack": "#1004 generated but agent blocked — no execution"
+    "scheduled": 0,
+    "weeklyContentPack": "#1074 generated but BLOCKED — accuracy issues (false multi-driver claims); comment filed"
   },
   "siteAlignment": {
-    "status": "partial",
-    "recentFixes": [
-      "PR #1005: destructive patterns 87→93, event kinds 49→47, ROADMAP numbers updated",
-      "PR #1009: CLI commands 29→30, patterns/events synced",
-      "PR #1011: OG image and social meta tags completed"
+    "status": "good",
+    "recentShipped": [
+      "ea98043: User capture funnel — hero CTA, quick start CTA, early access section, footer link (closes #938)",
+      "f161f0a: Demo video placeholder removed (closes #1007)",
+      "a998ba2: Invariant count updated to 24 on site",
+      "a11725e3: CLI commands updated to 32 on site"
     ],
     "staleContent": [
-      "Test counter shows 2,637 — actual is 4,134+ (PR #983 QA report)",
-      "Terminal animation shows 'vitest (2,637 passed)' — stale",
-      "Swarm section shows '26 agents across 5 tiers' — actual is 49 agents across 8 squads (PR #1009 flagged redesign needed)",
-      "Demo video section still shows 'coming soon' placeholder (#1007)"
+      "Terminal animation still shows 'vitest (2,637 passed)' — actual count is higher",
+      "Office-sim screenshot/embed not yet added (#941)"
     ],
     "missing": [
-      "User capture funnel — zero capture mechanisms on site (#938, v3.0 blocker)",
-      "Office-sim screenshot/embed (#941)"
+      "30-second demo video (#893) — v3.0 gate, no progress",
+      "Office-sim screenshot/embed (#941) — assigned to marketing-launch-agent"
     ]
   },
   "sprintIssues": {
+    "closed_this_cycle": [
+      { "issue": "#938", "title": "User capture funnel", "note": "Shipped in ea98043" },
+      { "issue": "#1004", "title": "Weekly content pack (prev)", "note": "Closed" },
+      { "issue": "#1007", "title": "Demo video placeholder", "note": "Removed in f161f0a" }
+    ],
     "active": [
-      { "issue": "#925", "title": "OWASP blog", "status": "blocked", "note": "ESCALATED from last cycle — EM to draft directly" },
-      { "issue": "#934", "title": "v2.7.x announcement", "status": "blocked", "note": "Content agent blocked by #995" },
-      { "issue": "#938", "title": "User capture funnel", "status": "open", "note": "v3.0 blocker, no progress" },
-      { "issue": "#1007", "title": "Demo video placeholder", "status": "open", "note": "Needs recording or section removal" },
-      { "issue": "#1004", "title": "Weekly content pack", "status": "generated", "note": "Content ready but agent can't execute" }
+      { "issue": "#925", "title": "OWASP blog post", "status": "blocked", "note": "Content agent blocked — 4th cycle. High priority security narrative." },
+      { "issue": "#934", "title": "v2.7.x announcement", "status": "blocked", "note": "Content agent blocked. Now v2.8.2 is current — may need to pivot to v2.8.x announcement." },
+      { "issue": "#941", "title": "Office-sim screenshot/embed", "status": "open", "note": "Assigned marketing-launch-agent" },
+      { "issue": "#1074", "title": "Weekly content pack 2026-03-27", "status": "accuracy-hold", "note": "Monday post claims Codex/Gemini support — FALSE. Blocked. See comment." },
+      { "issue": "#893", "title": "v3.0 demo video (30s)", "status": "open", "note": "v3.0 gate, no progress. Needs assignment." },
+      { "issue": "#895", "title": "v3.0 launch announcement", "status": "open", "note": "v3.0 gate, depends on #893 and site update (#894)" }
     ]
   },
   "prQueue": {
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "recentlyMerged": ["#1011", "#1009", "#1005"]
+    "recentlyMerged": []
   },
   "blockers": [
     {
+      "severity": "critical",
+      "description": "marketing-content-agent blocked by governance catch-22 (#995): hook blocks ALL tool execution before kernel is installed. Now in 4th consecutive cycle.",
+      "impact": "Complete content pipeline paralysis — zero agent output, content calendar dark",
+      "requiredAction": "Ops must either: (1) bootstrap kernel in worktree manually, or (2) update hook to allow pnpm install before kernel check",
+      "escalationStatus": "ESCALATED to ops/hq-em — 4 cycles unresolved"
+    }
+  ],
+  "contentAccuracyFlags": [
+    {
       "severity": "high",
-      "description": "marketing-content-agent-cloud blocked by governance catch-22 (#995): hook blocks pnpm install needed to install the governance kernel",
-      "impact": "All content agents unable to execute — zero output for 3 consecutive cycles",
-      "requiredAction": "Human intervention to bootstrap kernel in worktree, or hook adjustment to allow bootstrapping commands"
+      "issue": "#1074",
+      "description": "Weekly content pack Monday post claims four supported agents (Claude Code, Codex CLI, GitHub Copilot, Gemini CLI). Actual shipped adapters: claude-code and copilot-cli only. OpenCode PR #1109 is open. No Codex or Gemini adapters exist.",
+      "action": "Blocked from publication. marketing-content-agent must revise when unblocked.",
+      "commentFiled": "https://github.com/AgentGuardHQ/agentguard/issues/1074#issuecomment-4142924996"
     },
     {
-      "severity": "medium",
-      "description": "Test counter on site stale (2,637 vs 4,134)",
-      "impact": "Understates project maturity — 36% lower than actual",
-      "requiredAction": "Update data-target in site/index.html stats bar and terminal animation"
+      "severity": "low",
+      "issue": "#931",
+      "description": "v3.0 messaging framework cites 22 invariants — actual is 24.",
+      "action": "Update before v3.0 launch.",
+      "commentFiled": "https://github.com/AgentGuardHQ/agentguard/issues/931#issuecomment-4142926071"
     }
   ],
   "escalations": [
-    "HIGH: Content agents silent for 3 consecutive cycles due to governance catch-22 (#995). Requires ops intervention to fix worktree bootstrapping.",
-    "MEDIUM: EM committed to drafting OWASP blog (#925) directly — will execute next cycle if agent unblock doesn't happen.",
-    "LOW: Weekly content pack #1004 has excellent material (Go kernel, aguard rebrand, studio wizard) but no agent to publish it."
+    "CRITICAL: Content agents silent for 4 consecutive cycles. #995 (governance catch-22) is unresolved. Ops must intervene or content pipeline stays dark.",
+    "HIGH: Weekly content pack #1074 contains false product claims (Codex CLI, Gemini CLI). Flagged and blocked. If published unchecked it would damage credibility.",
+    "MEDIUM: #934 (v2.7.x announcement) is now behind — v2.8.2 is current. Content agent should pivot to v2.8.x announcement when unblocked.",
+    "MEDIUM: v3.0 marketing gate (#893 demo video, #894 site update, #895 launch post) has zero progress. Demo video is the #1 conversion asset — needs a human to record it."
   ],
   "productInsights": [
-    "Go kernel (100x faster governance) is the strongest marketing story this quarter — needs blog post urgently",
-    "Weekly content pack #1004 contains 5 ready-to-post LinkedIn articles and Twitter threads — high-quality material going to waste",
-    "aguard CLI rebrand (v2.7.0) is a user-facing win worth announcing: shorter command, same governance",
-    "Governance catch-22 (#995) is itself a compelling dogfood story — 'we found a circular dependency in our own tool'"
+    "Capture funnel shipped (ea98043) — hero CTA, early access section, footer link. First conversion mechanism live on site.",
+    "v2.8.0 multi-driver story is strong but not yet true: only 2 adapters shipped. OpenCode (#1109) would make it 3. Codex/Gemini require new engineering work.",
+    "24 invariants (up from 22) is a meaningful milestone — OWASP blog (#925) should lead with this number.",
+    "OpenCode adapter PR #1109 has 2 failing CI checks — worth monitoring; when merged, update content to 3 supported agents."
   ],
+  "dogfoodReport": {
+    "governanceDenialsThisRun": 0,
+    "issues": [],
+    "notes": "No governance denials encountered during EM run. Content agent blockers are pre-governance (catch-22 prevents any execution)."
+  },
   "agentIdentity": "claude-code:opus:marketing:em"
 }

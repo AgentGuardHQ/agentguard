@@ -1,20 +1,35 @@
 {
   "squad": "marketing",
   "sprint": {
-    "goal": "Unblock content agents and publish Go kernel launch content",
-    "issues": ["#925", "#934", "#938", "#1004", "#1007"]
+    "goal": "Fix content accuracy, publish Go kernel story, advance v3.0 marketing gate",
+    "issues": ["#925", "#934", "#941", "#1074", "#893", "#895"]
   },
   "assignments": {
-    "marketing-launch-agent": ["#1007", "#941"],
-    "marketing-content-agent": ["#925", "#934", "#1004"],
-    "em-direct": ["#925"]
+    "marketing-launch-agent": ["#941", "#893"],
+    "marketing-content-agent": ["#925", "#934", "#1074"],
+    "em-direct": []
   },
   "blockers": [
     {
       "issue": "#995",
-      "description": "Governance catch-22 blocks all content agents — pnpm install blocked by hook before kernel exists",
+      "description": "Governance catch-22 blocks all content agents — pnpm install blocked by hook before kernel exists. 4th consecutive cycle with zero agent output.",
       "owner": "ops/hq-em",
-      "severity": "high"
+      "severity": "critical",
+      "escalatedAt": "2026-03-27T20:00:00.000Z"
+    }
+  ],
+  "contentAccuracyFlags": [
+    {
+      "issue": "#1074",
+      "description": "Weekly content pack claims Codex CLI and Gemini CLI support — false. Only claude-code and copilot-cli adapters exist. OpenCode PR #1109 is open, not merged.",
+      "action": "Do not publish Monday post until corrected.",
+      "flaggedAt": "2026-03-27T20:00:00.000Z"
+    },
+    {
+      "issue": "#931",
+      "description": "Messaging framework claims 22 invariants — actual is 24.",
+      "action": "Update before v3.0 launch.",
+      "flaggedAt": "2026-03-27T20:00:00.000Z"
     }
   ],
   "prQueue": {
@@ -22,5 +37,5 @@
     "reviewed": 0,
     "mergeable": 0
   },
-  "updatedAt": "2026-03-26T20:10:00.000Z"
+  "updatedAt": "2026-03-27T20:00:00.000Z"
 }
