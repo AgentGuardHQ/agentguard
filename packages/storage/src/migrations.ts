@@ -150,6 +150,29 @@ const MIGRATIONS: readonly Migration[] = [
       }
     },
   },
+
+  {
+    version: 6,
+    description:
+      'Add driver_type column to sessions table; backfill from composite agent_id values',
+    up(db) {
+      db.exec('ALTER TABLE sessions ADD COLUMN driver_type TEXT');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_driver_type ON sessions (driver_type)');
+
+      // Backfill driver_type by parsing composite agent_id values (format: <driver>:<agentName>)
+      const rows = db
+        .prepare(`SELECT id, agent_id FROM sessions WHERE agent_id LIKE '%:%'`)
+        .all() as Array<{ id: string; agent_id: string }>;
+
+      const update = db.prepare('UPDATE sessions SET driver_type = ? WHERE id = ?');
+      for (const row of rows) {
+        const colonIdx = row.agent_id.indexOf(':');
+        if (colonIdx > 0) {
+          update.run(row.agent_id.slice(0, colonIdx), row.id);
+        }
+      }
+    },
+  },
 ];
 
 /**
