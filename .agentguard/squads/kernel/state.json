@@ -1,45 +1,31 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Fix P0 hook-breaking bugs (#972, #973), then resume Go kernel wire-up (#955). Hook path must work before Go delegation can ship.",
-    "issues": [
-      972,
-      973,
-      955,
-      957,
-      964
-    ]
+    "goal": "Fix governance startup in worktrees (#1118 via --no-sqlite flag), land educate mode fix (PR #1104), begin false-positive matcher scope narrowing (#1119)",
+    "issues": [1118, 1026, 1119, 1086]
   },
   "assignments": {
     "senior": {
-      "issue": [
-        972,
-        973
-      ],
-      "title": "P0: Fix hook deny reason retry metadata (#972) + bundle essentials pack in npm (#973)",
-      "status": "unassigned",
+      "issue": [1118],
+      "title": "P0: Add --no-sqlite flag to agentguard guard for fail-open in worktrees without SQLite bindings (#1118)",
+      "status": "assigned",
       "branch": null,
       "pr": null,
-      "claimedAt": null,
-      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason \u2192 Claude Code blocks all tool use). #973 compounds it (essentials pack missing \u2192 default-deny on everything). Fix both before resuming #955 Go delegation."
+      "claimedAt": "2026-03-27T21:10:00.000Z",
+      "note": "P0: governance runtime cannot start in scheduler-spawned worktrees due to missing better-sqlite3 bindings (Node v22.22.1 / ABI v127). Recommended fix: add --no-sqlite flag to agentguard guard that bypasses SQLite storage and runs governance in-memory only. This enables self-governance for worktree agents. See issue #1118 for full context and suggested approaches."
     }
   },
   "blockers": [
     {
-      "issue": 972,
-      "description": "Hook deny reason includes '(attempt N/N)' \u2014 Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
+      "issue": 1118,
+      "description": "agentguard guard fails with SQLite bindings error in scheduler-spawned worktrees — governance runtime cannot start. All worktree agents unable to self-govern.",
       "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
-    },
-    {
-      "issue": 973,
-      "description": "essentials policy pack not bundled in npm \u2014 all hook invocations hit default-deny",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
+      "since": "2026-03-27T14:19:00.000Z",
+      "assignedAt": "2026-03-27T21:10:00.000Z"
     }
   ],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
@@ -51,6 +37,14 @@
         "ciStatus": "passed",
         "mergedAt": "2026-03-26T00:30:00.000Z",
         "note": "Merged successfully. All CI checks passed."
+      },
+      {
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence (closes #1026)",
+        "branch": "fix/1026-educate-mode-always-allow",
+        "status": "open",
+        "ciStatus": "pending (rebased + format:fix pushed 2026-03-27T21:10Z)",
+        "note": "Rebased on main. Format:fix applied to 5 src files. Awaiting new CI run — should be green. Previously failing: old base (Prettier violations + pre-existing go-fast-path failures)."
       }
     ]
   },
@@ -62,12 +56,21 @@
     "packages": 18,
     "lastRun": "2026-03-27T03:50:00.000Z",
     "status": "all_passing",
-    "delta": "+63 tests since last run (4235 \u2192 4298); +25 new storage tests this cycle",
+    "delta": "stable since last QA run",
     "coverageGaps": [],
     "fixes": [],
-    "openPrNotes": []
+    "openPrNotes": [
+      "PR #1104 adapter tests: 248 passing locally. CLI tests: 818 passing locally. CI run pending."
+    ]
   },
-  "lastEmRun": "2026-03-26T09:00:00.000Z",
+  "previousSprintClosed": [
+    {"issue": 972, "title": "Hook deny reason retry metadata"},
+    {"issue": 973, "title": "Essentials pack not bundled in npm"},
+    {"issue": 955, "title": "Go kernel not invoked by claude-hook"},
+    {"issue": 957, "title": "Go kernel pack/YAML resolution"},
+    {"issue": 964, "title": "Full binary path in claude-init"}
+  ],
+  "lastEmRun": "2026-03-27T21:10:00.000Z",
   "lastQaRun": "2026-03-27T03:50:00.000Z",
-  "updatedAt": "2026-03-27T03:50:00.000Z"
+  "updatedAt": "2026-03-27T21:10:00.000Z"
 }
