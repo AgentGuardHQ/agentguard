@@ -890,6 +890,18 @@ async function main() {
       break;
     }
 
+    case 'opencode-init': {
+      const { openCodeInit } = await import('./commands/opencode-init.js');
+      await openCodeInit(args.slice(1));
+      break;
+    }
+
+    case 'opencode-hook': {
+      const { openCodeHook } = await import('./commands/opencode-hook.js');
+      await openCodeHook(args[1], args.slice(2)); // 'before' or 'after', then remaining flags
+      break;
+    }
+
     case 'auto-setup': {
       if (wantsHelp) {
         console.log(formatHelp(COMMANDS['auto-setup']));
@@ -1043,10 +1055,13 @@ function printHelp(): void {
     agentguard claude-init                    Set up Claude Code hook integration
     agentguard copilot-init                   Set up Copilot CLI hook integration
     agentguard copilot-init --global          Install hooks globally (~/.copilot/hooks/)
+    agentguard opencode-init                  Set up OpenCode hook integration
+    agentguard opencode-init --global         Install plugin globally (~/.opencode/plugins/)
     agentguard auto-setup                     Auto-detect and configure hooks
     agentguard auto-setup --dry-run           Detect without installing
     agentguard claude-hook                    Claude Code hook handler (internal)
     agentguard copilot-hook                   Copilot CLI hook handler (internal)
+    agentguard opencode-hook                  OpenCode hook handler (internal)
     agentguard status                         Check safety readiness (hooks, policy, dirs)
     agentguard status --quiet                 Machine-readable check (exit code only)
     agentguard demo                           See AgentGuard in action (interactive showcase)
