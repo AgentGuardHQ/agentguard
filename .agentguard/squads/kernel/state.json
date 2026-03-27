@@ -1,88 +1,126 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Fix P0 hook-breaking bugs (#972, #973), then resume Go kernel wire-up (#955). Hook path must work before Go delegation can ship.",
-    "issues": [972, 973, 955, 957, 964]
+    "goal": "Resume Go kernel wire-up (#955, #957). P0 blockers #972/#973 resolved — hook path is unblocked. Clear the PR backlog (overlapping agent PRs need consolidation).",
+    "issues": [955, 957, 1026, 1031, 1034]
   },
   "assignments": {
     "senior": {
-      "issue": [972, 973],
-      "title": "P0: Fix hook deny reason retry metadata (#972) + bundle essentials pack in npm (#973)",
+      "issue": [955, 957],
+      "title": "Go kernel wire-up: Phase 1 delegation (#955) + companion (#957)",
       "status": "unassigned",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "P0 fast-track: #972 breaks all governed sessions (retry text in deny reason → Claude Code blocks all tool use). #973 compounds it (essentials pack missing → default-deny on everything). Fix both before resuming #955 Go delegation."
+      "note": "P0 path cleared. Resume Go kernel delegation. #955 is the critical path for v3.0 / KE-2."
     }
   },
-  "blockers": [
-    {
-      "issue": 972,
-      "description": "Hook deny reason includes '(attempt N/N)' — Claude Code misinterprets as blocking error, killing all tool use in governed sessions",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
-    },
-    {
-      "issue": 973,
-      "description": "essentials policy pack not bundled in npm — all hook invocations hit default-deny",
-      "severity": "P0",
-      "since": "2026-03-26T00:00:00.000Z"
-    }
-  ],
+  "blockers": [],
   "prQueue": {
-    "open": 0,
-    "reviewed": 0,
+    "open": 10,
+    "reviewed": 10,
     "mergeable": 0,
     "prs": [
       {
-        "number": 969,
-        "title": "fix(claude-init): write hooks with full binary path (closes #964)",
-        "branch": "agent/kernel-sr-20260325-230535",
-        "status": "merged",
-        "ciStatus": "passed",
-        "mergedAt": "2026-03-26T00:30:00.000Z",
-        "note": "Merged successfully. All CI checks passed."
+        "number": 1104,
+        "title": "fix(adapters): educate mode always allows regardless of suggestion presence",
+        "branch": "fix/1026-educate-mode-always-allow",
+        "status": "ci-failing",
+        "ciStatus": "failed",
+        "checks": { "lint": "fail", "test-and-build": "fail" },
+        "note": "Closes #1026. Needs lint + test fix."
+      },
+      {
+        "number": 1098,
+        "title": "feat(storage): parse driver:agent identity format, add driver_type to sessions",
+        "branch": "feat/1034-driver-type-sessions",
+        "status": "near-green",
+        "ciStatus": "lint-only-fail",
+        "checks": { "lint": "fail", "test-and-build": "pass" },
+        "note": "Closes #1034. Only Prettier failing. A format fix unblocks merge."
+      },
+      {
+        "number": 1095,
+        "title": "chore(kernel-qa): QA cycle + Prettier fix 2026-03-27T06:50Z",
+        "branch": "agent/kernel-qa-20260327-065002",
+        "status": "ci-failing",
+        "ciStatus": "failed",
+        "checks": { "lint": "pass", "test-and-build": "fail" },
+        "note": "QA report. test-and-build failing. Overlaps #1094 — one should be closed."
+      },
+      {
+        "number": 1094,
+        "title": "chore: fix Prettier formatting violations to unblock CI",
+        "branch": "fix/prettier-claude-hook-1050",
+        "status": "ci-failing",
+        "ciStatus": "failed",
+        "checks": { "lint": "pass", "test-and-build": "fail" },
+        "note": "Closes #1050. Overlaps #1095 — one should be closed."
+      },
+      {
+        "number": 1092,
+        "title": "docs: sync documentation with codebase state (2026-03-27)",
+        "branch": "maintenance/docs-sync-20260327",
+        "status": "needs-review",
+        "ciStatus": "docs-only",
+        "note": "Docs-only. Overlaps #1091. Owner review needed."
+      },
+      {
+        "number": 1091,
+        "title": "docs: sync documentation with codebase",
+        "branch": "agent/copilot-docs-sync-20260327-060003",
+        "status": "needs-review",
+        "ciStatus": "docs-only",
+        "note": "Docs-only. Overlaps #1092. Owner review needed."
+      },
+      {
+        "number": 1090,
+        "title": "test: add tests for telemetry/runtimeLogger",
+        "branch": "agent/copilot-test-writer-oss-20260327-053002",
+        "status": "ci-pending",
+        "ciStatus": "pending",
+        "note": "+16 tests. Await CI."
+      },
+      {
+        "number": 1089,
+        "title": "chore(roadmap): triage backlog",
+        "branch": "agent/backlog-hygiene--roadmap-triage-agent-20260327-051502",
+        "status": "ci-failing",
+        "ciStatus": "failed",
+        "checks": { "lint": "fail", "test-and-build": "fail" },
+        "note": "Roadmap triage. Stale base — needs rebase."
+      },
+      {
+        "number": 1087,
+        "title": "feat(telemetry): add driverType field to AgentEvent wire format",
+        "branch": "feat/telemetry-driver-type-1031",
+        "status": "ci-pending",
+        "ciStatus": "pending",
+        "note": "Closes #1031. Await CI. Review alongside #1098 for consistency."
+      },
+      {
+        "number": 1083,
+        "title": "test(storage): add coverage for agentId, agent helpers, v5 migration",
+        "branch": "agent/kernel-qa-20260327-035000",
+        "status": "ci-failing",
+        "ciStatus": "failed",
+        "checks": { "lint": "fail", "test-and-build": "fail" },
+        "note": "+63 tests. Stale base — needs rebase."
       }
     ]
   },
   "health": "yellow",
+  "healthReason": "P0s resolved but PR count bloated (10 open vs budget 3); multiple CI failures from stale bases and overlapping agent PRs",
   "testHealth": {
-    "total": 4235,
-    "passed": 4235,
+    "total": 4273,
+    "passed": 4273,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-27T02:39:00.000Z",
+    "lastRun": "2026-03-27T06:50:00.000Z",
     "status": "all_passing",
-    "delta": "+101 tests since last run (4134 → 4235)",
-    "coverageGaps": [],
-    "fixes": [
-      {
-        "file": "packages/kernel/tests/agentguard-engine.test.ts",
-        "note": "Updated invariant count assertion 23→24 after no-verify-bypass was added as 24th default invariant. PR #1028 existed but had lint/format failures; this QA run also fixed the pre-existing Prettier regression in claude-hook.ts."
-      }
-    ],
-    "openPrNotes": [
-      {
-        "pr": 1028,
-        "title": "fix(kernel): update invariant count assertion 23→24 after no-verify-bypass",
-        "issue": "CI failing: lint (pnpm format) + test-and-build. Same fix as this QA cycle's commit. Consider closing in favor of this PR.",
-        "status": "needs-attention"
-      },
-      {
-        "pr": 1032,
-        "title": "fix(invariants): detect credential file writes via shell commands",
-        "issue": "CI failing: lint (pnpm format). Has tests. Format fix needed.",
-        "status": "needs-format-fix"
-      },
-      {
-        "pr": 1035,
-        "title": "chore(kernel-qa): QA cycle report 2026-03-27T01:38Z + fix prettier regression",
-        "issue": "Old QA report, superseded by this run.",
-        "status": "stale"
-      }
-    ]
+    "delta": "+144 tests since last EM run (4129 → 4273)"
   },
-  "lastEmRun": "2026-03-26T09:00:00.000Z",
-  "lastQaRun": "2026-03-27T02:39:00.000Z",
-  "updatedAt": "2026-03-27T02:39:00.000Z"
+  "lastEmRun": "2026-03-27T11:00:00.000Z",
+  "lastQaRun": "2026-03-27T06:50:00.000Z",
+  "updatedAt": "2026-03-27T11:00:00.000Z"
 }
