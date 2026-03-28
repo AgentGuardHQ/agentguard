@@ -2,27 +2,37 @@
   "squad": "kernel",
   "sprint": {
     "goal": "Reduce false-positive governance denials blocking swarm agents: fix agent-identity-bridge chicken-and-egg (#1182) + add safe-subshell allowlist for $(date ...) false positive (#1139).",
-    "issues": [1182, 1139]
+    "issues": [1182, 1139],
+    "status": "STALLED",
+    "blockedBy": "kernel-sr agents dead (swarm P0 #1186) — requeue needed"
   },
   "assignments": {
     "senior": {
       "issue": [1182, 1139],
       "title": "Fix false-positive governance denials: agent-identity invariant + command scanner safe-subshell allowlist",
-      "status": "ready",
+      "status": "blocked",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "#1182 is highest priority (P1) — blocks ALL scheduled agents from setting persona identity. Invariant fires on writes to .agentguard/persona.env via write-persona.sh. Fix: exempt agent-identity bootstrap path in no-governance-self-modification invariant. #1139 is P2 — command scanner in packages/matchers/src/command-scanner.ts over-matches $(date +format) as dangerous shell expansion. Fix: add read-only subshell pattern allowlist."
+      "note": "Agents kernel-sr-3130733 and kernel-sr-3169888 dead since ~01:35 UTC March 27 (28h+). No commits, no live processes. Must be requeued by ops before sprint resumes. #1182 is highest priority (P1) — blocks ALL scheduled agents from setting persona identity. Invariant fires on writes to .agentguard/persona.env via write-persona.sh. Fix: exempt agent-identity bootstrap path in no-governance-self-modification invariant. #1139 is P2 — command scanner in packages/matchers/src/command-scanner.ts over-matches $(date +format) as dangerous shell expansion. Fix: add read-only subshell pattern allowlist."
     }
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "id": "kernel-sr-agents-dead",
+      "description": "Both kernel-sr worktrees (kernel-sr-3130733, kernel-sr-3169888) dead 28h+. Sprint stalled. Escalated to director.",
+      "firstSeenAt": "2026-03-27T18:05:00.000Z",
+      "runsSinceFirstSeen": 2,
+      "escalated": true
+    }
+  ],
   "prQueue": {
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
     "prs": []
   },
-  "health": "green",
+  "health": "yellow",
   "testHealth": {
     "total": 4394,
     "passed": 4394,
@@ -75,7 +85,7 @@
     { "issue": 1144, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
     { "issue": 1119, "pr": 1153, "mergedAt": "2026-03-28T05:00:00.000Z", "note": "Merged after rebase on main" }
   ],
-  "lastEmRun": "2026-03-28T06:10:00.000Z",
+  "lastEmRun": "2026-03-28T09:15:00.000Z",
   "lastQaRun": "2026-03-28T06:50:00.000Z",
-  "updatedAt": "2026-03-28T06:50:00.000Z"
+  "updatedAt": "2026-03-28T09:15:00.000Z"
 }
