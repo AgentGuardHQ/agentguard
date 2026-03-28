@@ -1,30 +1,39 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Reduce false-positive governance denials blocking swarm agents: #1209 (MCP prefix match) → #1202 (KE-2 AAB normalization — strip rtk/time/timeout prefixes) → #1208 (heredoc false positive — PR #1238 in review, needs rebase) → #1139 ($(date) command scanner allowlist).",
-    "issues": [1209, 1202, 1208, 1139]
+    "goal": "Reduce false-positive governance denials blocking swarm agents: #1202 (KE-2 AAB normalization — strip rtk/time/timeout prefixes) → #1208 (heredoc false positive — PR #1238 needs rebase) → #1139 ($(date) command scanner allowlist).",
+    "issues": [1202, 1208, 1139]
   },
   "assignments": {
     "senior": {
-      "issue": [1209, 1202, 1139],
-      "title": "Fix AAB normalization gap + MCP prefix match + $(date) scanner",
+      "issue": [1202, 1139],
+      "title": "KE-2 AAB normalization (flagship) + $(date) scanner allowlist",
       "status": "ready",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "Sequence: #1209 first (1h warm-up — MCP exact-match → startsWith in matchers/policy). Then #1202 flagship (KE-2: strip rtk/time/timeout prefixes in aab.ts before pattern matching; emit UnknownActionType WARNING event; audit tool-action-map.json). Then #1139 ($(date +format) safe-subshell allowlist in packages/matchers/src/command-scanner.ts). Issue #1208 now handled by copilot-cli via PR #1238 — do NOT duplicate work."
+      "note": "URGENT: #1202 unstarted for 3 EM cycles. Must open branch this cycle or sprint re-scopes. Sequence: #1202 first (flagship — strip rtk/time/timeout prefixes in aab.ts, emit UnknownActionType WARNING, audit tool-action-map.json). Then #1139 ($(date +format) safe-subshell allowlist in command-scanner.ts). Issue #1209 is DONE (PR #1243 merged 17:56Z)."
     },
     "copilot-cli": {
       "issue": [1208],
       "title": "Rebase PR #1238 — strip heredoc body before governance path scan",
       "status": "needs-rebase",
-      "branch": "unknown",
+      "branch": "fix/heredoc-governance-self-modification-false-positive",
       "pr": 1238,
       "claimedAt": "2026-03-28T15:00:00.000Z",
-      "note": "PR #1238 CI 6/6 green. Core fix correct. BLOCKER: branch behind main — diff includes stale HQ state files (.agentguard/squads/hq/* and swarm-state.json). Must rebase on current main to clear spurious diffs before merge eligible."
+      "note": "PR #1238 CI 6/6 green. Core fix correct. BLOCKER: branch behind main (main at fee7a45 after #1243 merged). Must rebase on current main to clear merge:failed label and remove stale HQ state file diffs. This is cycle 2 of rebase blocker — must be done this cycle."
     }
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "id": "ke2-unstarted",
+      "issue": 1202,
+      "description": "KE-2 AAB normalization unstarted for 3 EM cycles. Escalated to architect. If no branch by next cycle → sprint re-scope.",
+      "cycles": 3,
+      "escalatedTo": "architect",
+      "since": "2026-03-28T17:30:00.000Z"
+    }
+  ],
   "prQueue": {
     "open": 1,
     "reviewed": 0,
@@ -33,10 +42,11 @@
       {
         "number": 1238,
         "title": "fix(invariants): strip heredoc body before governance path scan",
-        "ci": "6/6 green",
+        "ci": "6/6 green (original run)",
+        "labels": ["merge:failed", "needs:careful-review"],
         "closesIssue": 1208,
         "status": "needs-rebase",
-        "note": "Core fix correct: stripHeredocBody() isolates command header before invariant scan. 9 tests (5 unit + 4 integration). BLOCKER: stale branch base includes HQ state file regressions. Needs rebase before merge.",
+        "note": "Core fix correct: stripHeredocBody() isolates command header before invariant scan. 9 tests (5 unit + 4 integration). BLOCKER: branch behind main — main advanced to fee7a45 after #1243 merged. Stale diffs include .agentguard/squads/hq/* and swarm-state.json. Rebase must happen this cycle.",
         "readyToMerge": false
       }
     ]
@@ -78,11 +88,6 @@
         "location": "packages/kernel/tests/aab.test.ts"
       },
       {
-        "issue": 1209,
-        "description": "MCP server name prefix matching not tested — exact-match only",
-        "location": "packages/matchers/tests/policy-matcher.test.ts"
-      },
-      {
         "issue": 1139,
         "description": "$(date +format) blocking source not confirmed — may be AI safety layer or command-scanner.ts. Senior to locate in #1139 investigation.",
         "location": "packages/matchers/src/command-scanner.ts"
@@ -98,9 +103,10 @@
     { "issue": 1148, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
     { "issue": 1144, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
     { "issue": 1119, "pr": 1153, "mergedAt": "2026-03-28T05:00:00.000Z", "note": "Merged after rebase on main" },
-    { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z", "note": "persona.env operational exemption in no-governance-self-modification invariant" }
+    { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z", "note": "persona.env operational exemption in no-governance-self-modification invariant" },
+    { "issue": 1209, "pr": 1243, "mergedAt": "2026-03-28T17:56:54Z", "note": "Copilot CLI MCP tool naming fixed in AAB normalizeIntent — github-mcp-server-* tools now normalize to mcp.call" }
   ],
-  "lastEmRun": "2026-03-28T20:30:00.000Z",
+  "lastEmRun": "2026-03-28T23:30:00.000Z",
   "lastQaRun": "2026-03-28T06:50:00.000Z",
-  "updatedAt": "2026-03-28T20:30:00.000Z"
+  "updatedAt": "2026-03-28T23:30:00.000Z"
 }

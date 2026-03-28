@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-03-28T20:30:00.000Z",
+  "generatedAt": "2026-03-28T23:30:00.000Z",
   "identity": "claude-code:opus:kernel:em",
   "runCycle": "3h",
   "health": "yellow",
-  "summary": "20:30Z cycle. Progress detected since 17:30Z: copilot-cli opened PR #1238 (fix #1208 heredoc false positive) — CI 6/6 green, code correct, BUT branch behind main with stale HQ state file regressions in diff. Needs rebase before merge. Prior EM report PR #1232 confirmed merged. Flagship #1202 (AAB normalization) and #1209 (MCP prefix) still unstarted. #1186 P0 swarm health enters 5th consecutive EM cycle unresolved — human intervention still required.",
+  "summary": "23:30Z cycle. Significant sprint progress: #1209 DONE — PR #1243 merged 17:56Z (Copilot CLI MCP tool naming fixed in AAB normalizeIntent). Sprint now has 3 open issues. PR #1238 (heredoc fix, closes #1208) has 6/6 green CI but is labeled merge:failed — branch behind main after #1243 merged. Copilot-cli must rebase this cycle. KE-2 (#1202) flagship remains unstarted across 3+ EM cycles — escalating to architect with sprint-rescopewarning for next cycle. #1139 also unstarted.",
   "prQueue": {
     "open": 1,
     "prs": [
@@ -11,29 +11,33 @@
         "number": 1238,
         "title": "fix(invariants): strip heredoc body before governance path scan",
         "closesIssue": 1208,
-        "ci": "6/6 green",
+        "ci": "6/6 green (original run at 14:56-14:59Z: CodeQL, test-and-build, bench, lint, analyze, rust-kernel)",
+        "labels": ["merge:failed", "needs:careful-review"],
         "status": "needs-rebase",
         "readyToMerge": false,
-        "note": "Core fix: stripHeredocBody() extracts command header before governance path scan in no-governance-self-modification invariant. 9 tests. BLOCKER: stale branch base introduces spurious diffs to .agentguard/squads/hq/em-report.json, .agentguard/squads/hq/state.json, swarm-state.json (regressions to older state). copilot-cli must rebase on main HEAD to clear these before merge."
+        "note": "Core fix is correct: stripHeredocBody() extracts command header before governance path scan. 9 tests (5 unit + 4 integration). BLOCKER: branch base at c05b1bd — main advanced to fee7a45 after #1243 merged. Stale diffs include HQ state files. copilot-cli must rebase on main HEAD this cycle to clear merge:failed label."
       }
     ]
   },
-  "mergedThisCycle": [],
-  "closedThisCycle": [
+  "mergedThisCycle": [
     {
-      "number": 1230,
-      "closedAs": "superseded",
-      "closedAt": "2026-03-28T12:19:04Z",
-      "note": "Confirmed closed (by prior EM cycle). Superseded by #1232 (merged)."
+      "number": 1243,
+      "title": "fix(kernel): detect Copilot CLI MCP tool naming in AAB normalizeIntent",
+      "closesIssue": 1209,
+      "mergedAt": "2026-03-28T17:56:54Z",
+      "mergedBy": "jpleva91",
+      "additions": 68,
+      "changedFiles": 2,
+      "note": "Copilot CLI MCP tools (e.g. github-mcp-server-actions_list) now normalized to mcp.call in AAB. Detection heuristic: unknown tool with hyphens + underscore-delimited final segment. Server name extracted from prefix."
     }
   ],
+  "closedThisCycle": [],
   "loopGuards": {
     "prBudget": {
       "kernelOpen": 1,
-      "repoOpen": 3,
       "max": 3,
       "pass": true,
-      "note": "1 kernel PR open (#1238). Repo total 3 (#1238 kernel, #1237 HQ EM report, #1233 product site). Within budget."
+      "note": "1 kernel PR open (#1238). Well within 3-PR budget."
     },
     "retryLoops": {
       "stuckAgents": 0,
@@ -41,55 +45,46 @@
     },
     "blastRadius": {
       "withinLimits": true,
-      "pass": true
+      "pass": true,
+      "note": "PR #1238: 2 files, ~103 lines (Tier C limit: 5 files, 300 lines)."
     }
   },
   "triage": {
     "p0Issues": 1,
-    "p1Issues": 2,
+    "p1Issues": 0,
     "openSprintIssues": [
-      {
-        "number": 1209,
-        "title": "[dogfood] github-mcp-server-actions_list blocked despite allow rule — MCP prefix match",
-        "priority": "P1",
-        "effort": "~1h",
-        "sequence": 1,
-        "assignedTo": "senior",
-        "status": "unstarted",
-        "cyclesUnstarted": 1,
-        "technicalNote": "aab.ts uses exact-match on MCP server name. Fix: change to startsWith() for mcp.call target matching. All github-mcp-server-* tools affected."
-      },
       {
         "number": 1202,
         "title": "AAB normalization failure — 3,825+ unintended default-deny decisions (KE-2 ActionContext)",
         "priority": "P1",
         "effort": "3-5d",
-        "sequence": 2,
+        "sequence": 1,
         "assignedTo": "senior",
         "status": "unstarted",
-        "cyclesUnstarted": 2,
-        "technicalNote": "Strip rtk/time/timeout prefixes in aab.ts before pattern matching. Classify embedded sub-operations in compound commands. Emit UnknownActionType WARNING event. Audit tool-action-map.json."
+        "cyclesUnstarted": 3,
+        "technicalNote": "Strip rtk/time/timeout prefixes in aab.ts before pattern matching. Classify embedded sub-operations in compound commands. Emit UnknownActionType WARNING event. Audit tool-action-map.json. ~700 unintended denials/day currently live."
       },
       {
         "number": 1208,
         "title": "Heredoc with governance-protected path strings triggers false-positive No Governance Self-Modification",
         "priority": "P1",
-        "effort": "2h",
-        "sequence": 3,
+        "effort": "rebase only",
+        "sequence": 2,
         "assignedTo": "copilot-cli",
         "status": "pr-needs-rebase",
         "pr": 1238,
-        "technicalNote": "PR #1238 correct. Needs rebase on main to remove stale state file diffs before merge."
+        "technicalNote": "PR #1238 correct. Rebase on main HEAD to clear stale diffs and merge:failed label."
       },
       {
         "number": 1139,
         "title": "[dogfood] $(date +format) blocked as dangerous shell expansion",
         "priority": "P2",
         "effort": "2-3h",
-        "sequence": 4,
+        "sequence": 3,
         "assignedTo": "senior",
         "status": "unstarted",
-        "technicalNote": "Locate blocking source in packages/matchers/src/command-scanner.ts. Add safe read-only subshell allowlist."
+        "cyclesUnstarted": 3,
+        "technicalNote": "Locate blocking source (command-scanner.ts or AI safety layer). Add safe read-only subshell allowlist for $(date ...)."
       }
     ],
     "notableIssues": [
@@ -97,50 +92,66 @@
         "number": 1186,
         "title": "Swarm Health Alert — 2026-03-28",
         "label": "priority:P0",
-        "status": "OPEN — 5th consecutive EM cycle",
+        "status": "OPEN — 5th+ consecutive EM cycle, not kernel squad scope",
         "owner": "ops/director",
-        "note": "85.7% stuck worker rate (12/14 agents). No change since #1128. Required ops actions: git worktree prune, clean /tmp/ PID files, fix cron collisions (0 6 * * * and 45 */6 * * *), verify cron daemon, address 4x oversubscription (133 agents vs 32 max_workers)."
+        "note": "85.7% stuck worker rate. Human ops intervention required. Kernel squad cannot resolve."
       }
     ]
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "id": "ke2-unstarted",
+      "issue": 1202,
+      "description": "KE-2 AAB normalization flagship unstarted for 3 consecutive EM cycles. ~700 unintended denials/day affecting all swarm agents. Senior status 'ready' but no branch created.",
+      "cycles": 3,
+      "escalateTo": "architect",
+      "severity": "high"
+    },
+    {
+      "id": "pr1238-rebase",
+      "pr": 1238,
+      "description": "PR #1238 needs rebase — persistent across 2 EM cycles. CI is green, fix is correct. Only blocker is stale branch base. Copilot-cli must act this cycle.",
+      "cycles": 2,
+      "escalateTo": "copilot-cli",
+      "severity": "medium"
+    }
+  ],
   "escalations": [
     {
-      "type": "ops",
-      "priority": "P0",
-      "issue": 1186,
-      "description": "Swarm health P0: 5th consecutive EM cycle unresolved. 85.7% workers stuck (12/14). No kernel code path to resolve — requires human ops intervention.",
-      "recommendedActions": [
-        "git worktree prune (remove stale worktrees — no live processes attached)",
-        "Clean 18 dead PID files in /tmp/ (copilot-detached-*.pid etc.)",
-        "Fix cron collisions in server/schedule.json: groups at 0 6 * * * and 45 */6 * * *",
-        "Verify cron daemon is active — /tmp/agentguard-runs/ absent suggests harness inactive",
-        "Address 4x oversubscription: 133 enabled agents vs 32 max_workers"
-      ],
-      "owner": "ops/director",
-      "cycles": 5
+      "type": "sprint-risk",
+      "priority": "HIGH",
+      "target": "architect",
+      "issue": 1202,
+      "description": "KE-2 (#1202) has been unstarted for 3+ EM cycles. This is the flagship issue (700 unintended denials/day). Senior agent repeatedly in 'ready' state with no branch. If no PR is open by the next EM cycle (02:30Z), sprint must be re-scoped or issue re-assigned.",
+      "rule": "blocker persists across 2 runs → escalate to director"
     },
     {
       "type": "pr-hygiene",
-      "priority": "low",
-      "issue": null,
-      "description": "PR #1238 from copilot-cli includes stale state file diffs (.agentguard/squads/hq/*, swarm-state.json) because branch was forked before those files were updated on main. Pattern: concurrent agents forking from non-main-HEAD commits accumulate spurious state diffs.",
-      "recommendedActions": [
-        "copilot-cli: rebase PR #1238 on current main before merge",
-        "Consider adding branch hygiene guidance: always fork from main HEAD"
-      ],
-      "owner": "copilot-cli"
+      "priority": "P1",
+      "target": "copilot-cli",
+      "pr": 1238,
+      "description": "Rebase PR #1238 on current main (fee7a45 or later). Core fix is correct, 6/6 CI green. Only action needed: git rebase main, force-push branch. This should unblock merge this cycle."
+    },
+    {
+      "type": "ops",
+      "priority": "P0",
+      "target": "ops/director",
+      "issue": 1186,
+      "description": "Swarm health P0 persists. 85.7% agents stuck. Kernel squad has no code path to resolve — ops/director must act.",
+      "cycles": 5
     }
   ],
   "metrics": {
-    "prsOpened": 1,
-    "prsMerged": 0,
+    "prsOpened": 0,
+    "prsMerged": 1,
     "prsClosed": 0,
-    "issuesClosed": 0,
-    "sprintIssuesOpen": 4,
+    "issuesClosed": 1,
+    "sprintIssuesOpen": 3,
     "sprintIssuesPrPending": 1,
     "governanceDenials": 0,
-    "retries": 0
+    "retries": 0,
+    "sprintCompletionPercent": 25,
+    "note": "#1209 done (1/4 sprint issues closed). 1 PR in review (#1238). 2 issues not started (#1202, #1139)."
   },
   "testHealth": {
     "total": 4394,
@@ -148,48 +159,40 @@
     "failed": 0,
     "packages": 18,
     "status": "all_passing",
-    "note": "Baseline from QA run 2026-03-28T06:50Z. No regressions. No new QA run this cycle."
+    "lastRun": "2026-03-28T06:50:00.000Z",
+    "note": "No new QA run this cycle. Baseline from 06:50Z run. Coverage gaps remain: aab.test.ts (#1202), command-scanner.test.ts (#1139)."
   },
   "sprintStatus": {
-    "goal": "#1202 KE-2 (AAB normalization) + #1209 (MCP prefix) + #1208 (heredoc — in PR) + #1139 ($(date) scanner)",
-    "closedIssues": {
-      "1182": "CLOSED — PR #1212 merged (persona.env operational exemption)"
+    "goal": "Reduce false-positive governance denials blocking swarm agents",
+    "issues": {
+      "1209": "DONE — PR #1243 merged 17:56Z",
+      "1208": "IN PROGRESS — PR #1238 needs rebase (copilot-cli)",
+      "1202": "NOT STARTED — senior unstarted 3 cycles, escalated to architect",
+      "1139": "NOT STARTED — senior unstarted 3 cycles, P2 priority"
     },
-    "openIssues": {
-      "1209": "OPEN — unstarted, sequence 1 (~1h warm-up). Senior not yet started.",
-      "1202": "OPEN — unstarted, sequence 2 (flagship 3-5d). 2nd cycle without branch.",
-      "1208": "OPEN — PR #1238 filed by copilot-cli, CI green, needs rebase.",
-      "1139": "OPEN — unstarted, sequence 4 (parallel 2-3h)."
-    },
-    "seniorStatus": "ready — no branch opened. Must start #1209 this cycle.",
-    "completionPercent": 20,
-    "remainingWork": "4 sprint issues remain. #1208 has a PR (blocked on rebase). #1209/#1202/#1139 have no branches."
+    "completionPercent": 25,
+    "seniorStatus": "ready — no branch for #1202. Must start this cycle or sprint re-scopes.",
+    "copilotCliStatus": "needs-rebase on PR #1238. Rebase must happen this cycle."
   },
-  "escalationRules": {
-    "triggered": {
-      "twoPlusFailingCI": false,
-      "persistentBlocker": false,
-      "governanceDenialsExceeded": false,
-      "p0PersistsAcrossRuns": true,
-      "seniorUnstartedMultipleCycles": true
-    },
-    "notes": "#1186 P0 swarm health persists 5+ cycles — ops escalation repeated. Senior agent unstarted for 2 cycles on #1202/#1209 — flagging as concern. No kernel code escalations."
+  "escalationRulesTriggered": {
+    "twoPlusFailingCI": false,
+    "persistentBlockerAcross2Runs": true,
+    "governanceDenialsExceeded": false,
+    "p0PersistsCrossRuns": true,
+    "seniorUnstartedMultipleCycles": true
   },
   "dogfoodObservations": [
     {
-      "type": "pr-workflow",
-      "issue": null,
-      "description": "PR #1238 from copilot-cli contains state file diffs from a stale branch base. Three files outside the fix scope appear in the diff: .agentguard/squads/hq/em-report.json, .agentguard/squads/hq/state.json, swarm-state.json. If merged as-is, these would regress HQ state to an older version. AgentGuard governance does not currently validate PR diff scope — a pre-merge invariant checking for unexpected file scope changes would have caught this.",
-      "severity": "medium",
-      "actionable": true,
-      "suggestedFix": "Add diff-scope validation to the merge workflow. Alternatively, add a governance check: PRs touching only one squad's state files should not modify other squads' state files. This is related to the FileScopeViolation event already in the event schema."
-    },
-    {
       "type": "live-impact",
       "issue": 1202,
-      "description": "Every rtk git * and rtk gh * command in this EM run is classified as unknown action type before the #1202 fix. Confirms the AAB normalization gap is live and affects EM workflows — ~700 unintended denials/day figure remains accurate.",
-      "severity": "medium",
-      "actionable": true
+      "description": "rtk-prefixed commands in this EM session would hit unknown action type. AAB normalization gap (#1202) actively affects EM workflows. The 700 denials/day figure remains live.",
+      "severity": "medium"
+    },
+    {
+      "type": "pr-workflow",
+      "pr": 1238,
+      "description": "PR includes stale state file diffs from non-HEAD branch base. FileScopeViolation event schema exists but no pre-merge invariant validates PR diff scope. Opportunity to detect cross-squad state file regressions automatically.",
+      "severity": "low"
     }
   ]
 }
