@@ -1,9 +1,9 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-28T17:30:00.000Z",
+  "generatedAt": "2026-03-28T23:30:00.000Z",
   "identity": "claude-code:opus:hq:em",
   "health": "yellow",
-  "summary": "Afternoon cycle (#1202). Significant coordination wins: version drift resolved (cloud + analytics both now on 2.9.0), issue #1182 (identity bridge chicken-and-egg) closed, PR #1150 (Studio EM) closed, stale PR #1226 (old EM report at v2.8.5) closed. Two PRs awaiting review: #1224 (site fix) and #1233 (v3.0 capture funnel). Persistent P0: swarm health #1186 (85.7% stuck, human intervention required). New HIGH: issue #1202 (AAB normalization failure — 3,825+ unintended default-deny blocks, largest single source of governance denials). KE-2 (#917) still unstarted. New dogfood: bash cross-directory reads default-denied by policy (expected behavior — Read tool works).",
+  "summary": "Evening cycle (#1243 #1241 queued). Two new fix PRs: #1243 (Copilot CLI MCP tool naming in AAB — closes dogfood #1209) and #1241 (release version gate + prepare-release script — closes #1239). PR #1237 closed as duplicate (17:30Z report was already merged as #1232). PR #1238 (heredoc invariant fix) is BEHIND and needs rebase. PR #1224 (site fix) merged this cycle. Persistent blockers: swarm health P0 (#1186, 4th cycle, human intervention required), KE-2 (#917) unstarted (4th cycle), observability-agent silent for 76h+ (#1235, new). AAB normalization gap (#1202) still unassigned — partially addressed by #1243 for Copilot MCP tools but root cause work still pending.",
   "ciStatus": {
     "agentGuard": "green",
     "agentguardCloud": "green",
@@ -14,39 +14,58 @@
     "agentGuard": "2.9.0",
     "agentguardCloud": "2.9.0",
     "agentguardAnalytics": "2.9.0",
+    "npmPublish": "BLOCKED — v2.9.0 tag created before version bump; PR #1241 fixes release process ordering",
     "drift": {}
   },
   "prQueue": {
     "agentGuard": {
-      "open": 2,
-      "closed": 1,
+      "open": 4,
       "details": [
+        {
+          "number": 1243,
+          "title": "fix(kernel): detect Copilot CLI MCP tool naming in AAB normalizeIntent",
+          "status": "AWAITING_REVIEW",
+          "checks": "6/6 green",
+          "age": "~6.5h",
+          "note": "Closes dogfood #1209. Addresses one AAB normalization gap from #1202. Mergeable."
+        },
+        {
+          "number": 1241,
+          "title": "fix: release version gate and prepare-release script",
+          "status": "AWAITING_REVIEW",
+          "checks": "5/5 green",
+          "age": "~7.5h",
+          "note": "Closes #1239 (v2.9.0 npm publish failed). Adds prepare-release.sh to prevent recurrence. Mergeable."
+        },
+        {
+          "number": 1238,
+          "title": "fix(invariants): strip heredoc body before governance path scan",
+          "status": "NEEDS_REBASE",
+          "checks": "6/6 green",
+          "mergeStateStatus": "BEHIND",
+          "age": "~8.5h",
+          "note": "Mergeable but BEHIND main. Needs rebase before merge. Low risk change (2 files)."
+        },
         {
           "number": 1233,
           "title": "feat(issue-1084): v3.0 user capture funnel — waitlist CTA and signup prompt",
           "status": "AWAITING_REVIEW",
-          "checks": "all_green",
-          "age": "~5h",
-          "note": "Mergeable. Not stale (< 48h). Needs human review."
-        },
-        {
-          "number": 1224,
-          "title": "fix(site): sync stats bar + demo section with current codebase state",
-          "status": "AWAITING_REVIEW",
-          "checks": "all_green",
-          "age": "~6h",
-          "note": "Mergeable. Not stale (< 48h). Needs human review."
-        },
-        {
-          "number": 1226,
-          "title": "chore(hq): EM report 2026-03-29T00:00 — v2.8.5, yellow health, 7 issues closed",
-          "action": "CLOSED — stale EM report at v2.8.5, superseded by 2.9.0 and later cycles"
+          "checks": "5/5 green",
+          "age": "~11h",
+          "note": "Closes #1084. No review yet. Approaching review threshold."
         }
+      ],
+      "merged_this_cycle": [
+        { "number": 1240, "title": "EM report 2026-03-28T20:30Z" },
+        { "number": 1224, "title": "fix(site): sync stats bar + demo section" }
+      ],
+      "closed_this_cycle": [
+        { "number": 1237, "reason": "Duplicate of #1232 — 17:30Z EM report already merged" }
       ]
     },
     "agentguardCloud": {
       "open": "unknown",
-      "notes": "Cloud CI green. PR #492 (telemetry CLI auth tests) was open last cycle — not re-checked this cycle."
+      "notes": "Cloud CI green (recovery controller, tier-C runs passing). Swarm issue-triage workflow pending."
     },
     "agentguardAnalytics": {
       "open": 0,
@@ -55,18 +74,18 @@
   },
   "dogfoodPatterns": [
     {
-      "pattern": "Bash default-deny on cross-directory reads (agentguard-analytics/package.json)",
-      "severity": "OBSERVATION",
-      "description": "During cross-repo coordination, `cat agentguard-analytics/package.json` via bash triggered default-deny (no matching policy rule, fail-closed). The Read tool bypassed this correctly. Behavior is as-designed — shell exec to sibling repos requires an explicit allow rule.",
-      "recommendation": "Confirm this is intended. Consider adding a scoped shell.exec allow for read-only cross-repo inspection by EM role agents. Or document that EM agents should use Read tool for cross-repo file inspection.",
-      "newIssue": false
+      "pattern": "Copilot CLI MCP tools defaulting to unknown action type",
+      "issues": [1209],
+      "severity": "RESOLVED_BY_PR",
+      "description": "PR #1243 queued: AAB now recognizes <server>-<method_with_underscores> naming convention and classifies as mcp.call. Previously caused false default-deny even with explicit allow rule.",
+      "pr": 1243
     },
     {
-      "pattern": "Agent identity bridge blocked by no-governance-self-modification invariant",
-      "issues": [1182],
-      "severity": "RESOLVED",
-      "description": "CLOSED this cycle. Chicken-and-egg identity setup for scheduled agents resolved.",
-      "resolvedAt": "2026-03-28T17:30:00.000Z"
+      "pattern": "Heredoc body triggering false governance-path match in no-governance-self-modification",
+      "issues": [1208],
+      "severity": "RESOLVED_BY_PR",
+      "description": "PR #1238 queued: stripHeredocBody() now strips body content before scanning for governance file paths. Cat body content mentioning agentguard.yaml no longer triggers invariant.",
+      "pr": 1238
     },
     {
       "pattern": "Agent version reported as vunknown",
@@ -79,32 +98,51 @@
       "pattern": "agentguard policy suggest redirects to cloud silently",
       "issues": [1166],
       "severity": "P2",
-      "description": "policy suggest silently redirects to cloud instead of running locally when no cloud token is present. Blocks onboarding dry runs.",
+      "description": "policy suggest silently redirects to cloud instead of running locally when no cloud token is present.",
       "recommendation": "DX squad: add --local flag or clear fallback message"
+    },
+    {
+      "pattern": "Bash default-deny on cross-directory reads",
+      "severity": "OBSERVATION",
+      "description": "Shell exec to sibling repos requires explicit allow rule. Read tool works. Behavior is as-designed."
     }
   ],
   "crossCuttingIssues": [
     {
       "issue": 1186,
-      "title": "Swarm Health Alert — P0 (2026-03-28, continuing from #1128)",
+      "title": "Swarm Health P0 — 85.7% agents stuck (4th consecutive cycle)",
       "severity": "P0",
-      "age": "~15h (new batch), ~42h (prior batch)",
-      "description": "85.7% agent worktrees stuck. 12 stuck agents, 3 active. 133 enabled agents vs 32 max_workers (4× oversubscribed). 18 dead PID files. 2 cron collision groups.",
-      "action": "Human required: git worktree prune, /tmp/ PID cleanup, cron collision fix (0 6 * * * and 45 */6 * * *), confirm cron daemon running. No agent resolution path."
+      "age": "~17.5h (current batch), ~44h (prior batch #1128)",
+      "description": "85.7% agent worktrees stuck. 12 stuck agents, 3 active. 133 enabled agents vs 32 max_workers (4× oversubscribed). 18 dead PID files. 2 cron collision groups. Escalated to director — no human action yet after 4 cycles.",
+      "action": "URGENT — Human required: git worktree prune, /tmp/ PID cleanup, cron collision fix, confirm cron daemon running. No agent resolution path."
     },
     {
       "issue": 917,
-      "title": "KE-2: ActionContext — unstarted, critical path for v3.0",
+      "title": "KE-2: ActionContext — unstarted, 4th consecutive cycle",
       "severity": "P1",
-      "description": "0/4 checkboxes, no assignee, no PR. Sprint goal includes KE-2 unblock. Third consecutive cycle unstarted.",
-      "action": "Escalate to kernel-sr. If no movement by next cycle, escalate to squad lead."
+      "description": "0/4 checkboxes, no assignee, no PR. Sprint goal includes KE-2 unblock. Now 4 consecutive cycles unstarted.",
+      "action": "Escalated to kernel-sr last cycle. If no PR open by next cycle, escalate to squad lead and consider sprint goal re-scope."
     },
     {
       "issue": 1202,
       "title": "AAB action-type normalization failure — 3,825+ unintended default-deny decisions",
       "severity": "HIGH",
-      "description": "AAB failing to normalize a significant portion of tool calls to known action types. They fall through to unknown → default-deny. Largest single source of governance denials. Filed 2026-03-28T08:05Z by governance-monitor-agent.",
-      "action": "Assign to kernel squad. Priority: high. Impacts all agents running on current version."
+      "description": "AAB failing to normalize a significant portion of tool calls. Partial fix for Copilot MCP tools via PR #1243, but root cause (broader unknown action type gap) still unaddressed.",
+      "action": "PR #1243 addresses Copilot MCP subset. Kernel squad must still address remaining normalization failures per issue #1202."
+    },
+    {
+      "issue": 1235,
+      "title": "observability-agent silent for 76h+ (threshold: 72h)",
+      "severity": "P2",
+      "description": "No observability report since 2026-03-25T10:09Z. Daily reports expected. Missing system health signal and anomaly detection coverage. Recovery controller auto-filed this issue.",
+      "action": "Check scheduled trigger config. Re-trigger or reschedule if cron has dropped."
+    },
+    {
+      "issue": 1239,
+      "title": "v2.9.0 npm publish failed — tag before version bump",
+      "severity": "P2",
+      "description": "v2.9.0 GitHub release exists but npm package not published. PR #1241 adds prepare-release.sh to prevent recurrence. Still needs: delete bad tag + re-run with correct ordering.",
+      "action": "Merge PR #1241. Then: human runs prepare-release.sh against corrected v2.9.0 commit or re-tags."
     },
     {
       "issue": 1127,
@@ -117,33 +155,39 @@
     {
       "priority": "P0",
       "target": "director / human",
-      "reason": "Swarm health #1186: 85.7% stuck rate (ongoing), 133 agents vs 32 max_workers, cron daemon may not be running. Same state as prior 2 cycles — no human action taken yet."
+      "reason": "Swarm health #1186: 85.7% stuck rate persists for 4th consecutive cycle (~17h). 133 agents vs 32 max_workers (4×). Cron daemon may not be running. No human action taken yet. Direct human intervention required — no agent resolution path."
+    },
+    {
+      "priority": "P1",
+      "target": "kernel-sr / squad lead",
+      "reason": "KE-2 (#917) unstarted for 4 consecutive EM cycles. Sprint goal at critical risk. If no movement by next cycle, sprint goal re-scope required."
     },
     {
       "priority": "HIGH",
       "target": "kernel squad",
-      "reason": "Issue #1202: AAB normalization failure causing 3,825+ unintended default-deny blocks. Largest single source of governance denials — impacts all running agents. Needs assignment and fix."
-    },
-    {
-      "priority": "P1",
-      "target": "kernel-sr",
-      "reason": "KE-2 (#917) unstarted for 3 consecutive EM cycles. Sprint goal at risk. Needs assignment this cycle or sprint goal must be re-scoped."
+      "reason": "Issue #1202: AAB normalization failure causing 3,825+ unintended default-deny blocks. Copilot MCP subset fixed by #1243, but root cause still unaddressed."
     },
     {
       "priority": "P2",
       "target": "human reviewer",
-      "reason": "PRs #1224 (site fix) and #1233 (v3.0 capture funnel) have been open 5-6h, all checks green. Need review."
+      "reason": "PRs #1243 (Copilot MCP fix), #1241 (release fix), #1238 (needs rebase then merge), #1233 (v3.0 funnel) all green and awaiting review. #1233 at ~11h."
+    },
+    {
+      "priority": "P2",
+      "target": "ops / human",
+      "reason": "observability-agent silent 76h+ (#1235). Scheduled trigger likely dropped. No health reports since 2026-03-25."
     }
   ],
   "sprintStatus": {
     "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 unblock. Swarm health resolution.",
-    "progress": "Version drift resolved (cloud + analytics on 2.9.0). Identity bridge unblocked (#1182 closed). KE-2 (#917) still unstarted — highest sprint risk for 3rd cycle. Swarm P0 (#1186) requires human action.",
+    "progress": "Version drift resolved. Identity bridge closed. Fix PRs queuing (#1243, #1241). KE-2 (#917) still unstarted — critical sprint risk entering 4th cycle. Swarm P0 (#1186) still blocked on human intervention.",
     "blockers": [
-      "Swarm health P0 (#1186) — no agent resolution path, human intervention required for 3rd+ cycle",
-      "KE-2 (#917) — no assignee after 3 EM cycles, sprint goal at risk"
+      "Swarm health P0 (#1186) — 4th cycle, human intervention required",
+      "KE-2 (#917) — no assignee after 4 EM cycles, sprint goal at risk",
+      "v2.9.0 npm not published (#1239) — fix PR ready, needs merge + re-release"
     ]
   },
   "actionsThisCycle": [
-    { "action": "CLOSED_PR", "pr": 1226, "reason": "Stale EM report at v2.8.5 — superseded by v2.9.0 bump and later EM cycles" }
+    { "action": "CLOSED_PR", "pr": 1237, "reason": "Duplicate of #1232 — 17:30Z EM report already merged into main" }
   ]
 }

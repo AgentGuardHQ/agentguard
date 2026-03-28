@@ -6,12 +6,24 @@
   },
   "assignments": {
     "kernel-squad": {
-      "task": "Fix AAB action-type normalization failure (issue #1202) — 3,825+ unintended default-deny decisions. Largest single source of governance denials. Impacts all agents.",
+      "task": "Fix AAB action-type normalization failure (issue #1202) — 3,825+ unintended default-deny decisions. PR #1243 addresses Copilot MCP subset (closes #1209); root cause normalization gap still open.",
       "priority": "HIGH"
     },
     "kernel-sr": {
-      "task": "Assign and start KE-2 (ActionContext, issue #917) — 0/4 checkboxes, no PR, 3 EM cycles unstarted. Sprint goal at risk.",
+      "task": "Assign and start KE-2 (ActionContext, issue #917) — 0/4 checkboxes, no PR, 4 EM cycles unstarted. Sprint goal at critical risk. If no PR by next cycle, escalate to squad lead for sprint re-scope.",
       "priority": "P1"
+    },
+    "ops-human": {
+      "task": "Fix swarm health P0 (#1186): git worktree prune, /tmp/ PID cleanup, cron collision fix (0 6 * * * and 45 */6 * * * overlap), confirm cron daemon running. 4th cycle unresolved.",
+      "priority": "P0"
+    },
+    "ops-human-release": {
+      "task": "After PR #1241 merges: delete v2.9.0 tag, run scripts/prepare-release.sh from correct version-bump commit to re-publish @red-codes/agentguard@2.9.0 to npm.",
+      "priority": "P2"
+    },
+    "ops-schedules": {
+      "task": "Investigate and fix observability-agent scheduled trigger (#1235) — silent for 76h+. Check cron config, re-trigger or reschedule.",
+      "priority": "P2"
     }
   },
   "resolved": {
@@ -32,27 +44,46 @@
       "priority": "P2",
       "resolvedAt": "2026-03-28T17:30:00.000Z",
       "note": "agentguard-cloud now on 2.9.0 (also analytics)"
+    },
+    "hq-em-duplicate-cleanup": {
+      "task": "Close stale duplicate EM report PRs from prior cycles",
+      "priority": "P3",
+      "resolvedAt": "2026-03-28T23:30:00.000Z",
+      "note": "PR #1237 closed (17:30Z report already merged as #1232)"
     }
   },
   "blockers": [
     {
       "issue": 1186,
-      "description": "Swarm health P0 — 85.7% agents stuck. Human intervention required: git worktree prune, PID cleanup, cron collision fix. 3rd consecutive cycle unresolved.",
+      "description": "Swarm health P0 — 85.7% agents stuck. Human intervention required: git worktree prune, PID cleanup, cron collision fix. 4th consecutive cycle unresolved. Escalated to director.",
       "escalatedTo": "director",
       "firstSeen": "2026-03-28T06:02:00.000Z"
     },
     {
       "issue": 917,
-      "description": "KE-2 stalling — 3 EM cycles unstarted, no assignee. Sprint goal risk. Escalating to kernel-sr this cycle.",
+      "description": "KE-2 stalling — 4 EM cycles unstarted, no assignee. Sprint goal at critical risk. Escalated to kernel-sr. If no PR by next cycle, escalate to squad lead.",
       "escalatedTo": "kernel-sr",
       "firstSeen": "2026-03-28T21:00:00.000Z"
+    },
+    {
+      "issue": 1239,
+      "description": "v2.9.0 npm package not published. PR #1241 (release fix) ready with 5/5 green checks. Needs merge + human re-release.",
+      "escalatedTo": "human reviewer",
+      "firstSeen": "2026-03-28T20:30:00.000Z"
+    },
+    {
+      "issue": 1235,
+      "description": "observability-agent silent for 76h+ (threshold 72h). Scheduled trigger likely dropped. No daily health reports since 2026-03-25.",
+      "escalatedTo": "ops",
+      "firstSeen": "2026-03-28T23:30:00.000Z"
     }
   ],
   "prQueue": {
-    "open": 2,
+    "open": 4,
     "reviewed": 0,
-    "mergeable": 2,
-    "notes": "PRs #1224 (site fix) and #1233 (v3.0 capture funnel) open 5-6h, all checks green, awaiting human review. PR #1226 closed as stale."
+    "mergeable": 3,
+    "needsRebase": 1,
+    "notes": "PRs #1243 (Copilot MCP fix), #1241 (release fix), #1233 (v3.0 funnel) green and mergeable. PR #1238 (heredoc fix) is BEHIND — needs rebase before merge. All awaiting human review. #1233 at ~11h (oldest). PR #1237 closed as duplicate this cycle."
   },
-  "updatedAt": "2026-03-28T17:30:00.000Z"
+  "updatedAt": "2026-03-28T23:30:00.000Z"
 }
