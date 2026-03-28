@@ -4,14 +4,15 @@ This document describes the architecture for integrating AgentGuard governance w
 
 ## Status
 
-AgentGuard supports four hook-based driver adapters as of v2.8.0:
+AgentGuard supports three hook-based driver adapters plus a Python middleware adapter for LangChain DeepAgents:
 
 | Driver | Adapter | Hook commands | Status |
 |--------|---------|---------------|--------|
 | **Claude Code** | `packages/adapters/src/claude-code.ts` | `agentguard claude-hook`, `claude-init` | ✅ Shipped |
 | **GitHub Copilot CLI** | `packages/adapters/src/copilot-cli.ts` | `agentguard copilot-hook`, `copilot-init` | ✅ Shipped |
-| **OpenAI Codex CLI** | `packages/adapters/src/codex-cli.ts` | `agentguard codex-hook`, `codex-init` | ✅ Shipped (v2.8.0) |
-| **Google Gemini CLI** | `packages/adapters/src/gemini-cli.ts` | `agentguard gemini-hook`, `gemini-init` | ✅ Shipped (v2.8.0) |
+| **LangChain DeepAgents** | `packages/adapters/src/deepagents.ts` | `agentguard deepagents-hook`, `deepagents-init` | ✅ Shipped (v2.8.x) |
+| **OpenAI Codex CLI** | — | `agentguard codex-hook`, `codex-init` | 🗓 Planned |
+| **Google Gemini CLI** | — | `agentguard gemini-hook`, `gemini-init` | 🗓 Planned |
 
 The governance kernel is framework-agnostic — it accepts `RawAgentAction` objects and returns `GovernanceDecisionRecord` results. Each driver adapter translates its framework-specific PreToolUse/PostToolUse hook payload into the canonical `RawAgentAction` format.
 
@@ -38,21 +39,22 @@ FrameworkAdapter {
 - `translateResult` converts kernel decisions back to framework-specific responses (e.g., Claude Code expects `{ decision: 'allow' | 'block' }`)
 - `install()` / `uninstall()` handle framework-specific setup (hook registration, middleware injection, config file updates)
 
-## Target Directory Structure
+## Current Directory Structure
 
 ```
-src/adapters/
-├── registry.ts              # Existing action class → handler registry
-├── framework.ts             # FrameworkAdapter interface definition
-├── framework-registry.ts    # Framework adapter registry
-├── claude-code.ts           # Existing Claude Code adapter
-└── frameworks/
-    ├── mcp.ts               # MCP (Model Context Protocol)
-    ├── langchain.ts         # LangChain / LangGraph
-    ├── openai-agents.ts     # OpenAI Agents SDK
-    ├── autogen.ts           # AutoGen
-    └── copilot-cli.ts       # Copilot CLI
+packages/adapters/src/
+├── registry.ts              # Action class → handler registry
+├── claude-code.ts           # Claude Code adapter (PreToolUse/PostToolUse hooks)
+├── copilot-cli.ts           # GitHub Copilot CLI adapter (meta-tool mapping included)
+├── deepagents.ts            # LangChain DeepAgents adapter (Python middleware bridge)
+├── file.ts                  # File action handler
+├── git.ts                   # Git action handler
+├── hook-integrity.ts        # Hook integrity verification
+├── index.ts                 # Module exports
+└── shell.ts                 # Shell action handler
 ```
+
+Future planned adapters (MCP generic adapter, OpenAI Codex CLI, Google Gemini CLI, AutoGen, OpenAI Agents SDK) will follow the same `translateToRawAction` / `translateResult` pattern.
 
 ## Adapter Priority & Complexity
 
