@@ -39,5 +39,10 @@
   "RemoteTrigger": "mcp.call",
   "LSP": "file.read",
   "NotebookRead": "file.read",
-  "KillShell": "shell.exec"
+  "KillShell": "shell.exec",
+  "report_intent": "file.read",
+  "list_bash": "file.read",
+  "read_bash": "file.read",
+  "stop_bash": "shell.exec",
+  "write_bash": "shell.exec"
 }
