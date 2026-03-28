@@ -10,12 +10,29 @@
       "Sync studio worktree with master (33 commits behind - DONE 2026-03-25)"
     ]
   },
-  "assignments": {},
-  "blockers": [],
-  "prQueue": {
-    "open": 0,
-    "reviewed": 0,
-    "mergeable": 0
+  "assignments": {
+    "copilot-cli:sonnet:studio:senior": {
+      "issue": 173,
+      "title": "bug: 2 new cron collisions in server/schedule.json (post-#144 fix)",
+      "pr": 180,
+      "status": "pr_reviewed_awaiting_merge",
+      "reviewVerdict": "PASS (workspace-pr-review-agent, 2026-03-28T06:59Z)",
+      "nextAction": "Tier B / human merge. No blockers.",
+      "updatedAt": "2026-03-28T07:35:09.000Z"
+    }
   },
-  "updatedAt": "2026-03-25T23:50:00.000Z"
+  "blockers": [
+    {
+      "id": "march-budget-exhaustion",
+      "severity": "P1",
+      "description": "Copilot budget at cap (4000/4000 cents). Guitar-jam issues #165-169 deferred to April 1 per EM.",
+      "autoResolves": "2026-04-01"
+    }
+  ],
+  "prQueue": {
+    "open": 2,
+    "reviewed": 1,
+    "mergeable": 1
+  },
+  "updatedAt": "2026-03-28T07:35:09.000Z"
 }
