@@ -1,15 +1,15 @@
 {
   "squad": "studio",
   "sprint": {
-    "goal": "April 1 velocity push: Guitar Jam Partner kickoff (#153), portfolio scoring leaderboard, design partner dry run (#152). Budget resets April 1 — all pre-conditions now met (#155 merged).",
+    "goal": "April 1 velocity push: Guitar Jam Partner kickoff (#153 CLOSED), portfolio scoring leaderboard, design partner dry run (#152). Architecture merged — junior issues #165–169 queued for April 1.",
     "status": "ACTIVE",
     "issues": [
-      153,
       152
-    ]
+    ],
+    "closedThisCycle": [153]
   },
   "assignments": {
-    "studio-sr": "DONE: Guitar Jam Partner architecture PR #170 filed. Issues filed: #165 (scaffold), #166 (metronome), #167 (chord library), #168 (chord synth), #169 (governance). v0.1 scope defined — WebAudio metronome + chord backing, vanilla JS, GitHub Pages, no WASM. Next: wait for PR merge, then junior agents pick up #165–#169 on readybench after April 1 budget reset.",
+    "studio-sr": "COMPLETE: Guitar Jam Partner architecture PR #170 merged by EM (2026-03-28T11:00). Issue #153 closed. Junior issues #165–169 (scaffold, metronome, ChordLibrary, chord synth, governance) queued for readybench agents. No new work until April 1 budget reset.",
     "studio-qa": "April 1: score remaining 9 portfolio candidates using SCORING_SYSTEM.md. Publish leaderboard. Then support Guitar Jam QA pipeline setup.",
     "studio-designer": "Continue gh-pages hero CTA improvement.",
     "workspace-config-validator": "UNBLOCKED (#155 merged 2026-03-28): validate new schedule distribution. Confirm max claude-code per 30-min slot ≤5. Run simulation and report results.",
@@ -18,7 +18,7 @@
   "blockers": [
     {
       "id": "march-budget-exhaustion",
-      "description": "All 4 drivers at 100% March budget. Auto-resets April 1 (3 days).",
+      "description": "All 4 drivers at 100% March budget. Auto-resets April 1 (~4 days).",
       "severity": "P1",
       "action": "No action needed — auto-resolves April 1. Schedule stagger now in place (#155 merged) to prevent recurrence."
     },
@@ -30,20 +30,24 @@
     }
   ],
   "prQueue": {
-    "open": 1,
-    "reviewed": 0,
-    "mergeable": 0,
-    "prs": [
-      {
-        "number": 170,
-        "title": "feat: Guitar Jam Partner v0.1 architecture + sprint 1 plan",
-        "url": "https://github.com/AgentGuardHQ/agentguard-workspace/pull/170",
-        "status": "open",
-        "closesIssues": [153]
-      }
-    ],
+    "open": 0,
+    "reviewed": 2,
+    "mergeable": 2,
+    "prs": [],
     "crossRepoPending": [],
     "mergedThisCycle": [
+      {
+        "number": 164,
+        "title": "chore(studio): EM report 2026-03-28T08:15 — PR queue cleared, April 1 readiness",
+        "mergedBy": "studio-em"
+      },
+      {
+        "number": 170,
+        "title": "feat: Guitar Jam Partner v0.1 architecture + sprint 1 plan (closes #153)",
+        "mergedBy": "studio-em"
+      }
+    ],
+    "mergedPreviousCycle": [
       {
         "number": 162,
         "title": "fix: derive WORKSPACE from script location in swarm-dashboard.sh"
@@ -51,31 +55,16 @@
       {
         "number": 163,
         "title": "ops: bump qa-flaky-test-detector timeout to 5400s"
-      }
-    ],
-    "mergedPreviousCycle": [
-      {
-        "number": 155,
-        "title": "ops: stagger claude-code EMs to flatten API quota cascade"
       },
-      {
-        "number": 158,
-        "title": "fix: derive WORKSPACE from script location in swarm utility scripts"
-      },
-      {
-        "number": 154,
-        "title": "strategy: swarm health update, Phase 1 progress, Claude API crisis brief"
-      }
-    ],
-    "crossRepoMergedThisCycle": [
       {
         "number": 472,
         "repo": "agentguard-cloud",
         "title": "feat(dashboard): outcome filter + high-risk allows quick filter on events page"
       }
-    ]
+    ],
+    "crossRepoPending": []
   },
   "health": "yellow",
-  "healthReason": "March budget exhausted (auto-resets April 1). 3 degraded agents (studio-sr flaky, qa-regression-analyzer + qa-test-architect broken). All PRs cleared — queue empty for first time this sprint.",
-  "updatedAt": "2026-03-28T02:35:00.000Z"
+  "healthReason": "March budget exhausted (auto-resets April 1). 3 degraded agents (studio-sr flaky #156, qa-regression-analyzer + qa-test-architect broken #146). PR queue empty. Sprint milestone hit: #153 closed, Guitar Jam architecture merged.",
+  "updatedAt": "2026-03-28T11:00:00.000Z"
 }
