@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="OeJuCct5Y8LRHQB95DkF5Y9hwUvZIvtYrpKy16x3o28" />
   <title>AgentGuard — Run AI Agents Without Fear</title>
-  <meta name="description" content="AgentGuard — default-deny governance for AI coding agents. 22 invariants, four enforcement modes, tamper-evident audit trail. Install in 30 seconds.">
+  <meta name="description" content="AgentGuard — default-deny governance for AI coding agents. 24 invariants, four enforcement modes, tamper-evident audit trail. Install in 30 seconds.">
 
   <!-- OpenGraph -->
   <meta property="og:title" content="AgentGuard — Run AI Agents Without Fear">
@@ -474,23 +474,23 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 text-center reveal-stagger">
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="2637">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="4394">0</div>
             <div class="text-muted text-sm mt-1">Tests</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="87">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="93">0</div>
             <div class="text-muted text-sm mt-1">Destructive Patterns</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="46">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="47">0</div>
             <div class="text-muted text-sm mt-1">Event Kinds</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="40">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="41">0</div>
             <div class="text-muted text-sm mt-1">Action Types</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="22">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="24">0</div>
             <div class="text-muted text-sm mt-1">Invariants</div>
           </div>
           <div class="reveal">
@@ -554,14 +554,30 @@
         </div>
 
         <div class="reveal">
-          <div class="relative bg-surface border border-surface-light rounded-xl overflow-hidden aspect-video flex items-center justify-center glow-green" id="demo-video-container">
-            <!-- Placeholder: replace with video embed when recorded -->
-            <div class="text-center p-8">
-              <div class="w-16 h-16 rounded-full bg-cta/10 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-cta" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </div>
-              <p class="font-mono text-muted text-sm">Demo video coming soon</p>
-              <p class="text-muted text-xs mt-2">npm install &rarr; agentguard.yaml &rarr; governed session &rarr; Cloud dashboard</p>
+          <div class="relative bg-surface border border-surface-light rounded-xl overflow-hidden glow-green" id="demo-video-container">
+            <div class="bg-surface-light/50 px-4 py-2 flex items-center gap-2 border-b border-surface-light">
+              <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-danger/60"></div><div class="w-3 h-3 rounded-full bg-warning/60"></div><div class="w-3 h-3 rounded-full bg-cta/60"></div></div>
+              <span class="font-mono text-muted text-xs ml-2">aguard guard --policy agentguard.yaml</span>
+            </div>
+            <div class="p-6 font-mono text-sm space-y-1 text-left">
+              <p class="text-cta">$ npx aguard claude-init</p>
+              <p class="text-muted">&nbsp;&nbsp;✓ Hooks installed → .claude/settings.json</p>
+              <p class="text-muted">&nbsp;&nbsp;✓ Policy scaffolded → agentguard.yaml</p>
+              <p class="text-muted">&nbsp;&nbsp;✓ Go kernel ready (3.2MB, &lt;3ms/eval)</p>
+              <p class="text-text">&nbsp;</p>
+              <p class="text-cta">$ aguard guard --policy agentguard.yaml</p>
+              <p class="text-muted">&nbsp;&nbsp;AgentGuard Runtime Active</p>
+              <p class="text-muted">&nbsp;&nbsp;policy: agentguard.yaml | invariants: 24 | patterns: 93</p>
+              <p class="text-text">&nbsp;</p>
+              <p class="text-cta">&nbsp;&nbsp;✓ file.write  src/auth/service.ts</p>
+              <p class="text-cta">&nbsp;&nbsp;✓ test.run    vitest (4,394 passed)</p>
+              <p class="text-cta">&nbsp;&nbsp;✓ git.commit  "feat: add auth service"</p>
+              <p class="text-danger">&nbsp;&nbsp;✗ git.push   main → DENIED (protect-main)</p>
+              <p class="text-warning">&nbsp;&nbsp;⚠ invariant  protected-branch violated</p>
+              <p class="text-text">&nbsp;</p>
+              <p class="text-cta">$ aguard inspect --last</p>
+              <p class="text-muted">&nbsp;&nbsp;12 actions | 1 denial | escalation: NORMAL</p>
+              <p class="text-muted">&nbsp;&nbsp;evidence pack → .agentguard/evidence/run_...</p>
             </div>
           </div>
         </div>
@@ -2328,7 +2344,7 @@ rules:
       // ---- Terminal Typing Animation ----
       var terminalLines = [
         { text: '  AgentGuard Runtime Active', cls: 'text-cta', delay: 0 },
-        { text: '  policy: agentguard.yaml | invariants: 22 | patterns: 87', cls: 'text-muted', delay: 0 },
+        { text: '  policy: agentguard.yaml | invariants: 24 | patterns: 93', cls: 'text-muted', delay: 0 },
         { text: '', cls: '', delay: 300 },
         { text: '  \u2713 file.write  src/auth/service.ts', cls: 'text-cta', delay: 0 },
         { text: '  \u2713 shell.exec  npm test', cls: 'text-cta', delay: 0 },
@@ -2336,7 +2352,7 @@ rules:
         { text: '  \u26A0 invariant  protected-branch violated', cls: 'text-warning', delay: 0 },
         { text: '', cls: '', delay: 600 },
         { text: '  \u2713 file.write  src/utils/hash.ts', cls: 'text-cta', delay: 0 },
-        { text: '  \u2713 test.run    vitest (2,637 passed)', cls: 'text-cta', delay: 0 },
+        { text: '  \u2713 test.run    vitest (4,394 passed)', cls: 'text-cta', delay: 0 },
         { text: '  \u2713 git.commit  "feat: add hash utility"', cls: 'text-cta', delay: 0 },
         { text: '  \u2717 file.write  .env \u2192 DENIED (no-secret-exposure)', cls: 'text-danger', delay: 0 },
         { text: '  \u2717 shell.exec  rm -rf / \u2192 DENIED (destructive)', cls: 'text-danger', delay: 0 },
