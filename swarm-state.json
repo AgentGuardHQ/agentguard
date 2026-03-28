@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-03-28T05:15:00Z",
-  "updatedBy": "backlog-hygiene--roadmap-triage-agent",
+  "updatedAt": "2026-03-28T13:20:00Z",
+  "updatedBy": "recovery-controller-agent",
   "mode": "normal",
   "recommendedMode": "normal",
-  "modeReason": "Roadmap triage agent confirms normal mode. v2.8.4 is the current release. DeepAgents adapter shipped (v2.8.1). Heredoc false-positive fixed (v2.8.4). Graceful SQLite fallback added (v2.8.3). KE-2 (#917) remains the critical path to v3.0. P1 policy gap: github.pr.* action types missing from default allow-list (#1177) \u2014 PR #1178 partially addresses (Copilot meta-tools); full github.* policy fix still needed. Security issue count stable at 2 (#640, #639). Risk profile slightly elevated due to #1177.",
+  "modeReason": "Recovery controller confirms normal mode. 1 WARNING: observability-agent silent 75h (alert #1235 created). PR queue healthy (3 open, 0 conflicting, all <2h old). CI green. Swarm active. Mode stays normal: 1 WARNING is below conservative threshold (requires CI broken OR conflict cascade OR 2+ silent agents). RETAINED: v2.8.4 is the current release. P1 policy gap: github.pr.* action types missing from default allow-list (#1177)— PR #1178 partially addresses (Copilot meta-tools); full github.* policy fix still needed. Security issue count stable at 2 (#640, #639). Risk profile slightly elevated due to #1177.",
   "riskAssessment": {
     "compositeScore": 14,
     "escalationLevel": "NORMAL",
@@ -148,7 +148,7 @@
             "completion": 0.0,
             "checkboxes": "0/4",
             "trackingIssue": 856,
-            "note": "ActionContext design \u2014 in-progress, priority:high, last updated 2026-03-25"
+            "note": "ActionContext design — in-progress, priority:high, last updated 2026-03-25"
           },
           "KE-3": {
             "status": "DONE",
@@ -161,14 +161,14 @@
             "completion": 0.0,
             "checkboxes": "0/5",
             "trackingIssue": 687,
-            "note": "Plane Separation \u2014 status:review, last updated 2026-03-24"
+            "note": "Plane Separation — status:review, last updated 2026-03-24"
           },
           "KE-5": {
             "status": "IN PROGRESS",
             "completion": 0.0,
             "checkboxes": "0/6",
             "trackingIssue": 716,
-            "note": "Semantic CLI Expansion \u2014 in-progress"
+            "note": "Semantic CLI Expansion — in-progress"
           },
           "KE-6": {
             "status": "PLANNED",
@@ -402,7 +402,7 @@
     "assessedAt": "2026-03-28T05:15:00Z",
     "totalOpenIssues": 186,
     "actionableWorkItems": 18,
-    "note": "186 open issues total. Key new issues since v2.8.0: #1177 (P1: github.pr.* policy gap \u2014 CRITICAL, blocks pr-merger skill), #1176/#1172/#1167/#1165/#1159 (dogfood denials \u2014 systemic policy config issue), #1173/#1174/#1175 (Phase 8 policy ecosystem items from backlog-steward). #1128 (swarm health: 149 orphaned branches, needs human prune). KE-2 (#917) remains the highest-priority unstarted engineering item."
+    "note": "186 open issues total. Key new issues since v2.8.0: #1177 (P1: github.pr.* policy gap — CRITICAL, blocks pr-merger skill), #1176/#1172/#1167/#1165/#1159 (dogfood denials — systemic policy config issue), #1173/#1174/#1175 (Phase 8 policy ecosystem items from backlog-steward). #1128 (swarm health: 149 orphaned branches, needs human prune). KE-2 (#917) remains the highest-priority unstarted engineering item."
   },
   "stallDetection": {
     "stalledPhases": [],
@@ -413,38 +413,47 @@
         "note": "KE-2 (ActionContext, #917) status:pending with 0/4 checkboxes. No assigned PR. Critical path for v3.0. Has been unstarted since 2026-03-25. Escalate to kernel-sr."
       }
     ],
-    "note": "No phases exceed the 14-day stall threshold. KE-2 is the primary risk \u2014 v3.0 cannot ship without it."
+    "note": "No phases exceed the 14-day stall threshold. KE-2 is the primary risk — v3.0 cannot ship without it."
   },
   "healthChecks": {
     "prQueue": {
       "status": "healthy",
       "openPRs": 3,
-      "conflictedPRs": 2,
-      "note": "PR #1178 (valid Copilot meta-tools fix, awaiting review). PRs #1150/#1151 are EM report PRs with merge conflicts \u2014 should be rebased or superseded."
+      "conflictedPRs": 0,
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "note": "3 open PRs, all MERGEABLE, all <2h old. #1233 (v3.0 user capture funnel), #1226 (HQ EM report), #1224 (site fixes). Prior conflicted PRs #1150/#1151 no longer in queue (resolved or closed)."
     },
     "ciOnMain": {
       "status": "healthy",
-      "note": "Main branch CI green at HEAD fd820ac. 4364 tests passing."
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "note": "All recent CI runs: success. No failures detected on main or open PR branches."
     },
     "agentLiveness": {
-      "status": "active",
-      "note": "Multiple agent branches active. Swarm producing work as of 2026-03-28."
+      "status": "warning",
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "silentAgents": [
+        "observability-agent"
+      ],
+      "note": "observability-agent silent 75h (last: #872 on 2026-03-25T10:09Z). Alert created: #1235. planning-agent active 2h ago (#1223). backlog-steward active 8h ago (#1180)."
     },
     "mergeConflicts": {
-      "status": "warning",
-      "conflictedPRs": 2,
+      "status": "healthy",
+      "conflictedPRs": 0,
       "openPRs": 3,
-      "note": "PRs #1150/#1151 have merge conflicts. Low urgency (EM reports); authors should rebase or close stale PRs."
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "note": "0 conflicting PRs. Conflict cascade cleared since last recovery check."
     },
     "swarmStateFreshness": {
       "status": "healthy",
-      "note": "Updated by backlog-hygiene--roadmap-triage-agent 2026-03-28T05:15Z."
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "note": "Updated by backlog-hygiene--roadmap-triage-agent 2026-03-28T05:15Z (~8h ago). Within 48h threshold."
     },
     "roadmapProgress": {
       "status": "on-track",
       "completedPhases": 10,
       "activePhases": 4,
-      "note": "v2.8.4 released (5 CLI agent adapters). Critical path: KE-2 (#917) \u2192 v3.0. DeepAgents adapter Phase 9 item checked."
+      "assessedAt": "2026-03-28T13:20:00Z",
+      "note": "20+ issues closed, 20+ PRs merged in last 7 days. PR #1233 implements v3.0 user capture funnel (#938). Critical path: KE-2 (#917) still unstarted."
     }
   },
   "recoveryActions": [
@@ -481,8 +490,14 @@
     {
       "type": "roadmap-triage",
       "timestamp": "2026-03-28T05:15:00Z",
-      "description": "ROADMAP.md and swarm-state.json updated: v2.8.4 current release. New entries: DeepAgents adapter (v2.8.1), driverType telemetry (v2.8.1), SQLite fallback (v2.8.3), heredoc fix (v2.8.4). Phase 9 DeepAgents checked. P1 policy gap #1177 (github.pr.* missing from allow-list) flagged as high-priority blocker. Security bypass count 6\u21925 (#618 resolved via PR #1032). Risk score 8\u219214 (NORMAL).",
+      "description": "ROADMAP.md and swarm-state.json updated: v2.8.4 current release. New entries: DeepAgents adapter (v2.8.1), driverType telemetry (v2.8.1), SQLite fallback (v2.8.3), heredoc fix (v2.8.4). Phase 9 DeepAgents checked. P1 policy gap #1177 (github.pr.* missing from allow-list) flagged as high-priority blocker. Security bypass count 6→5 (#618 resolved via PR #1032). Risk score 8→14 (NORMAL).",
       "agent": "backlog-hygiene--roadmap-triage-agent"
+    },
+    {
+      "type": "recovery-check",
+      "timestamp": "2026-03-28T13:20:00Z",
+      "description": "Health check run: 1 WARNING (observability-agent silent 75h). Alert #1235 created. PR queue clear (0 conflicts, 3 open clean PRs). Mode: normal. Recovery report #1236 published.",
+      "agent": "recovery-controller-agent"
     }
   ],
   "blockers": [
@@ -509,7 +524,7 @@
         639
       ],
       "description": "2 security issues without assigned PRs: #640 (path manipulation), #639 (credential stripping). #618 RESOLVED via PR #1032.",
-      "recommendation": "Assign implementation agent to #640 (path manipulation \u2014 most exploitable)."
+      "recommendation": "Assign implementation agent to #640 (path manipulation — most exploitable)."
     },
     {
       "type": "operational",
@@ -528,16 +543,16 @@
     "riskTrend": "worsened-slightly",
     "mainBranchCI": "green",
     "openPRsCount": 3,
-    "conflictedPRsCount": 2,
+    "conflictedPRsCount": 0,
     "stuckPRsCount": 0,
     "ciFailingPRsCount": 0,
     "highIssuesWithoutPR": 5,
     "regressionDetected": false,
     "completedPhaseCount": 10,
     "activePhaseCount": 4,
-    "progressSinceLastRun": "v2.8.1-v2.8.4 patch series merged: DeepAgents adapter, driverType telemetry, graceful SQLite fallback, CI stability, heredoc false-positive fix, claude-init idempotent hooks. ROADMAP Phase 9 DeepAgents item checked. Security issue count 6\u21925 (#618 resolved). P1 policy gap discovered: github.pr.* missing from allow-list (#1177). Risk score 8\u219214.",
+    "progressSinceLastRun": "Recovery check 2026-03-28T13:20Z: 0 conflicting PRs (down from 2). observability-agent silent 75h (alert #1235). PR #1233 opens v3.0 user capture funnel implementation. All CI green. Mode stays normal.",
     "modeChangeConditions": {
-      "toNormal": "CURRENT STATE \u2014 risk score 14, 3 open PRs (2 conflicted docs), main CI green.",
+      "toNormal": "CURRENT STATE - risk score 14, 3 open PRs (0 conflicted), main CI green. 1 WARNING: observability-agent silent.",
       "toElevated": "Risk score exceeds 20, or PR queue grows above 5, or new critical security regression, or #1177 policy gap causes major agent outage.",
       "toCritical": "Main CI failure rate >30%, 2+ unresolved critical issues, or merge conflict cascade (3+ PRs)."
     }
