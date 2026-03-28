@@ -93,6 +93,12 @@ const COPILOT_TOOL_MAP: Record<string, string> = {
   grep: 'Grep',
   web_fetch: 'WebFetch',
   task: 'Agent',
+  // Copilot CLI session management meta-tools
+  report_intent: 'Read', // Read-only UI annotation — no side effects
+  list_bash: 'Read', // Lists active shell sessions — read-only
+  read_bash: 'Read', // Reads output from a shell session — read-only
+  stop_bash: 'Bash', // Terminates a shell session — treated as shell action
+  write_bash: 'Bash', // Sends input to a shell session — treated as shell action
 };
 
 export function normalizeCopilotCliAction(
@@ -200,6 +206,62 @@ export function normalizeCopilotCliAction(
         metadata: { hook: 'preToolUse', prompt: args.prompt, sessionId, source: 'copilot-cli' },
       };
       break;
+
+    case 'report_intent':
+      baseAction = {
+        tool: 'Read',
+        agent,
+        metadata: {
+          hook: 'preToolUse',
+          intent: args.intent,
+          sessionId,
+          source: 'copilot-cli',
+        },
+      };
+      break;
+
+    case 'list_bash':
+      baseAction = {
+        tool: 'Read',
+        agent,
+        metadata: { hook: 'preToolUse', sessionId, source: 'copilot-cli' },
+      };
+      break;
+
+    case 'read_bash': {
+      const bashId = args.id as string | undefined;
+      baseAction = {
+        tool: 'Read',
+        target: bashId,
+        agent,
+        metadata: { hook: 'preToolUse', id: bashId, sessionId, source: 'copilot-cli' },
+      };
+      break;
+    }
+
+    case 'stop_bash': {
+      const stopId = args.id as string | undefined;
+      baseAction = {
+        tool: 'Bash',
+        target: stopId,
+        agent,
+        metadata: { hook: 'preToolUse', id: stopId, sessionId, source: 'copilot-cli' },
+      };
+      break;
+    }
+
+    case 'write_bash': {
+      const writeId = args.id as string | undefined;
+      const writeInput = args.input as string | undefined;
+      baseAction = {
+        tool: 'Bash',
+        command: writeInput,
+        target: writeId,
+        agent,
+        metadata: { hook: 'preToolUse', id: writeId, sessionId, source: 'copilot-cli' },
+      };
+      break;
+    }
 
     default:
       // Unknown tool — pass through with canonical mapping if available

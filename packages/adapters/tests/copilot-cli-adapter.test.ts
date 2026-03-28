@@ -110,6 +110,55 @@ describe('normalizeCopilotCliAction', () => {
     expect(action.target).toBe('run the tests');
   });
 
+  it('normalizes report_intent as Read (read-only UI annotation)', () => {
+    const payload: CopilotCliHookPayload = {
+      toolName: 'report_intent',
+      toolArgs: JSON.stringify({ intent: 'I will run the tests' }),
+    };
+    const action = normalizeCopilotCliAction(payload);
+    expect(action.tool).toBe('Read');
+    expect(action.metadata).toHaveProperty('intent', 'I will run the tests');
+    expect(action.metadata).toHaveProperty('source', 'copilot-cli');
+  });
+
+  it('normalizes list_bash as Read (read-only session listing)', () => {
+    const payload: CopilotCliHookPayload = { toolName: 'list_bash' };
+    const action = normalizeCopilotCliAction(payload);
+    expect(action.tool).toBe('Read');
+    expect(action.agent).toBe('copilot-cli');
+  });
+
+  it('normalizes read_bash as Read with session id in target', () => {
+    const payload: CopilotCliHookPayload = {
+      toolName: 'read_bash',
+      toolArgs: JSON.stringify({ id: 'session-42' }),
+    };
+    const action = normalizeCopilotCliAction(payload);
+    expect(action.tool).toBe('Read');
+    expect(action.target).toBe('session-42');
+  });
+
+  it('normalizes stop_bash as Bash with session id in target', () => {
+    const payload: CopilotCliHookPayload = {
+      toolName: 'stop_bash',
+      toolArgs: JSON.stringify({ id: 'session-42' }),
+    };
+    const action = normalizeCopilotCliAction(payload);
+    expect(action.tool).toBe('Bash');
+    expect(action.target).toBe('session-42');
+  });
+
+  it('normalizes write_bash as Bash with input as command', () => {
+    const payload: CopilotCliHookPayload = {
+      toolName: 'write_bash',
+      toolArgs: JSON.stringify({ id: 'session-42', input: 'echo hello' }),
+    };
+    const action = normalizeCopilotCliAction(payload);
+    expect(action.tool).toBe('Bash');
+    expect(action.command).toBe('echo hello');
+    expect(action.target).toBe('session-42');
+  });
+
   it('normalizes unknown tool gracefully', () => {
     const payload: CopilotCliHookPayload = {
       toolName: 'some_custom_tool',
