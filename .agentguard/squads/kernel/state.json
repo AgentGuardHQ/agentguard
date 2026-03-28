@@ -1,59 +1,51 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Reduce false-positive governance denials blocking swarm agents: #1202 (KE-2 AAB normalization — strip rtk/time/timeout prefixes) → #1208 (heredoc false positive — PR #1238 needs rebase) → #1139 ($(date) command scanner allowlist). [#1209 closed via #1243.]",
-    "issues": [1202, 1208, 1139]
+    "goal": "False-positive cleanup sweep: #1113 (security_reminder_hook exits with error on GH Actions writes — change to warning) + KE-2 Canonical ActionContext design (v3.0 blocker). Prior sprint issues all closed or in final PR stage.",
+    "issues": [1113, 1047],
+    "priorGoal": "Reduce false-positive governance denials blocking swarm agents: #1202 (KE-2 AAB normalization) → #1208 (heredoc false positive) → #1139 ($(date) command scanner allowlist). All DONE.",
+    "priorIssues": [1202, 1208, 1139]
   },
   "assignments": {
     "senior": {
-      "issue": [1202, 1139],
-      "title": "KE-2 AAB normalization (#1202 flagship) + $(date) scanner allowlist (#1139)",
+      "issue": [1113],
+      "title": "#1113 — security_reminder_hook.py blocks Write to .github/workflows/*.yml instead of warning",
       "status": "ready",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "Priority order: #1202 first (flagship 3-5d — strip rtk/time/timeout prefixes in aab.ts, emit UnknownActionType WARNING, audit tool-action-map.json). Then #1139 ($(date +format) safe subshell allowlist in command-scanner.ts). #1209 is DONE (PR #1243 merged). URGENT: 3 cycles unstarted on #1202 — start immediately. Evidence: dogfood issues #1205, #1203, #1197, #1196, #1195 are all #1202 manifestations."
+      "note": "After #1255 merges. Fix: hooks/security_reminder_hook.py should exit 0 (warn) not non-zero (block). Low risk, low complexity. Root cause: PreToolUse hook returning error text blocks the tool call — should return advisory message with exit 0."
     },
-    "copilot-cli": {
-      "issue": [1208],
-      "title": "Rebase PR #1238 — strip heredoc body before governance path scan",
-      "status": "needs-rebase",
-      "branch": "unknown",
-      "pr": 1238,
-      "claimedAt": "2026-03-28T15:00:00.000Z",
-      "note": "PR #1238 CI 6/6 green. Core fix correct. BLOCKER (run 2): branch BEHIND main after #1243, #1241, #1245 merged. No merge conflicts expected. Must rebase on current main HEAD. ESCALATED to director at 23:30Z cycle per 2-run rule."
+    "active_pr": {
+      "issue": [1139],
+      "title": "PR #1255 — safe-subshell allowlist (closes #1139)",
+      "status": "ci-pending",
+      "branch": "agent/kernel-sr-20260328-193002",
+      "pr": 1255,
+      "claimedAt": "2026-03-28T19:30:00.000Z",
+      "note": "Rebased by EM at 21:15Z onto origin/main (fa3c050). Post-rebase CI pending. 17 new tests, stripSafeSubshells() added to command-scanner.ts. Expected to pass — lint/test/analyze all passed pre-rebase. EM to merge when CI green."
     }
   },
-  "blockers": [
-    {
-      "id": "pr-1238-rebase",
-      "description": "PR #1238 branch BEHIND main for 2 consecutive EM runs. copilot-cli not actioned.",
-      "blockedSince": "2026-03-28T20:30:00.000Z",
-      "runs": 2,
-      "escalated": true,
-      "escalatedTo": "director",
-      "escalatedAt": "2026-03-28T23:30:00.000Z"
-    }
-  ],
+  "blockers": [],
   "prQueue": {
     "open": 1,
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
       {
-        "number": 1238,
-        "title": "fix(invariants): strip heredoc body before governance path scan",
-        "ci": "6/6 green",
-        "mergeStateStatus": "BEHIND",
-        "closesIssue": 1208,
-        "status": "needs-rebase",
-        "note": "Core fix: stripHeredocBody() isolates command header before invariant scan. 9 tests (5 unit + 4 integration). BLOCKER (run 2): branch BEHIND main. Escalated to director. Rebase clean — no conflicts with #1243/#1241/#1245.",
+        "number": 1255,
+        "title": "fix(matchers): safe-subshell allowlist — prevent $(date) false positives (closes #1139)",
+        "ci": "post-rebase pending",
+        "mergeStateStatus": "CLEAN",
+        "closesIssue": 1139,
+        "status": "ci-pending-post-rebase",
+        "note": "Rebased by EM 21:15Z. 1 commit ahead of main. Only matchers files changed (command-scanner.ts + command-scanner.test.ts). Merge when CI clears.",
         "readyToMerge": false,
-        "blockerRuns": 2
+        "blockerRuns": 0
       }
     ]
   },
-  "health": "yellow",
+  "health": "green",
   "testHealth": {
     "total": 4394,
     "passed": 4394,
@@ -61,7 +53,7 @@
     "packages": 18,
     "lastRun": "2026-03-28T06:50:00.000Z",
     "status": "all_passing",
-    "delta": "+30 vs prior QA run (4364→4394)",
+    "delta": "+30 vs prior QA run (4364→4394). PR #1255 will add +17 on merge.",
     "breakdown": {
       "kernel": 889,
       "agentguard": 837,
@@ -85,14 +77,9 @@
     "regressions": [],
     "coverageGaps": [
       {
-        "issue": 1202,
-        "description": "No test for rtk-prefixed command normalization in aab.ts — unknown action type fallthrough untested",
-        "location": "packages/kernel/tests/aab.test.ts"
-      },
-      {
-        "issue": 1139,
-        "description": "$(date +format) blocking source not confirmed — may be AI safety layer or command-scanner.ts. Senior to locate in #1139 investigation.",
-        "location": "packages/matchers/src/command-scanner.ts"
+        "issue": 1113,
+        "description": "No test coverage for security_reminder_hook.py exit code behavior — next sprint work",
+        "location": "hooks/security_reminder_hook.py"
       }
     ]
   },
@@ -104,11 +91,14 @@
     { "issue": 964, "pr": 969, "mergedAt": "2026-03-26T00:31:01Z" },
     { "issue": 1148, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
     { "issue": 1144, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
-    { "issue": 1119, "pr": 1153, "mergedAt": "2026-03-28T05:00:00.000Z", "note": "Merged after rebase on main" },
-    { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z", "note": "persona.env operational exemption in no-governance-self-modification invariant" },
-    { "issue": 1209, "pr": 1243, "mergedAt": "between 2026-03-28T20:30Z and 23:30Z", "note": "MCP prefix match: AAB normalizeIntent now uses startsWith() for mcp.call target. All github-mcp-server-* tools correctly resolved." }
+    { "issue": 1119, "pr": 1153, "mergedAt": "2026-03-28T05:00:00.000Z" },
+    { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z" },
+    { "issue": 1209, "pr": 1243, "mergedAt": "2026-03-28T18:00:00.000Z" },
+    { "issue": 1202, "pr": 1252, "mergedAt": "between 2026-03-28T20:30Z and 21:15Z" },
+    { "issue": 1208, "pr": 1238, "mergedAt": "between 2026-03-28T20:30Z and 21:15Z" },
+    { "issue": 1086, "pr": 1264, "mergedAt": "2026-03-28T21:15:30Z", "note": "Go-kernel event bus: KE-3 telemetry wired, sub-ms enforcement validated (p50 = 721 ns/op). Merged by EM." }
   ],
-  "lastEmRun": "2026-03-28T23:30:00.000Z",
+  "lastEmRun": "2026-03-28T21:15:00.000Z",
   "lastQaRun": "2026-03-28T06:50:00.000Z",
-  "updatedAt": "2026-03-28T23:30:00.000Z"
+  "updatedAt": "2026-03-28T21:15:00.000Z"
 }
