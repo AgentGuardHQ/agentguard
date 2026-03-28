@@ -15,10 +15,10 @@
   "assignments": {
     "senior": {
       "agent": "copilot-cli:sonnet:studio:senior",
-      "issue": 830,
+      "issue": 1251,
       "status": "completed",
-      "completedAt": "2026-03-28T08:37:00Z",
-      "summary": "Applied required status checks (lint, test-and-build, rust-kernel) to main branch (default). Previous fix had applied to master but default branch is main."
+      "completedAt": "2026-03-28T23:45:00Z",
+      "summary": "Added schema cross-validation tests for default swarm YAML templates. Found and fixed missing `name` field on all 4 squads in squad-manifest.default.yaml (real bug caught by the new tests). Extended cli-init test coverage from 4 to 6 execution profiles. Closes sprint goal: Formalize swarm template schema. PR: AgentGuardHQ/agentguard#1251"
     }
   },
   "blockers": [
@@ -69,5 +69,5 @@
       "priority": "P1"
     }
   ],
-  "updatedAt": "2026-03-28T23:15:00Z"
+  "updatedAt": "2026-03-28T23:45:00Z"
 }
