@@ -1,0 +1,79 @@
+{
+  "cycle": "2026-03-28T17:00Z",
+  "agent": "claude-code:opus:studio:em",
+  "health": "yellow",
+  "healthReason": "Budget exhaustion P1 (auto-resolves April 1); QA agents broken (#146)",
+  "summary": "Merged PR #177 (prev EM report) and PR #180 (cron collision fix, closes #173). Swarm telemetry healthy. SKILL.md discrepancy from #181 is a false positive — squad SKILL.md files live in claude/scheduled-tasks/, not claude/skills/. Two human escalations require immediate attention: Nix onboarding (#178, April 10) and DPP dry run owner (#152, April 10). Kernel squad flagged on #179 (Option A default-deny, April 4).",
+  "actionsThisCycle": [
+    { "action": "Merged #177", "detail": "Previous EM report" },
+    { "action": "Merged #180", "detail": "Cron collision fix — closes #173" }
+  ],
+  "sprintStatus": {
+    "goal": "Ship agentguard init studio wizard + execution profiles + swarm template schema formalization (v3.1 prep)",
+    "blockedUntil": "2026-04-01",
+    "blockedReason": "Copilot budget exhaustion at cap (4000/4000 cents)",
+    "issues": {
+      "165-169": "Guitar Jam — deferred to April 1 budget reset",
+      "152": "DPP dry run — checklist merged, owner needed (deadline April 10)",
+      "146": "QA regression/test-architect broken — retrigger April 1"
+    }
+  },
+  "swarmHealth": {
+    "script": "healthy",
+    "telemetry": "healthy",
+    "cronCollisions": 0,
+    "queueDepth": 0,
+    "workerPIDs": "32 alive",
+    "skillMdCheck": "false-positive — squad SKILLs in claude/scheduled-tasks/, workspace skills in claude/skills/ (roadmap/rollout/sitrep/brainstorm) — correct"
+  },
+  "crossSquadAlerts": [
+    {
+      "squad": "kernel",
+      "issue": 179,
+      "title": "Option A default-deny for demo — unknown shell.exec → warn+audit",
+      "deadline": "2026-04-04",
+      "urgency": "P1",
+      "action": "Kernel EM: assign and start — 7 days to deadline"
+    },
+    {
+      "squad": "cloud",
+      "note": "DPP invite code for Nix (#178) available in agentguard-cloud #458 — cloud squad to provide"
+    }
+  ],
+  "escalations": [
+    {
+      "to": "HUMAN",
+      "issue": 178,
+      "title": "Nix design partner activation — schedule onboarding session",
+      "deadline": "2026-04-10",
+      "daysRemaining": 13,
+      "action": "Schedule onboarding session with Nix team before April 10"
+    },
+    {
+      "to": "HUMAN",
+      "issue": 152,
+      "title": "DPP dry run needs owner",
+      "deadline": "2026-04-10",
+      "daysRemaining": 13,
+      "action": "Assign owner to drive #152 DPP dry run through April 10 gate"
+    },
+    {
+      "to": "kernel-em",
+      "issue": 179,
+      "title": "Option A default-deny — assign to kernel senior",
+      "deadline": "2026-04-04",
+      "daysRemaining": 7
+    },
+    {
+      "to": "qa-em",
+      "action": "Retrigger qa-regression-analyzer and qa-test-architect on April 1 (budget reset)"
+    }
+  ],
+  "analyticsCoordination": {
+    "openRequests": [21, 22, 23, 25, 26, 32],
+    "blockers": "None from studio this cycle",
+    "note": "feat/#26 (agent_name/driver_type) and #25 (per-agent compliance reports) are open — coordinate with analytics EM for sprint 2"
+  },
+  "dogfood": "No AgentGuard governance issues observed this run.",
+  "updatedAt": "2026-03-28T17:00:00.000Z"
+}
