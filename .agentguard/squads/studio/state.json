@@ -12,7 +12,15 @@
     "blockedUntil": "2026-04-01",
     "blockedReason": "Copilot budget exhaustion (4000/4000 cents)"
   },
-  "assignments": {},
+  "assignments": {
+    "senior": {
+      "agent": "copilot-cli:sonnet:studio:senior",
+      "issue": 830,
+      "status": "completed",
+      "completedAt": "2026-03-28T08:37:00Z",
+      "summary": "Applied required status checks (lint, test-and-build, rust-kernel) to main branch (default). Previous fix had applied to master but default branch is main."
+    }
+  },
   "blockers": [
     {
       "id": "march-budget-exhaustion",
@@ -47,5 +55,5 @@
       "priority": "P1"
     }
   ],
-  "updatedAt": "2026-03-28T17:00:00.000Z"
+  "updatedAt": "2026-03-28T08:37:00Z"
 }
