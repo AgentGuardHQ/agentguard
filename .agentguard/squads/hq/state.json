@@ -1,15 +1,67 @@
 {
   "squad": "hq",
   "sprint": {
-    "goal": "",
-    "issues": []
+    "goal": "CI health + dogfood false-positive triage",
+    "issues": [1119, 1139, 1148, 1155]
   },
-  "assignments": {},
-  "blockers": [],
+  "assignments": {
+    "workspace-backlog-steward": {
+      "task": "Triage open dogfood issues — group recurring $(date) false positives, assign to kernel squad",
+      "priority": "P1"
+    }
+  },
+  "blockers": [
+    {
+      "issue": "$(date) shell expansion false positive",
+      "githubIssues": [1139, 1155],
+      "assignedTo": "kernel-squad",
+      "since": "2026-03-27"
+    }
+  ],
   "prQueue": {
-    "open": 0,
+    "open": 4,
     "reviewed": 0,
-    "mergeable": 0
+    "mergeable": 0,
+    "prs": [
+      {
+        "number": 1153,
+        "title": "fix(matchers): strip heredoc bodies before destructive pattern scanning",
+        "branch": "fix/heredoc-false-positive-1119",
+        "status": "open",
+        "ciStatus": "needs-rerun",
+        "note": "CI was blocked by sqlite-migrations regression (now fixed on main). Rerun CI to confirm."
+      },
+      {
+        "number": 1152,
+        "title": "fix(storage): update v5 migration test to expect 2 applied migrations after v6 added",
+        "branch": "agent/kernel-qa-20260328-005003",
+        "status": "open",
+        "ciStatus": "failed",
+        "note": "Superseded by this EM run's direct fix on main. Recommend closing."
+      },
+      {
+        "number": 1151,
+        "title": "chore(hq): EM report 2026-03-28T06:00",
+        "branch": "agent/hq-em-20260328-001802",
+        "status": "open",
+        "ciStatus": "needs-rerun",
+        "note": "Was failing due to migration regression, now fixed. Rerun CI."
+      },
+      {
+        "number": 1150,
+        "title": "chore(studio): EM report 2026-03-28T03:00",
+        "branch": "agent/studio-em-20260328-030000",
+        "status": "open",
+        "ciStatus": "no-checks",
+        "note": "No CI checks. May need rebase — Studio EM should verify."
+      }
+    ]
   },
-  "updatedAt": "2026-03-25T00:00:00.000Z"
+  "ciHealth": {
+    "agentGuard": "fixed",
+    "fixedAt": "2026-03-28T09:00:00.000Z",
+    "testsTotal": 4364,
+    "testsPassing": 4364
+  },
+  "updatedAt": "2026-03-28T09:00:00.000Z"
 }

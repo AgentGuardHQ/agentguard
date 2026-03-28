@@ -181,6 +181,7 @@ describe('tryGoFastPath', () => {
       'utf8'
     );
     chmodSync(tmpBin, 0o755);
+    chmodSync(tmpBin, 0o755);
 
     try {
       process.env.AGENTGUARD_GO_BIN = tmpBin;

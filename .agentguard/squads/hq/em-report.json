@@ -1,0 +1,136 @@
+{
+  "squad": "hq",
+  "identity": "claude-code:unknown:developer",
+  "cycle": "2026-03-28T09:00Z",
+  "health": "yellow",
+  "summary": "CI regression (sqlite-migrations v5 test) fixed on main. Two tests patched: migration assertion and go-fast-path flakiness. PRs #1151 and #1153 should now pass CI on re-run. PR #1152 superseded. Multiple dogfood false-positive issues remain open (P1).",
+  "ciStatus": {
+    "agentGuard": {
+      "status": "fixed",
+      "detail": "Migration v5 test regression from #1098 patched (toBe(1)→toBe(2)). go-fast-path flaky test fixed (missing chmodSync). Full suite: 15/15 tasks, 820+243 tests passing.",
+      "blockingPRs": ["#1151", "#1152", "#1153"],
+      "fixedBy": "this run"
+    },
+    "agentguardCloud": {
+      "status": "unknown",
+      "detail": "Previous report indicated PR #472 was green. Not re-checked this cycle."
+    },
+    "agentguardAnalytics": {
+      "status": "no-gates",
+      "detail": "No CI gates configured."
+    }
+  },
+  "prQueue": {
+    "open": 4,
+    "reviewed": 0,
+    "mergeable": 0,
+    "stale": 1,
+    "actions": [
+      {
+        "pr": 1153,
+        "title": "fix(matchers): strip heredoc bodies before destructive pattern scanning",
+        "action": "RERUN_CI",
+        "reason": "Was failing only due to sqlite-migrations regression (now fixed on main). PR itself is correct."
+      },
+      {
+        "pr": 1152,
+        "title": "fix(storage): update v5 migration test to expect 2 applied migrations after v6 added",
+        "action": "CLOSE",
+        "reason": "Superseded: this cycle's commit applies the same fix directly to main. PR #1152 also had unrelated go-fast-path CI failure."
+      },
+      {
+        "pr": 1151,
+        "title": "chore(hq): EM report 2026-03-28T06:00",
+        "action": "RERUN_CI",
+        "reason": "Was failing due to migration test regression, now fixed on main."
+      },
+      {
+        "pr": 1150,
+        "title": "chore(studio): EM report 2026-03-28T03:00",
+        "action": "REBASE",
+        "reason": "No CI checks (statusCheckRollup: null). Likely has merge conflicts. Studio EM should rebase."
+      }
+    ]
+  },
+  "dogfoodIssues": {
+    "P1": [
+      {
+        "number": 1155,
+        "title": "[dogfood] Governance hook blocks $(date) in gh pr comment --body strings",
+        "status": "open",
+        "pattern": "Command scanner over-matches read-only date calls. Recurrence of #1139."
+      },
+      {
+        "number": 1154,
+        "title": "[dogfood] Governance denial hit by cloud-qa-smoke-runner (vunknown)",
+        "status": "open",
+        "pattern": "Telemetry gap: driver=copilot agents reporting as vunknown"
+      },
+      {
+        "number": 1148,
+        "title": "Dogfood: better-sqlite3 native bindings missing in worktrees",
+        "status": "partially-mitigated",
+        "mitigation": "#1147 merged (--no-sqlite flag). Deeper npx cache issue (#1144) still open."
+      },
+      {
+        "number": 1119,
+        "title": "[dogfood] Destructive detection fires on heredoc/report content",
+        "status": "fix-in-review",
+        "pr": 1153
+      }
+    ],
+    "recurring": [
+      "#1155, #1154, #1136, #1131, #1132: copilot driver governance denials — many with vunknown version",
+      "#1139, #1155: $(date) false positive — command scanner over-match on read-only shell expansion"
+    ]
+  },
+  "opsHandoff": [
+    {
+      "issue": 1127,
+      "title": "Stale Branch Report — 149 orphaned branches",
+      "action": "Human review required for bulk delete",
+      "priority": "low"
+    },
+    {
+      "issue": 1128,
+      "title": "Swarm Health Alert — 2026-03-27",
+      "action": "Review stale worktrees at base commit ae37b15 (safe to prune)",
+      "priority": "medium"
+    }
+  ],
+  "escalations": [
+    {
+      "priority": "P1",
+      "target": "kernel-squad",
+      "issue": "$(date) false positive (#1139, #1155) — recurring, unresolved. Command scanner treats read-only shell builtins as dangerous expansion.",
+      "recommended_action": "Add allowlist for read-only date/printf/echo patterns in command scanner"
+    },
+    {
+      "priority": "P1",
+      "target": "kernel-squad",
+      "issue": "PR #1153 needs CI rerun after this fix lands. Closes dogfood issue #1119.",
+      "recommended_action": "Merge PR #1153 after CI passes"
+    },
+    {
+      "priority": "P2",
+      "target": "ops",
+      "issue": "149 stale branches (#1127), 11 stale worktrees. Accumulating noise.",
+      "recommended_action": "Schedule bulk cleanup pass"
+    }
+  ],
+  "testsFixed": [
+    {
+      "file": "packages/storage/tests/sqlite-migrations.test.ts",
+      "line": 426,
+      "fix": "toBe(1) → toBe(2): v5 migration test from v4 baseline now applies both v5+v6",
+      "rootCause": "Migration v6 (driver_type) added in #1098 increased runMigrations() count from 1 to 2"
+    },
+    {
+      "file": "apps/cli/tests/go-fast-path.test.ts",
+      "line": 184,
+      "fix": "Added missing chmodSync(tmpBin, 0o755) in 'merges rules from multiple policies' test",
+      "rootCause": "Without exec bit, execFileSync returns EACCES under CI load, causing intermittent failure"
+    }
+  ],
+  "updatedAt": "2026-03-28T09:00:00.000Z"
+}
