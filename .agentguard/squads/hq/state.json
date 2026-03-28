@@ -1,15 +1,73 @@
 {
   "squad": "hq",
   "sprint": {
-    "goal": "",
-    "issues": []
+    "goal": "Validate Go kernel to Cloud telemetry E2E pipeline (workspace #60, due Apr 17): ensure kernel governance events flow through telemetry-client to cloud ingestion, with roundtrip integration tests proving data arrives correctly",
+    "issues": [60, 1139, 1119, 1113, 1128]
   },
-  "assignments": {},
-  "blockers": [],
+  "assignments": {
+    "hq-sr": {
+      "issue": 60,
+      "title": "Go kernel → Cloud telemetry E2E pipeline validation",
+      "status": "planning",
+      "note": "Pending task breakdown: identify emission points in kernel/telemetry-client, Cloud ingestion endpoints, integration test strategy"
+    }
+  },
+  "blockers": [
+    {
+      "issue": 472,
+      "repo": "agentguard-cloud",
+      "description": "PR #472 (outcome filter dashboard) is all-green but awaiting human merge — agents cannot self-approve",
+      "action": "Escalate to human",
+      "priority": "P1"
+    },
+    {
+      "issue": 31,
+      "repo": "agentguard-analytics",
+      "description": "PR #31 (development_artifacts pipeline + error isolation) has two LGTM reviews, awaiting human merge",
+      "action": "Escalate to human",
+      "priority": "P1"
+    }
+  ],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
-    "mergeable": 0
+    "mergeable": 0,
+    "prs": [
+      {
+        "number": 1150,
+        "repo": "agentguard",
+        "title": "chore(studio): EM report 2026-03-28T03:00",
+        "status": "conflicting",
+        "note": "Needs rebase — flagged to Studio EM"
+      }
+    ],
+    "crossRepoPrs": [
+      {
+        "number": 472,
+        "repo": "agentguard-cloud",
+        "status": "ready-for-human-merge",
+        "checks": "all-green",
+        "closesWorkspace": 97
+      },
+      {
+        "number": 31,
+        "repo": "agentguard-analytics",
+        "status": "ready-for-human-merge",
+        "reviews": "2 LGTM"
+      },
+      {
+        "number": 29,
+        "repo": "agentguard-analytics",
+        "status": "close-as-superseded",
+        "reason": "Superseded by #31; has .agentguard-identity committed and unrelated reformatting"
+      }
+    ]
   },
-  "updatedAt": "2026-03-25T00:00:00.000Z"
+  "crossCuttingIssues": {
+    "dogfoodP1": [1139, 1119, 1148, 1113],
+    "opsHandoff": [1128],
+    "backlogHygiene": [1127]
+  },
+  "health": "yellow",
+  "updatedAt": "2026-03-28T06:00:00.000Z"
 }

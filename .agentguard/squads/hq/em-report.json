@@ -1,0 +1,175 @@
+{
+  "generatedAt": "2026-03-28T06:00:00.000Z",
+  "identity": "claude-code:opus:hq:em",
+  "runCycle": "3h",
+  "health": "yellow",
+  "summary": "Overall health YELLOW. Main branch CI is green (PR #1147 merged 2026-03-27T23:09Z). Three cross-repo PRs require action: cloud#472 is all-green and ready for human merge (workspace#97 final item); analytics#31 has two LGTM reviews and should merge (analytics#29 should close as superseded). Studio EM report PR #1150 has merge conflicts and needs rebase. P1 dogfood cluster: 8 open governance denial/false-positive issues pointing at two root causes in the command scanner (#1139 — $(date) false positive, #1119 — destructive detection scanning heredoc content). Swarm hygiene: 149 orphaned branches (#1127) and 11 stale worktrees (#1128) awaiting ops cleanup. Risk score 41/100 HIGH (#1124/#1125) primarily driven by branch accumulation.",
+  "prQueue": {
+    "open": 3,
+    "reviewed": 2,
+    "mergeable": 2,
+    "mergedThisCycle": 0,
+    "prs": [
+      {
+        "number": 1150,
+        "repo": "agentguard",
+        "title": "chore(studio): EM report 2026-03-28T03:00 — sprint delivered, #472 ready to merge",
+        "author": "studio-em",
+        "mergeable": "CONFLICTING",
+        "checks": "no CI on report branches",
+        "recommendation": "NEEDS REBASE — merge conflicts. Studio EM must rebase onto main before this can merge.",
+        "action": "flag to Studio EM"
+      },
+      {
+        "number": 472,
+        "repo": "agentguard-cloud",
+        "title": "feat(dashboard): outcome filter + high-risk allows quick filter on events page",
+        "author": "studio-sr",
+        "mergeable": "MERGEABLE",
+        "checks": {
+          "buildAndTest": "SUCCESS",
+          "dockerBuild": "SUCCESS",
+          "detectAgentPR": "SUCCESS",
+          "vercelDashboard": "SUCCESS",
+          "vercelAPIServer": "SUCCESS",
+          "vercelCloud": "SUCCESS"
+        },
+        "recommendation": "MERGE — all CI checks green. Closes workspace#97 item 4 (final dashboard observability gap before Apr 15 deployment gate).",
+        "action": "escalate to human"
+      },
+      {
+        "number": 31,
+        "repo": "agentguard-analytics",
+        "title": "fix: wire development_artifacts pipeline and add per-pipeline error isolation",
+        "author": "analytics-sr",
+        "mergeable": "MERGEABLE",
+        "checks": "no CI gates on analytics repo",
+        "reviews": "two LGTM reviews (COMMENTED state — agents cannot self-approve)",
+        "recommendation": "MERGE — preferred over #29. Per-pipeline error isolation + development_artifacts wiring. Advisory: close #29 as superseded.",
+        "action": "escalate to human"
+      }
+    ],
+    "closePending": [
+      {
+        "number": 29,
+        "repo": "agentguard-analytics",
+        "reason": "Superseded by #31 (same fix, better endpoint-level isolation). Has blocker: .agentguard-identity committed, unrelated reformatting changes. Reviewers consensus: close in favor of #31."
+      }
+    ]
+  },
+  "crossRepoCoordination": {
+    "versionDrift": "none detected — all repos on compatible agentguard versions",
+    "ciHealth": {
+      "agentGuard": "green — lint/test-and-build/rust-kernel/CodeQL all passing (post #1147 merge)",
+      "agentguardCloud": "green — Build & Test / Docker passing on PR #472",
+      "agentguardAnalytics": "no CI gates — manual review process"
+    },
+    "dependencyConflicts": "none detected",
+    "escalations": [
+      {
+        "priority": "MERGE",
+        "repo": "agentguard-cloud",
+        "pr": 472,
+        "reason": "All-green CI + Vercel. Closes workspace#97 item 4. Needs human merge (agents cannot self-approve).",
+        "owner": "Human"
+      },
+      {
+        "priority": "MERGE",
+        "repo": "agentguard-analytics",
+        "pr": 31,
+        "reason": "Two LGTM reviews. Development_artifacts pipeline gap + error isolation. Needs human merge.",
+        "owner": "Human"
+      },
+      {
+        "priority": "CLOSE",
+        "repo": "agentguard-analytics",
+        "pr": 29,
+        "reason": "Superseded by #31. Has committed .agentguard-identity (runtime artifact, not source) and unrelated reformatting.",
+        "owner": "Human"
+      },
+      {
+        "priority": "REBASE",
+        "repo": "agentguard",
+        "pr": 1150,
+        "reason": "Studio EM report PR has merge conflicts — needs rebase before it can merge.",
+        "owner": "Studio EM"
+      }
+    ]
+  },
+  "dogfoodReport": {
+    "governanceDenials": 0,
+    "falsePositivesObserved": 0,
+    "issuesTriaged": [
+      {
+        "number": 1139,
+        "title": "[dogfood] Safe date command substitution blocked as dangerous shell expansion",
+        "severity": "P1",
+        "rootCause": "Command scanner pattern-matches $(date ...) as 'nested command substitution'. Read-only date calls should be whitelisted.",
+        "assignTo": "Kernel Squad",
+        "action": "assign to kernel-sr for command-scanner false-positive sprint"
+      },
+      {
+        "number": 1119,
+        "title": "[dogfood] Destructive detection fires on report content mentioning blocked patterns",
+        "severity": "P1",
+        "rootCause": "Destructive command matcher scans full shell command string including heredoc content and inline Python literals. Should only scan the invoked command, not its string arguments/content.",
+        "assignTo": "Kernel Squad",
+        "action": "assign to kernel-sr for command-scanner false-positive sprint"
+      },
+      {
+        "number": 1148,
+        "title": "Governance runtime fails to start in worktrees — better-sqlite3 bindings missing",
+        "severity": "P1",
+        "status": "partially mitigated — --no-sqlite flag from #1147 provides workaround. Root cause (stale npx cache / NODE_MODULE_VERSION mismatch from #1144) still open.",
+        "assignTo": "Kernel Squad",
+        "action": "track for docs update and deeper native bindings investigation"
+      },
+      {
+        "number": 1113,
+        "title": "security_reminder_hook blocks Write on GH Actions workflows instead of warning",
+        "severity": "P1",
+        "rootCause": "security_reminder_hook.py exits with error code on first Write to .github/workflows/*.yml; identical retry succeeds. Hook should warn (exit 0), not block (exit non-zero).",
+        "assignTo": "HQ/Kernel Squad",
+        "action": "investigate hook exit code; fix to warn-only"
+      },
+      {
+        "number": 1128,
+        "title": "Swarm Health Alert — 78% agent worktrees stuck or dead",
+        "severity": "P1",
+        "status": "Root cause resolved by #1147 (--no-sqlite). 11 stale worktrees at base commit ae37b15 need physical cleanup.",
+        "assignTo": "OPS",
+        "action": "ops: git worktree prune, dead PID cleanup, swarm-state.json refresh"
+      }
+    ],
+    "openDenialIssues": [1136, 1132, 1131, 1107, 1103, 1102],
+    "denialPatternNote": "8 open dogfood denial issues. Bulk appear to be pr-merger and cloud agents hitting governance rules. Most may be legitimately blocked (force-push, main-push protections). Kernel Squad's false-positive sprint (#1139, #1119) should reduce noise from legitimate reports."
+  },
+  "backlogHygiene": {
+    "openIssues": 50,
+    "orphanedBranches": 149,
+    "pruneRecommendation": "149 orphaned branches (no open PR, >7 days stale) — stale-branch-janitor confirmed none have active PRs. OPS should bulk-delete to reduce noise.",
+    "reportIssuesBacklog": "Issues #1106, #1110, #1116, #1124, #1125, #1128, #1149 are informational reports that can be closed once actioned to reduce issue count."
+  },
+  "sprintStatus": {
+    "goal": "Validate Go kernel to Cloud telemetry E2E pipeline (workspace #60, due Apr 17)",
+    "status": "planning",
+    "blockers": [
+      "Sprint issues not yet assigned — HQ SR needs task breakdown for Go kernel → Cloud telemetry E2E validation"
+    ],
+    "nextActions": [
+      "Break workspace#60 into actionable HQ tasks: identify telemetry event emission points, Cloud ingestion endpoints, integration test strategy",
+      "Coordinate with Kernel Squad (post false-positive sprint) for Go kernel phase 1 (#1086)",
+      "Resolve analytics#31/#29 PR situation (human merge/close needed)"
+    ]
+  },
+  "metrics": {
+    "prsInspected": 4,
+    "prsEscalatedForMerge": 2,
+    "prsEscalatedForClose": 1,
+    "prsNeedingRebase": 1,
+    "issuesTriaged": 5,
+    "openDogfoodDenials": 8,
+    "governanceDenialsThisRun": 0,
+    "orphanedBranches": 149
+  }
+}
