@@ -1,169 +1,136 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-28T21:00:00.000Z",
+  "generatedAt": "2026-03-29T00:00:00.000Z",
   "identity": "claude-code:opus:hq:em",
-  "health": "red",
-  "summary": "Evening cycle. Merged docs sync #1187 (ARCHITECTURE.md, CLAUDE.md, README.md, ROADMAP.md drift fixed). Closed stale #1184 (superseded), #1151 (old EM report with failing CI), and resolved dogfood issue #1181 (report_intent fixed by PR #1178). P0 swarm health persists: 85.7% agents stuck (#1186, continuing from #1128) — requires human intervention. P1 chicken-and-egg identity bridge (#1182) remains open. KE-2 stalling (#917). agentguard-cloud 4 versions behind.",
+  "health": "yellow",
+  "summary": "Midnight cycle. v2.8.5 released (report_intent allow rule + self-mod invariant scoping + --store none fix). #1182 resolved. 7 issues closed (4 report_intent duplicates, #1177 already-fixed, 3 informational). PR queue is clean (0 open PRs). P0 swarm health (#1186) persists — human intervention still required. P1 blockers: KE-2 (#917, 3rd cycle unstarted), AAB normalization gap (#1202, ~700 unintended denials/day), heredoc false-positive (#1208, PR #1213 closed without merging). New dogfood pattern: rtk-prefixed commands misclassified as unknown — impacts our own tooling.",
   "ciStatus": {
     "agentGuard": "green",
-    "agentguardCloud": "green",
+    "agentguardCloud": "unknown",
     "agentguardAnalytics": "no_recent_runs"
   },
   "versionMatrix": {
-    "latest": "2.8.4",
-    "agentGuard": "2.8.4",
+    "latest": "2.8.5",
+    "agentGuard": "2.8.5",
     "agentguardCloud": "2.8.0",
     "agentguardAnalytics": "2.8.2",
     "drift": {
-      "agentguardCloud": "4 versions behind — P2 upgrade needed",
-      "agentguardAnalytics": "2 versions behind — P3 upgrade"
+      "agentguardCloud": "5 versions behind — P2. Missing: report_intent allow rule, self-mod invariant scoping, --store none fix, graceful SQLite fallback, commit-scope-guard.",
+      "agentguardAnalytics": "3 versions behind — P3"
     }
   },
   "prQueue": {
     "agentGuard": {
-      "open": 1,
-      "merged": 1,
-      "closed": 2,
-      "details": [
-        {
-          "number": 1187,
-          "title": "docs: sync documentation with codebase state",
-          "action": "MERGED",
-          "checks": "all_green",
-          "note": "Fixes ARCHITECTURE.md (adapters + drivers), CLAUDE.md (deepagents commands), README.md (phantom init commands removed), ROADMAP.md (codex/gemini reverted to pending)"
-        },
-        {
-          "number": 1184,
-          "title": "docs: sync documentation with codebase",
-          "action": "CLOSED — superseded by #1187",
-          "note": "#1187 is a strict superset of #1184's changes"
-        },
-        {
-          "number": 1151,
-          "title": "chore(hq): EM report 2026-03-28T06:00",
-          "action": "CLOSED — stale EM report, superseded by this cycle",
-          "note": "Failing test-and-build check; not representative of main"
-        },
-        {
-          "number": 1150,
-          "title": "chore(studio): EM report 2026-03-28T03:00",
-          "status": "CONFLICTING",
-          "action": "NEEDS_ATTENTION — Studio EM should close or rebase"
-        }
-      ]
-    },
-    "agentguardCloud": {
-      "open": 1,
-      "notes": "PR #492 (telemetry CLI auth tests) open, #491/#488/#487/#483 are DRAFT. PR #490 (github.* allow rules) merged — fixes dogfood issue #1177 in cloud context."
-    },
-    "agentguardAnalytics": {
       "open": 0,
-      "notes": "No open PRs. CI: no recent runs."
+      "closed_this_cycle": [],
+      "notes": "Queue clean. Confirm with studio-em whether PR #1150 is still active or can be closed."
     }
   },
   "dogfoodPatterns": [
     {
-      "pattern": "report_intent and Copilot CLI meta-tools blocked as unknown",
-      "issues": [1181],
+      "pattern": "report_intent / agent.internal blocked by default-deny",
+      "issues": [1210, 1211, 1214, 1215, 1196, 1195, 1193, 1191],
       "severity": "RESOLVED",
-      "description": "report_intent, list_bash, read_bash, stop_bash, write_bash were classified as unknown action type → default-deny.",
-      "fix": "PR #1178 merged — 5 tools now mapped in tool-action-map.json (46 total)",
-      "resolvedAt": "2026-03-28T06:06Z"
+      "fix": "PR #1212 — agent.report_intent and agent.internal added to agentguard.yaml allow list. Released v2.8.5 (2026-03-28T11:01Z). Issues closed this cycle.",
+      "note": "Agents on pre-2.8.5 CLI will continue to see this. copilot-init re-run needed to pick up new hooks."
     },
     {
-      "pattern": "github.pr.* / github.issue.* actions missing from policy — pr-merger blocked",
-      "issues": [1177],
-      "severity": "RESOLVED (cloud) / ALREADY_PRESENT (agent-guard)",
-      "description": "agentguard-cloud default policy was missing github.* allow rules, blocking pr-merger entirely. agent-guard agentguard.yaml already had the rules.",
-      "fix": "agentguard-cloud PR #490 merged at 2026-03-28T05:21Z",
-      "note": "agent-guard agentguard.yaml has github.* rules at lines 159-176; no fix needed there"
+      "pattern": "Heredoc with governance path strings triggers false-positive self-mod block",
+      "issues": [1208],
+      "severity": "P1 — OPEN",
+      "description": "commandViolation at definitions.ts:1229 scans full command string including heredoc body. PR #1213 (per-token scanning + heredoc-body stripping) closed without merging at 11:21 due to conflicts with #1212.",
+      "recommendation": "kernel-squad-developer: re-implement from closed PR #1213. Strip content after heredoc marker before governance path scanning."
     },
     {
-      "pattern": "Agent identity bridge blocked by no-governance-self-modification invariant",
-      "issues": [1182],
-      "severity": "P1",
-      "description": "scripts/agent-identity-bridge.sh writes persona env to .agentguard/persona.env — kernel blocks as self-modification. Chicken-and-egg: governance requires identity for telemetry, but governance blocks the identity-setting mechanism.",
-      "recommendation": "Kernel squad: scope no-governance-self-modification to exclude .agentguard/persona.env (identity artifact, not policy/hook). Invariant should distinguish runtime identity state from governance configuration.",
-      "secondaryIssue": "gh issue create also blocked when body references governance paths — invariant should only match file write targets, not command argument text"
+      "pattern": "MCP server sub-tool names fail exact policy match",
+      "issues": [1209],
+      "severity": "P1 — OPEN",
+      "description": "github-mcp-server-actions_list blocked despite allow rule for github-mcp-server. AAB uses exact-match for MCP targets.",
+      "recommendation": "kernel-squad-developer: use startsWith() in aab.ts MCP target matching. ~1h effort."
+    },
+    {
+      "pattern": "rtk-prefixed commands misclassified as unknown",
+      "issues": [1202],
+      "severity": "P1 — OPEN",
+      "description": "rtk git merge → classified as unknown (not git.merge). AAB doesn't strip tool-wrapper prefixes. Directly impacts our own dev workflow.",
+      "impact": "64 false denials for rtk-prefixed git commands. 3,825 total unknown-type denials in 5.5 days.",
+      "recommendation": "kernel-squad-developer: strip known wrappers [rtk, time, timeout, strace] before AAB pattern matching. Quick partial fix before KE-2 full solution."
     },
     {
       "pattern": "Agent version reported as vunknown",
-      "issues": [1167, 1165, 1159, 1154, 1136, 1132],
-      "severity": "P2",
-      "description": "Multiple copilot-driver agents report version as 'unknown' in governance denial telemetry.",
-      "recommendation": "Agents should read agentguard version at startup; likely missing --agent-version flag or VERSION file in copilot CLI hooks"
-    },
-    {
-      "pattern": "agentguard policy suggest redirects to cloud silently",
-      "issues": [1166],
-      "severity": "P2",
-      "description": "policy suggest silently redirects to cloud instead of running locally when no cloud token is present. Blocks onboarding dry runs.",
-      "recommendation": "DX squad: add --local flag or clear fallback message"
+      "issues": [1205, 1203, 1197, 1165, 1159, 1154],
+      "severity": "P2 — ONGOING",
+      "description": "Copilot-driver agents report version unknown in governance telemetry.",
+      "recommendation": "copilot-init should set AGENTGUARD_AGENT_VERSION env var."
     }
   ],
   "crossCuttingIssues": [
     {
       "issue": 1186,
-      "title": "Swarm Health Alert — P0 (2026-03-28, continuing from #1128)",
+      "title": "Swarm Health P0 — 3rd consecutive cycle",
       "severity": "P0",
-      "age": "~15h (new), ~42h (prior batch from #1128)",
-      "description": "85.7% agent worktrees stuck. 12 stuck agents, 3 active. 133 enabled agents vs 32 max_workers (4× oversubscribed). 18 dead PID files in /tmp/. 2 cron collision groups. Prior issue #1128 (2026-03-27) still unresolved.",
-      "action": "Human required: git worktree prune in main repo, clean /tmp/ PID files, resolve cron collisions (0 6 * * * and 45 */6 * * *), confirm cron daemon is running"
+      "description": "85.7% agents stuck. 133 enabled agents vs 32 max_workers (4× oversubscribed). Human required.",
+      "action": "Escalated to director. No change this cycle."
     },
     {
       "issue": 917,
-      "title": "KE-2: ActionContext — stalling, critical path for v3.0",
+      "title": "KE-2: ActionContext — 3rd cycle unstarted",
       "severity": "P1",
-      "description": "0/4 checkboxes, no assigned PR, unstarted since 2026-03-25. KE-2 is the #1 blocker for v3.0.",
-      "action": "Escalate to kernel-sr for assignment this cycle"
+      "description": "0/4 checkboxes, no PR, no assignee. v3.0 critical path. Root cause for AAB normalization gap (#1202).",
+      "action": "Re-escalated to kernel-sr. If no PR by 2026-03-29T06:00Z, escalate to director as v3.0 risk."
+    },
+    {
+      "issue": 1202,
+      "title": "AAB normalization gap — ~700 unintended denials/day",
+      "severity": "P1",
+      "description": "Inflates denial rate to 18.2% (real intentional ~11%). rtk prefix stripping is quick win; KE-2 is full solution.",
+      "action": "kernel-squad-developer: rtk prefix stripping. kernel-sr: KE-2 unblock."
     },
     {
       "issue": 1127,
       "title": "149 orphaned branches",
-      "severity": "P2",
-      "action": "Human batch cleanup via git branch -d or workspace-backlog-steward sprint"
+      "severity": "P3",
+      "action": "workspace-backlog-steward sprint or human batch cleanup."
     }
   ],
   "escalations": [
     {
       "priority": "P0",
       "target": "director / human",
-      "reason": "Swarm health #1186: 85.7% stuck rate (15h+), 133 agents vs 32 max_workers. Cron daemon may not be running. Needs: git worktree prune, PID cleanup, cron collision fix, capacity review."
+      "reason": "Swarm health #1186: 3rd cycle, 85.7% stuck. 133 agents vs 32 max_workers. Needs: git worktree prune, /tmp/ PID cleanup, cron daemon restart, capacity reduction."
+    },
+    {
+      "priority": "P1",
+      "target": "kernel-sr",
+      "reason": "KE-2 (#917) unstarted 3rd cycle. v3.0 blocked. If no PR by 2026-03-29T06:00Z, escalate to director."
     },
     {
       "priority": "P1",
       "target": "kernel-squad-developer",
-      "reason": "Issue #1182: agent-identity-bridge chicken-and-egg — no-governance-self-modification invariant must be scoped to exclude .agentguard/persona.env writes. Blocks telemetry identity enrichment for all scheduled agents."
-    },
-    {
-      "priority": "P1",
-      "target": "kernel-sr / squad lead",
-      "reason": "KE-2 (#917) stalling — 0/4 checkboxes, no PR, no assignee. Critical path for v3.0. Needs assignment this cycle."
+      "reason": "Two quick fixes: (1) #1209 MCP prefix match in aab.ts (~1h), (2) #1208 heredoc body stripping, re-implement from closed PR #1213 (~2h). Together eliminate ~100 false denials/day."
     },
     {
       "priority": "P2",
       "target": "cloud-squad",
-      "reason": "agentguard-cloud pinned at 2.8.0 (4 versions behind 2.8.4). Upgrade PR needed. Risk: missing graceful SQLite fallback (#1168), commit-scope-guard fix (#1160), read-only fail-open (#1114)."
-    },
-    {
-      "priority": "P2",
-      "target": "studio-em",
-      "reason": "PR #1150 (Studio EM report 2026-03-28T03:00) is conflicting. Should be closed — sprint goal was delivered."
+      "reason": "agentguard-cloud at 2.8.0, 5 versions behind 2.8.5. Copilot agents in cloud context still denied for report_intent."
     }
   ],
   "sprintStatus": {
-    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). Cross-squad coordination: KE-2 unblock, swarm health resolution.",
-    "progress": "Docs drift resolved (#1187). Two dogfood issues closed (report_intent #1181, pr-merger policy gap in cloud via #490). KE-2 (#917) remains unstarted — highest risk item for sprint delivery.",
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 unblock, swarm health resolution.",
+    "progress": "v2.8.5 released with key reliability fixes. #1182 resolved. Dogfood backlog partially cleared. KE-2 0% — highest sprint risk. #1202 (AAB normalization) is new systemic issue.",
     "blockers": [
-      "Swarm health P0 (#1186) — human intervention needed, ongoing from #1128",
-      "Agent identity bridge (#1182) — scheduled agents cannot enrich telemetry with identity",
-      "KE-2 (#917) — stalling, no assignee, v3.0 critical path"
+      "Swarm health P0 (#1186) — human required, 3rd cycle",
+      "KE-2 (#917) — 3rd cycle unstarted, v3.0 critical path",
+      "AAB normalization (#1202) — ~700 unintended denials/day",
+      "Heredoc false-positive (#1208) — PR #1213 closed, follow-up needed"
     ]
   },
   "actionsThisCycle": [
-    { "action": "MERGED", "pr": 1187, "reason": "Docs sync: all checks green, comprehensive drift fix across 4 files" },
-    { "action": "CLOSED", "pr": 1184, "reason": "Superseded by #1187 (subset of changes)" },
-    { "action": "CLOSED", "pr": 1151, "reason": "Stale EM report with failing CI; superseded by this cycle" },
-    { "action": "CLOSED_ISSUE", "issue": 1181, "reason": "Resolved by PR #1178 (Copilot CLI meta-tool mapping)" }
-  ]
+    { "action": "CLOSED_ISSUES", "issues": [1210, 1211, 1214, 1215], "reason": "report_intent resolved by v2.8.5" },
+    { "action": "CLOSED_ISSUES", "issues": [1200, 1162, 1180], "reason": "Informational reports" },
+    { "action": "CLOSED_ISSUE", "issue": 1177, "reason": "github.pr.* rules present in both repos" },
+    { "action": "LABELED", "issues": [1202, 1208, 1209], "labels": "priority:high" },
+    { "action": "COMMENTED", "issues": [1208, 1209], "reason": "Root cause analysis + assignment guidance" }
+  ],
+  "healthRationale": "Yellow (downgraded from red): v2.8.5 released, #1182 resolved, CI green, queue clean. Still yellow: P0 swarm persists, KE-2 stalling 3rd cycle, AAB producing ~700 unintended denials/day, heredoc fix lost when #1213 closed. Back to red if KE-2 has no PR by next cycle."
 }
