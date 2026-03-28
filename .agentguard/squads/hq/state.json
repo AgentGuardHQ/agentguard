@@ -1,15 +1,50 @@
 {
   "squad": "hq",
   "sprint": {
-    "goal": "",
-    "issues": []
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). Cross-squad coordination for ShellForge critical path (kernel→Goose adapter→MCP→QA bench). DPP onboarding dry run (#152).",
+    "issues": [
+      { "ref": "workspace#60", "status": "in_progress", "due": "2026-04-17" },
+      { "ref": "#152", "status": "at_risk", "blocker": "policy suggest redirect bug #1166" }
+    ]
   },
-  "assignments": {},
-  "blockers": [],
+  "assignments": {
+    "workspace-backlog-steward": "stale branch cleanup (#1127, 149 orphaned branches)",
+    "kernel-squad-developer": "rebase PR #1153 (heredoc false-positive fix) on main — P1",
+    "cloud-squad": "upgrade @red-codes/agentguard from 2.8.0 to 2.8.4 in agentguard-cloud — P2",
+    "director": "review swarm health P0 (#1128) — 78% stuck rate from 2026-03-27"
+  },
+  "blockers": [
+    {
+      "id": "B1",
+      "severity": "P1",
+      "description": "PR #1153 (matchers heredoc false-positive fix) CONFLICTING + CI failing — needs rebase on main",
+      "impact": "$(date) command substitution false positive continues to block multiple agents daily (#1139)",
+      "assignee": "kernel-squad-developer"
+    },
+    {
+      "id": "B2",
+      "severity": "P2",
+      "description": "agentguard-cloud pinned at 2.8.0 (4 versions behind 2.8.4) — risk to E2E telemetry pipeline accuracy",
+      "assignee": "cloud-squad"
+    }
+  ],
   "prQueue": {
-    "open": 0,
+    "open": 3,
     "reviewed": 0,
-    "mergeable": 0
+    "mergeable": 0,
+    "merged_this_cycle": [
+      { "repo": "agent-guard", "pr": 1169, "title": "chore(kernel-em): EM report 2026-03-28T03:15Z" },
+      { "repo": "agentguard-analytics", "pr": 31, "title": "fix: wire development_artifacts pipeline and per-pipeline error isolation" }
+    ],
+    "closed_this_cycle": [
+      { "repo": "agentguard-analytics", "pr": 29, "reason": "superseded by #31" }
+    ],
+    "pending": [
+      { "repo": "agent-guard", "pr": 1153, "status": "CONFLICTING+CI_FAIL", "action": "needs_rebase" },
+      { "repo": "agent-guard", "pr": 1151, "status": "STALE_EM_REPORT+CI_FAIL", "action": "will_be_superseded_by_this_run" },
+      { "repo": "agent-guard", "pr": 1150, "status": "STALE_EM_REPORT+CONFLICTING", "action": "will_be_superseded_by_this_run" }
+    ]
   },
-  "updatedAt": "2026-03-25T00:00:00.000Z"
+  "health": "yellow",
+  "updatedAt": "2026-03-28T09:21:00.000Z"
 }
