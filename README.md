@@ -397,10 +397,7 @@ agentguard claude-init                    # Interactive wizard: mode + pack → 
 agentguard claude-init --global           # Install hooks globally (~/.claude/settings.json)
 agentguard claude-init --mode guide --pack essentials  # Non-interactive setup
 agentguard copilot-init                   # Set up GitHub Copilot CLI hook integration
-agentguard codex-init                     # Set up OpenAI Codex CLI hook integration
-agentguard gemini-init                    # Set up Google Gemini CLI hook integration
-agentguard opencode-init                  # Set up OpenCode (.opencode/plugins/agentguard.ts) hook integration
-agentguard deepagents-init                # Set up DeepAgents (.deepagents/agentguard_middleware.py) middleware
+agentguard deepagents-init                # Set up DeepAgents (LangChain) hook integration
 agentguard init --template strict         # Scaffold policy from a template
 agentguard status                         # Show governance status
 
