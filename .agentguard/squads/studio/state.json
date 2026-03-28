@@ -8,31 +8,44 @@
       "Define execution profiles (development, ci-safe, strict, enterprise)",
       "Runner / Cloud protocol integration",
       "Sync studio worktree with master (33 commits behind - DONE 2026-03-25)"
-    ]
+    ],
+    "blockedUntil": "2026-04-01",
+    "blockedReason": "Copilot budget exhaustion (4000/4000 cents)"
   },
-  "assignments": {
-    "copilot-cli:sonnet:studio:senior": {
-      "issue": 173,
-      "title": "bug: 2 new cron collisions in server/schedule.json (post-#144 fix)",
-      "pr": 180,
-      "status": "pr_reviewed_awaiting_merge",
-      "reviewVerdict": "PASS (workspace-pr-review-agent, 2026-03-28T06:59Z)",
-      "nextAction": "Tier B / human merge. No blockers.",
-      "updatedAt": "2026-03-28T07:35:09.000Z"
-    }
-  },
+  "assignments": {},
   "blockers": [
     {
       "id": "march-budget-exhaustion",
       "severity": "P1",
       "description": "Copilot budget at cap (4000/4000 cents). Guitar-jam issues #165-169 deferred to April 1 per EM.",
       "autoResolves": "2026-04-01"
+    },
+    {
+      "id": "qa-agents-broken",
+      "severity": "P1",
+      "description": "qa-regression-analyzer and qa-test-architect broken (#146). QA EM to retrigger April 1.",
+      "autoResolves": "2026-04-01"
     }
   ],
   "prQueue": {
-    "open": 2,
-    "reviewed": 1,
-    "mergeable": 1
+    "open": 0,
+    "reviewed": 0,
+    "mergeable": 0,
+    "note": "PR #177 and #180 merged this cycle. Queue clear."
   },
-  "updatedAt": "2026-03-28T07:35:09.000Z"
+  "humanEscalations": [
+    {
+      "issue": 178,
+      "title": "Nix design partner activation — schedule onboarding session before April 10",
+      "deadline": "2026-04-10",
+      "priority": "P1"
+    },
+    {
+      "issue": 152,
+      "title": "DPP dry run needs owner — April 10 deadline",
+      "deadline": "2026-04-10",
+      "priority": "P1"
+    }
+  ],
+  "updatedAt": "2026-03-28T17:00:00.000Z"
 }
