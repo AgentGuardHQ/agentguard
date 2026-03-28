@@ -38,7 +38,12 @@ interface HookEntry {
 }
 
 interface SessionStartHookEntry {
-  hooks?: Array<{ type?: string; command?: string; timeout?: number; blocking?: boolean }>;
+  hooks?: Array<{
+    type?: string;
+    command?: string;
+    timeout?: number;
+    blocking?: boolean;
+  }>;
 }
 
 interface Settings {
@@ -359,7 +364,10 @@ export async function claudeInit(args: string[] = []): Promise<void> {
     { name: 'agent-identity-bridge.sh', content: AGENT_IDENTITY_BRIDGE },
     { name: 'write-persona.sh', content: WRITE_PERSONA },
     { name: 'session-persona-check.sh', content: SESSION_PERSONA_CHECK },
-    { name: 'claude-hook-wrapper.sh', content: claudeHookWrapper(cli, storeSuffix, dbPathSuffix) },
+    {
+      name: 'claude-hook-wrapper.sh',
+      content: claudeHookWrapper(cli, storeSuffix, dbPathSuffix),
+    },
   ];
 
   for (const { name, content } of scriptFiles) {
@@ -469,7 +477,9 @@ Then run: \`scripts/write-persona.sh <driver> <role>\`
   // Set core.hooksPath so git uses the repo's hooks/ directory
   // (pre-commit auto-stages telemetry, post-commit tracks dev activity)
   try {
-    const currentHooksPath = execSync('git config core.hooksPath', { encoding: 'utf8' }).trim();
+    const currentHooksPath = execSync('git config core.hooksPath', {
+      encoding: 'utf8',
+    }).trim();
     if (currentHooksPath !== 'hooks') {
       execSync('git config core.hooksPath hooks');
       process.stderr.write(
@@ -503,7 +513,9 @@ Then run: \`scripts/write-persona.sh <driver> <role>\`
   const policyGenerated = generateStarterPolicy(selectedMode, selectedPack, isReset);
 
   // Detect rtk for token optimization status
-  let rtkStatus: { available: boolean; version?: string } = { available: false };
+  let rtkStatus: { available: boolean; version?: string } = {
+    available: false,
+  };
   try {
     const { detectRtk } = await import('@red-codes/core');
     rtkStatus = detectRtk();
@@ -968,9 +980,7 @@ function showProtectionSummary(
   }
   process.stderr.write(`\n  ${DIM}ℹ Claude Desktop support coming soon.${RESET}\n`);
   process.stderr.write(`\n  ${BOLD}☁  Get team governance & telemetry:${RESET}\n`);
-  process.stderr.write(
-    `  ${FG.cyan}https://agentguard-cloud-dashboard.vercel.app/signup${RESET}\n`
-  );
+  process.stderr.write(`  ${FG.cyan}https://agentguard-cloud.vercel.app/signup${RESET}\n`);
   process.stderr.write(`  ${DIM}  or run: agentguard cloud signup${RESET}\n`);
   process.stderr.write('\n');
 }
