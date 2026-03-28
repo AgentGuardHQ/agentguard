@@ -1,0 +1,127 @@
+{
+  "squad": "hq",
+  "generatedAt": "2026-03-28T09:21:00.000Z",
+  "identity": "claude-code:opus:hq:em",
+  "health": "yellow",
+  "summary": "Cross-repo triage run. Merged kernel EM report (#1169) and analytics PR #31. Closed superseded analytics #29. PR #1153 (heredoc false-positive fix) remains blocked on rebase + CI. Version drift: agentguard-cloud 4 versions behind (2.8.0 vs 2.8.4). Recurring dogfood false-positive pattern ($(date) command substitution) needs matchers fix to land.",
+  "ciStatus": {
+    "agentGuard": "green",
+    "agentguardCloud": "in_progress",
+    "agentguardAnalytics": "no_recent_runs"
+  },
+  "versionMatrix": {
+    "latest": "2.8.4",
+    "agentGuard": "2.8.4",
+    "agentguardCloud": "2.8.0",
+    "agentguardAnalytics": "2.8.2",
+    "drift": {
+      "agentguardCloud": "4 versions behind — P2 upgrade needed",
+      "agentguardAnalytics": "2 versions behind — P3 upgrade"
+    }
+  },
+  "prQueue": {
+    "agentGuard": {
+      "open": 3,
+      "merged": 1,
+      "details": [
+        { "number": 1169, "title": "chore(kernel-em): EM report 2026-03-28T03:15Z", "action": "MERGED", "checks": "all_green" },
+        { "number": 1153, "title": "fix(matchers): strip heredoc bodies before destructive pattern scanning", "status": "CONFLICTING + CI_FAIL", "action": "NEEDS_REBASE", "blockedBy": "#1119 root cause fix" },
+        { "number": 1151, "title": "chore(hq): EM report 2026-03-28T06:00", "status": "MERGEABLE + CI_FAIL", "action": "STALE_EM_REPORT", "note": "Previous EM run; superseded by this report" },
+        { "number": 1150, "title": "chore(studio): EM report 2026-03-28T03:00", "status": "CONFLICTING", "action": "STALE_EM_REPORT" }
+      ]
+    },
+    "agentguardCloud": {
+      "open": 0,
+      "merged": 1,
+      "details": [
+        { "number": 472, "title": "feat(dashboard): outcome filter + high-risk allows quick filter", "action": "ALREADY_MERGED" }
+      ]
+    },
+    "agentguardAnalytics": {
+      "open": 0,
+      "merged": 1,
+      "closed": 1,
+      "details": [
+        { "number": 31, "title": "fix: wire development_artifacts pipeline and per-pipeline error isolation", "action": "MERGED", "reviews": 3 },
+        { "number": 29, "title": "fix: wire development_artifacts pipeline + transaction rollback hardening", "action": "CLOSED — superseded by #31" }
+      ]
+    }
+  },
+  "dogfoodPatterns": [
+    {
+      "pattern": "$(date) command substitution false positive",
+      "issues": [1139, 1155],
+      "severity": "P1",
+      "description": "$(date -u +%Y-%m-%dT%H:%M:%SZ) embedded in --body argument strings flagged as dangerous shell expansion. Affects multiple agents using gh pr comment with timestamps.",
+      "rootCause": "matchers/command-scanner does not exempt read-only, side-effect-free substitutions like $(date) when inside --body string literals",
+      "fix": "PR #1153 (needs rebase on main)",
+      "recommendation": "Escalate to kernel squad to unblock and rebase #1153"
+    },
+    {
+      "pattern": "Agent version reported as vunknown",
+      "issues": [1167, 1165, 1159, 1154, 1136, 1132, 1131],
+      "severity": "P2",
+      "description": "Multiple agents (onboarding-monitor-agent, pr-merger-agent, cloud-qa-smoke-runner, office-sim-qa) report version as 'unknown' in governance denial telemetry. Driver consistently shows 'copilot'.",
+      "recommendation": "Agents should read agentguard version at startup and register it; likely missing --agent-version flag or VERSION file in copilot CLI hooks"
+    },
+    {
+      "pattern": "agentguard policy suggest redirects to cloud silently",
+      "issues": [1166],
+      "severity": "P2",
+      "description": "policy suggest command silently redirects to cloud instead of running local analysis when no cloud token is present. Blocks onboarding dry runs.",
+      "recommendation": "Assign to DX squad: add --local flag or fallback message with clear guidance"
+    }
+  ],
+  "crossCuttingIssues": [
+    {
+      "issue": 1128,
+      "title": "Swarm Health Alert — P0 (2026-03-27)",
+      "severity": "P0",
+      "age": "~20h",
+      "description": "78% stuck rate — 5 of 9 agent worktrees inactive >4h. All stopped at 01:17–01:44 UTC 2026-03-27.",
+      "action": "Needs director review; worktrees may need pruning. Assign to ops."
+    },
+    {
+      "issue": 1127,
+      "title": "Stale Branch Report — 149 orphaned branches",
+      "severity": "P2",
+      "action": "Assign to workspace-backlog-steward for batch cleanup sprint"
+    },
+    {
+      "issue": 1119,
+      "title": "False positive: destructive pattern fires on report content",
+      "severity": "P1",
+      "action": "Blocked on PR #1153 rebase — escalate to kernel squad developer"
+    }
+  ],
+  "escalations": [
+    {
+      "priority": "P0",
+      "target": "director",
+      "reason": "Swarm health alert #1128 — 78% stuck rate from 2026-03-27, no resolution observed. Worktrees may need manual pruning."
+    },
+    {
+      "priority": "P1",
+      "target": "kernel-squad-developer",
+      "reason": "PR #1153 (heredoc false-positive fix) is CONFLICTING + CI failing. Rebase on main needed. This fix resolves a recurring dogfood pattern ($(date) substitution blocked) that is hitting multiple agents daily."
+    },
+    {
+      "priority": "P2",
+      "target": "cloud-squad",
+      "reason": "agentguard-cloud pinned at @red-codes/agentguard 2.8.0 — 4 releases behind latest 2.8.4. Risk of missing security/behavioral improvements."
+    }
+  ],
+  "sprintStatus": {
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). Cross-squad coordination for ShellForge critical path. DPP onboarding dry run (#152).",
+    "progress": "No sprint issues tracked yet. Onboarding dry run (#152) at risk — policy suggest redirect bug (#1166) blocks clean onboarding run.",
+    "blockers": [
+      "PR #1153 (matchers heredoc fix) blocked on rebase — daily false positive pattern ongoing",
+      "agentguard-cloud version drift (2.8.0) may affect telemetry E2E pipeline accuracy"
+    ]
+  },
+  "actionsThisCycle": [
+    "Merged agent-guard PR #1169 (kernel EM report 2026-03-28T03:15Z) — all 5 checks green",
+    "Merged agentguard-analytics PR #31 (development_artifacts pipeline fix) — 3 reviews",
+    "Closed agentguard-analytics PR #29 (superseded by #31)"
+  ]
+}
