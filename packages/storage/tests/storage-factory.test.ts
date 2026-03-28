@@ -112,6 +112,28 @@ describe('resolveStorageConfig', () => {
     const config = resolveStorageConfig(['--store', 'sqlite', '--no-sqlite']);
     expect(config.backend).toBe('none');
   });
+
+  it('--store none returns none backend', () => {
+    const config = resolveStorageConfig(['--store', 'none']);
+    expect(config.backend).toBe('none');
+  });
+
+  it('AGENTGUARD_STORE=none returns none backend', () => {
+    process.env.AGENTGUARD_STORE = 'none';
+    const config = resolveStorageConfig([]);
+    expect(config.backend).toBe('none');
+  });
+
+  it('--store none takes precedence over AGENTGUARD_STORE=sqlite', () => {
+    process.env.AGENTGUARD_STORE = 'sqlite';
+    const config = resolveStorageConfig(['--store', 'none']);
+    expect(config.backend).toBe('none');
+  });
+
+  it('--no-sqlite takes precedence over --store none', () => {
+    const config = resolveStorageConfig(['--store', 'none', '--no-sqlite']);
+    expect(config.backend).toBe('none');
+  });
 });
 
 describe('resolveSqlitePath', () => {

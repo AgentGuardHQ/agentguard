@@ -123,8 +123,20 @@ export function resolveSqlitePath(config: StorageConfig): string {
 
 /** Resolve storage config from CLI args and environment */
 export function resolveStorageConfig(args: string[]): StorageConfig {
-  // --no-sqlite flag or AGENTGUARD_NO_SQLITE=1 env var disables SQLite storage
+  // --no-sqlite flag or AGENTGUARD_NO_SQLITE=1 env var disables SQLite storage (legacy flags)
   if (args.includes('--no-sqlite') || process.env.AGENTGUARD_NO_SQLITE === '1') {
+    return { backend: 'none' };
+  }
+
+  // --store <backend> flag takes explicit precedence
+  const storeIdx = args.findIndex((a) => a === '--store');
+  const storeArg = storeIdx !== -1 ? args[storeIdx + 1] : undefined;
+
+  // AGENTGUARD_STORE env var as fallback
+  const storeEnv = process.env.AGENTGUARD_STORE;
+  const storeBackend = storeArg ?? storeEnv;
+
+  if (storeBackend === 'none') {
     return { backend: 'none' };
   }
 
