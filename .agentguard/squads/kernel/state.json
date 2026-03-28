@@ -1,59 +1,49 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Reduce false-positive governance denials blocking swarm agents: #1202 (KE-2 AAB normalization — strip rtk/time/timeout prefixes) → #1208 (heredoc false positive — PR #1238 needs rebase) → #1139 ($(date) command scanner allowlist). [#1209 closed via #1243.]",
-    "issues": [1202, 1208, 1139]
+    "goal": "Reduce false-positive governance denials: #1139 ($(date) safe-subshell allowlist — PR #1255 CI in_progress). [#1202 closed via #1252. #1208 closed via #1238. #1209 closed via #1243.]",
+    "issues": [1139]
   },
   "assignments": {
     "senior": {
-      "issue": [1202, 1139],
-      "title": "KE-2 AAB normalization (#1202 flagship) + $(date) scanner allowlist (#1139)",
-      "status": "ready",
+      "issue": [1139],
+      "title": "$(date) safe-subshell allowlist — PR #1255 in review",
+      "status": "pr-review",
+      "branch": "agent/kernel-sr-20260328-193002",
+      "pr": 1255,
+      "claimedAt": "2026-03-28T19:30:00.000Z",
+      "note": "PR #1255 filed. workspace-pr-review-agent verdict: PASS. CI re-triggered at 21:13Z (3/3 checks in_progress after prior CodeQL fail). Awaiting CI green. Fix: stripSafeSubshells() in command-scanner.ts, 17 new tests (62 total in matchers suite). No conflicts expected."
+    },
+    "copilot-cli": {
+      "issue": null,
+      "title": "Idle — #1208 sprint work complete",
+      "status": "idle",
       "branch": null,
       "pr": null,
       "claimedAt": null,
-      "note": "Priority order: #1202 first (flagship 3-5d — strip rtk/time/timeout prefixes in aab.ts, emit UnknownActionType WARNING, audit tool-action-map.json). Then #1139 ($(date +format) safe subshell allowlist in command-scanner.ts). #1209 is DONE (PR #1243 merged). URGENT: 3 cycles unstarted on #1202 — start immediately. Evidence: dogfood issues #1205, #1203, #1197, #1196, #1195 are all #1202 manifestations."
-    },
-    "copilot-cli": {
-      "issue": [1208],
-      "title": "Rebase PR #1238 — strip heredoc body before governance path scan",
-      "status": "needs-rebase",
-      "branch": "unknown",
-      "pr": 1238,
-      "claimedAt": "2026-03-28T15:00:00.000Z",
-      "note": "PR #1238 CI 6/6 green. Core fix correct. BLOCKER (run 2): branch BEHIND main after #1243, #1241, #1245 merged. No merge conflicts expected. Must rebase on current main HEAD. ESCALATED to director at 23:30Z cycle per 2-run rule."
+      "note": "PR #1238 merged at 2026-03-28T18:42:48Z (closes #1208 heredoc false positive). Copilot-cli sprint assignment complete. Ready for next task."
     }
   },
-  "blockers": [
-    {
-      "id": "pr-1238-rebase",
-      "description": "PR #1238 branch BEHIND main for 2 consecutive EM runs. copilot-cli not actioned.",
-      "blockedSince": "2026-03-28T20:30:00.000Z",
-      "runs": 2,
-      "escalated": true,
-      "escalatedTo": "director",
-      "escalatedAt": "2026-03-28T23:30:00.000Z"
-    }
-  ],
+  "blockers": [],
   "prQueue": {
     "open": 1,
-    "reviewed": 0,
+    "reviewed": 1,
     "mergeable": 0,
     "prs": [
       {
-        "number": 1238,
-        "title": "fix(invariants): strip heredoc body before governance path scan",
-        "ci": "6/6 green",
-        "mergeStateStatus": "BEHIND",
-        "closesIssue": 1208,
-        "status": "needs-rebase",
-        "note": "Core fix: stripHeredocBody() isolates command header before invariant scan. 9 tests (5 unit + 4 integration). BLOCKER (run 2): branch BEHIND main. Escalated to director. Rebase clean — no conflicts with #1243/#1241/#1245.",
+        "number": 1255,
+        "title": "fix(matchers): safe-subshell allowlist — prevent $(date +format) false positives",
+        "ci": "3/3 in_progress (re-triggered 21:13Z)",
+        "mergeStateStatus": "UNKNOWN",
+        "closesIssue": 1139,
+        "status": "awaiting-ci",
+        "note": "PASS review from workspace-pr-review-agent. Security analysis thorough: nested subshells correctly rejected via [^)(]* in regex. 17 new tests. CI re-run after prior CodeQL fail. No rebase needed (filed against current main HEAD).",
         "readyToMerge": false,
-        "blockerRuns": 2
+        "blockerRuns": 0
       }
     ]
   },
-  "health": "yellow",
+  "health": "green",
   "testHealth": {
     "total": 4394,
     "passed": 4394,
@@ -85,14 +75,9 @@
     "regressions": [],
     "coverageGaps": [
       {
-        "issue": 1202,
-        "description": "No test for rtk-prefixed command normalization in aab.ts — unknown action type fallthrough untested",
-        "location": "packages/kernel/tests/aab.test.ts"
-      },
-      {
         "issue": 1139,
-        "description": "$(date +format) blocking source not confirmed — may be AI safety layer or command-scanner.ts. Senior to locate in #1139 investigation.",
-        "location": "packages/matchers/src/command-scanner.ts"
+        "description": "17 new tests in PR #1255 cover stripSafeSubshells() — gap closes on merge",
+        "location": "packages/matchers/tests/command-scanner.test.ts"
       }
     ]
   },
@@ -106,9 +91,11 @@
     { "issue": 1144, "pr": 1168, "mergedAt": "2026-03-28T03:12:20Z" },
     { "issue": 1119, "pr": 1153, "mergedAt": "2026-03-28T05:00:00.000Z", "note": "Merged after rebase on main" },
     { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z", "note": "persona.env operational exemption in no-governance-self-modification invariant" },
-    { "issue": 1209, "pr": 1243, "mergedAt": "between 2026-03-28T20:30Z and 23:30Z", "note": "MCP prefix match: AAB normalizeIntent now uses startsWith() for mcp.call target. All github-mcp-server-* tools correctly resolved." }
+    { "issue": 1209, "pr": 1243, "mergedAt": "2026-03-28T19:00:00.000Z", "note": "MCP prefix match: AAB normalizeIntent now uses startsWith() for mcp.call target" },
+    { "issue": 1202, "pr": 1252, "mergedAt": "2026-03-28T19:26:00.000Z", "note": "KE-2 AAB normalization: strip rtk/time/timeout wrapper prefixes in aab.ts. Closes 3,825+ unintended default-deny decisions." },
+    { "issue": 1208, "pr": 1238, "mergedAt": "2026-03-28T18:42:48Z", "note": "Heredoc false positive: stripHeredocBody() in definitions.ts isolates command header before governance path scan." }
   ],
-  "lastEmRun": "2026-03-28T23:30:00.000Z",
+  "lastEmRun": "2026-03-29T02:30:00.000Z",
   "lastQaRun": "2026-03-28T06:50:00.000Z",
-  "updatedAt": "2026-03-28T23:30:00.000Z"
+  "updatedAt": "2026-03-29T02:30:00.000Z"
 }
