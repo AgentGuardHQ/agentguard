@@ -5,23 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="OeJuCct5Y8LRHQB95DkF5Y9hwUvZIvtYrpKy16x3o28" />
   <title>AgentGuard — Run AI Agents Without Fear</title>
-  <meta name="description" content="AgentGuard — default-deny governance for AI coding agents. 24 invariants, four enforcement modes, tamper-evident audit trail. Install in 30 seconds.">
+  <meta name="description" content="AgentGuard — default-deny governance for AI coding agents. 22 invariants, four enforcement modes, tamper-evident audit trail. Install in 30 seconds.">
 
   <!-- OpenGraph -->
   <meta property="og:title" content="AgentGuard — Run AI Agents Without Fear">
-  <meta property="og:description" content="Default-deny governance for AI coding agents. 24 invariants, four enforcement modes (monitor, educate, guide, enforce), tamper-evident audit trail. Install in 30 seconds.">
+  <meta property="og:description" content="Default-deny governance for AI coding agents. 22 invariants, four enforcement modes (monitor, educate, guide, enforce), tamper-evident audit trail. Install in 30 seconds.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://agentguardhq.github.io/agentguard/">
   <meta property="og:image" content="https://agentguardhq.github.io/agentguard/og-image.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AgentGuard — Run AI Agents Without Fear">
   <meta name="twitter:description" content="Default-deny governance for AI coding agents. Four enforcement modes. Install in 30 seconds.">
-  <meta name="twitter:image" content="https://agentguardhq.github.io/agentguard/og-image.png">
 
   <!-- SEO -->
   <link rel="canonical" href="https://agentguardhq.github.io/agentguard/">
@@ -32,7 +28,7 @@
     "name": "AgentGuard",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Windows, macOS, Linux",
-    "description": "AgentGuard — default-deny governance for AI coding agents. 24 invariants, four enforcement modes, tamper-evident audit trail.",
+    "description": "AgentGuard — default-deny governance for AI coding agents. 22 invariants, four enforcement modes, tamper-evident audit trail.",
     "url": "https://agentguardhq.github.io/agentguard/",
     "offers": {
       "@type": "Offer",
@@ -374,6 +370,7 @@
         <a href="#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
         <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Dashboard</a>
+        <a href="shellforge.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">ShellForge</a>
         <a href="posts.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Newsletter</a>
         <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
         <button id="theme-toggle-desktop" class="theme-toggle text-muted hover:text-text" aria-label="Toggle light/dark mode">
@@ -400,6 +397,7 @@
         <a href="#cli" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">CLI</a>
         <a href="#swarm" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Swarm</a>
         <a href="https://agentguard-cloud-dashboard.vercel.app" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Dashboard</a>
+        <a href="shellforge.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">ShellForge</a>
         <a href="posts.html" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">Newsletter</a>
         <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm font-medium cursor-pointer">GitHub</a>
         <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold text-sm px-4 py-2 rounded-lg transition-colors text-center cursor-pointer">Get Started</a>
@@ -435,7 +433,7 @@
             Run AI Agents <span class="text-cta">Without Fear</span>
           </h1>
           <p class="text-muted text-lg leading-relaxed mb-8 max-w-xl">
-            Your AI agents can't push to main, leak credentials, or destroy your repo. 24 built-in safety checks block catastrophic actions before they execute. Install in 30 seconds. Sleep at night.
+            Your AI agents can't push to main, leak credentials, or destroy your repo. 22 built-in safety checks block catastrophic actions before they execute. Install in 30 seconds. Sleep at night.
           </p>
           <div class="flex flex-wrap gap-4">
             <a href="#quickstart" class="bg-cta hover:bg-cta-dark text-bg font-semibold px-6 py-3 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer">
@@ -445,10 +443,6 @@
             <a href="https://github.com/AgentGuardHQ/agentguard" target="_blank" rel="noopener noreferrer" class="border border-surface-light hover:border-muted text-text font-semibold px-6 py-3 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
               View on GitHub
-            </a>
-            <a href="https://agentguard-cloud-dashboard.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="border border-cta/40 hover:border-cta text-cta font-semibold px-6 py-3 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Get Early Access
             </a>
           </div>
         </div>
@@ -461,7 +455,7 @@
               <span class="w-3 h-3 rounded-full bg-danger/60" aria-hidden="true"></span>
               <span class="w-3 h-3 rounded-full bg-warning/60" aria-hidden="true"></span>
               <span class="w-3 h-3 rounded-full bg-cta/60" aria-hidden="true"></span>
-              <span class="font-mono text-xs text-muted ml-2">agentguard guard --policy agentguard.yaml</span>
+              <span class="font-mono text-xs text-muted ml-2">aguard guard --policy agentguard.yaml</span>
             </div>
             <!-- Terminal body -->
             <div class="p-5 font-mono text-sm leading-relaxed h-[380px] overflow-hidden">
@@ -480,27 +474,27 @@
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 text-center reveal-stagger">
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="4307">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="2637">0</div>
             <div class="text-muted text-sm mt-1">Tests</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="93">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="87">0</div>
             <div class="text-muted text-sm mt-1">Destructive Patterns</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="47">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="46">0</div>
             <div class="text-muted text-sm mt-1">Event Kinds</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="41">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="40">0</div>
             <div class="text-muted text-sm mt-1">Action Types</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="24">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="22">0</div>
             <div class="text-muted text-sm mt-1">Invariants</div>
           </div>
           <div class="reveal">
-            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="34">0</div>
+            <div class="font-mono font-bold text-3xl sm:text-4xl text-text counter" data-target="36">0</div>
             <div class="text-muted text-sm mt-1">CLI Commands</div>
           </div>
         </div>
@@ -543,13 +537,36 @@
               <svg class="w-5 h-5 text-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
             </div>
             <h3 class="font-mono font-semibold text-text mb-2">Production-Grade Kernel</h3>
-            <p class="text-muted text-sm leading-relaxed">Sub-millisecond evaluation latency. 24 invariants, 93 destructive patterns, tamper-evident audit chain. The reference monitor architecture enterprises require for autonomous agent deployment.</p>
+            <p class="text-muted text-sm leading-relaxed">Sub-millisecond evaluation latency. 22 invariants, 87 destructive patterns, tamper-evident audit chain. The reference monitor architecture enterprises require for autonomous agent deployment.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Demo video section: hidden until recorded (see #1007) -->
+    <!-- ============================================ -->
+    <!-- DEMO VIDEO                                    -->
+    <!-- ============================================ -->
+    <section id="demo" class="py-24 border-b border-surface-light" aria-labelledby="demo-heading">
+      <div class="max-w-4xl mx-auto px-6">
+        <div class="text-center mb-12 reveal">
+          <h2 id="demo-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">See It In Action</h2>
+          <p class="text-muted text-lg max-w-2xl mx-auto">Install, configure a policy, run a governed session, and view the Cloud dashboard &mdash; in 30 seconds.</p>
+        </div>
+
+        <div class="reveal">
+          <div class="relative bg-surface border border-surface-light rounded-xl overflow-hidden aspect-video flex items-center justify-center glow-green" id="demo-video-container">
+            <!-- Placeholder: replace with video embed when recorded -->
+            <div class="text-center p-8">
+              <div class="w-16 h-16 rounded-full bg-cta/10 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-cta" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+              <p class="font-mono text-muted text-sm">Demo video coming soon</p>
+              <p class="text-muted text-xs mt-2">npm install &rarr; agentguard.yaml &rarr; governed session &rarr; Cloud dashboard</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- ============================================ -->
     <!-- WHAT IT PREVENTS                             -->
@@ -689,7 +706,7 @@
             </li>
             <li class="flex items-start gap-3">
               <svg class="w-5 h-5 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>24 built-in invariants + 93 destructive patterns detected <strong class="text-text">automatically</strong></span>
+              <span>22 built-in invariants + 87 destructive patterns detected <strong class="text-text">automatically</strong></span>
             </li>
             <li class="flex items-start gap-3">
               <svg class="w-5 h-5 text-cta mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -732,16 +749,6 @@
             <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             <span class="font-mono text-text text-sm font-medium">MCP Server</span>
           </div>
-          <!-- OpenCode -->
-          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
-            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
-            <span class="font-mono text-text text-sm font-medium">OpenCode</span>
-          </div>
-          <!-- DeepAgents -->
-          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
-            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-            <span class="font-mono text-text text-sm font-medium">DeepAgents</span>
-          </div>
         </div>
       </div>
     </section>
@@ -762,16 +769,16 @@
             <div class="w-10 h-10 rounded-lg bg-cta/10 flex items-center justify-center mb-4">
               <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
-            <h3 class="font-mono font-semibold text-text mb-2">24 Safety Invariants</h3>
+            <h3 class="font-mono font-semibold text-text mb-2">21 Safety Invariants</h3>
             <p class="text-muted text-sm leading-relaxed">Secret detection, credential protection, branch guards, blast radius limits, lockfile integrity, script injection, CI/CD protection, network egress control, governance self-modification prevention. Always on.</p>
           </div>
 
-          <!-- Card 2: 93 Destructive Patterns -->
+          <!-- Card 2: 87 Destructive Patterns -->
           <div class="reveal bg-surface border border-surface-light rounded-xl p-6 card-lift cursor-pointer">
             <div class="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center mb-4">
               <svg class="w-5 h-5 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <h3 class="font-mono font-semibold text-text mb-2">93 Destructive Patterns</h3>
+            <h3 class="font-mono font-semibold text-text mb-2">87 Destructive Patterns</h3>
             <p class="text-muted text-sm leading-relaxed">rm -rf, sudo, docker prune, DROP TABLE, pkill, systemctl&mdash;detected and classified by the AAB before execution.</p>
           </div>
 
@@ -808,7 +815,7 @@
               <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
             <h3 class="font-mono font-semibold text-text mb-2">Full Audit Trail</h3>
-            <p class="text-muted text-sm leading-relaxed">47 event kinds across JSONL or SQLite. Inspect, replay, export, diff, and attach evidence to PRs.</p>
+            <p class="text-muted text-sm leading-relaxed">49 event kinds across JSONL or SQLite. Inspect, replay, export, diff, and attach evidence to PRs.</p>
           </div>
 
           <!-- Card 7: Escalation System -->
@@ -910,7 +917,7 @@
             <div class="pipeline-arrow flex-shrink-0">
               <div class="bg-surface border-2 border-warning rounded-lg px-4 py-4 text-center w-[110px]">
                 <div class="font-mono font-bold text-warning text-sm">Invariants</div>
-                <div class="text-muted text-xs mt-1">23 safety checks</div>
+                <div class="text-muted text-xs mt-1">21 safety checks</div>
               </div>
             </div>
 
@@ -934,7 +941,7 @@
             <div class="pipeline-arrow last flex-shrink-0">
               <div class="bg-surface border-2 border-cta rounded-lg px-4 py-4 text-center w-[110px]">
                 <div class="font-mono font-bold text-cta text-sm">Emit</div>
-                <div class="text-muted text-xs mt-1">47 event kinds</div>
+                <div class="text-muted text-xs mt-1">49 event kinds</div>
               </div>
             </div>
           </div>
@@ -948,7 +955,7 @@
         <div class="grid md:grid-cols-3 gap-6 mt-16 reveal-stagger">
           <div class="reveal bg-surface border border-surface-light rounded-xl p-6">
             <h3 class="font-mono font-semibold text-cta text-sm mb-3">Action Authorization Boundary</h3>
-            <p class="text-muted text-sm leading-relaxed">The AAB normalizes raw tool calls into 41 canonical action types across 10 classes. Every agent operation&mdash;whether a Bash command, file write, or git push&mdash;gets classified before evaluation.</p>
+            <p class="text-muted text-sm leading-relaxed">The AAB normalizes raw tool calls into 27 canonical action types across 9 classes. Every agent operation&mdash;whether a Bash command, file write, or git push&mdash;gets classified before evaluation.</p>
           </div>
           <div class="reveal bg-surface border border-surface-light rounded-xl p-6">
             <h3 class="font-mono font-semibold text-info text-sm mb-3">Simulation Engine</h3>
@@ -1037,7 +1044,7 @@
               </tbody>
             </table>
           </div>
-          <p class="text-muted/70 text-xs mt-4">Agents get 8% more productive time per session. Ships automatically via <code class="text-text/60">npm install</code> &mdash; a postinstall script downloads the prebuilt binary for your platform. Works with Claude Code, GitHub Copilot, Codex CLI, and Gemini CLI hooks.</p>
+          <p class="text-muted/70 text-xs mt-4">Agents get 8% more productive time per session. Ships automatically via <code class="text-text/60">npm install</code> &mdash; a postinstall script downloads the prebuilt binary for your platform. Works with both Claude Code and GitHub Copilot hooks.</p>
         </div>
       </div>
     </section>
@@ -1048,7 +1055,7 @@
     <section id="invariants" class="py-24" aria-labelledby="inv-heading">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16 reveal">
-          <h2 id="inv-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">24 Built-in Invariants</h2>
+          <h2 id="inv-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">21 Built-in Invariants</h2>
           <p class="text-muted text-lg max-w-2xl mx-auto">Safety checks that run on every action. Zero configuration. Always on.</p>
         </div>
 
@@ -1167,21 +1174,6 @@
                 <td class="py-3 px-4"><span class="sev-high text-xs font-mono font-semibold px-2 py-0.5 rounded">HIGH</span></td>
                 <td class="py-3 px-4 text-muted">Blocks access to IDE socket files (vscode-ipc-*.sock)</td>
               </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text">commit-scope-guard</td>
-                <td class="py-3 px-4"><span class="sev-high text-xs font-mono font-semibold px-2 py-0.5 rounded">HIGH</span></td>
-                <td class="py-3 px-4 text-muted">Flags staged files not written by the current session</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text">script-execution-tracking</td>
-                <td class="py-3 px-4"><span class="sev-high text-xs font-mono font-semibold px-2 py-0.5 rounded">HIGH</span></td>
-                <td class="py-3 px-4 text-muted">Prevents governance bypass via write-then-execute indirection</td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-mono text-text">no-verify-bypass</td>
-                <td class="py-3 px-4"><span class="sev-high text-xs font-mono font-semibold px-2 py-0.5 rounded">HIGH</span></td>
-                <td class="py-3 px-4 text-muted">Forbids --no-verify flag on git push/commit to prevent skipping hooks</td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -1206,8 +1198,7 @@
               <span class="text-text font-semibold text-sm">Install globally</span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">npm install -g aguard</span>
-<span class="text-muted text-xs"># or: npm install -g @red-codes/agentguard</span></code></pre>
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">npm install -g aguard</span></code></pre>
               <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="npm install -g aguard" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
@@ -1222,10 +1213,10 @@
             </div>
             <div class="relative group">
               <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">cd your-project</span>
-<span class="text-muted">$</span> <span class="text-text">agentguard claude-init</span>
+<span class="text-muted">$</span> <span class="text-text">aguard claude-init</span>
 <span class="text-muted"># Wizard: choose enforcement mode + policy pack</span>
 <span class="text-muted"># Creates agentguard.yaml + installs Claude Code hooks</span></code></pre>
-              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard claude-init" aria-label="Copy to clipboard">
+              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="aguard claude-init" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
@@ -1238,10 +1229,10 @@
               <span class="text-text font-semibold text-sm">Connect to cloud dashboard <span class="text-muted font-normal">(optional)</span></span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard cloud login</span>
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">aguard cloud login</span>
 <span class="text-muted"># Opens browser &rarr; GitHub or Google OAuth &rarr; CLI auto-configures</span>
 <span class="text-muted"># Visit: agentguard-cloud-dashboard.vercel.app</span></code></pre>
-              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard cloud login" aria-label="Copy to clipboard">
+              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="aguard cloud login" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
@@ -1254,27 +1245,14 @@
               <span class="text-text font-semibold text-sm">Verify governance is active</span>
             </div>
             <div class="relative group">
-              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">agentguard status</span>
+              <pre class="bg-surface border border-surface-light rounded-xl p-5 font-mono text-sm overflow-x-auto"><code><span class="text-muted">$</span> <span class="text-text">aguard status</span>
 <span class="text-cta">✓</span> <span class="text-muted">Claude Code hooks installed</span>
 <span class="text-cta">✓</span> <span class="text-muted">Policy file (agentguard.yaml)</span>
 <span class="text-cta">✓</span> <span class="text-muted">Runtime active</span></code></pre>
-              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="agentguard status" aria-label="Copy to clipboard">
+              <button class="copy-btn absolute top-3 right-3 text-muted hover:text-text p-2 rounded-lg hover:bg-surface-light transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" data-code="aguard status" aria-label="Copy to clipboard">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
             </div>
-          </div>
-
-          <!-- Early Access CTA -->
-          <div class="reveal mt-10 bg-surface border border-cta/20 rounded-xl p-6 text-center" style="transition-delay: 300ms">
-            <div class="flex items-center justify-center gap-2 mb-2">
-              <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              <span class="font-mono text-cta text-sm font-semibold">Next step</span>
-            </div>
-            <p class="text-muted text-sm mb-4">Get cloud governance telemetry, team dashboards, and release updates.</p>
-            <a href="https://agentguard-cloud-dashboard.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-cta hover:bg-cta-dark text-bg font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm cursor-pointer">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Sign Up for Early Access
-            </a>
           </div>
         </div>
       </div>
@@ -1587,7 +1565,7 @@ rules:
     <section id="cli" class="py-24" aria-labelledby="cli-heading">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16 reveal">
-          <h2 id="cli-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">34 CLI Commands</h2>
+          <h2 id="cli-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">29 CLI Commands</h2>
           <p class="text-muted text-lg max-w-2xl mx-auto">Full lifecycle governance from your terminal.</p>
         </div>
 
@@ -1602,7 +1580,6 @@ rules:
               <li class="text-muted"><span class="text-text">analytics</span> &mdash; Violation patterns</li>
               <li class="text-muted"><span class="text-text">status</span> &mdash; Governance session status</li>
               <li class="text-muted"><span class="text-text">audit-verify</span> &mdash; Audit chain integrity</li>
-              <li class="text-muted"><span class="text-text">team-report</span> &mdash; Team-level observability</li>
             </ul>
           </div>
 
@@ -1626,7 +1603,7 @@ rules:
               <li class="text-muted"><span class="text-text">ci-check</span> &mdash; CI verification</li>
               <li class="text-muted"><span class="text-text">evidence-pr</span> &mdash; PR evidence reports</li>
               <li class="text-muted"><span class="text-text">policy validate</span> &mdash; Policy linting</li>
-              <li class="text-muted"><span class="text-text">policy verify</span> &mdash; Structure verification</li>
+              <li class="text-muted"><span class="text-text">policy-verify</span> &mdash; Structure verification</li>
             </ul>
           </div>
 
@@ -1646,18 +1623,12 @@ rules:
             <h3 class="font-mono font-semibold text-cta text-xs uppercase tracking-wider mb-3">Setup &amp; Integration</h3>
             <ul class="space-y-2 text-sm font-mono">
               <li class="text-muted"><span class="text-text">claude-init</span> &mdash; Claude Code hooks</li>
-              <li class="text-muted"><span class="text-text">claude-hook</span> &mdash; Claude Code hook handler</li>
               <li class="text-muted"><span class="text-text">copilot-init</span> &mdash; GitHub Copilot hooks</li>
-              <li class="text-muted"><span class="text-text">copilot-hook</span> &mdash; Copilot hook handler</li>
-              <li class="text-muted"><span class="text-text">deepagents-init</span> &mdash; LangChain DeepAgents hooks</li>
-              <li class="text-muted"><span class="text-text">deepagents-hook</span> &mdash; DeepAgents hook handler</li>
               <li class="text-muted"><span class="text-text">cloud login</span> &mdash; Device code auth (browser OAuth)</li>
               <li class="text-muted"><span class="text-text">cloud events/runs</span> &mdash; Query cloud data</li>
               <li class="text-muted"><span class="text-text">auto-setup</span> &mdash; Auto-detect &amp; configure</li>
               <li class="text-muted"><span class="text-text">config</span> &mdash; Show/get/set config</li>
               <li class="text-muted"><span class="text-text">init</span> &mdash; Scaffold extensions</li>
-              <li class="text-muted"><span class="text-text">trust</span> &mdash; Policy &amp; hook trust</li>
-              <li class="text-muted"><span class="text-text">telemetry</span> &mdash; Manage telemetry</li>
               <li class="text-muted"><span class="text-text">demo</span> &mdash; Interactive showcase</li>
             </ul>
           </div>
@@ -1854,7 +1825,7 @@ rules:
           <p class="text-muted text-lg max-w-2xl mx-auto">Governance where your agents already work.</p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 reveal-stagger">
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 reveal-stagger">
           <!-- Claude Code -->
           <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
             <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
@@ -1863,7 +1834,7 @@ rules:
             <h3 class="font-mono font-bold text-text text-lg mb-2">Claude Code</h3>
             <p class="text-muted text-sm leading-relaxed mb-4">Inline hook integration &mdash; no daemon, no sidecar. Fires on every tool call, evaluates policies in-process, and exits. Fail-open by design.</p>
             <div class="relative group mb-4">
-              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> agentguard claude-init</code></pre>
+              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> aguard claude-init</code></pre>
             </div>
             <div class="flex flex-wrap gap-2">
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PreToolUse</span>
@@ -1885,38 +1856,6 @@ rules:
             <div class="flex flex-wrap gap-2">
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">preToolUse</span>
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">postToolUse</span>
-            </div>
-          </div>
-
-          <!-- Codex CLI -->
-          <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
-            <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
-              <svg class="w-6 h-6 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-            </div>
-            <h3 class="font-mono font-bold text-text text-lg mb-2">OpenAI Codex CLI</h3>
-            <p class="text-muted text-sm leading-relaxed mb-4">Full governance parity for Codex CLI. PreToolUse/PostToolUse hooks with the same policy evaluation and invariant enforcement as Claude Code.</p>
-            <div class="relative group mb-4">
-              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> agentguard codex-init</code></pre>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PreToolUse</span>
-              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PostToolUse</span>
-            </div>
-          </div>
-
-          <!-- Gemini CLI -->
-          <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
-            <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
-              <svg class="w-6 h-6 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            </div>
-            <h3 class="font-mono font-bold text-text text-lg mb-2">Google Gemini CLI</h3>
-            <p class="text-muted text-sm leading-relaxed mb-4">Full governance parity for Gemini CLI. Same canonical action normalization, policies, and invariants applied to every Gemini tool call.</p>
-            <div class="relative group mb-4">
-              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> agentguard gemini-init</code></pre>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PreToolUse</span>
-              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">PostToolUse</span>
             </div>
           </div>
 
@@ -2026,6 +1965,28 @@ rules:
         </div>
 
         <div class="space-y-4 reveal-stagger">
+          <!-- v3.0 Release -->
+          <div class="reveal flex items-start gap-4 bg-surface border border-cta/40 rounded-xl p-5">
+            <div class="shrink-0 mt-0.5">
+              <span class="font-mono text-xs font-semibold px-2 py-1 rounded bg-cta/15 text-cta">v3.0</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-mono font-semibold text-text text-sm">v3.0 Major Release &mdash; Production-Grade Enforcement</h3>
+              <p class="text-muted text-sm mt-1">Default-deny kernel + KE-2 ActionContext + Deployment Gate. Every agent action passes a tamper-evident governance boundary before touching your environment. The Go kernel makes hook evaluation ~100x faster. <a href="https://github.com/AgentGuardHQ/agentguard/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer" class="text-cta hover:opacity-80 transition-opacity">Full release notes &rarr;</a></p>
+            </div>
+          </div>
+
+          <!-- Deployment Gate -->
+          <div class="reveal flex items-start gap-4 bg-surface border border-cta/30 rounded-xl p-5">
+            <div class="shrink-0 mt-0.5">
+              <span class="font-mono text-xs font-semibold px-2 py-1 rounded bg-cta/10 text-cta">SHIPPED</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-mono font-semibold text-text text-sm">Deployment Gate &mdash; Pre-Push Governance</h3>
+              <p class="text-muted text-sm mt-1">Agents cannot push code without passing governance checks. Tests-before-push invariant, branch protection, lockfile integrity, and commit scope guard enforce a mandatory gate before any code reaches your repo. <code class="text-xs text-cta">agentguard ci-check</code> integrates into any CI pipeline.</p>
+            </div>
+          </div>
+
           <!-- Go Kernel -->
           <div class="reveal flex items-start gap-4 bg-surface border border-green-500/30 rounded-xl p-5">
             <div class="shrink-0 mt-0.5">
@@ -2033,7 +1994,7 @@ rules:
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-mono font-semibold text-text text-sm">Go Kernel &mdash; go/</h3>
-              <p class="text-muted text-sm mt-1">High-performance governance kernel in Go. 3.2 MB static binary, &lt;3ms hook evaluation, ~100x faster than Node.js. Now the default enforcement runtime for Claude Code, GitHub Copilot, Codex CLI, and Gemini CLI hooks.</p>
+              <p class="text-muted text-sm mt-1">High-performance governance kernel in Go. 3.2 MB static binary, &lt;3ms hook evaluation, ~100x faster than Node.js. Now the default enforcement runtime for Claude Code and Copilot hooks.</p>
             </div>
           </div>
 
@@ -2045,6 +2006,17 @@ rules:
             <div class="flex-1 min-w-0">
               <h3 class="font-mono font-semibold text-text text-sm">Phase 6 &mdash; Reference Monitor Hardening</h3>
               <p class="text-muted text-sm mt-1">Default-deny unknown actions. PAUSE and ROLLBACK intervention types. All known bypass vectors closed.</p>
+            </div>
+          </div>
+
+          <!-- Studio Runtime v3.1 -->
+          <div class="reveal flex items-start gap-4 bg-surface border border-surface-light rounded-xl p-5">
+            <div class="shrink-0 mt-0.5">
+              <span class="font-mono text-xs font-semibold px-2 py-1 rounded bg-info/10 text-info">v3.1</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-mono font-semibold text-text text-sm">Studio Runtime &mdash; Governed Workspace Bootstrapping</h3>
+              <p class="text-muted text-sm mt-1"><code class="text-xs text-cta">aguard init studio</code> wizard detects your project type, CI pipeline, test framework, and agent runtimes — then generates a tailored <code class="text-xs text-cta">agentguard.yaml</code>. Execution profiles: <em>development</em>, <em>ci-safe</em>, <em>strict</em>, <em>enterprise</em>. Pairs with <a href="shellforge.html" class="text-cta hover:opacity-80 transition-opacity">ShellForge</a> for local governed agents.</p>
             </div>
           </div>
 
@@ -2156,57 +2128,6 @@ rules:
       </div>
     </section>
 
-    <!-- ============================================ -->
-    <!-- EARLY ACCESS / USER CAPTURE                  -->
-    <!-- ============================================ -->
-    <section id="early-access" class="py-24 bg-gradient-to-b from-transparent via-cta/[0.03] to-transparent" aria-labelledby="early-access-heading">
-      <div class="max-w-3xl mx-auto px-6">
-        <div class="reveal text-center mb-10">
-          <p class="font-mono text-cta text-sm font-semibold tracking-wider uppercase mb-4">Stay in the Loop</p>
-          <h2 id="early-access-heading" class="font-mono font-bold text-3xl sm:text-4xl mb-4">Get Early Access</h2>
-          <p class="text-muted text-lg max-w-xl mx-auto">
-            Cloud dashboard, team governance analytics, and real-time agent telemetry are launching soon.
-            Sign up to be first in line.
-          </p>
-        </div>
-
-        <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-          <a href="https://agentguard-cloud-dashboard.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="bg-cta hover:bg-cta-dark text-bg font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Sign Up for Early Access
-          </a>
-          <a href="https://github.com/AgentGuardHQ/agentguard/discussions" target="_blank" rel="noopener noreferrer" class="border border-surface-light hover:border-muted text-text font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm inline-flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            Join Discussions
-          </a>
-        </div>
-
-        <div class="reveal grid sm:grid-cols-3 gap-6">
-          <div class="bg-surface border border-surface-light rounded-xl p-5 text-center">
-            <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-cta/10 flex items-center justify-center">
-              <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-            </div>
-            <p class="font-mono text-text text-sm font-semibold mb-1">Cloud Dashboard</p>
-            <p class="text-muted text-xs">Multi-tenant governance telemetry with GitHub & Google OAuth.</p>
-          </div>
-          <div class="bg-surface border border-surface-light rounded-xl p-5 text-center">
-            <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-cta/10 flex items-center justify-center">
-              <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            </div>
-            <p class="font-mono text-text text-sm font-semibold mb-1">Team Analytics</p>
-            <p class="text-muted text-xs">Cross-agent governance reports and violation pattern insights.</p>
-          </div>
-          <div class="bg-surface border border-surface-light rounded-xl p-5 text-center">
-            <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-cta/10 flex items-center justify-center">
-              <svg class="w-5 h-5 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <p class="font-mono text-text text-sm font-semibold mb-1">Live Telemetry</p>
-            <p class="text-muted text-xs">Real-time agent activity streams and office visualization.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </main>
 
   <!-- ============================================ -->
@@ -2237,6 +2158,7 @@ rules:
             <li><a href="#invariants" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Invariants</a></li>
             <li><a href="#cli" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">CLI Commands</a></li>
             <li><a href="#swarm" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Agent Swarm</a></li>
+            <li><a href="shellforge.html" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">ShellForge</a></li>
             <li><a href="https://www.npmjs.com/package/@red-codes/agentguard" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">@red-codes/agentguard</a></li>
             <li><a href="https://www.npmjs.com/package/@red-codes/core" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">@red-codes/core</a></li>
             <li><a href="https://www.npmjs.com/package/@red-codes/events" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">@red-codes/events</a></li>
@@ -2265,7 +2187,6 @@ rules:
             <li><a href="https://github.com/AgentGuardHQ/agentguard/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Contributing</a></li>
             <li><a href="https://github.com/AgentGuardHQ/agentguard/issues" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Issues</a></li>
             <li><a href="https://github.com/AgentGuardHQ/agentguard/discussions" target="_blank" rel="noopener noreferrer" class="text-muted hover:text-text transition-colors text-sm cursor-pointer">Discussions</a></li>
-            <li><a href="https://agentguard-cloud-dashboard.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="text-cta hover:text-cta-dark transition-colors text-sm font-semibold cursor-pointer">Early Access ↗</a></li>
           </ul>
         </div>
       </div>
@@ -2407,7 +2328,7 @@ rules:
       // ---- Terminal Typing Animation ----
       var terminalLines = [
         { text: '  AgentGuard Runtime Active', cls: 'text-cta', delay: 0 },
-        { text: '  policy: agentguard.yaml | invariants: 24 | patterns: 93', cls: 'text-muted', delay: 0 },
+        { text: '  policy: agentguard.yaml | invariants: 22 | patterns: 87', cls: 'text-muted', delay: 0 },
         { text: '', cls: '', delay: 300 },
         { text: '  \u2713 file.write  src/auth/service.ts', cls: 'text-cta', delay: 0 },
         { text: '  \u2713 shell.exec  npm test', cls: 'text-cta', delay: 0 },
