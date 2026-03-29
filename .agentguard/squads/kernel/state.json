@@ -1,47 +1,36 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "Reduce false-positive governance denials blocking swarm agents: #1202 (KE-2 AAB normalization — strip rtk/time/timeout prefixes) → #1208 (heredoc false positive) → #1139 ($(date) command scanner allowlist). [#1209 closed via #1243. #1202 closed via #1252. #1208 closed via #1238.]",
-    "issues": [1139]
+    "goal": "KE-2 Canonical Action Normalization — design ActionContext contract, build Claude tool-call adapter, normalize policy engine to consume only ActionContext, benchmark 50-100µs. Parallel: fix #1276 hook false-block (non-zero exit on 'allowed by default').",
+    "issues": [917, 1276],
+    "previousGoal": "Reduce false-positive governance denials blocking swarm agents — ACHIEVED (all 4 issues closed: #1209, #1202, #1208, #1139)"
   },
   "assignments": {
     "senior": {
-      "issue": [1139],
-      "title": "$(date) scanner allowlist — PR #1274 open, CI green",
-      "status": "pr-open",
-      "branch": "unknown",
-      "pr": 1274,
-      "claimedAt": null,
-      "note": "#1202 DONE (PR #1252 merged — stripCommandWrappers in aab.ts, 13 tests). #1139 fix is PR #1274: stripSafeSubshells() in command-scanner.ts, 20 new tests, CI 4/4 green. Awaiting merge."
+      "issue": [917],
+      "title": "KE-2 Canonical Action Normalization (ActionContext) — design + implement ActionContext contract, Claude adapter, policy engine normalization, benchmark",
+      "status": "assigned",
+      "branch": "feat/ke-2-action-context",
+      "pr": null,
+      "claimedAt": "2026-03-29T06:00:00.000Z",
+      "note": "Critical path for v3.0. Unstarted 7+ days. Sub-tasks: (1) ActionContext type in core/types.ts, (2) Claude tool-call adapter mapping, (3) normalize policy engine, (4) benchmark ≤100µs p50. Key files: packages/kernel/src/aab.ts, packages/core/src/types.ts, packages/adapters/src/claude-code.ts."
     },
     "copilot-cli": {
-      "issue": [],
-      "title": "Sprint items complete — available for next sprint",
-      "status": "ready",
-      "branch": null,
+      "issue": [1276],
+      "title": "Fix hook exits non-zero with 'allowed by default' — blocking GitHub writes after first call in session",
+      "status": "assigned",
+      "branch": "fix/hook-exit-code-allowed-default",
       "pr": null,
-      "claimedAt": null,
-      "note": "#1208 DONE (PR #1238 merged — stripHeredocBody in definitions.ts, 9 tests, +12 invariants total). Available for new work."
+      "claimedAt": "2026-03-29T06:00:00.000Z",
+      "note": "Hook emits 'allowed by default | (attempt 1/3)' with non-zero exit. Claude Code treats non-zero PreToolUse as block. First write OK; subsequent writes blocked. Investigate claude-hook-wrapper.sh and apps/cli/src/commands/claude-hook.ts state logic."
     }
   },
   "blockers": [],
   "prQueue": {
-    "open": 1,
-    "reviewed": 1,
-    "mergeable": 1,
-    "prs": [
-      {
-        "number": 1274,
-        "title": "fix(matchers): safe-subshell allowlist — prevent $(date) false positives",
-        "ci": "4/4 green",
-        "mergeStateStatus": "CURRENT",
-        "closesIssue": 1139,
-        "status": "review-ready",
-        "note": "Core fix: stripSafeSubshells() strips 9 read-only subshell families before destructive scan. 20 tests: unit per family, integration (destructive still fires through safe subshells), security (nested subshells NOT stripped), scanner-level integration. ReDoS-safe: [^)(]* argument pattern. Supersedes #1255.",
-        "readyToMerge": true,
-        "blockerRuns": 0
-      }
-    ]
+    "open": 0,
+    "reviewed": 0,
+    "mergeable": 0,
+    "prs": []
   },
   "health": "green",
   "testHealth": {
@@ -73,15 +62,7 @@
       "scheduler": 34
     },
     "regressions": [],
-    "coverageGaps": [
-      {
-        "issue": 1139,
-        "description": "20 tests in PR #1274 (not yet merged) cover stripSafeSubshells unit + integration + security. Gap closes on merge.",
-        "location": "packages/matchers/tests/command-scanner.test.ts",
-        "status": "addressed-in-pr-1274"
-      }
-    ],
-    "dogfoodNotes": "pnpm node_modules/turbo symlink was dangling (pointed to deleted worktree agentguard-autonomous-sdlc--coder-agent-2117057). Fixed via pnpm install --force from agent-guard root. Turbo cache restored. No governance blocks encountered during this QA run."
+    "coverageGaps": []
   },
   "completedIssues": [
     { "issue": 1118, "pr": 1147, "mergedAt": "2026-03-27T23:09:36Z" },
@@ -95,9 +76,10 @@
     { "issue": 1182, "pr": 1212, "mergedAt": "2026-03-28T08:00:00.000Z", "note": "persona.env operational exemption in no-governance-self-modification invariant" },
     { "issue": 1209, "pr": 1243, "mergedAt": "2026-03-28T19:00:00.000Z", "note": "MCP prefix match: AAB normalizeIntent now uses startsWith() for mcp.call target." },
     { "issue": 1208, "pr": 1238, "mergedAt": "before 2026-03-28T21:30Z", "note": "stripHeredocBody() isolates command header before invariant scan. 9 tests (+12 invariants total with surrounding work)." },
-    { "issue": 1202, "pr": 1252, "mergedAt": "before 2026-03-28T21:30Z", "note": "stripCommandWrappers() strips rtk/time/timeout prefixes before git/github detection in aab.ts. 13 tests (+23 kernel total with surrounding work). Addresses Gap A of #1202." }
+    { "issue": 1202, "pr": 1252, "mergedAt": "before 2026-03-28T21:30Z", "note": "stripCommandWrappers() strips rtk/time/timeout prefixes before git/github detection in aab.ts. 13 tests (+23 kernel total with surrounding work). Addresses Gap A of #1202." },
+    { "issue": 1139, "pr": 1274, "mergedAt": "2026-03-28T22:14:09Z", "note": "stripSafeSubshells() strips 9 read-only subshell families before destructive scan. 20 tests: unit per family, integration, security (nested subshells NOT stripped). ReDoS-safe [^)(]* patterns." }
   ],
-  "lastEmRun": "2026-03-28T23:30:00.000Z",
+  "lastEmRun": "2026-03-29T06:00:00.000Z",
   "lastQaRun": "2026-03-29T02:51:00.000Z",
-  "updatedAt": "2026-03-29T02:51:00.000Z"
+  "updatedAt": "2026-03-29T06:00:00.000Z"
 }
