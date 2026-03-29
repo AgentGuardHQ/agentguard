@@ -15,10 +15,10 @@
   "assignments": {
     "senior": {
       "agent": "copilot-cli:sonnet:studio:senior",
-      "issue": "workspace#201",
+      "issue": "workspace#1342-investigation",
       "status": "completed",
-      "completedAt": "2026-03-29T23:30:00Z",
-      "summary": "PR #259 merged — real CLI quota tracking replacing subscription-cost tracking. Three-layer system: quota-probe.sh + rg_set_hard_down/rg_check_hard_down Redis keys + run-agent.sh pre-execution hard-down gate. Fixes false 'Copilot at cap' noise from flat-rate plan tracking. Hard-down TTLs: claude-code 7d, copilot 30d, codex/gemini 24h. Feeds cloud#509 model fitness pipeline."
+      "completedAt": "2026-03-30T00:00:00Z",
+      "summary": "Diagnosed #1342 (Copilot events = 0) — root cause is circuit breaker from quota exhaustion, not a code bug. Copilot agents fail over to claude-code driver, events emit under wrong tag. Closed #1342 as infra issue. Fixed verify-copilot-events.sh workspace detection (false negatives when run from worktree) — PR #265 opened."
     }
   },
   "blockers": [
@@ -36,9 +36,10 @@
     },
     {
       "id": "copilot-event-pipeline-final-warning",
-      "severity": "P1",
-      "description": "#1342 Copilot event pipeline sending 0 events — HQ EM at FINAL WARNING (3 cycles). Studio must investigate or close.",
-      "action": "Check copilot adapter hook config. File fix or close as infra issue."
+      "severity": "resolved",
+      "description": "#1342 CLOSED — root cause: circuit breaker tripped on Copilot quota exhaustion. Copilot agents fail over to claude-code driver, emitting events under wrong tag. Auto-resolves April 1 on budget reset. verify-copilot-events.sh workspace detection fixed in PR #265.",
+      "resolvedAt": "2026-03-29T23:45:00Z",
+      "action": "none — infra issue, auto-resolves April 1"
     }
   ],
   "prQueue": {
@@ -127,5 +128,8 @@
   "closedThisCycle": [
     { "pr": 260, "reason": "superseded — state updated in full this cycle" }
   ],
-  "updatedAt": "2026-03-30T02:00:00Z"
+  "openPRsThisCycle": [
+    { "pr": 265, "title": "fix(verify-copilot): fallback workspace when run from worktree — closes #1342", "repo": "agentguard-workspace" }
+  ],
+  "updatedAt": "2026-03-30T00:00:00Z"
 }
