@@ -1,85 +1,75 @@
 {
   "squad": "site",
-  "timestamp": "2026-03-29T20:40:00.000Z",
+  "timestamp": "2026-03-29T21:30:00.000Z",
   "health": "green",
-  "summary": "Clean cycle — P0 CI blocker resolved, all site stat drift fixed or in-flight. PR #1390 (marketing EM) merged: og:description, JSON-LD, hero, kernel card, policy bullet, event kinds text (49→48), CLI heading (29→35). New PR #1393 filed this cycle: stat bar counters (event kinds 47→48, CLI 36→35) and feature card headings (21→24 Safety Invariants, 87→93 Destructive Patterns, 21→24 Built-in Invariants). All sprint blockers resolved. Site squad unblocked for first time in multiple cycles.",
+  "summary": "Clean cycle — check-site-stats.sh shipped (PR #1401, closes #1395), Tests counter updated 4394→4614, stale EM report PR #1397 closed (dirty, superseded). All 14 site stat checks pass. Automation now guards against recurrence of stat drift across all numeric claims in site/index.html.",
   "siteBuild": {
     "status": "pass",
-    "notes": "Static site — no build required. site/index.html, posts.html, shellforge.html, sitemap.xml, robots.txt, og-image.png all present. ci-skip-site.yml workflow in place (#1296, merged) — site-only PRs now get required checks satisfied without running full lint/test suite."
+    "notes": "Static site — no build required. check-site-stats.sh now present in scripts/ after PR #1401 merged. All 14 checks pass: 5 stat-bar counters, 3 meta/JSON-LD tags, hero paragraph, 3 card headings, pipeline stage, architecture detail text."
   },
   "contentFreshness": {
     "status": "current",
     "resolvedThisCycle": [
-      { "claim": "og:description invariants", "was": "22", "now": "24", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "JSON-LD description invariants", "was": "22", "now": "24", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Hero paragraph safety checks", "was": "22", "now": "24", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Production-Grade Kernel card invariants", "was": "22", "now": "24", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Production-Grade Kernel card patterns", "was": "87", "now": "93", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Policy bullet invariants + patterns", "was": "22 + 87", "now": "24 + 93", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Full Audit Trail card event kinds", "was": "49", "now": "48", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Pipeline Emit stage event kinds", "was": "49", "now": "48", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "CLI section heading", "was": "29", "now": "35", "fixedBy": "PR #1390 (merged)" },
-      { "claim": "Event Kinds stat bar counter (data-target)", "was": "47", "now": "48", "fixedBy": "PR #1393 (open, CI running)" },
-      { "claim": "CLI Commands stat bar counter (data-target)", "was": "36", "now": "35", "fixedBy": "PR #1393 (open, CI running)" },
-      { "claim": "Safety Invariants card heading", "was": "21", "now": "24", "fixedBy": "PR #1393 (open, CI running)" },
-      { "claim": "Destructive Patterns card heading", "was": "87", "now": "93", "fixedBy": "PR #1393 (open, CI running)" },
-      { "claim": "Built-in Invariants section h2", "was": "21", "now": "24", "fixedBy": "PR #1393 (open, CI running)" }
+      {
+        "claim": "Tests stat bar counter (data-target)",
+        "was": "4394",
+        "now": "4614",
+        "fixedBy": "site-em update — synced with kernel QA run 2026-03-29 (4614/4614 passing)"
+      }
     ],
     "remainingDrift": [],
+    "automatedChecks": {
+      "script": "scripts/check-site-stats.sh",
+      "checks": 14,
+      "result": "all pass",
+      "notCovered": ["Tests counter — requires vitest run; consider adding to script in future"]
+    },
     "verified": [
       "invariants: 24 — grep '^    name:' packages/invariants/src/definitions.ts | wc -l",
       "destructive patterns: 93 — grep -c '\"pattern\"' packages/core/src/data/destructive-patterns.json",
       "event kinds: 48 — grep -c '^export const.*EventKind' packages/events/src/schema.ts",
-      "action types: 41 across 10 classes — packages/core/src/data/actions.json",
-      "CLI commands: 35 top-level — 37 files in apps/cli/src/commands/ minus 2 subcommands (cloud-login.ts, policy-verify.ts)"
+      "action types: 41 — Object.keys(actions.json.types).length",
+      "CLI commands: 35 — 37 .ts files in apps/cli/src/commands/ minus 2 subcommands",
+      "tests: 4614 — kernel QA run 2026-03-29 (4614/4614 passing)"
     ]
   },
   "prQueue": {
     "mergedThisCycle": [
       {
-        "pr": 1390,
-        "title": "chore(marketing-em): site stats sync — invariants/patterns/event-kinds/CLI heading",
-        "note": "Marketing EM filed; site-em merged after verification. 6/6 checks passed."
+        "pr": 1401,
+        "title": "feat(site): add check-site-stats.sh to prevent recurring stat drift",
+        "note": "4/4 checks passed. Resolves #1395 — the 3rd-cycle EM recommendation. Checks 14 numeric claims across 5 site layers. Also includes a telemetry test robustness fix (timing-safe assertion)."
       }
     ],
-    "open": [
+    "closedThisCycle": [
       {
-        "pr": 1393,
-        "title": "fix(site): sync stat bar counters and feature card headings — missed by #1390",
-        "checksStatus": "CI running",
-        "mergeStatus": "pending CI — should auto-clear via ci-skip-site.yml"
+        "pr": 1397,
+        "title": "chore(site-em): EM cycle 2026-03-29T20:40Z — all stat drift landed",
+        "reason": "Merge conflicts (dirty) — site/index.html changes were already landed via #1393 and #1394. State files superseded by this cycle."
       }
-    ]
+    ],
+    "open": []
   },
   "issuesTracked": [
-    { "number": 1258, "title": "fix(site): sync stats to v2.9.0", "status": "closed", "note": "Superseded by #1390; closed without merge" },
-    { "number": 1259, "title": "Swarm section audit — 26/5-tiers stale", "status": "closed", "note": "Fixed in prior cycle — 120 agents / 4 drivers" },
-    { "number": 1260, "title": "v2.9→v2.10 announcement content", "status": "open", "priority": "P2", "owner": "marketing squad" },
-    { "number": 1265, "title": "CLI commands count drift", "status": "closed", "note": "Fixed in #1390 + #1393" },
-    { "number": 1266, "title": "Action types drift (27/9→41/10)", "status": "closed", "note": "Fixed in prior cycle" },
-    { "number": 1267, "title": "CI mismatch — site-only PRs unmergeable", "status": "closed", "note": "Fixed by PR #1296 (ci-skip-site.yml)" }
+    { "number": 1395, "title": "feat(site): add site-stats-check script", "status": "closed", "note": "Resolved by PR #1401 merged this cycle" },
+    { "number": 1260, "title": "v2.9→v2.10 announcement content", "status": "open", "priority": "P2", "owner": "marketing squad" }
   ],
   "structuralRisk": {
-    "regressionPattern": "Partial site syncs continue to miss one source of truth. PR #1390 (marketing EM) missed 5 locations — stat bar data-targets and card headings. Site has multiple layers: prose, metadata, stat bar counters, card headings, HTML comments. Any sync PR must scan all layers.",
-    "recommendation": "Add a site-stats-check script that greps site/index.html for all numeric claims and validates them against codebase sources. Run as a required check. This is the third EM cycle recommending this — should become a filed engineering issue for site-builder."
+    "testsCounterGap": "check-site-stats.sh covers 14/15 numeric claims in site/index.html. The Tests counter requires a live vitest run to verify — intentionally excluded from the static script. Drift reoccurred this cycle (4394 → 4614). Consider extending script to accept a --tests-count flag for CI use.",
+    "allOtherClaimsAutomated": "The 5 stat-bar counters, 3 meta tags, hero text, 3 card headings, pipeline stage, and architecture detail text are all now automated. Recurrence risk for those 14 claims is eliminated."
   },
   "blockers": [],
-  "escalations": [
-    "INFO: PR #1393 awaiting CI — should self-clear. No human action needed.",
-    "INFO: OWASP blog post at docs/blog/owasp-agentic-top10-agentguard.md still needs human to publish to LinkedIn (marketing squad escalation, not site).",
-    "MEDIUM: site-stats automation script not yet filed as engineering issue — recurring EM recommendation now 3 cycles old. Should be filed as feat(site) issue for site-builder."
-  ],
+  "escalations": [],
   "dogfoodReport": {
     "governanceDenialsThisRun": 0,
     "unexpectedBlocks": [],
     "unexpectedAllows": [],
-    "status": "clean — no governance issues this run. git checkout, git fetch, git merge, git add, git commit, git push, gh pr create, gh pr merge, gh pr view, gh issue view all executed without denial."
+    "status": "clean — no governance issues. git pull, gh pr merge, gh pr close, gh pr comment, file edits all executed without denial."
   },
   "nextActions": [
-    "Merge PR #1393 once CI passes (ci-skip-site.yml should satisfy all required checks)",
-    "site-builder: file feat(site) engineering issue — site-stats-check automation script (prevent recurring drift)",
-    "site-builder: assess whether to expand scope of #1260 work to include site landing page updates for v2.10 features",
-    "site-docs-sync: verify CLAUDE.md CLI command list matches current 35 top-level commands (documentation sync)"
+    "site-docs-sync: verify CLAUDE.md CLI command list matches current 35 top-level commands (#1260 documentation prep)",
+    "site-builder: consider extending check-site-stats.sh to accept --tests-count flag for CI integration",
+    "site-builder: assess #1260 scope — v2.10 feature content for landing page"
   ],
-  "agentIdentity": "claude-code:sonnet:site:em"
+  "agentIdentity": "claude-code:opus:site:em"
 }

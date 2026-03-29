@@ -1,12 +1,12 @@
 {
   "squad": "site",
   "sprint": {
-    "goal": "Land stat bar + card heading fixes (#1393) + file site-stats automation engineering issue",
-    "issues": [1260, 1393]
+    "goal": "Automated site-stats enforcement shipped; Tests counter synced; next: CLI command audit (#1260 prep)",
+    "issues": [1260]
   },
   "assignments": {
     "site-builder": {
-      "task": "Merge PR #1393 once CI passes. Then file feat(site) issue for site-stats-check automation script.",
+      "task": "Assess #1260 scope — v2.10 feature content for landing page; consider extending check-site-stats.sh with --tests-count flag",
       "blockedBy": null
     },
     "site-docs-sync": {
@@ -16,25 +16,19 @@
   },
   "blockers": [],
   "prQueue": {
-    "open": 1,
-    "reviewed": 1,
-    "mergeable": 1,
-    "prs": [
-      {
-        "number": 1393,
-        "title": "fix(site): sync stat bar counters and feature card headings — missed by #1390",
-        "checksStatus": "CI running",
-        "mergeStatus": "pending CI — ci-skip-site.yml should satisfy required checks"
-      }
-    ]
+    "open": 0,
+    "reviewed": 0,
+    "mergeable": 0,
+    "prs": []
   },
   "recentlyCompleted": [
-    { "pr": 1390, "title": "Site stats sync (marketing EM)", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Merged by site-em after verification" },
-    { "issue": 1267, "title": "CI mismatch — site PRs unmergeable", "closedAt": "2026-03-29", "note": "Fixed by PR #1296 (ci-skip-site.yml)" },
-    { "issue": 1258, "title": "Site stats PR v2.9.0", "closedAt": "2026-03-29", "note": "Superseded by #1390" },
-    { "issue": 1259, "title": "Swarm section audit", "closedAt": "2026-03-29", "note": "Fixed in prior cycle" },
-    { "issue": 1265, "title": "CLI commands count drift", "closedAt": "2026-03-29", "note": "Fixed in #1390 + #1393" },
-    { "issue": 1266, "title": "Action types drift", "closedAt": "2026-03-29", "note": "Fixed in prior cycle" }
+    { "pr": 1401, "title": "feat(site): add check-site-stats.sh to prevent recurring stat drift", "mergedAt": "2026-03-29T21:30:00.000Z", "note": "Closes #1395 — 3rd-cycle EM recommendation now resolved. 14 numeric claims automated." },
+    { "pr": 1397, "title": "chore(site-em): EM cycle 20:40Z (stale)", "closedAt": "2026-03-29T21:30:00.000Z", "note": "Closed: dirty due to #1393/#1394 already merged; superseded by this cycle" },
+    { "pr": 1394, "title": "fix(site): correct remaining stat drift — 24 invariants card, 93 patterns card, 35 CLI counter", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Landed prior cycle" },
+    { "pr": 1393, "title": "fix(site): sync stat bar counters and feature card headings", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Landed prior cycle" },
+    { "pr": 1390, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z — site stats sync", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Merged by site-em after verification" },
+    { "issue": 1395, "title": "feat(site): add site-stats-check script", "closedAt": "2026-03-29", "note": "Resolved by PR #1401" },
+    { "issue": 1267, "title": "CI mismatch — site PRs unmergeable", "closedAt": "2026-03-29", "note": "Fixed by PR #1296 (ci-skip-site.yml)" }
   ],
-  "updatedAt": "2026-03-29T20:40:00.000Z"
+  "updatedAt": "2026-03-29T21:30:00.000Z"
 }
