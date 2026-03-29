@@ -17,6 +17,24 @@ import { resolveMainRepoRoot } from '@red-codes/core';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
 import { detectDriver, detectModel, VALID_ROLES } from '../identity.js';
 import type { Driver } from '../identity.js';
+import { isBootstrapSafeAction, isModuleNotFoundError } from '../bootstrap.js';
+
+/**
+ * Emit a bootstrap-mode allow response to stdout.
+ * This tells Claude Code to allow the action while warning that governance is inactive.
+ */
+function emitBootstrapAllow(): void {
+  process.stdout.write(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'allow',
+        additionalContext:
+          '[AgentGuard bootstrap] Kernel not yet built — allowing bootstrap/read-only action. Run: pnpm install && pnpm build to enable full governance.',
+      },
+    })
+  );
+}
 
 // --- Session state: persist formatPass/testsPass across hook invocations ----
 // Each Claude Code session is stateless per hook call. We bridge this by writing
@@ -359,15 +377,28 @@ export async function claudeHook(hookType?: string, extraArgs: string[] = []): P
         // Exit code 2 tells Claude Code to block the action
         process.exit(denied ? 2 : 0);
       } catch (preErr) {
+        const errMsg = preErr instanceof Error ? preErr.message : String(preErr);
+
+        // BOOTSTRAP EXEMPTION (AgentGuardHQ/agentguard#995):
+        // If the kernel hasn't been built yet (module not found), allow bootstrap
+        // commands (install/build) and read-only tools through so the agent can
+        // self-bootstrap. All other actions remain blocked (fail-closed).
+        if (isModuleNotFoundError(preErr) && isBootstrapSafeAction(data)) {
+          process.stderr.write(
+            `[agentguard] Bootstrap mode — kernel not built. Allowing bootstrap/read-only action.\n`
+          );
+          emitBootstrapAllow();
+          process.exit(0);
+          return;
+        }
+
         // SECURITY: fail closed on PreToolUse — if the kernel crashes, block the action
         // rather than silently allowing it through.
-        process.stderr.write(
-          `[agentguard] PreToolUse hook error: ${preErr instanceof Error ? preErr.message : String(preErr)}\n`
-        );
+        process.stderr.write(`[agentguard] PreToolUse hook error: ${errMsg}\n`);
         process.stdout.write(
           JSON.stringify({
             decision: 'block',
-            reason: `AgentGuard governance hook crashed: ${preErr instanceof Error ? preErr.message : 'unknown error'}. Action blocked for safety.`,
+            reason: `AgentGuard governance hook crashed: ${errMsg}. Action blocked for safety.`,
           })
         );
         process.exit(2);
