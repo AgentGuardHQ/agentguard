@@ -755,6 +755,11 @@
             <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             <span class="font-mono text-text text-sm font-medium">VS Code</span>
           </div>
+          <!-- Goose (Block) -->
+          <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+            <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            <span class="font-mono text-text text-sm font-medium">Goose (Block)</span>
+          </div>
           <!-- GitHub Actions -->
           <div class="reveal flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
             <svg class="w-6 h-6 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1872,6 +1877,22 @@ rules:
             <div class="flex flex-wrap gap-2">
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">preToolUse</span>
               <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">postToolUse</span>
+            </div>
+          </div>
+
+          <!-- Goose (Block) -->
+          <div class="reveal bg-surface border border-surface-light rounded-xl p-8 card-lift cursor-pointer">
+            <div class="w-12 h-12 rounded-xl bg-cta/10 flex items-center justify-center mb-5">
+              <svg class="w-6 h-6 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            </div>
+            <h3 class="font-mono font-bold text-text text-lg mb-2">Goose (Block)</h3>
+            <p class="text-muted text-sm leading-relaxed mb-4">Open-source AI agent by Block. Governed via ShellForge orchestration layer. Runs on local or cloud GPUs (Ollama). Same policies, same invariants.</p>
+            <div class="relative group mb-4">
+              <pre class="bg-bg/50 rounded-lg p-3 font-mono text-xs overflow-x-auto"><code class="text-muted"><span class="text-cta">$</span> shellforge run goose "your task"</code></pre>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">ShellForge</span>
+              <span class="text-xs font-mono text-muted bg-surface-light/50 px-2 py-1 rounded">Ollama</span>
             </div>
           </div>
 
