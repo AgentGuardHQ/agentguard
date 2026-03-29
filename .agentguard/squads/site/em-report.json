@@ -1,62 +1,47 @@
 {
   "squad": "site",
-  "timestamp": "2026-03-29T21:30:00.000Z",
+  "timestamp": "2026-03-29T22:40:00.000Z",
   "health": "green",
-  "summary": "Clean cycle — check-site-stats.sh shipped (PR #1401, closes #1395), Tests counter updated 4394→4614, stale EM report PR #1397 closed (dirty, superseded). All 14 site stat checks pass. Automation now guards against recurrence of stat drift across all numeric claims in site/index.html.",
+  "summary": "Clean cycle — all 14 site stat checks pass, Tests counter confirmed 4614, CLAUDE.md CLI audit complete (37 accessible commands, 35 file-based matches site counter). PR #1406 (marketing EM) merged. No content drift.",
   "siteBuild": {
     "status": "pass",
-    "notes": "Static site — no build required. check-site-stats.sh now present in scripts/ after PR #1401 merged. All 14 checks pass: 5 stat-bar counters, 3 meta/JSON-LD tags, hero paragraph, 3 card headings, pipeline stage, architecture detail text."
+    "notes": "Static site. check-site-stats.sh: 14/14 checks pass. Full vitest run: 4614/4614 passing."
   },
   "contentFreshness": {
     "status": "current",
-    "resolvedThisCycle": [
-      {
-        "claim": "Tests stat bar counter (data-target)",
-        "was": "4394",
-        "now": "4614",
-        "fixedBy": "site-em update — synced with kernel QA run 2026-03-29 (4614/4614 passing)"
-      }
-    ],
+    "resolvedThisCycle": [],
     "remainingDrift": [],
-    "automatedChecks": {
-      "script": "scripts/check-site-stats.sh",
-      "checks": 14,
-      "result": "all pass",
-      "notCovered": ["Tests counter — requires vitest run; consider adding to script in future"]
-    },
+    "automatedChecks": { "script": "scripts/check-site-stats.sh", "checks": 14, "result": "all pass" },
     "verified": [
-      "invariants: 24 — grep '^    name:' packages/invariants/src/definitions.ts | wc -l",
-      "destructive patterns: 93 — grep -c '\"pattern\"' packages/core/src/data/destructive-patterns.json",
-      "event kinds: 48 — grep -c '^export const.*EventKind' packages/events/src/schema.ts",
-      "action types: 41 — Object.keys(actions.json.types).length",
-      "CLI commands: 35 — 37 .ts files in apps/cli/src/commands/ minus 2 subcommands",
-      "tests: 4614 — kernel QA run 2026-03-29 (4614/4614 passing)"
+      "invariants: 24", "destructive patterns: 93", "event kinds: 48",
+      "action types: 41", "CLI commands: 35 (file-based; 37 total including inline events + telemetry)",
+      "tests: 4614 — full vitest run 2026-03-29T22:40Z"
     ]
+  },
+  "claudeMdAudit": {
+    "status": "accurate",
+    "fileBasedCommands": 35,
+    "inlineCommands": ["events", "telemetry"],
+    "totalAccessible": 37,
+    "claudeMdListed": 37,
+    "drift": "none",
+    "note": "CLAUDE.md documents all 37 accessible commands. Site counter uses file-count methodology (35). Both internally consistent."
   },
   "prQueue": {
     "mergedThisCycle": [
-      {
-        "pr": 1401,
-        "title": "feat(site): add check-site-stats.sh to prevent recurring stat drift",
-        "note": "4/4 checks passed. Resolves #1395 — the 3rd-cycle EM recommendation. Checks 14 numeric claims across 5 site layers. Also includes a telemetry test robustness fix (timing-safe assertion)."
-      }
+      { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "note": "MERGEABLE, 4/4 checks. Squash merged." }
     ],
-    "closedThisCycle": [
-      {
-        "pr": 1397,
-        "title": "chore(site-em): EM cycle 2026-03-29T20:40Z — all stat drift landed",
-        "reason": "Merge conflicts (dirty) — site/index.html changes were already landed via #1393 and #1394. State files superseded by this cycle."
-      }
-    ],
-    "open": []
+    "open": [
+      { "pr": 1400, "title": "fix(bootstrap): add worktree binary probe", "note": "Landed on remote main — already merged." },
+      { "pr": 1396, "title": "chore(kernel-em): EM cycle 2026-03-29T18:15Z", "note": "Kernel squad, null checks — skip" }
+    ]
   },
   "issuesTracked": [
-    { "number": 1395, "title": "feat(site): add site-stats-check script", "status": "closed", "note": "Resolved by PR #1401 merged this cycle" },
-    { "number": 1260, "title": "v2.9→v2.10 announcement content", "status": "open", "priority": "P2", "owner": "marketing squad" }
+    { "number": 1260, "title": "v2.9.0 announcement content", "status": "open", "priority": "P2", "owner": "marketing squad" }
   ],
   "structuralRisk": {
-    "testsCounterGap": "check-site-stats.sh covers 14/15 numeric claims in site/index.html. The Tests counter requires a live vitest run to verify — intentionally excluded from the static script. Drift reoccurred this cycle (4394 → 4614). Consider extending script to accept a --tests-count flag for CI use.",
-    "allOtherClaimsAutomated": "The 5 stat-bar counters, 3 meta tags, hero text, 3 card headings, pipeline stage, and architecture detail text are all now automated. Recurrence risk for those 14 claims is eliminated."
+    "testsCounterGap": "Tests counter (4614) manually verified via live vitest run. check-site-stats.sh lacks --tests-count flag — sprint item for site-builder.",
+    "commandCountDelta": "Site says 35 (file-count). Actual accessible: 37 (events + telemetry inline in bin.ts). Not a bug — documented nuance."
   },
   "blockers": [],
   "escalations": [],
@@ -64,12 +49,12 @@
     "governanceDenialsThisRun": 0,
     "unexpectedBlocks": [],
     "unexpectedAllows": [],
-    "status": "clean — no governance issues. git pull, gh pr merge, gh pr close, gh pr comment, file edits all executed without denial."
+    "status": "clean — gh pr merge, pnpm test, git operations all executed without denial."
   },
   "nextActions": [
-    "site-docs-sync: verify CLAUDE.md CLI command list matches current 35 top-level commands (#1260 documentation prep)",
-    "site-builder: consider extending check-site-stats.sh to accept --tests-count flag for CI integration",
-    "site-builder: assess #1260 scope — v2.10 feature content for landing page"
+    "site-builder: extend check-site-stats.sh with --tests-count <n> flag for CI use",
+    "site-builder: assess #1260 scope for v2.10 landing page content (P2)",
+    "site-docs-sync: CLAUDE.md CLI audit done — monitor for new commands as v2.10 work lands"
   ],
   "agentIdentity": "claude-code:opus:site:em"
 }
