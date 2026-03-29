@@ -2,20 +2,12 @@
   "squad": "hq",
   "sprint": {
     "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. Version sync. ShellForge coordination.",
-    "issues": [1347, 1335, 1342]
+    "issues": [1335, 1342]
   },
   "assignments": {
-    "kernel-adapters-squad": {
-      "task": "Fix #1347: patch claude-hook-wrapper.sh bootstrap exemption to strip rtk prefix before pattern matching",
-      "priority": "P1"
-    },
     "studio-squad": {
-      "task": "Investigate #1335 + #1342: Codex + Copilot circuit breakers OPEN, Copilot event pipeline producing 0 events",
+      "task": "Investigate #1335 + #1342: Codex + Copilot circuit breakers OPEN (52% agents blocked), Copilot event pipeline producing 0 events. Conference demo gap. Status update urgently needed — no update in >10h.",
       "priority": "P1"
-    },
-    "human-reviewer": {
-      "task": "Review and merge PR #1361 (bootstrap hardening, 4/4 green, MERGEABLE) and PR #1320 (docs sync, 2/2 green, MERGEABLE). Rebase PR #1349 (merge conflict).",
-      "priority": "P2"
     },
     "cloud-squad": {
       "task": "Upgrade agentguard-cloud from 2.10.1 to 2.10.3, agentguard-analytics from 2.10.2 to 2.10.3",
@@ -24,9 +16,25 @@
     "director": {
       "task": "Assign squad ownership for ShellForge initiative (issues #1362–#1367): single-binary, secret injection, artifact registry, composable stacks",
       "priority": "P2"
+    },
+    "human-reviewer": {
+      "task": "Rebase PR #1377 (studio-em cycle report — merge conflict). No code review PRs pending.",
+      "priority": "P3"
     }
   },
   "resolved": {
+    "worktree-binary-crash": {
+      "task": "Fix worktree CLI binary crashing with ERR_MODULE_NOT_FOUND, silently breaking governance hooks (issue #1376)",
+      "priority": "P1",
+      "resolvedAt": "2026-03-29T21:00:00.000Z",
+      "note": "PR #1391 merged: wrapper now falls back to main worktree binary when local binary fails. All 949 CLI tests pass."
+    },
+    "kernel-adapters-squad": {
+      "task": "Fix #1347: patch claude-hook-wrapper.sh bootstrap exemption to strip rtk prefix before pattern matching",
+      "priority": "P1",
+      "resolvedAt": "2026-03-29T16:49:00.000Z",
+      "note": "Issue #1347 closed. PR #1371 merged. Bootstrap exemption now strips rtk prefix."
+    },
     "ke2-actioncontext": {
       "task": "KE-2 ActionContext — design and ship vendor-neutral action normalization (issue #917)",
       "priority": "P0",
@@ -77,29 +85,23 @@
   },
   "blockers": [
     {
-      "issue": 1347,
-      "description": "P1 dogfood: rtk prefix breaks bootstrap exemption pattern matching in claude-hook-wrapper.sh. All agents following global CLAUDE.md affected.",
-      "escalatedTo": "kernel-adapters-squad",
-      "firstSeen": "2026-03-29T14:00:00.000Z"
-    },
-    {
       "issue": 1335,
-      "description": "P1: Codex + Copilot circuit breakers OPEN in studio, 68/138 events lost.",
+      "description": "P1: Codex + Copilot circuit breakers OPEN in studio, 68/132 agents blocked (52%). Last updated 2026-03-29T09:01Z — no progress in >10h.",
       "escalatedTo": "studio-squad",
       "firstSeen": "2026-03-29T00:00:00.000Z"
     },
     {
       "issue": 1342,
-      "description": "P1: Copilot event pipeline producing 0 events.",
+      "description": "P1: Copilot event pipeline producing 0 events. Conference demo gap. Last updated 2026-03-29T11:01Z.",
       "escalatedTo": "studio-squad",
       "firstSeen": "2026-03-29T00:00:00.000Z"
     }
   ],
   "prQueue": {
-    "open": 3,
+    "open": 1,
     "reviewed": 0,
-    "mergeable": 2,
-    "notes": "PR #1361 all green needs review (bootstrap). PR #1320 all green needs review (docs). PR #1349 CONFLICTING needs human rebase."
+    "mergeable": 0,
+    "notes": "PR #1377 CONFLICTING needs rebase (studio-em cycle report). Commented 2026-03-29T21:00Z requesting rebase."
   },
-  "updatedAt": "2026-03-29T14:18:00.000Z"
+  "updatedAt": "2026-03-29T21:00:00.000Z"
 }

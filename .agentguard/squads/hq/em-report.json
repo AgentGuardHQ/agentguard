@@ -1,9 +1,9 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-29T14:18:00.000Z",
+  "generatedAt": "2026-03-29T21:00:00.000Z",
   "identity": "claude-code:opus:hq:em",
   "health": "yellow",
-  "summary": "Morning cycle 2026-03-29. Major wins since last cycle: KE-2 (#917) SHIPPED — v3.0 critical blocker eliminated. Swarm P0 (#1186) CLOSED. No-Governance-Self-Modification false positive (#1254) CLOSED (fix in #1351). CI main all green. v2.10.3 published. HQ action this cycle: fixed 3 cron collisions in server/schedule.json (closed #1327). Remaining: PR #1349 merge conflict (human rebase needed). New P1 dogfood: #1347 rtk prefix breaks bootstrap exemption. Version drift: cloud 2.10.1, analytics 2.10.2 vs kernel 2.10.3. New ShellForge initiative: 6 issues (#1362–#1367), no squad assigned yet.",
+  "summary": "Evening cycle 2026-03-29. Merged 3 PRs: kernel-em report (#1389), marketing-em report (#1390), critical worktree bootstrap fix (#1391, closes #1376). Flagged PR #1377 (studio-em) as CONFLICTING — needs human rebase. #1347 confirmed closed (PR #1371 merged prior cycle). Governance now fully operational in worktrees via main-binary fallback. P1 blockers #1335/#1342 (studio circuit breakers + Copilot event pipeline) remain open, assigned to studio squad. Version drift persists: cloud 2.10.1, analytics 2.10.2 vs kernel 2.10.3. Build startup hook failed in worktree context (same root cause as #1376, fixed by #1391 for runtime governance). New feature issues filed: 6-tier evaluator (#1381), browser governance (#1384), irreversible action detection (#1385), behavioral pacing (#1386).",
   "ciStatus": {
     "agentGuard": "green",
     "agentguardCloud": "unknown",
@@ -21,42 +21,33 @@
   },
   "prQueue": {
     "agentGuard": {
-      "open": 3,
+      "open": 1,
       "details": [
         {
-          "number": 1361,
-          "title": "fix(bootstrap): harden SessionStart install + build detection (#1341, #1322)",
-          "status": "AWAITING_REVIEW",
-          "checks": "4/4 passed",
-          "mergeable": true,
-          "note": "All green. MERGEABLE. No reviews. Fixes dogfoods #1341 and #1322."
-        },
-        {
-          "number": 1349,
-          "title": "fix(site): sync stats — event kinds 47→48, invariants 22→24",
+          "number": 1377,
+          "title": "chore(studio-em): 2026-03-29 evening EM run — triage #233 #234, conference critical path",
           "status": "CONFLICTING",
-          "checks": "none (no CI run due to conflict)",
+          "checks": "4/4 passed",
           "mergeable": false,
-          "note": "Merge conflict. Human PR (jpleva91). Needs rebase by author."
-        },
-        {
-          "number": 1320,
-          "title": "docs: sync documentation with codebase state (v2.10.2)",
-          "status": "AWAITING_REVIEW",
-          "checks": "2/2 passed",
-          "mergeable": true,
-          "note": "All green. MERGEABLE. Auto-generated docs sync (deepagents removal, event/invariant counts)."
+          "note": "Merge conflict. Auto-generated EM cycle report. Needs rebase by agent or jpleva91."
         }
       ]
     }
   },
   "dogfoodPatterns": [
     {
-      "pattern": "rtk prefix breaks bootstrap exemption pattern matching",
-      "issue": 1347,
+      "pattern": "Worktree CLI binary crashes with ERR_MODULE_NOT_FOUND",
+      "issue": 1376,
       "severity": "P1",
-      "description": "claude-hook-wrapper.sh uses exact string matching for bootstrap exemptions. Global CLAUDE.md instructs all agents to prefix commands with rtk, so 'rtk pnpm install --force' doesn't match the 'pnpm install --force' allowlist pattern. Chicken-and-egg bootstrap failure.",
-      "recommendation": "Patch claude-hook-wrapper.sh to strip rtk prefix before bootstrap exemption pattern matching, or add rtk-prefixed variants to the allowlist."
+      "status": "CLOSED",
+      "description": "In git worktrees, apps/cli/dist/bin.js may exist but crash at startup because node_modules don't exist in the worktree. Before fix: governance silently broken for all tool calls in worktree. Fixed in PR #1391: wrapper now probes binary, falls back to main worktree binary if probe fails.",
+      "resolvedBy": "PR #1391 merged 2026-03-29T21:00Z"
+    },
+    {
+      "pattern": "Turbo build startup hook fails in worktree context",
+      "severity": "P2",
+      "description": "pnpm build run from a worktree context fails with 'Cannot find module @red-codes/*' because worktrees don't have their own node_modules. Turbo reports cache hits for individual packages (from other worktrees' paths) but the CLI app has a fresh cache miss and cannot resolve workspace modules. Build fails but runtime binary from prior build still exists. Same root cause as #1376. PR #1391 fixes the runtime wrapper; build hook failure remains informational (not actionable for worktrees).",
+      "recommendation": "Startup hook should skip pnpm build in worktree context, or Turbo config should disable build for worktrees without node_modules."
     },
     {
       "pattern": "docker stop/rm blocked for named ephemeral test containers",
@@ -74,24 +65,17 @@
   ],
   "crossCuttingIssues": [
     {
-      "issue": 1347,
-      "title": "rtk prefix breaks bootstrap exemption — P1 dogfood",
-      "severity": "P1",
-      "description": "Bootstrap allowlist in claude-hook-wrapper.sh doesn't account for rtk prefix. Affects all agents following global CLAUDE.md.",
-      "action": "Kernel/adapters squad: patch hook wrapper bootstrap exemption"
-    },
-    {
       "issue": 1335,
-      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — 68/138 events lost",
+      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — 68/132 agents blocked (52%)",
       "severity": "P1",
-      "description": "Circuit breakers open, significant event loss in studio.",
+      "description": "Circuit breakers open in studio. Significant agent blocking. Last updated 2026-03-29T09:01Z.",
       "action": "Studio squad: investigate and reset circuit breakers, audit event pipeline"
     },
     {
       "issue": 1342,
-      "title": "[studio-qa] Copilot event pipeline producing 0 events",
+      "title": "[studio-qa] Copilot event pipeline producing 0 events — conference demo gap",
       "severity": "P1",
-      "description": "Copilot hook adapter not emitting events.",
+      "description": "Copilot hook adapter not emitting events. Conference demo impact. Last updated 2026-03-29T11:01Z.",
       "action": "Studio/kernel squad: investigate Copilot hook adapter"
     },
     {
@@ -103,95 +87,92 @@
     {
       "title": "Version drift: cloud 2.10.1, analytics 2.10.2 vs kernel 2.10.3",
       "severity": "P2",
-      "action": "Cloud squad: upgrade both to 2.10.3"
+      "action": "Cloud squad: upgrade both repos to 2.10.3"
     },
     {
-      "issue": 1349,
-      "title": "PR #1349 merge conflict — site stats sync stale",
-      "severity": "P2",
-      "description": "Human PR with merge conflict. Site stats (47→48 event kinds, 22→24 invariants) remain stale in production.",
-      "action": "Human (jpleva91): rebase PR #1349 against main"
+      "issue": 1377,
+      "title": "PR #1377 merge conflict — studio-em cycle report",
+      "severity": "P3",
+      "description": "Studio EM cycle report PR has merge conflict. Governance reports are being lost.",
+      "action": "Studio EM or human (jpleva91): rebase PR #1377 against main"
     }
   ],
   "resolvedSinceLastCycle": [
     {
-      "issue": 917,
-      "title": "KE-2 ActionContext — SHIPPED",
-      "note": "v3.0 item 1 checked (now 2/9). Phase 7 (Capability-Scoped Sessions) unblocked. p50 < 100µs verified."
+      "issue": 1347,
+      "title": "rtk prefix breaks bootstrap exemption — CONFIRMED CLOSED",
+      "note": "Merged in PR #1371 prior cycle. Bootstrap allowlist now strips rtk prefix before matching."
     },
     {
-      "issue": 1186,
-      "title": "Swarm Health P0 — CLOSED",
-      "note": "Recovery controller confirmed swarm health restored, mode: normal, risk score 14→9."
+      "issue": 1376,
+      "title": "Worktree CLI binary crashes — CLOSED THIS CYCLE",
+      "note": "PR #1391 merged: wrapper now falls back to main worktree binary when local binary fails. All 949 CLI tests pass."
     },
     {
-      "issue": 1254,
-      "title": "No-Governance-Self-Modification false positive — CLOSED",
-      "note": "Fixed in PR #1351: scope narrowed to .agentguard/ config paths only, not squad state or gh --body args."
+      "pr": 1389,
+      "title": "Kernel EM cycle report 2026-03-29T17:22Z — MERGED"
     },
     {
-      "issue": 1327,
-      "title": "Cron collision: 3 pairs in server/schedule.json — CLOSED THIS CYCLE",
-      "note": "HQ EM applied fix: analytics-reporter 5→6 19, analytics-invariant-researcher 35→36 19, shellforge-ollama-integration 0→1 8,20."
+      "pr": 1390,
+      "title": "Marketing EM cycle report 2026-03-29T20:00Z — MERGED"
     }
   ],
   "escalations": [
     {
       "priority": "P1",
-      "target": "kernel/adapters squad",
-      "reason": "#1347: rtk prefix breaks bootstrap exemption in claude-hook-wrapper.sh — all agents affected"
-    },
-    {
-      "priority": "P1",
       "target": "studio squad",
-      "reason": "#1335 + #1342: Codex + Copilot circuit breakers OPEN, Copilot event pipeline producing 0 events"
-    },
-    {
-      "priority": "P2",
-      "target": "human reviewer (jpleva91)",
-      "reason": "PR #1361: 4/4 green, MERGEABLE, needs 1 approval (bootstrap hardening, closes #1341 #1322)"
-    },
-    {
-      "priority": "P2",
-      "target": "human reviewer (jpleva91)",
-      "reason": "PR #1320: 2/2 green, MERGEABLE, needs 1 approval (docs sync v2.10.2)"
-    },
-    {
-      "priority": "P2",
-      "target": "human (jpleva91)",
-      "reason": "PR #1349: merge conflict — needs rebase to unblock site stats update"
+      "reason": "#1335 + #1342: Codex + Copilot circuit breakers OPEN, Copilot event pipeline producing 0 events. Last updated >10h ago. Needs status update this cycle."
     },
     {
       "priority": "P2",
       "target": "cloud squad",
-      "reason": "Upgrade agentguard-cloud (2.10.1) and agentguard-analytics (2.10.2) to 2.10.3"
+      "reason": "Upgrade agentguard-cloud (2.10.1) and agentguard-analytics (2.10.2) to 2.10.3. 2+ cycles outstanding."
     },
     {
       "priority": "P2",
       "target": "director",
       "reason": "ShellForge initiative (#1362–#1367): 6 issues filed, needs squad assignment and priority triage"
+    },
+    {
+      "priority": "P3",
+      "target": "studio squad or human (jpleva91)",
+      "reason": "PR #1377: studio-em cycle report has merge conflict — needs rebase"
     }
   ],
   "sprintStatus": {
     "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. Swarm health RESOLVED.",
-    "progress": "Sprint major milestones hit: KE-2 #917 CLOSED, Swarm P0 #1186 CLOSED, v2.10.3 published. Bootstrap hardening PR (#1361) and docs sync PR (#1320) ready for merge. New focus: ShellForge initiative coordination, rtk bootstrap exemption fix (#1347), studio circuit breaker investigation (#1335, #1342).",
+    "progress": "Governance infrastructure hardened this cycle: worktree binary fallback (#1391) closes major dogfood #1376. Bootstrap exemption fix (#1347) confirmed merged. EM cycle reports up to date (kernel + marketing merged). Studio P1 blockers (#1335, #1342) remain the primary open concern. Version drift cloud+analytics persists. Sprint goal (Go telemetry E2E) progressing — no blockers on that track reported.",
     "blockers": [
-      "#1347 P1 — rtk prefix breaks bootstrap exemption (kernel/adapters squad)",
-      "#1335 + #1342 P1 — Copilot/Codex circuit breakers + event pipeline (studio squad)",
-      "PR #1349 — merge conflict, human rebase needed",
-      "Version drift — cloud+analytics 1-2 patches behind"
+      "#1335 P1 — Codex+Copilot circuit breakers OPEN (studio squad)",
+      "#1342 P1 — Copilot event pipeline producing 0 events (studio squad)",
+      "Version drift — cloud+analytics 1-2 patches behind (cloud squad)"
     ]
   },
   "actionsThisCycle": [
     {
-      "action": "CRON_COLLISION_FIX",
-      "detail": "Fixed 3 cron collisions in server/schedule.json: analytics-reporter (5→6 19), analytics-invariant-researcher (35→36 19), shellforge-ollama-integration (0→1 8,20). Zero collisions remain.",
-      "closedIssue": 1327
+      "action": "MERGED_PR",
+      "pr": 1389,
+      "detail": "Merged kernel-em cycle report 2026-03-29T17:22Z (all checks green)"
     },
     {
-      "action": "DOGFOOD_IDENTIFIED",
+      "action": "MERGED_PR",
+      "pr": 1390,
+      "detail": "Merged marketing-em cycle report 2026-03-29T20:00Z (all checks green)"
+    },
+    {
+      "action": "MERGED_PR",
+      "pr": 1391,
+      "detail": "Merged critical worktree bootstrap fix (closes #1376 — governance silently broken in worktrees). All 949 tests pass."
+    },
+    {
+      "action": "FLAGGED_PR",
+      "pr": 1377,
+      "detail": "Flagged studio-em cycle report as CONFLICTING. Left comment requesting rebase."
+    },
+    {
+      "action": "CONFIRMED_CLOSED",
       "issue": 1347,
-      "note": "rtk prefix breaks bootstrap exemption — P1, affects all agents following global CLAUDE.md"
+      "detail": "rtk prefix bootstrap exemption fix confirmed closed (merged in PR #1371 prior cycle)"
     }
   ]
 }
