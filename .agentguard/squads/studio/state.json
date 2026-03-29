@@ -10,7 +10,7 @@
       "fix(swarm): real CLI quota metrics replacing subscription-cost tracking (#201) — April sprint"
     ],
     "blockedUntil": "2026-04-01",
-    "blockedReason": "Copilot budget exhaustion (4000/4000 cents) — 3 days remaining"
+    "blockedReason": "Copilot budget exhaustion (4000/4000 cents) — resets April 1"
   },
   "assignments": {
     "senior": {
@@ -36,22 +36,36 @@
     }
   ],
   "prQueue": {
-    "open": 1,
-    "reviewed": 0,
+    "open": 0,
+    "reviewed": 2,
     "mergeable": 0,
-    "note": "PR #231 open (product run 2026-03-29 — docs only, no CI checks on master). Leaving for human review."
+    "note": "PR #248 merged (SKILL.md for octi-pulpo squad + ecosystem-scout — prevents silent-failure, 135/135 agents covered). PR #249 merged (6-driver narrative, closes #230). Queue clear."
   },
   "humanEscalations": [
     {
       "issue": 1306,
       "repo": "AgentGuardHQ/agentguard",
-      "title": "feat(v3.0-gate): default-deny enforcement finalization — 5TH CYCLE UNASSIGNED",
+      "title": "feat(v3.0-gate): default-deny enforcement finalization — 7TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
       "daysRemaining": 6,
-      "consecutiveCyclesUnassigned": 5,
+      "consecutiveCyclesUnassigned": 7,
       "note": "Previously tracked as workspace #179 — correct kernel issue is #1306",
-      "action": "CRITICAL: Manually assign kernel #1306 to kernel senior immediately. Conference demo depends on this. 6 days remain."
+      "action": "CRITICAL: Manually assign kernel #1306 to kernel senior immediately. Conference demo depends on this. 7 consecutive cycles unassigned."
+    },
+    {
+      "issues": [240, 241, 242, 243, 244],
+      "repo": "AgentGuardHQ/agentguard-workspace",
+      "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan — ALL UNOWNED",
+      "priority": "P0",
+      "action": "Human-driven work. Review #240-244 and own each item personally — agents cannot lead fundraising. May 6 deadline."
+    },
+    {
+      "issues": [245, 246, 247],
+      "repo": "AgentGuardHQ/agentguard-workspace",
+      "title": "Marketing cluster — YouTube video, conference abstracts (RSA/AI Engineer), LinkedIn calendar",
+      "priority": "P1",
+      "action": "Route to marketing-em + provide founder-voice narratives. Conference abstract submission deadlines may be imminent."
     },
     {
       "issue": 228,
@@ -81,7 +95,7 @@
       "priority": "P0",
       "squad": "studio/conference",
       "deadline": "2026-04-10",
-      "action": "UNOWNED — assign to studio-junior on April 1 budget reset. QR code URL depends on this. April 10 hard deadline."
+      "action": "DONE — senior agent completed, PR #1388 open in agentguard repo."
     },
     {
       "issue": 233,
@@ -89,7 +103,7 @@
       "priority": "P0",
       "squad": "studio/conference",
       "deadline": "2026-04-15",
-      "action": "UNOWNED — assign to QA agent on April 1 budget reset. Cloud#518 wizard rewrite shipped 2026-03-29; critical-path validation needed before April 15 stranger test."
+      "action": "UNOWNED — assign to QA agent on April 1 budget reset. Cloud#518 wizard rewrite shipped 2026-03-29."
     },
     {
       "issue": 228,
@@ -110,7 +124,7 @@
       "title": "[product] Goose CLI confirmed as 6th driver — update narrative docs",
       "priority": "P2",
       "squad": "studio",
-      "action": "Assign to studio-junior for April sprint."
+      "action": "DONE — PR #249 merged this cycle."
     },
     {
       "issue": 201,
@@ -132,16 +146,40 @@
       "priority": "P2",
       "squad": "studio",
       "action": "Defer post-April 1. Assign to studio-junior for April sprint."
+    },
+    {
+      "issues": [240, 241, 242, 243, 244],
+      "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan",
+      "priority": "P0",
+      "squad": "human",
+      "action": "Flagged in humanEscalations. Human-owned work — no agent assignment."
+    },
+    {
+      "issues": [245, 246, 247],
+      "title": "Marketing cluster — YouTube video, conference abstract submissions, LinkedIn calendar",
+      "priority": "P1",
+      "squad": "marketing",
+      "action": "Route to marketing-em. Human provides founder-voice narratives."
+    },
+    {
+      "issue": 222,
+      "title": "[studio] Demo critical path: capture funnel not started — 38 days to talk",
+      "priority": "P0",
+      "squad": "studio/conference",
+      "deadline": "2026-05-06",
+      "action": "Phase 1 (#234) now complete per senior agent PR #1388. Phase 2 (#233 wizard validation) unowned."
     }
   ],
   "mergedThisCycle": [
     { "pr": 235, "title": "product(studio): 2026-03-29 evening run — cloud#518 onboarding wizard, #119 closed, 3 new issues" },
     { "pr": 236, "title": "fix(schedule): offset 3 cron collision pairs — resolves #1327" },
     { "pr": 238, "title": "fix: add opencode and goose to rateguard driver lists" },
-    { "pr": 239, "title": "chore: wire Octi Pulpo MCP server + add octi-pulpo-qa agent" }
+    { "pr": 239, "title": "chore: wire Octi Pulpo MCP server + add octi-pulpo-qa agent" },
+    { "pr": 248, "title": "fix(studio-qa): SKILL.md for octi-pulpo squad + ecosystem-scout (all 135 agents covered)" },
+    { "pr": 249, "title": "docs(planning): multi-driver narrative 5 → 6 drivers (Goose) — closes #230" }
   ],
   "openPRsThisCycle": [
     { "pr": 1388, "repo": "AgentGuardHQ/agentguard", "title": "docs(readme): capture funnel CTA — GitHub stars badge, Get Started, cloud links", "closes": "workspace#234" }
   ],
-  "updatedAt": "2026-03-29T18:00:00Z"
+  "updatedAt": "2026-03-29T18:10:00Z"
 }
