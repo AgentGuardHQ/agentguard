@@ -1,40 +1,40 @@
 {
   "squad": "site",
   "sprint": {
-    "goal": "Unblock site PR pipeline + comprehensive stats sync (invariants/patterns/events/CLI/actions)",
-    "issues": [1258, 1259, 1260, 1265, 1266, 1267]
+    "goal": "Land stat bar + card heading fixes (#1393) + file site-stats automation engineering issue",
+    "issues": [1260, 1393]
   },
   "assignments": {
     "site-builder": {
-      "task": "Batch stats fix: CLI commands (#1265) + action types (#1266) + #1258 scope into single comprehensive PR once CI is unblocked",
-      "blockedBy": "#1267 CI mismatch"
+      "task": "Merge PR #1393 once CI passes. Then file feat(site) issue for site-stats-check automation script.",
+      "blockedBy": null
     },
     "site-docs-sync": {
-      "task": "Swarm section audit (#1259) — count actual agents per squad, update framing from 5-tier topology to 7-squad topology",
+      "task": "Verify CLAUDE.md CLI command list matches current 35 top-level commands (#1260 documentation prep)",
       "blockedBy": null
     }
   },
-  "blockers": [
-    {
-      "id": "ci-mismatch",
-      "issue": 1267,
-      "description": "site/** paths excluded from CI workflow but lint+test-and-build are required checks — all site PRs blocked from merging",
-      "severity": "P0",
-      "escalated": true
-    }
-  ],
+  "blockers": [],
   "prQueue": {
     "open": 1,
-    "reviewed": 0,
-    "mergeable": 0,
+    "reviewed": 1,
+    "mergeable": 1,
     "prs": [
       {
-        "number": 1258,
-        "title": "fix(site): sync stats to v2.9.0 — invariants 24, patterns 93, event kinds 47",
-        "checksStatus": "2/2 pass",
-        "mergeStatus": "blocked — #1267"
+        "number": 1393,
+        "title": "fix(site): sync stat bar counters and feature card headings — missed by #1390",
+        "checksStatus": "CI running",
+        "mergeStatus": "pending CI — ci-skip-site.yml should satisfy required checks"
       }
     ]
   },
-  "updatedAt": "2026-03-28T20:40:00.000Z"
+  "recentlyCompleted": [
+    { "pr": 1390, "title": "Site stats sync (marketing EM)", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Merged by site-em after verification" },
+    { "issue": 1267, "title": "CI mismatch — site PRs unmergeable", "closedAt": "2026-03-29", "note": "Fixed by PR #1296 (ci-skip-site.yml)" },
+    { "issue": 1258, "title": "Site stats PR v2.9.0", "closedAt": "2026-03-29", "note": "Superseded by #1390" },
+    { "issue": 1259, "title": "Swarm section audit", "closedAt": "2026-03-29", "note": "Fixed in prior cycle" },
+    { "issue": 1265, "title": "CLI commands count drift", "closedAt": "2026-03-29", "note": "Fixed in #1390 + #1393" },
+    { "issue": 1266, "title": "Action types drift", "closedAt": "2026-03-29", "note": "Fixed in prior cycle" }
+  ],
+  "updatedAt": "2026-03-29T20:40:00.000Z"
 }
