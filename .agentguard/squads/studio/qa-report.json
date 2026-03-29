@@ -1,0 +1,71 @@
+{
+  "cycle": "2026-03-29T11:00Z",
+  "agent": "copilot-cli:sonnet:studio:qa",
+  "health": "yellow",
+  "healthReason": "Copilot event pipeline producing 0 events despite 364K total API events — conference demo dependency (#41). ecosystem-scout missing SKILL.md. Infrastructure (workers, queue, telemetry) healthy.",
+
+  "checks": {
+    "swarmHealthScript": {
+      "status": "pass",
+      "detail": "check-swarm-health.sh: 0 agents checked (132 skipped — log dir not on this host/worktree). All agents deferred to main jared host."
+    },
+    "telemetryPipeline": {
+      "status": "pass",
+      "detail": "Healthy — latest event 0.1h ago"
+    },
+    "copilotEventPipeline": {
+      "status": "warn",
+      "detail": "PARTIAL — 43 copilot agents registered with SKILL.md, but 0 copilot events in API (364,667 total events present). No copilot agent log files found on this host. Conference demo dependency (#41).",
+      "note": "check-swarm-health.sh misreports this as 'verified (0 events)' — status=pass because verify-copilot-events.sh only fails on errors, not warnings. This masking should be fixed."
+    },
+    "agentLogs": {
+      "status": "pass",
+      "detail": "No failures found in swarm-logs.sh --failures (log dir not populated on this host)"
+    },
+    "queueHealth": {
+      "status": "pass",
+      "detail": "Queue depth: 0 (empty)"
+    },
+    "workerPIDs": {
+      "status": "pass",
+      "detail": "32 worker PIDs — all alive, 0 stale"
+    },
+    "scheduleValidation": {
+      "status": "pass",
+      "detail": "JSON valid, 132 enabled agents"
+    },
+    "cronCollisions": {
+      "status": "pass",
+      "detail": "No real collisions (box-scoped check). False positive: qa-slack-reporter + shellforge-ollama-integration share 0 8,20 * * * but run on different boxes (readybench vs jared)."
+    },
+    "skillMdCoverage": {
+      "status": "warn",
+      "detail": "1 enabled agent missing SKILL.md: ecosystem-scout (repo: '.'). All 43 copilot agents verified present.",
+      "missing": ["ecosystem-scout"]
+    }
+  },
+
+  "issues": [
+    {
+      "severity": "P2",
+      "title": "ecosystem-scout missing SKILL.md",
+      "detail": "Agent is enabled in schedule.json (weekly: 0 9 * * 6, jared box) but has no claude/scheduled-tasks/ecosystem-scout/SKILL.md. Will fail or run without context.",
+      "action": "Create SKILL.md for ecosystem-scout or disable it if not yet ready."
+    },
+    {
+      "severity": "P1",
+      "title": "Copilot event pipeline producing 0 events — conference demo dependency",
+      "detail": "364,667 total events in API but none tagged from copilot agents. No copilot agent log files found. Tracked in #41 (conference demo dependency for May 6 talk).",
+      "action": "Investigate why copilot-driven agents are not producing telemetry events. May need log files on jared host to confirm agents are running."
+    },
+    {
+      "severity": "P3",
+      "title": "check-swarm-health.sh masks copilot pipeline PARTIAL as healthy",
+      "detail": "verify-copilot-events.sh returns status='pass' for warnings (only fails on errors), so the health script prints 'Copilot event pipeline: verified (0 events)' — misleading when the pipeline is actually PARTIAL.",
+      "action": "Consider surfacing warn/partial states from verify-copilot-events.sh in health check output."
+    }
+  ],
+
+  "dogfood": "No AgentGuard governance issues observed this run.",
+  "updatedAt": "2026-03-29T11:00:00.000Z"
+}
