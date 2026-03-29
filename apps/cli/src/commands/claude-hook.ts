@@ -445,11 +445,8 @@ async function handlePreToolUse(
   cliArgs: string[],
   parentSessionId?: string
 ): Promise<boolean> {
-  const { processClaudeCodeHook, formatHookResponse } = await import('@red-codes/adapters');
-  const { createKernel } = await import('@red-codes/kernel');
-  const { DEFAULT_INVARIANTS } = await import('@red-codes/invariants');
+  // Policy loading is needed for both Go and TS paths (pack/YAML pre-resolution for #957).
   const { loadPolicyDefs, findPolicyForPath } = await import('../policy-resolver.js');
-  const { resolveStorageConfig, createStorageBundle } = await import('@red-codes/storage');
 
   // Ensure hook field is set
   const normalizedPayload: ClaudeCodeHookPayload = {
@@ -481,6 +478,37 @@ async function handlePreToolUse(
       `agentguard: warning — no policy loaded (${policyErr instanceof Error ? policyErr.message : 'unknown error'}). All actions will be allowed.\n`
     );
   }
+
+  // --- Fast path: delegate to Go binary (#955) ---
+  // policyDefs are pre-resolved by loadPolicyDefs (packs, YAML, extends chains) — this is the
+  // fix for #957: Go binary can't resolve pack: references on its own. TS flattens them first
+  // and writes the resolved rules to a temp file for Go to read via AGENTGUARD_POLICY.
+  // Set AGENTGUARD_FORCE_TS_KERNEL=1 to bypass Go delegation (useful for testing).
+  if (policyDefs.length > 0 && !process.env.AGENTGUARD_FORCE_TS_KERNEL) {
+    const { findGoBinary, delegateToGoHook } = await import('../go-kernel.js');
+    const goBin = findGoBinary();
+    if (goBin) {
+      const goResult = delegateToGoHook(goBin, policyDefs as LoadedPolicy[], normalizedPayload);
+      if (goResult !== null) {
+        // Go evaluation succeeded — forward its response and return without loading heavy TS modules.
+        if (goResult.response) {
+          await new Promise<void>((resolve) =>
+            process.stdout.write(goResult.response, () => resolve())
+          );
+        }
+        return goResult.denied;
+      }
+      process.stderr.write(
+        '[agentguard] Go kernel unavailable or failed — falling back to TypeScript kernel\n'
+      );
+    }
+  }
+
+  // --- TS fallback: heavy module imports (only reached when Go binary is not available) ---
+  const { processClaudeCodeHook, formatHookResponse } = await import('@red-codes/adapters');
+  const { createKernel } = await import('@red-codes/kernel');
+  const { DEFAULT_INVARIANTS } = await import('@red-codes/invariants');
+  const { resolveStorageConfig, createStorageBundle } = await import('@red-codes/storage');
 
   // Generate run ID
   const runId = `hook_${Date.now()}_${randomUUID().replace(/-/g, '').slice(0, 8)}`;
