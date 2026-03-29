@@ -6,11 +6,12 @@
 Install in 30 seconds. Your agents can't break what matters.</p>
 
 <p align="center">
+  <a href="https://github.com/AgentGuardHQ/agentguard/stargazers"><img src="https://img.shields.io/github/stars/AgentGuardHQ/agentguard?style=social" alt="GitHub Stars"></a>
   <a href="https://www.npmjs.com/package/@red-codes/agentguard"><img src="https://img.shields.io/npm/v/@red-codes/agentguard.svg" alt="npm version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License: Apache 2.0"></a>
   <img src="https://github.com/AgentGuardHQ/agentguard/actions/workflows/size-check.yml/badge.svg" alt="CI">
   <a href="https://agentguardhq.github.io/agentguard/"><img src="https://img.shields.io/badge/Website-AgentGuardHQ.github.io-22C55E?style=flat&logo=github" alt="Website"></a>
-  <a href="https://agentguard-cloud-dashboard.vercel.app/onboarding"><img src="https://img.shields.io/badge/Cloud-Join%20Early%20Access-FF6B35?style=flat" alt="Join Early Access"></a>
+  <a href="https://agentguard-cloud-dashboard.vercel.app/onboarding"><img src="https://img.shields.io/badge/Cloud-Start%20Free-FF6B35?style=flat" alt="Start Free on Cloud"></a>
   <a href="https://github.com/AgentGuardHQ/agentguard/discussions"><img src="https://img.shields.io/badge/Discussions-Ask%20%26%20Share-8A2BE2?style=flat&logo=github" alt="GitHub Discussions"></a>
 </p>
 
@@ -25,11 +26,10 @@ AI coding agents (Claude Code, Codex CLI, GitHub Copilot CLI, Google Gemini CLI,
 > Every deny, every escalation, every code review — visible in real time.
 > **[Watch the live swarm &rarr;](https://agentguard-cloud-office-sim.vercel.app)**
 
-## Quick Start
+## Get Started
 
 ```bash
-npm install -g aguard
-# or: npm install -g @red-codes/agentguard
+npm install -g @red-codes/agentguard
 cd your-project
 agentguard claude-init
 # Interactive wizard: choose enforcement mode and a policy pack
@@ -42,6 +42,9 @@ Or use `npx` without a global install:
 cd your-project
 npx @red-codes/agentguard claude-init
 ```
+
+**→ [Sign up for Cloud](https://agentguard-cloud-dashboard.vercel.app/onboarding)** — team governance, fleet dashboard, real-time telemetry
+**→ [Join GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions)** — ask questions, share your setup
 
 The `claude-init` wizard walks you through setup interactively:
 
@@ -80,9 +83,9 @@ Non-interactive setup (CI or scripted installs):
 agentguard claude-init --mode monitor --pack essentials
 ```
 
-> **Join the waitlist** — get cloud governance, team dashboards, and real-time telemetry:
+> **Ready for the cloud?** — team governance, fleet dashboard, real-time telemetry across all your agents:
 > **[agentguard-cloud-dashboard.vercel.app/onboarding](https://agentguard-cloud-dashboard.vercel.app/onboarding)**
-> · [GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions) — ask questions, share setups
+> · [GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions) — questions, setup help, community
 
 ## Cloud Dashboard & Live Office
 
