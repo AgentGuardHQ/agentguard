@@ -18,11 +18,13 @@ runtime/replay/*
 !.agentguard/decisions/.gitkeep
 !.agentguard/squad-manifest.yaml
 !.agentguard/squads/
+!.agentguard/agent-reliability.json
 **/.agentguard/*
 !**/.agentguard/events/.gitkeep
 !**/.agentguard/decisions/.gitkeep
 !**/.agentguard/squad-manifest.yaml
 !**/.agentguard/squads/
+!**/.agentguard/agent-reliability.json
 logs/*
 !logs/.gitkeep
 **/logs/runtime-events.jsonl
