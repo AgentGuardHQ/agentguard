@@ -1,13 +1,19 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-29T21:00:00.000Z",
+  "generatedAt": "2026-03-29T22:00:00.000Z",
   "identity": "claude-code:opus:hq:em",
-  "health": "yellow",
-  "summary": "Evening cycle 2026-03-29. Merged 3 PRs: kernel-em report (#1389), marketing-em report (#1390), critical worktree bootstrap fix (#1391, closes #1376). Flagged PR #1377 (studio-em) as CONFLICTING — needs human rebase. #1347 confirmed closed (PR #1371 merged prior cycle). Governance now fully operational in worktrees via main-binary fallback. P1 blockers #1335/#1342 (studio circuit breakers + Copilot event pipeline) remain open, assigned to studio squad. Version drift persists: cloud 2.10.1, analytics 2.10.2 vs kernel 2.10.3. Build startup hook failed in worktree context (same root cause as #1376, fixed by #1391 for runtime governance). New feature issues filed: 6-tier evaluator (#1381), browser governance (#1384), irreversible action detection (#1385), behavioral pacing (#1386).",
+  "health": "red",
+  "healthReason": "P0: Worker pool dead on jared box — queue depth 61 and growing, all agents frozen. Human must run server/deploy.sh. QA swarm non-operational (4+ days). P1 circuit breakers and Copilot event pipeline ongoing.",
+  "summary": "Late-evening cycle 2026-03-29. P0 escalated: worker pool dead (queue 61, all 32 PIDs dead — flagged #1402, human action required). Fixed cron collision #1372 (shellforge-research-scout 2→5 8,20, closed). Merged PR #1400 (bootstrap worktree fix), PR #1406 (marketing EM cycle). Commented on conflicting PR #1396 (kernel EM, needs rebase). P1 blockers #1335/#1342 still open (circuit breakers auto-resolve 2026-04-01, Copilot events unresolved). New dogfood #1408 filed (no-governance-self-modification blocks read-only SQLite probe — second occurrence, needs fix). QA swarm non-operational 4+ days (#1403). Invariant coverage at 50% vs 75% target (#1407). Site stats clean. CI green. Version drift persists (cloud 2.10.1, analytics 2.10.2 vs 2.10.3).",
   "ciStatus": {
     "agentGuard": "green",
     "agentguardCloud": "unknown",
-    "agentguardAnalytics": "unknown"
+    "agentguardAnalytics": "unknown",
+    "recentRuns": "5/5 green (CodeQL, CI, CI, CodeQL, Deploy Pages)"
+  },
+  "siteStats": {
+    "status": "clean",
+    "detail": "All checks passed — site/index.html in sync with codebase (48 event kinds, 24 invariants, 93 destructive patterns, 41 action types, 35 CLI commands)"
   },
   "versionMatrix": {
     "latest": "2.10.3",
@@ -24,155 +30,197 @@
       "open": 1,
       "details": [
         {
-          "number": 1377,
-          "title": "chore(studio-em): 2026-03-29 evening EM run — triage #233 #234, conference critical path",
+          "number": 1396,
+          "title": "chore(kernel-em): EM cycle report 2026-03-29T18:15Z",
           "status": "CONFLICTING",
-          "checks": "4/4 passed",
+          "checks": "none (conflict blocks CI)",
           "mergeable": false,
-          "note": "Merge conflict. Auto-generated EM cycle report. Needs rebase by agent or jpleva91."
+          "note": "Merge conflict. Commented requesting rebase. Human or kernel EM to rebase against main."
+        }
+      ],
+      "mergedThisCycle": [
+        {
+          "number": 1400,
+          "title": "fix(bootstrap): add worktree binary probe to claudeHookWrapper template (#1376)",
+          "note": "Critical bootstrap fix — closes #1376 (worktree binary crash). All checks green."
+        },
+        {
+          "number": 1406,
+          "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z — #1382 added, #1387 escalating",
+          "note": "Marketing EM cycle report. All checks green."
         }
       ]
     }
   },
   "dogfoodPatterns": [
     {
-      "pattern": "Worktree CLI binary crashes with ERR_MODULE_NOT_FOUND",
-      "issue": 1376,
+      "pattern": "no-governance-self-modification blocks read-only SQLite probe of agentguard.db",
+      "issue": 1408,
       "severity": "P1",
-      "status": "CLOSED",
-      "description": "In git worktrees, apps/cli/dist/bin.js may exist but crash at startup because node_modules don't exist in the worktree. Before fix: governance silently broken for all tool calls in worktree. Fixed in PR #1391: wrapper now probes binary, falls back to main worktree binary if probe fails.",
-      "resolvedBy": "PR #1391 merged 2026-03-29T21:00Z"
-    },
-    {
-      "pattern": "Turbo build startup hook fails in worktree context",
-      "severity": "P2",
-      "description": "pnpm build run from a worktree context fails with 'Cannot find module @red-codes/*' because worktrees don't have their own node_modules. Turbo reports cache hits for individual packages (from other worktrees' paths) but the CLI app has a fresh cache miss and cannot resolve workspace modules. Build fails but runtime binary from prior build still exists. Same root cause as #1376. PR #1391 fixes the runtime wrapper; build hook failure remains informational (not actionable for worktrees).",
-      "recommendation": "Startup hook should skip pnpm build in worktree context, or Turbo config should disable build for worktrees without node_modules."
+      "status": "OPEN",
+      "description": "analytics-invariant-researcher cannot query agentguard.db for governance event analysis. Invariant is path-based — any command referencing .agentguard/ is blocked regardless of read vs write. Third attempt would trigger LOCKDOWN. Second occurrence of this class (first was #1027). Creates catch-22: analytics agents tasked with analyzing violations cannot query the violation database.",
+      "recommendation": "Introduce read-only governance DB access exemption — either a governance.read action type or read-only condition modifier in no-governance-self-modification. See #1408 for suggested YAML."
     },
     {
       "pattern": "docker stop/rm blocked for named ephemeral test containers",
-      "issue": 1346,
+      "issues": [1346, 1398],
       "severity": "P2",
-      "description": "Destructive command guard blocks docker stop/rm on named ephemeral test containers (bench-devs-test-db). No distinction between production and test containers.",
-      "recommendation": "Add policy allowlist for known test container name patterns or expose a test-scope context."
+      "status": "OPEN",
+      "description": "Destructive command guard blocks docker stop/rm on named ephemeral test containers. No distinction between production and test containers. QA smoke runner workaround: npm run db:test:down (routes via Node.js).",
+      "recommendation": "Add policy allowlist for known test container name patterns or expose a test-scope context. Two occurrences now documented."
     },
     {
-      "pattern": "Agent version reported as vunknown",
-      "issues": [1167, 1165, 1159],
-      "severity": "P2",
-      "description": "Multiple copilot-driver agents report version as unknown."
+      "pattern": "Worktree CLI binary crash (ERR_MODULE_NOT_FOUND)",
+      "issue": 1376,
+      "severity": "P1",
+      "status": "CLOSED",
+      "resolvedBy": "PR #1400 merged 2026-03-29T22:00Z — wrapper probes binary, falls back to main worktree binary."
     }
   ],
   "crossCuttingIssues": [
     {
-      "issue": 1335,
-      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — 68/132 agents blocked (52%)",
+      "issue": 1402,
+      "title": "[P0] Worker pool dead — queue depth 61 (growing), all 32 PIDs dead",
+      "severity": "P0",
+      "description": "All scheduled agents on jared box are frozen. Queue depth 61 items (was 46 when filed ~2h ago). Workers killed by box restart or SIGKILL. Human must run server/deploy.sh to flush stale queue, stop lingering processes, and start fresh pool.",
+      "action": "HUMAN REQUIRED: cd ~/agentguard-workspace && server/deploy.sh",
+      "escalatedAt": "2026-03-29T22:00:00.000Z"
+    },
+    {
+      "issue": 1403,
+      "title": "[qa-conductor] readybench QA swarm non-operational — bench-devs-platform not found",
       "severity": "P1",
-      "description": "Circuit breakers open in studio. Significant agent blocking. Last updated 2026-03-29T09:01Z.",
-      "action": "Studio squad: investigate and reset circuit breakers, audit event pipeline"
+      "description": "All 19 readybench QA agents have been skipping for 4+ days. Wrong queue routing: agents have box:readybench in schedule.json but appear in jared's queue. bench-devs-platform not at expected path on jared host. readybench worker may not be consuming its own queue.",
+      "action": "Ops: fix box routing for readybench agents, verify readybench worker is running"
+    },
+    {
+      "issue": 1335,
+      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — 52% swarm blocked",
+      "severity": "P1",
+      "description": "March budget exhaustion — Codex + Copilot quotas exhausted. 68/132 agents blocked. Auto-resolves 2026-04-01 at budget reset. No action needed unless demo requires Copilot/Codex agents before April 1.",
+      "action": "Wait for budget reset 2026-04-01. Conference demo using Claude Code (unaffected)."
     },
     {
       "issue": 1342,
       "title": "[studio-qa] Copilot event pipeline producing 0 events — conference demo gap",
       "severity": "P1",
-      "description": "Copilot hook adapter not emitting events. Conference demo impact. Last updated 2026-03-29T11:01Z.",
-      "action": "Studio/kernel squad: investigate Copilot hook adapter"
+      "description": "Copilot hook adapter not emitting events. 364K+ total events, none tagged copilot. Conference demo (May 6) requires proof of multi-driver governance. No update in >24h.",
+      "action": "Studio squad: investigate Copilot hook adapter, confirm agents running post-CB-recovery"
     },
     {
-      "title": "ShellForge initiative: 6 issues filed (#1362–#1367)",
+      "issue": 1407,
+      "title": "Invariant Coverage Report — 50% coverage (below 75% target)",
       "severity": "P2",
-      "description": "New major initiative: single-binary distribution, secret injection, artifact registry, composable stacks. No squad assigned.",
-      "action": "Director/HQ: assign ShellForge squad ownership and triage priority"
+      "description": "12 of 24 invariants have never fired in 5.5 days of 106-agent operation. Violation rate 9.1% (above 2% target). Dormant: no-secret-exposure, blast-radius-limit, no-package-script-injection, large-file-write, lockfile-integrity, no-container-config-modification, no-destructive-migration, transitive-effect-analysis, no-network-egress, no-ide-socket-access, commit-scope-guard, no-verify-bypass.",
+      "action": "kernel squad: review dormant invariants — are they misconfigured, too narrow, or genuinely not applicable to current workloads?"
     },
     {
       "title": "Version drift: cloud 2.10.1, analytics 2.10.2 vs kernel 2.10.3",
       "severity": "P2",
-      "action": "Cloud squad: upgrade both repos to 2.10.3"
+      "description": "3rd consecutive cycle. Cloud squad assigned.",
+      "action": "Cloud squad: upgrade agentguard-cloud and agentguard-analytics to 2.10.3"
     },
     {
-      "issue": 1377,
-      "title": "PR #1377 merge conflict — studio-em cycle report",
+      "issue": 1372,
+      "title": "Cron collision: shellforge-research-scout — FIXED THIS CYCLE",
       "severity": "P3",
-      "description": "Studio EM cycle report PR has merge conflict. Governance reports are being lost.",
-      "action": "Studio EM or human (jpleva91): rebase PR #1377 against main"
+      "status": "CLOSED",
+      "description": "shellforge-research-scout offset from minute 2 to minute 5 (schedule.json). 4-min gap before ollama-integration completes. GPU contention resolved."
     }
   ],
   "resolvedSinceLastCycle": [
     {
-      "issue": 1347,
-      "title": "rtk prefix breaks bootstrap exemption — CONFIRMED CLOSED",
-      "note": "Merged in PR #1371 prior cycle. Bootstrap allowlist now strips rtk prefix before matching."
+      "issue": 1372,
+      "title": "Cron collision: shellforge-research-scout vs shellforge-ollama-integration",
+      "note": "Fixed: cron 2→5 8,20 in server/schedule.json. Issue closed."
     },
     {
       "issue": 1376,
-      "title": "Worktree CLI binary crashes — CLOSED THIS CYCLE",
-      "note": "PR #1391 merged: wrapper now falls back to main worktree binary when local binary fails. All 949 CLI tests pass."
+      "title": "Worktree CLI binary crash (ERR_MODULE_NOT_FOUND)",
+      "note": "PR #1400 merged: wrapper probes binary, falls back to main worktree binary. Closes #1376."
     },
     {
-      "pr": 1389,
-      "title": "Kernel EM cycle report 2026-03-29T17:22Z — MERGED"
-    },
-    {
-      "pr": 1390,
+      "pr": 1406,
       "title": "Marketing EM cycle report 2026-03-29T20:00Z — MERGED"
+    },
+    {
+      "pr": 1400,
+      "title": "fix(bootstrap): worktree binary probe — MERGED"
     }
   ],
   "escalations": [
     {
+      "priority": "P0",
+      "target": "human (jpleva91)",
+      "reason": "Worker pool dead on jared box. Queue at 61 items and growing. No scheduled agents can run. Requires: cd ~/agentguard-workspace && server/deploy.sh"
+    },
+    {
       "priority": "P1",
       "target": "studio squad",
-      "reason": "#1335 + #1342: Codex + Copilot circuit breakers OPEN, Copilot event pipeline producing 0 events. Last updated >10h ago. Needs status update this cycle."
+      "reason": "#1342: Copilot event pipeline 0 events — conference demo gap. No update in >24h. Circuit breakers (#1335) auto-resolve 2026-04-01 but Copilot event pipeline is a separate issue."
+    },
+    {
+      "priority": "P1",
+      "target": "ops (human)",
+      "reason": "#1403: readybench QA swarm non-operational for 4+ days. Wrong queue routing — needs box-level fix for readybench worker."
+    },
+    {
+      "priority": "P1",
+      "target": "kernel squad",
+      "reason": "#1408: no-governance-self-modification invariant blocks legitimate read-only analytics queries (second occurrence). Risk of LOCKDOWN on third attempt. Analytics agents cannot do their job."
     },
     {
       "priority": "P2",
       "target": "cloud squad",
-      "reason": "Upgrade agentguard-cloud (2.10.1) and agentguard-analytics (2.10.2) to 2.10.3. 2+ cycles outstanding."
+      "reason": "Version drift persists 3rd cycle: cloud 2.10.1, analytics 2.10.2 vs 2.10.3"
     },
     {
       "priority": "P2",
       "target": "director",
-      "reason": "ShellForge initiative (#1362–#1367): 6 issues filed, needs squad assignment and priority triage"
+      "reason": "ShellForge initiative (#1362–#1367): 6 issues filed, no squad owner yet. Single-binary, secret injection, artifact registry, composable stacks."
     },
     {
       "priority": "P3",
-      "target": "studio squad or human (jpleva91)",
-      "reason": "PR #1377: studio-em cycle report has merge conflict — needs rebase"
+      "target": "kernel EM or human (jpleva91)",
+      "reason": "PR #1396 (kernel EM cycle report) has merge conflict — needs rebase against main"
     }
   ],
   "sprintStatus": {
-    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. Swarm health RESOLVED.",
-    "progress": "Governance infrastructure hardened this cycle: worktree binary fallback (#1391) closes major dogfood #1376. Bootstrap exemption fix (#1347) confirmed merged. EM cycle reports up to date (kernel + marketing merged). Studio P1 blockers (#1335, #1342) remain the primary open concern. Version drift cloud+analytics persists. Sprint goal (Go telemetry E2E) progressing — no blockers on that track reported.",
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. Version sync. ShellForge coordination.",
+    "progress": "Sprint goal (Go telemetry E2E) not blocked by any HQ-tracked issue. KE-2 shipped. Governance infrastructure improved: worktree binary fallback closed. P0 worker pool blocks all scheduled automation — sprint velocity at risk if not resolved promptly. ShellForge squad assignment still pending.",
     "blockers": [
-      "#1335 P1 — Codex+Copilot circuit breakers OPEN (studio squad)",
-      "#1342 P1 — Copilot event pipeline producing 0 events (studio squad)",
+      "#1402 P0 — Worker pool dead (human required: server/deploy.sh)",
+      "#1335 P1 — Codex+Copilot circuit breakers OPEN (auto-resolves 2026-04-01)",
+      "#1342 P1 — Copilot event pipeline 0 events (studio squad)",
+      "#1403 P1 — readybench QA swarm non-operational 4+ days",
       "Version drift — cloud+analytics 1-2 patches behind (cloud squad)"
     ]
   },
   "actionsThisCycle": [
     {
-      "action": "MERGED_PR",
-      "pr": 1389,
-      "detail": "Merged kernel-em cycle report 2026-03-29T17:22Z (all checks green)"
+      "action": "FIXED_CRON_COLLISION",
+      "issue": 1372,
+      "detail": "shellforge-research-scout: cron 2→5 8,20 in server/schedule.json. Closed issue #1372."
     },
     {
       "action": "MERGED_PR",
-      "pr": 1390,
-      "detail": "Merged marketing-em cycle report 2026-03-29T20:00Z (all checks green)"
+      "pr": 1400,
+      "detail": "Merged fix(bootstrap): worktree binary probe — closes #1376. All checks green."
     },
     {
       "action": "MERGED_PR",
-      "pr": 1391,
-      "detail": "Merged critical worktree bootstrap fix (closes #1376 — governance silently broken in worktrees). All 949 tests pass."
+      "pr": 1406,
+      "detail": "Merged marketing-em cycle report 2026-03-29T20:00Z. All checks green."
+    },
+    {
+      "action": "ESCALATED",
+      "issue": 1402,
+      "detail": "Commented on P0 worker pool dead — queue depth 61, escalated to human (jpleva91) with deploy.sh instructions."
     },
     {
       "action": "FLAGGED_PR",
-      "pr": 1377,
-      "detail": "Flagged studio-em cycle report as CONFLICTING. Left comment requesting rebase."
-    },
-    {
-      "action": "CONFIRMED_CLOSED",
-      "issue": 1347,
-      "detail": "rtk prefix bootstrap exemption fix confirmed closed (merged in PR #1371 prior cycle)"
+      "pr": 1396,
+      "detail": "Commented on conflicting kernel EM cycle PR #1396 — needs rebase against main."
     }
   ]
 }
