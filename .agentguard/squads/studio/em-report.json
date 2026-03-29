@@ -1,0 +1,64 @@
+{
+  "identity": "claude-code:sonnet:studio:em",
+  "runAt": "2026-03-29T04:00:00.000Z",
+  "health": "yellow",
+  "summary": "Swarm healthy, Goose PR merged. Sprint set to demo capture funnel (Apr 17 deadline). BLOCKER: human decision needed on CTA landing page approach for May 6 talk.",
+  "swarm": {
+    "status": "green",
+    "agentsChecked": 98,
+    "agentsSkipped": 34,
+    "telemetry": "healthy",
+    "workerPIDs": "alive",
+    "queueDepth": 0
+  },
+  "prs": {
+    "merged": [
+      {
+        "number": 225,
+        "title": "feat(studio): Goose CLI driver — stranger test + README update",
+        "action": "merged",
+        "closes": [223]
+      }
+    ],
+    "open": []
+  },
+  "sprint": {
+    "goal": "Demo capture funnel live before April 17 — README CTA + QR code + cloud signup hardening",
+    "issues": [222, 146, 120]
+  },
+  "crossSquad": {
+    "kernel": "green — steady state, PR #969 merged",
+    "cloud": "no EM report — status unknown",
+    "qa": "no EM report — #146 open (qa-regression-analyzer + qa-test-architect broken, 0% success rate on bench-devs-platform, needs re-trigger)",
+    "hq": "no EM report — status unknown"
+  },
+  "analytics": {
+    "openIssues": 6,
+    "pendingDataRequests": [
+      { "issue": 36, "title": "Demonstration Factory evidence pack", "deadline": "2026-04-30" },
+      { "issue": 32, "title": "Conference conversion baseline", "deadline": "2026-05-06" }
+    ],
+    "note": "Daily reports (#33, #34) accumulating as open issues — analytics squad should close them after reading"
+  },
+  "blockers": [
+    {
+      "issue": 222,
+      "priority": "P0",
+      "description": "Demo capture funnel not started — 38 days to May 6 talk, April 17 deadline in 19 days. Human decision needed: README CTA (Option A) vs dedicated landing page (Option B). Recommendation: Option A (zero build time) + GitHub Discussions.",
+      "escalateTo": "human"
+    },
+    {
+      "issue": 146,
+      "priority": "P2",
+      "description": "QA agents broken on bench-devs-platform — needs re-trigger to determine if transient. Assigned to QA agent."
+    }
+  ],
+  "dogfood": "No AgentGuard governance issues encountered during this run.",
+  "nextActions": [
+    "Human: Decide Option A vs B for capture funnel CTA destination (issue #222)",
+    "Studio senior: Implement README CTA + QR code once decision made",
+    "QA agent: Re-trigger qa-regression-analyzer and qa-test-architect on bench-devs-platform",
+    "Cloud EM: File em-report — status unknown for 1+ cycle",
+    "Analytics: Close daily report issues after reading (#33, #34)"
+  ]
+}

@@ -1,15 +1,32 @@
 {
   "squad": "studio",
   "sprint": {
-    "goal": "",
-    "issues": []
+    "goal": "Demo capture funnel live before April 17 — README CTA + QR code + cloud signup hardening",
+    "issues": [222, 223, 146, 120]
   },
-  "assignments": {},
-  "blockers": [],
+  "assignments": {
+    "senior": {
+      "focus": "Demo capture funnel (#222) — README CTA destination + QR code generation",
+      "issues": [222]
+    },
+    "qa": {
+      "focus": "Re-trigger qa-regression-analyzer and qa-test-architect on bench-devs-platform (#146)",
+      "issues": [146]
+    }
+  },
+  "blockers": [
+    {
+      "issue": 222,
+      "description": "Human decision needed: Option A (README) vs Option B (dedicated landing page) as CTA destination",
+      "priority": "P0",
+      "deadline": "2026-04-17"
+    }
+  ],
   "prQueue": {
     "open": 0,
-    "reviewed": 0,
-    "mergeable": 0
+    "reviewed": 1,
+    "mergeable": 0,
+    "merged": [225]
   },
-  "updatedAt": "2026-03-25T07:25:54.157Z"
+  "updatedAt": "2026-03-29T04:00:00.000Z"
 }
