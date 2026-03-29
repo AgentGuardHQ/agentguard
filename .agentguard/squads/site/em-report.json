@@ -1,60 +1,65 @@
 {
   "squad": "site",
-  "timestamp": "2026-03-29T22:40:00.000Z",
+  "timestamp": "2026-03-30T00:40:01.000Z",
   "health": "green",
-  "summary": "Clean cycle — all 14 site stat checks pass, Tests counter confirmed 4614, CLAUDE.md CLI audit complete (37 accessible commands, 35 file-based matches site counter). PR #1406 (marketing EM) merged. No content drift.",
+  "summary": "8 stat drifts fixed (invariants 24→25, action types 41→43 across all occurrences). --tests-count flag added to check-site-stats.sh for CI integration. #1260 scope assessed — landing page content P2 for v2.10. check-site-stats.sh now 14/14 checks passing.",
   "siteBuild": {
     "status": "pass",
-    "notes": "Static site. check-site-stats.sh: 14/14 checks pass. Full vitest run: 4614/4614 passing."
+    "notes": "Static site. check-site-stats.sh: 14/14 checks pass after drift fix. --tests-count 4614 also passes."
   },
   "contentFreshness": {
     "status": "current",
-    "resolvedThisCycle": [],
+    "resolvedThisCycle": [
+      "invariants 24→25: stat bar, meta description, og:description, JSON-LD, hero paragraph, feature card heading, architecture text, inline TUI displays",
+      "action types 41→43: stat bar, architecture detail text"
+    ],
     "remainingDrift": [],
     "automatedChecks": { "script": "scripts/check-site-stats.sh", "checks": 14, "result": "all pass" },
     "verified": [
-      "invariants: 24", "destructive patterns: 93", "event kinds: 48",
-      "action types: 41", "CLI commands: 35 (file-based; 37 total including inline events + telemetry)",
-      "tests: 4614 — full vitest run 2026-03-29T22:40Z"
+      "invariants: 25", "destructive patterns: 93", "event kinds: 48",
+      "action types: 43", "CLI commands: 35 (file-based)",
+      "tests: 4614 — stat bar verified via --tests-count flag"
     ]
   },
-  "claudeMdAudit": {
-    "status": "accurate",
-    "fileBasedCommands": 35,
-    "inlineCommands": ["events", "telemetry"],
-    "totalAccessible": 37,
-    "claudeMdListed": 37,
-    "drift": "none",
-    "note": "CLAUDE.md documents all 37 accessible commands. Site counter uses file-count methodology (35). Both internally consistent."
-  },
+  "sprintDelivered": [
+    "fix(site): sync invariants 24→25 and action types 41→43 — 8 drift locations in site/index.html",
+    "feat(site): add --tests-count <n> flag to scripts/check-site-stats.sh for CI integration"
+  ],
   "prQueue": {
-    "mergedThisCycle": [
-      { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "note": "MERGEABLE, 4/4 checks. Squash merged." }
-    ],
+    "mergedThisCycle": [],
     "open": [
-      { "pr": 1400, "title": "fix(bootstrap): add worktree binary probe", "note": "Landed on remote main — already merged." },
-      { "pr": 1396, "title": "chore(kernel-em): EM cycle 2026-03-29T18:15Z", "note": "Kernel squad, null checks — skip" }
+      { "pr": 1417, "title": "chore(hq-em): EM cycle 2026-03-29T23:00Z", "owner": "hq", "note": "CONFLICTING — merge conflict, cannot merge. HQ squad must rebase." }
     ]
   },
   "issuesTracked": [
-    { "number": 1260, "title": "v2.9.0 announcement content", "status": "open", "priority": "P2", "owner": "marketing squad" }
+    {
+      "number": 1260,
+      "title": "v2.9.0 announcement content",
+      "status": "open",
+      "priority": "P2",
+      "assessment": "Current version is v2.10.3. Landing page scope for v2.10: (1) wildcard policy fix (v2.9) is security-critical and worth a site callout; (2) new adapter support (Codex, Gemini) + team-report + SQLite primary are v2.10 features that could update the hero/features section. LinkedIn/blog content in issue is marketing squad scope. Site squad scope: consider small 'What's new in v2.10' highlight or updated hero copy. P2 — not blocking.",
+      "recommendation": "Defer to next sprint. File a focused site task for hero copy update once v2.10 changelog is finalized in CHANGELOG.md (gap: 2.8.1 is latest in CHANGELOG, v2.10.3 is deployed)."
+    }
   ],
-  "structuralRisk": {
-    "testsCounterGap": "Tests counter (4614) manually verified via live vitest run. check-site-stats.sh lacks --tests-count flag — sprint item for site-builder.",
-    "commandCountDelta": "Site says 35 (file-count). Actual accessible: 37 (events + telemetry inline in bin.ts). Not a bug — documented nuance."
-  },
   "blockers": [],
-  "escalations": [],
+  "escalations": [
+    {
+      "issue": "CHANGELOG gap — CHANGELOG.md only goes to v2.8.1 but CLI is on v2.10.3",
+      "priority": "P2",
+      "owner": "kernel-squad or release process",
+      "note": "Not blocking site work, but #1260 content request can't be fully drafted until CHANGELOG is current. Flagging for awareness."
+    }
+  ],
   "dogfoodReport": {
     "governanceDenialsThisRun": 0,
     "unexpectedBlocks": [],
     "unexpectedAllows": [],
-    "status": "clean — gh pr merge, pnpm test, git operations all executed without denial."
+    "status": "clean — git, gh, bash operations all executed without denial."
   },
   "nextActions": [
-    "site-builder: extend check-site-stats.sh with --tests-count <n> flag for CI use",
-    "site-builder: assess #1260 scope for v2.10 landing page content (P2)",
-    "site-docs-sync: CLAUDE.md CLI audit done — monitor for new commands as v2.10 work lands"
+    "site-builder: file GitHub issue for hero copy update (v2.10 features) once CHANGELOG is current",
+    "site-builder: monitor for new action types and invariants as v2.10 work continues",
+    "site-docs-sync: CLAUDE.md CLI audit still current — monitor for new commands"
   ],
   "agentIdentity": "claude-code:opus:site:em"
 }
