@@ -1,16 +1,16 @@
 {
   "squad": "site",
   "sprint": {
-    "goal": "Extend check-site-stats.sh with --tests-count flag; assess #1260 landing page scope",
+    "goal": "File hero-copy issue for v2.10 features once CHANGELOG is current; monitor for stat drift as v2.10 work lands",
     "issues": [1260]
   },
   "assignments": {
     "site-builder": {
-      "task": "Add --tests-count <n> flag to scripts/check-site-stats.sh for CI integration; assess #1260 for v2.10 landing page content",
+      "task": "File GitHub issue for v2.10 landing page hero copy update (wildcard fix + new adapters + team-report). Watch for new action types / invariants as kernel work continues.",
       "blockedBy": null
     },
     "site-docs-sync": {
-      "task": "CLAUDE.md CLI audit complete — 37 commands documented (35 file-based + 2 inline), no drift. Monitor for new commands as v2.10 work lands.",
+      "task": "CLAUDE.md CLI audit current — 35 file-based commands match site counter. Monitor for new commands as v2.10 work lands.",
       "blockedBy": null
     }
   },
@@ -20,15 +20,13 @@
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
-      { "number": 1396, "title": "chore(kernel-em): cycle 2026-03-29T18:15Z", "owner": "kernel", "note": "Null checks" }
+      { "number": 1417, "title": "chore(hq-em): EM cycle 2026-03-29T23:00Z", "owner": "hq", "note": "CONFLICTING — cannot merge, needs rebase by hq squad" }
     ]
   },
   "recentlyCompleted": [
-    { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Marketing EM cycle — squash merged by site-em." },
-    { "pr": 1400, "title": "fix(bootstrap): add worktree binary probe", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Landed on remote main — already merged (not site squad)." },
-    { "pr": 1401, "title": "feat(site): add check-site-stats.sh", "mergedAt": "2026-03-29T21:30:00.000Z", "note": "14 automated stat checks." },
-    { "pr": 1394, "title": "fix(site): correct remaining stat drift", "mergedAt": "2026-03-29T20:40:00.000Z" },
-    { "pr": 1393, "title": "fix(site): sync stat bar counters and feature card headings", "mergedAt": "2026-03-29T20:40:00.000Z" }
+    { "pr": null, "title": "fix(site): sync invariants 24→25 and action types 41→43 — 8 drift locations", "mergedAt": null, "note": "This cycle — PR pending." },
+    { "pr": null, "title": "feat(site): add --tests-count <n> flag to check-site-stats.sh", "mergedAt": null, "note": "This cycle — PR pending." },
+    { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Marketing EM cycle — squash merged by site-em." }
   ],
-  "updatedAt": "2026-03-29T22:40:00.000Z"
+  "updatedAt": "2026-03-30T00:40:01.000Z"
 }

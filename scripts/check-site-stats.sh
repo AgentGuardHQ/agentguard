@@ -13,7 +13,13 @@
 #   0 — all claims match codebase
 #   1 — one or more claims are stale
 #
-# Usage: bash scripts/check-site-stats.sh
+# Usage: bash scripts/check-site-stats.sh [--tests-count <n>]
+#
+# Options:
+#   --tests-count <n>   Verify that the site stat bar "Tests" counter matches <n>.
+#                       Intended for CI: pass the actual passing test count from
+#                       `pnpm test` to catch when the marketing stat drifts behind
+#                       the real suite size.
 
 set -euo pipefail
 
@@ -22,6 +28,23 @@ SITE="$ROOT/site/index.html"
 
 PASS=0
 FAIL=0
+
+# ---------------------------------------------------------------------------
+# Parse arguments
+# ---------------------------------------------------------------------------
+EXPECTED_TESTS=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tests-count)
+      EXPECTED_TESTS="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
 
 ok()    { echo "  ✓ $1"; }
 drift() { echo "  ✗ $1: site says $2, codebase has $3"; FAIL=$((FAIL + 1)); }
@@ -131,6 +154,15 @@ if [ "$SITE_CMDS" = "$ACTUAL_CMDS" ]; then
   ok "CLI Commands: $ACTUAL_CMDS"
 else
   drift "CLI Commands (stat bar)" "$SITE_CMDS" "$ACTUAL_CMDS"
+fi
+
+if [ -n "$EXPECTED_TESTS" ]; then
+  SITE_TESTS=$(stat_bar_value "Tests")
+  if [ "$SITE_TESTS" = "$EXPECTED_TESTS" ]; then
+    ok "Tests (stat bar): $EXPECTED_TESTS"
+  else
+    drift "Tests (stat bar)" "$SITE_TESTS" "$EXPECTED_TESTS"
+  fi
 fi
 
 # ---------------------------------------------------------------------------

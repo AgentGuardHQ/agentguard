@@ -1,31 +1,31 @@
 {
   "squad": "studio",
   "sprint": {
-    "goal": "Ship agentguard init studio wizard + execution profiles + swarm template schema formalization (v3.1 prep)",
+    "goal": "April 1 unlock: Guitar Jam Partner #165-169, market research scout #203, QA wizard validation #233, quota metrics shipped",
     "issues": [
-      "Formalize swarm template schema (JSON Schema validation) — DONE (PR #199 + kernel #1251)",
-      "Define execution profiles (development, ci-safe, strict, enterprise) — DONE (PR #199 merged)",
-      "Implement agentguard init studio interactive wizard — DONE (kernel commits 80b69f9 + 7a98c4d, 13 tests)",
-      "Runner / Cloud protocol integration — BLOCKED (depends on v3.0 gate #1306 + cloud Phase 2A)",
-      "fix(swarm): real CLI quota metrics replacing subscription-cost tracking (#201) — April sprint"
+      "fix(swarm): real CLI quota metrics — DONE (PR #259 merged, closes #201)",
+      "Guitar Jam Partner #165-169 — READY, dispatching April 1 (copilot budget reset)",
+      "Market research scout #203 — READY, dispatching April 1 (studio-junior)",
+      "Conference wizard validation #233 — READY, dispatching April 1 (QA agent)",
+      "Agent 365 Q&A brief #228 — UNOWNED, P0 human escalation"
     ],
     "blockedUntil": "2026-04-01",
-    "blockedReason": "Copilot budget exhaustion (4000/4000 cents) — resets April 1"
+    "blockedReason": "Copilot budget reset April 1 — 5 items queued for dispatch"
   },
   "assignments": {
     "senior": {
       "agent": "copilot-cli:sonnet:studio:senior",
-      "issue": "workspace#234",
+      "issue": "workspace#201",
       "status": "completed",
-      "completedAt": "2026-03-29T18:00:00Z",
-      "summary": "README capture funnel CTA: added GitHub Stars badge, renamed Quick Start → Get Started, added cloud+Discussions CTAs above-the-fold, updated badge language from 'Join Early Access' to 'Start Free'. Closes conference capture funnel Phase 1 (workspace#234). PR: AgentGuardHQ/agentguard#1388. Also confirmed init studio wizard already shipped (kernel commits 80b69f9+7a98c4d) — updated sprint state accordingly. Runner/Cloud protocol blocked on #1306+cloud Phase 2A."
+      "completedAt": "2026-03-29T23:30:00Z",
+      "summary": "PR #259 merged — real CLI quota tracking replacing subscription-cost tracking. Three-layer system: quota-probe.sh + rg_set_hard_down/rg_check_hard_down Redis keys + run-agent.sh pre-execution hard-down gate. Fixes false 'Copilot at cap' noise from flat-rate plan tracking. Hard-down TTLs: claude-code 7d, copilot 30d, codex/gemini 24h. Feeds cloud#509 model fitness pipeline."
     }
   },
   "blockers": [
     {
-      "id": "march-budget-exhaustion",
+      "id": "copilot-budget-reset",
       "severity": "P1",
-      "description": "Copilot budget at cap (4000/4000 cents). Guitar-jam issues #165-169 deferred to April 1 per EM.",
+      "description": "Copilot budget resets April 1 — quota tracking now fixed (PR #259). Items #165-169, #203, #233 queued.",
       "autoResolves": "2026-04-01"
     },
     {
@@ -33,153 +33,99 @@
       "severity": "P1",
       "description": "qa-regression-analyzer and qa-test-architect broken (#146). QA EM to retrigger April 1.",
       "autoResolves": "2026-04-01"
+    },
+    {
+      "id": "copilot-event-pipeline-final-warning",
+      "severity": "P1",
+      "description": "#1342 Copilot event pipeline sending 0 events — HQ EM at FINAL WARNING (3 cycles). Studio must investigate or close.",
+      "action": "Check copilot adapter hook config. File fix or close as infra issue."
     }
   ],
   "prQueue": {
     "open": 0,
     "reviewed": 2,
     "mergeable": 0,
-    "note": "PR #248 merged (SKILL.md for octi-pulpo squad + ecosystem-scout — prevents silent-failure, 135/135 agents covered). PR #249 merged (6-driver narrative, closes #230). Queue clear."
+    "note": "PR #259 merged (quota metrics fix, closes #201). PR #260 closed as superseded by this cycle."
   },
   "humanEscalations": [
     {
+      "issue": 1402,
+      "repo": "AgentGuardHQ/agentguard",
+      "title": "Worker pool dead — MUST run server/deploy.sh before April 1 or risk thundering herd",
+      "deadline": "2026-04-01",
+      "priority": "P0",
+      "consecutiveCyclesUnassigned": 3,
+      "action": "CRITICAL: Run `server/deploy.sh` on readybench before April 1. Circuit breakers (Codex+Copilot) auto-clear April 1 — dead pool + 60+ queued items = thundering herd."
+    },
+    {
       "issue": 1306,
       "repo": "AgentGuardHQ/agentguard",
-      "title": "feat(v3.0-gate): default-deny enforcement finalization — 7TH CYCLE UNASSIGNED",
+      "title": "feat(v3.0-gate): default-deny enforcement — 10TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
-      "daysRemaining": 6,
-      "consecutiveCyclesUnassigned": 7,
-      "note": "Previously tracked as workspace #179 — correct kernel issue is #1306",
-      "action": "CRITICAL: Manually assign kernel #1306 to kernel senior immediately. Conference demo depends on this. 7 consecutive cycles unassigned."
+      "consecutiveCyclesUnassigned": 10,
+      "note": "KE-7 is about #1415 + #1410, not #1306. This remains truly unassigned.",
+      "action": "CRITICAL: Manually assign kernel #1306. Conference demo depends on v3.0 gate. 10 consecutive cycles unassigned."
+    },
+    {
+      "issue": 1410,
+      "repo": "AgentGuardHQ/agentguard",
+      "title": "octi-pulpo policy pack missing — ALL MCP coordination blocked in governed sessions",
+      "priority": "P0",
+      "action": "KE-7 active sprint for this. Track kernel progress. All MCP coordination tools blocked until resolved."
     },
     {
       "issues": [240, 241, 242, 243, 244],
       "repo": "AgentGuardHQ/agentguard-workspace",
       "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan — ALL UNOWNED",
       "priority": "P0",
-      "action": "Human-driven work. Review #240-244 and own each item personally — agents cannot lead fundraising. May 6 deadline."
+      "action": "Human-driven work. Review #240-244 and own each item personally. May 6 deadline — 37 days."
+    },
+    {
+      "issue": 228,
+      "repo": "AgentGuardHQ/agentguard-workspace",
+      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (10+ cycles)",
+      "deadline": "2026-05-06",
+      "priority": "P0",
+      "action": "Assign #228 immediately — no owner still. April 1 last chance before conference crunch."
+    },
+    {
+      "issue": 178,
+      "title": "Nix design partner activation — schedule onboarding before April 17 Phase 2 gate",
+      "deadline": "2026-04-17",
+      "priority": "P1",
+      "action": "Schedule onboarding session this week."
+    },
+    {
+      "issue": 152,
+      "title": "DPP dry run needs owner — April 10 deadline",
+      "deadline": "2026-04-10",
+      "priority": "P1",
+      "action": "Assign owner — 12 days remaining."
     },
     {
       "issues": [245, 246, 247],
       "repo": "AgentGuardHQ/agentguard-workspace",
       "title": "Marketing cluster — YouTube video, conference abstracts (RSA/AI Engineer), LinkedIn calendar",
       "priority": "P1",
-      "action": "Route to marketing-em + provide founder-voice narratives. Conference abstract submission deadlines may be imminent."
-    },
-    {
-      "issue": 228,
-      "repo": "AgentGuardHQ/agentguard-workspace",
-      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED",
-      "deadline": "2026-05-06",
-      "priority": "P0",
-      "action": "Assign #228 before April — no owner yet. Conference prep blocker."
-    },
-    {
-      "issue": 178,
-      "title": "Nix design partner activation — schedule onboarding session before April 10",
-      "deadline": "2026-04-10",
-      "priority": "P1"
-    },
-    {
-      "issue": 152,
-      "title": "DPP dry run needs owner — April 10 deadline",
-      "deadline": "2026-04-10",
-      "priority": "P1"
+      "action": "Route to marketing-em. Human provides founder-voice narratives. RSA/AI Engineer submission deadlines unknown — check immediately."
     }
   ],
-  "newIssuesTriaged": [
-    {
-      "issue": 234,
-      "title": "[conference] Capture funnel Phase 1: README CTA",
-      "priority": "P0",
-      "squad": "studio/conference",
-      "deadline": "2026-04-10",
-      "action": "DONE — senior agent completed, PR #1388 open in agentguard repo."
-    },
-    {
-      "issue": 233,
-      "title": "[conference] Validate onboarding wizard v2 in May 6 demo walk-through",
-      "priority": "P0",
-      "squad": "studio/conference",
-      "deadline": "2026-04-15",
-      "action": "UNOWNED — assign to QA agent on April 1 budget reset. Cloud#518 wizard rewrite shipped 2026-03-29."
-    },
-    {
-      "issue": 228,
-      "title": "[conference] Agent 365 vs AgentGuard Q&A brief",
-      "priority": "P0",
-      "squad": "studio/conference",
-      "action": "Unowned — assign immediately. May 6 deadline."
-    },
-    {
-      "issue": 229,
-      "title": "[studio] Guitar Jam Partner — unblock first Studio asset (5 tasks ready)",
-      "priority": "P1",
-      "squad": "studio",
-      "action": "Issues #165-169 ready. Assign to copilot-cli agent post April 1 budget reset."
-    },
-    {
-      "issue": 230,
-      "title": "[product] Goose CLI confirmed as 6th driver — update narrative docs",
-      "priority": "P2",
-      "squad": "studio",
-      "action": "DONE — PR #249 merged this cycle."
-    },
-    {
-      "issue": 201,
-      "title": "fix(swarm): real CLI quota metrics replacing subscription-cost tracking",
-      "priority": "P1",
-      "squad": "studio",
-      "action": "Added to April sprint backlog. Assign to studio-senior post April 1."
-    },
-    {
-      "issue": 202,
-      "title": "research: evaluate velvet-tiger/automatic as ShellForge distribution channel",
-      "priority": "P2",
-      "squad": "studio/shellforge",
-      "action": "Defer until ShellForge ships. No action needed now."
-    },
-    {
-      "issue": 203,
-      "title": "feat(swarm): add market research scout agent",
-      "priority": "P2",
-      "squad": "studio",
-      "action": "Defer post-April 1. Assign to studio-junior for April sprint."
-    },
-    {
-      "issues": [240, 241, 242, 243, 244],
-      "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan",
-      "priority": "P0",
-      "squad": "human",
-      "action": "Flagged in humanEscalations. Human-owned work — no agent assignment."
-    },
-    {
-      "issues": [245, 246, 247],
-      "title": "Marketing cluster — YouTube video, conference abstract submissions, LinkedIn calendar",
-      "priority": "P1",
-      "squad": "marketing",
-      "action": "Route to marketing-em. Human provides founder-voice narratives."
-    },
-    {
-      "issue": 222,
-      "title": "[studio] Demo critical path: capture funnel not started — 38 days to talk",
-      "priority": "P0",
-      "squad": "studio/conference",
-      "deadline": "2026-05-06",
-      "action": "Phase 1 (#234) now complete per senior agent PR #1388. Phase 2 (#233 wizard validation) unowned."
-    }
+  "april1DispatchQueue": [
+    { "issue": "workspace#165", "title": "guitar-jam: scaffold repo + GitHub Pages", "agent": "copilot-cli:sonnet:studio:senior", "budget": "copilot" },
+    { "issue": "workspace#166", "title": "guitar-jam: WebAudio metronome", "agent": "copilot-cli:sonnet:studio:senior", "budget": "copilot" },
+    { "issue": "workspace#167", "title": "guitar-jam: ChordLibrary.js", "agent": "copilot-cli:sonnet:studio:senior", "budget": "copilot" },
+    { "issue": "workspace#168", "title": "guitar-jam: chord backing synth", "agent": "copilot-cli:sonnet:studio:senior", "budget": "copilot" },
+    { "issue": "workspace#169", "title": "guitar-jam: AgentGuard governance setup", "agent": "copilot-cli:sonnet:studio:senior", "budget": "copilot" },
+    { "issue": "workspace#203", "title": "feat(swarm): market research scout agent", "agent": "studio-junior", "budget": "claude-code" },
+    { "issue": "workspace#233", "title": "Validate onboarding wizard v2 for May 6 demo", "agent": "qa-agent", "budget": "claude-code" }
   ],
+  "newIssuesTriaged": [],
   "mergedThisCycle": [
-    { "pr": 235, "title": "product(studio): 2026-03-29 evening run — cloud#518 onboarding wizard, #119 closed, 3 new issues" },
-    { "pr": 236, "title": "fix(schedule): offset 3 cron collision pairs — resolves #1327" },
-    { "pr": 238, "title": "fix: add opencode and goose to rateguard driver lists" },
-    { "pr": 239, "title": "chore: wire Octi Pulpo MCP server + add octi-pulpo-qa agent" },
-    { "pr": 248, "title": "fix(studio-qa): SKILL.md for octi-pulpo squad + ecosystem-scout (all 135 agents covered)" },
-    { "pr": 249, "title": "docs(planning): multi-driver narrative 5 → 6 drivers (Goose) — closes #230" }
+    { "pr": 259, "title": "fix(swarm): real CLI quota metrics replacing subscription-cost tracking — closes #201" }
   ],
-  "openPRsThisCycle": [
-    { "pr": 1388, "repo": "AgentGuardHQ/agentguard", "title": "docs(readme): capture funnel CTA — GitHub stars badge, Get Started, cloud links", "closes": "workspace#234" }
+  "closedThisCycle": [
+    { "pr": 260, "reason": "superseded — state updated in full this cycle" }
   ],
-  "updatedAt": "2026-03-29T18:10:00Z"
+  "updatedAt": "2026-03-30T02:00:00Z"
 }
