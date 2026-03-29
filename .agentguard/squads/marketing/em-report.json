@@ -1,36 +1,36 @@
 {
   "squad": "marketing",
-  "timestamp": "2026-03-29T21:45:00.000Z",
-  "health": "yellow",
-  "summary": "PR #1406 merged (previous EM cycle report). PR #1409 opened: fix(site) swarm section — 139 agents, 5 governed drivers (content alignment drift found this cycle). Site stats clean: all 13 checks pass. #1387 P0 containment post now in its 3rd cycle with no draft — status escalating. Conference: 37 days to May 6, #1382 talk outline not started, #1379 Meta demo not started. Phase 2 deadline (April 15) is 17 days away.",
+  "timestamp": "2026-03-29T22:05:00.000Z",
+  "health": "red",
+  "summary": "Health → RED. #1387 containment post enters 3rd cycle with no draft — threshold crossed (escalation rule: 'next cycle with no draft → health RED' from prior EM report). Conference still AT RISK: #1382 talk outline not started (17 days to April 15 phase 2 deadline), #1379 Meta demo not started (red line April 5, 7 days). Site alignment clean: check-site-stats.sh passes with updated numbers — 25 invariants (no-self-approve-pr added via #1414), 43 action types (2 added via kernel-em KE-6). PR #1409 confirmed merged (swarm section: 139 agents, 5 governed drivers). Content drift flagged: OWASP blog post references stale 41 action types — needs 41→43 correction before LinkedIn publish. No marketing PRs open this cycle.",
   "contentPipeline": {
     "drafts": 1,
     "published": 0,
     "scheduled": 2,
-    "notes": "OWASP blog post at docs/blog/owasp-agentic-top10-agentguard.md — complete, 5+ cycles awaiting LinkedIn publish. #1387 containment post P0 — 2 full cycles assigned to marketing-launch-agent, no draft yet. #1382 conference narrative in sprint, no work started. #1260 queued."
+    "notes": "OWASP blog post at docs/blog/owasp-agentic-top10-agentguard.md — complete, 5+ cycles awaiting LinkedIn publish. CORRECTION NEEDED before publish: '41 canonical action types' → '43'. #1387 containment post P0 — 3 full cycles assigned to marketing-launch-agent, no draft. HEALTH TRIGGER. #1382 conference narrative in sprint, no work started. #1260 queued."
   },
   "siteAlignment": {
     "status": "green",
     "verifiedThisCycle": {
-      "script": "scripts/check-site-stats.sh — all 13 checks passed",
+      "script": "scripts/check-site-stats.sh — all checks passed",
       "eventKinds": "48 ✓",
-      "invariants": "24 ✓",
+      "invariants": "25 ✓ (was 24 — no-self-approve-pr added via #1414)",
       "destructivePatterns": "93 ✓",
-      "actionTypes": "41 ✓",
+      "actionTypes": "43 ✓ (was 41 — 2 added via kernel-em KE-6 octi-pulpo pack)",
       "cliCommands": "35 ✓",
-      "tests": "4614 ✓ (synced by site-em at 21:30Z)",
-      "metaTags": "3 of 3 invariant counts in meta/og/JSON-LD correct ✓",
-      "heroParagraph": "24 ✓",
+      "tests": "4614 ✓",
+      "metaTags": "3 of 3 invariant counts in meta/og/JSON-LD correct ✓ (25)",
+      "heroParagraph": "25 ✓",
       "featureCards": "2 of 2 headings correct ✓",
       "pipelineEmit": "48 ✓",
-      "architectureDetail": "41 ✓"
+      "architectureDetail": "43 ✓"
     },
     "driftFoundThisCycle": {
-      "location": "Agent Swarm section (site/index.html:1688, 1694, 1698) — outside check-site-stats.sh scope",
-      "issue1": "'120 agents' was stale — updated to 139 (current production count per issue #1387)",
-      "issue2": "'4 Drivers' was stale — updated to 5 (Goose/Block shipped as 5th governed driver via MCP)",
-      "pr": "#1409 opened — fix(site): sync swarm section — 139 agents, 5 governed drivers",
-      "coverageGap": "check-site-stats.sh covers data-target counters but not inline <span> stats in swarm section"
+      "priorCycleDrift": "PR #1409 (swarm section: 139 agents, 5 drivers) — CONFIRMED MERGED at 2026-03-29T20:21:17Z. All CI passed.",
+      "newDrift": "none — site fully aligned",
+      "contentDriftOutsideSite": "docs/blog/owasp-agentic-top10-agentguard.md line 27: '41 canonical action types' is stale — should be 43. Minor correction before LinkedIn publish.",
+      "historicalDocs": "Multiple docs/ files reference stale 24 invariants / 41 action types (roadmap-overview, autonomous-sdlc-architecture, unified-architecture, etc.) — historical, not marketing-blocking. CLAUDE.md project file also references 24/41 — not marketing's domain but flagged.",
+      "coverageGap": "check-site-stats.sh does not cover swarm section inline stats — existing known gap"
     }
   },
   "sprintIssues": {
@@ -39,20 +39,20 @@
       {
         "issue": "#1387",
         "title": "Containment engineering post — own the computer-use governance narrative",
-        "status": "P0 — 2 cycles assigned, NO DRAFT. Narrative window shrinking.",
-        "note": "Framing ready: 139 agents, 1,170 PRs governed, 24 invariants, Apache 2.0. Three Levels (#1382) provides the structure. Assigned to marketing-launch-agent. Must ship draft this cycle or escalate to RED."
+        "status": "RED — 3 cycles assigned, NO DRAFT. Health trigger crossed.",
+        "note": "Framing ready: 139 agents, 1,170 PRs governed, 25 invariants, 43 action types, Apache 2.0. Three Levels (#1382) structure available. Assigned to marketing-launch-agent. This is LAST CYCLE before human escalation — draft must ship or Jared is notified directly."
       },
       {
         "issue": "#1382",
         "title": "Conference narrative — Three Levels of Agent Governance",
-        "status": "HIGH — in sprint since last cycle, zero progress",
-        "note": "Talk outline needed before April 15 phase 2 deadline (17 days). Sandbox → Intercept → Governed Runtime. marketing-launch-agent: start talk outline this cycle."
+        "status": "HIGH — 17 days to April 15 phase 2 deadline, zero progress",
+        "note": "Talk outline (15-20 min) needed before April 15. Sandbox (NemoClaw) → Intercept (Zenity) → Governed Runtime (AgentGuard). Assigned to marketing-launch-agent alongside #1387. Parallelizable with containment post since same Three Levels framing."
       },
       {
         "issue": "#1260",
         "title": "v2.9→v2.10.3 announcement content",
         "status": "open — unblocked, queued after #1387",
-        "note": "Key messages: wildcard policy fix (security CTA), default mode guide→monitor, 5 governed drivers. v2.10.3 arc complete."
+        "note": "Key messages: wildcard policy fix (security CTA), default mode guide→monitor, 5 governed drivers, 25 invariants, 43 action types. v2.10.3 arc complete. Numbers updated this cycle."
       }
     ],
     "backlog": [
@@ -66,7 +66,7 @@
         "issue": "#1379",
         "title": "Meta incident demo — governance survives context compaction",
         "priority": "HIGH (May 6 hard deadline — 37 days)",
-        "note": "Demo script defined in issue. Not started. Needs demo engineering. Red line: if no start by 2026-04-05 (7 days), conference → RED."
+        "note": "Demo script defined in issue. Not started. Red line: if no engineering start by 2026-04-05 (7 days), conference → RED."
       },
       {
         "issue": "#1380",
@@ -78,21 +78,24 @@
   },
   "prQueue": {
     "merged": [
-      "#1406 (20:00Z EM cycle report — 2026-03-29, this cycle)"
+      "#1409 (fix/site-swarm — 139 agents, 5 governed drivers — merged 2026-03-29T20:21:17Z)",
+      "#1406 (prior EM cycle report — 2026-03-29T20:07Z)"
     ],
-    "open": 1,
-    "prNumbers": ["#1409"],
-    "notes": "#1409 (fix/site-swarm-5drivers-139agents) — swarm section stat fix, awaiting CI. Non-marketing open: #1400 (bootstrap). Stale PRs: #1396 (kernel-em, not mine)."
+    "open": 0,
+    "prNumbers": [],
+    "notes": "No marketing PRs open. This cycle's EM report PR to be opened after state update."
   },
   "blockers": [
-    "OWASP blog post (docs/blog/owasp-agentic-top10-agentguard.md) complete 5+ cycles — requires human LinkedIn publish. Direct escalation to Jared.",
-    "#1387 containment post: 2 cycles assigned to marketing-launch-agent, still no draft. Time-bounded narrative window. Must produce draft next cycle."
+    "OWASP blog post (docs/blog/owasp-agentic-top10-agentguard.md) complete 5+ cycles — requires human LinkedIn publish. Minor correction needed: '41 canonical action types' → '43'. Direct escalation to Jared.",
+    "#1387 containment post: 3 cycles assigned to marketing-launch-agent, no draft. Health = RED. If no draft by next cycle (2026-03-30T22:00Z), escalate directly to Jared with squad health RED.",
+    "#1382 talk outline: 17 days to April 15 hard deadline. Not started. Assigned this cycle."
   ],
   "escalations": [
-    "HIGH: #1387 containment engineering post — 2 cycles assigned, no draft. If no draft by next cycle (2026-03-30), health → RED.",
-    "HIGH: May 6 conference — #1382 talk outline not started, #1379 Meta demo not started (37 days out). Phase 2 deadline in 17 days.",
-    "MEDIUM: OWASP blog post complete 5+ cycles — awaiting LinkedIn publish. Direct ping to Jared recommended.",
-    "WATCH: check-site-stats.sh coverage gap — does not cover swarm section inline stats (agents, drivers). Future PR to extend script."
+    "RED: #1387 containment engineering post — 3 cycles assigned, no draft. Health threshold crossed. Next cycle with no draft: direct human escalation.",
+    "HIGH: May 6 conference — #1382 talk outline not started (17 days to phase 2 deadline), #1379 Meta demo not started (7 days to April 5 red line).",
+    "HIGH: OWASP blog post stale — '41 action types' should be '43'. Fix before LinkedIn publish.",
+    "MEDIUM: OWASP blog post complete 5+ cycles — awaiting human LinkedIn publish. Direct ping to Jared.",
+    "WATCH: check-site-stats.sh coverage gap — does not cover swarm section inline stats. Known gap, future improvement."
   ],
   "conferenceReadiness": {
     "phase1": "COMPLETE — capture funnel (PR #1388, stars badge, Get Started, CTAs)",
@@ -100,29 +103,32 @@
     "may6Conference": {
       "status": "AT RISK",
       "daysUntil": 37,
-      "redLine": "If #1379 demo not started by 2026-04-05 (7 days), status → RED",
+      "redLine": "If #1379 Meta demo not started by 2026-04-05 (7 days), conference status → RED",
       "needed": [
-        "#1382 talk outline + slide framework — start this cycle (phase 2 deadline: April 15)",
-        "#1379 Meta incident demo — demo engineering, not started, URGENT",
-        "Demo path confirmed (live swarm vs recorded video)",
+        "#1382 talk outline + slide framework — assigned this cycle (April 15 hard deadline)",
+        "#1379 Meta incident demo — demo engineering, not started, 7 days to red line",
+        "Demo path decision needed: live swarm vs recorded video",
         "Onboarding QR code / short URL"
       ],
       "healthColor": "yellow"
     }
   },
   "productInsights": [
-    "5 governed drivers now: Claude Code, Copilot CLI, Codex CLI, Gemini CLI, Goose (MCP). Goose is differentiated — MCP extension model vs hook-based for others.",
+    "Invariant count updated: 24 → 25. New invariant: no-self-approve-pr (PR #1414). Marketing copy should reflect 25.",
+    "Action types updated: 41 → 43. Two new types added via octi-pulpo pack (kernel-em KE-6). Marketing copy should reflect 43.",
+    "5 governed drivers: Claude Code, Copilot CLI, Codex CLI, Gemini CLI, Goose (MCP). Goose differentiated — MCP extension vs hook-based for others.",
     "Default enforcement mode guide→monitor (v2.10.x) — 'monitor first, enforce when ready' is the #1260 adoption narrative.",
     "Three Levels framework (#1382): Sandbox (NemoClaw) → Intercept (Zenity) → Governed Runtime (AgentGuard Level 3). Nobody else at Level 3.",
-    "check-site-stats.sh coverage gap: inline swarm <span> stats not covered. Found 120→139 and 4→5 driver drift via manual review.",
-    "v2.10.3 is latest. Full announcement arc for #1260: v2.9 wildcard fix → v2.10 default mode change → v2.10.3 cloud tenant fix."
+    "v2.10.3 is latest. Full announcement arc for #1260: v2.9 wildcard fix → v2.10 default mode change → v2.10.3 cloud tenant fix.",
+    "#1408 FIXED: no-governance-self-modification false positive on agentguard.db reads (PR #1418 merged). Prior dogfood issue resolved."
   ],
   "dogfoodReport": {
     "governanceDenialsThisRun": 0,
     "unexpectedBlocks": [],
     "unexpectedAllows": [],
-    "status": "clean — gh pr operations, git operations, file reads/writes all executed without denial. Note: #1408 (ongoing) — no-governance-self-modification blocks read-only SQLite analytics probe; not a marketing blocker.",
-    "openDogfoodIssues": ["#1408 — read-only SQLite probe blocked by no-governance-self-modification invariant (analytics agent, not marketing)"]
+    "status": "clean — gh pr operations, git operations, file reads/writes all executed without denial.",
+    "openDogfoodIssues": [],
+    "resolvedThisCycle": ["#1408 — no-governance-self-modification false positive on agentguard.db reads — FIXED via PR #1418"]
   },
   "agentIdentity": "claude-code:unknown:planner",
   "canonicalIdentity": "claude-code:opus:marketing:em"
