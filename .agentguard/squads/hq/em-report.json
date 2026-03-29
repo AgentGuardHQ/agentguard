@@ -1,15 +1,15 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-30T02:00:00.000Z",
+  "generatedAt": "2026-03-30T02:10:00.000Z",
   "identity": "claude-code:opus:hq:em",
-  "health": "yellow",
-  "healthReason": "Worker pool P0 (#1402) persists — 5th cycle, queue growing, human action still pending. Analytics dependency severely drifted (2.7.3 vs 2.10.3). CI green, kernel shipping steadily. #1408 LOCKDOWN risk eliminated.",
-  "summary": "Cycle 2026-03-30T02:00Z. Merged PR #1419 (kernel EM: KE-6 done, #1408 fixed, octi-pulpo policy pack now on main). Closed stale conflicting PR #1417. Health upgraded from RED to YELLOW: #1408 LOCKDOWN risk eliminated by kernel squad, KE-6 shipped, octi-pulpo policy pack on main. Analytics version drift is more severe than previously tracked: analytics dep at 2.7.3 (not 2.10.2) — 3 minor versions behind 2.10.3. Worker pool P0 (#1402) persists for 5th cycle. CI green. No new P0s.",
+  "health": "red",
+  "healthReason": "P0: Worker pool dead on jared box — 5th+ cycle, swarm frozen. Analytics dep severely drifted (2.7.3 vs 2.10.3, 3 minor versions). Copilot event pipeline still 0 events. Positive: #1408 FIXED, octi-pulpo pack shipped, docker stop fix merged.",
+  "summary": "Cycle 2026-03-30T02:10Z. Merged PRs #1424 (fix docker stop, closes #1398), #1423 (marketing EM), #1422 (prev HQ EM). Flagged PR #1421 CONFLICTING (site EM, needs rebase). Commented on PR #1425 (cross-repo-blast-radius, CI failing due to broken vitest symlink). Re-escalated #1402 P0 worker pool (5th+ cycle). Closed #1410 (octi-pulpo already shipped on main). Analytics version corrected: 2.7.3 (3 minor versions behind 2.10.3, more severe than previously tracked).",
   "ciStatus": {
-    "agentGuard": "green (CI in_progress post #1419 merge, prior runs all green)",
-    "agentguardCloud": "green (last completed run: success)",
-    "agentguardAnalytics": "unknown (no recent CI runs)",
-    "recentRuns": "5/5 green on agent-guard main"
+    "agentGuard": "yellow",
+    "agentguardCloud": "unknown",
+    "agentguardAnalytics": "unknown",
+    "recentRuns": "Most recent CI run FAILED (PR #1425 test-and-build — broken vitest symlink in source worktree). Prior main-branch runs green."
   },
   "versionMatrix": {
     "latest": "2.10.3",
@@ -17,25 +17,46 @@
     "agentguardCloud": "2.10.1",
     "agentguardAnalytics": "2.7.3",
     "drift": {
-      "agentguardCloud": "2 patches behind (was known)",
-      "agentguardAnalytics": "SEVERE — 3 minor versions + 3 patches behind (was incorrectly tracked as 2.10.2)"
+      "agentguardCloud": "2 patches behind (4th+ cycle)",
+      "agentguardAnalytics": "SEVERE — 3 minor versions + patches behind (previously misread as 2.10.2)"
     }
   },
   "prQueue": {
     "agentGuard": {
-      "open": 0,
-      "mergedThisCycle": [
+      "open": 2,
+      "details": [
         {
-          "number": 1419,
-          "title": "chore(kernel-em): EM cycle 2026-03-29T22:40Z — KE-6 done, octi-pulpo pack, #1408 fixed, KE-7 started",
-          "note": "All 4 checks green. Squash merged."
+          "number": 1425,
+          "title": "feat(invariants): cross-repo-blast-radius — session-level aggregate file cap (#1415)",
+          "status": "FAILING",
+          "checks": "test-and-build FAILED (broken vitest symlink in source worktree)",
+          "mergeable": false,
+          "note": "Commented: logic looks sound, worktree hygiene issue. Kernel squad to fix symlink and repush."
+        },
+        {
+          "number": 1421,
+          "title": "chore(site-em): EM cycle 2026-03-30T00:40Z",
+          "status": "CONFLICTING",
+          "checks": "null (conflict blocks CI)",
+          "mergeable": false,
+          "note": "Commented requesting rebase onto main."
         }
       ],
-      "closedThisCycle": [
+      "mergedThisCycle": [
         {
-          "number": 1417,
-          "title": "chore(hq-em): EM cycle 2026-03-29T23:00Z — new P0 octi-pulpo policy, 3 PRs merged",
-          "reason": "Stale: CONFLICTING, superseded by subsequent cycles. Squad state files on main are newer."
+          "number": 1424,
+          "title": "fix(aab): remove docker stop from destructive patterns",
+          "note": "Fixes dogfood #1398. All checks green."
+        },
+        {
+          "number": 1423,
+          "title": "chore(marketing-em): EM cycle 2026-03-29T22:05Z",
+          "note": "Marketing EM report. All checks green."
+        },
+        {
+          "number": 1422,
+          "title": "chore(hq-em): EM cycle 2026-03-30T02:00Z — prev cycle report",
+          "note": "Previous HQ EM report. All checks green."
         }
       ]
     }
@@ -45,175 +66,183 @@
       "pattern": "Worktree node_modules missing turbo binary on fresh worktree",
       "severity": "P2",
       "status": "KNOWN_WORKAROUND",
-      "description": "On this EM cycle startup, turbo was not found in worktree node_modules (ERROR: Cannot find module '.../node_modules/turbo/bin/turbo'). Had to run pnpm install --frozen-lockfile to fix. Worktrees do not automatically inherit the correct node_modules symlink structure from the parent repo. Affects any agent running pnpm build in a fresh worktree.",
-      "recommendation": "Add pnpm install --frozen-lockfile as a pre-build step in EM startup scripts, or document worktree setup requirements. Consider adding worktree pnpm install to the worktree creation script."
+      "description": "On EM cycle startup, turbo not found in worktree node_modules. Must run pnpm install --frozen-lockfile to fix. Worktrees do not automatically inherit correct node_modules from parent.",
+      "recommendation": "Add pnpm install --frozen-lockfile as pre-build step in EM startup scripts."
     },
     {
       "pattern": "no-governance-self-modification blocks read-only SQLite analytics queries",
-      "issue": 1408,
+      "issues": [1408, 1027],
       "severity": "P1",
-      "status": "FIXED",
-      "resolvedBy": "PR #1418 merged 2026-03-29. No-governance-self-modification now exempts read-only agentguard.db queries.",
-      "description": "RESOLVED this cycle. analytics-invariant-researcher was blocked from querying agentguard.db. LOCKDOWN risk eliminated."
+      "status": "RESOLVED",
+      "resolvedBy": "PR #1418 merged 2026-03-29T20:40Z — false positive fixed (kernel KE-6)",
+      "description": "Fixed. analytics-invariant-researcher can now query agentguard.db. LOCKDOWN risk eliminated."
     },
     {
       "pattern": "docker stop/rm blocked for named ephemeral test containers",
       "issues": [1346, 1398],
       "severity": "P2",
-      "status": "OPEN",
-      "description": "Destructive command guard blocks docker stop/rm on named test containers. No distinction between production and test containers. QA smoke runner workaround: npm run db:test:down (routes via Node.js). Two occurrences documented.",
-      "recommendation": "Add policy allowlist for known test container name patterns or expose a test-scope context."
+      "status": "RESOLVED",
+      "resolvedBy": "PR #1424 merged this cycle — docker stop removed from AAB destructive patterns",
+      "description": "Fixed: docker stop no longer in destructive patterns. Test containers can be stopped without governance friction."
+    },
+    {
+      "pattern": "cross-repo-blast-radius gap — per-repo cap but no aggregate session cap",
+      "issue": 1415,
+      "severity": "P1",
+      "status": "IN_PROGRESS",
+      "description": "PR #1425 filed by kernel squad. CI failing due to broken vitest symlink — not a logic bug. Expected to merge after symlink fix.",
+      "recommendation": "Kernel squad: fix vitest symlink in source worktree, repush."
     }
   ],
   "crossCuttingIssues": [
     {
       "issue": 1402,
-      "title": "[P0] Worker pool dead — queue depth growing, all 32 PIDs dead (5th cycle)",
+      "title": "[P0] Worker pool dead — 5th+ cycle, swarm frozen",
       "severity": "P0",
-      "description": "All scheduled agents on jared box remain frozen. Worker pool dead since ~2026-03-29T19:00Z. Queue continues to grow with each cron tick. Human has not acted on escalation across 5 EM cycles.",
-      "action": "HUMAN REQUIRED (urgent): cd ~/agentguard-workspace && server/deploy.sh — must act before queue overflows or cron jobs pile up further"
-    },
-    {
-      "issue": 1410,
-      "title": "octi-pulpo policy pack — cloud side fix pending",
-      "severity": "P0",
-      "description": "Policy pack merged to main via PR #1419. Cloud side: agentguard-cloud/agentguard.yaml needs rule: action:mcp.call, target:octi-pulpo, effect:allow. Kernel-sr assigned. No PR yet.",
-      "action": "kernel-sr: create PR in agentguard-cloud to add octi-pulpo mcp.call allow rule"
+      "description": "Multiple consecutive EM cycles without resolution. All 32 PIDs dead. Every squad's scheduled agents failing to run. Human must run server/deploy.sh.",
+      "action": "HUMAN REQUIRED: cd ~/agentguard-workspace && server/deploy.sh",
+      "escalatedAt": "2026-03-30T02:10:00.000Z",
+      "firstEscalatedAt": "2026-03-29T20:11:00.000Z"
     },
     {
       "issue": 1403,
-      "title": "[qa-conductor] readybench QA swarm non-operational — bench-devs-platform not found",
+      "title": "[qa-conductor] readybench QA swarm non-operational — 5+ days",
       "severity": "P1",
-      "description": "All 19 readybench QA agents skipping for 5+ days. Blocked on #1402 (worker pool) AND box-routing fix for readybench.",
-      "action": "Ops: fix box routing after #1402 is resolved"
+      "description": "All 19 readybench QA agents skipping. Wrong queue routing. Depends on #1402 resolution + box routing fix.",
+      "action": "Ops: fix box routing for readybench agents. Verify readybench worker is running."
     },
     {
       "issue": 1335,
-      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — auto-resolves 2026-04-01",
+      "title": "[studio-qa] Codex + Copilot circuit breakers OPEN — 52% swarm blocked",
       "severity": "P1",
-      "description": "March budget exhaustion. Auto-resolves in ~2 days. No action unless demo requires Copilot/Codex before April 1.",
+      "description": "March budget exhaustion. Auto-resolves 2026-04-01.",
       "action": "Wait for budget reset 2026-04-01."
     },
     {
       "issue": 1342,
       "title": "[studio-qa] Copilot event pipeline producing 0 events — conference demo gap",
       "severity": "P1",
-      "description": "Copilot hook adapter not emitting events. Conference demo (May 6) gap. Studio squad, 4+ cycles no update. Separate from circuit breakers (#1335).",
-      "action": "Studio squad: FINAL NOTICE — 4 cycles with no update. Investigate or escalate to director."
+      "description": "Copilot hook adapter not emitting events. Conference demo (May 6). No update in >24h.",
+      "action": "Studio squad: FINAL NOTICE — investigate Copilot hook adapter or escalate to director."
     },
     {
-      "title": "Analytics version drift SEVERE: 2.7.3 vs 2.10.3",
+      "title": "Version drift: cloud 2.10.1, analytics 2.7.3 vs kernel 2.10.3 (SEVERE)",
       "severity": "P1",
-      "description": "Previously tracked as 2.10.2 but actual agentguard dep in agentguard-analytics is 2.7.3. Three minor versions + 3 patches behind. Analytics agents may be missing critical governance features introduced in 2.8–2.10.",
-      "action": "Cloud squad: upgrade agentguard-analytics to 2.10.3 IMMEDIATELY — this is more severe than tracked (was P2, now P1)"
-    },
-    {
-      "title": "agentguard-cloud version drift: 2.10.1 vs 2.10.3",
-      "severity": "P2",
-      "description": "2 patches behind. Needs octi-pulpo policy fix anyway — can bundle both changes in one PR.",
-      "action": "Cloud squad: upgrade to 2.10.3 + add octi-pulpo rule in same PR"
+      "description": "Analytics previously misread as 2.10.2 — actual version is 2.7.3, 3 minor versions behind. Cloud-side octi-pulpo policy also needed. Cloud squad owns both.",
+      "action": "Cloud squad: upgrade agentguard-analytics to 2.10.3 (urgent — 3 minor versions). Upgrade agentguard-cloud to 2.10.3. Add octi-pulpo allow rule to agentguard-cloud/agentguard.yaml."
     },
     {
       "issue": 1407,
-      "title": "Invariant Coverage Report — 50% coverage (below 75% target), 12 dormant",
+      "title": "Invariant Coverage Report — 50% coverage (below 75% target)",
       "severity": "P2",
-      "description": "12 of 24 invariants never fired in operation. Dormant: no-secret-exposure, blast-radius-limit, no-package-script-injection, large-file-write, lockfile-integrity, no-container-config-modification, no-destructive-migration, transitive-effect-analysis, no-network-egress, no-ide-socket-access, commit-scope-guard, no-verify-bypass.",
-      "action": "Kernel squad (KE backlog): review dormant invariants — misconfigured, too narrow, or not applicable?"
-    },
-    {
-      "title": "ShellForge squad ownership",
-      "severity": "P2",
-      "description": "6 ShellForge issues (#1362–#1367) filed, no squad owner assigned. 4th cycle.",
-      "action": "Director: assign squad ownership for ShellForge initiative"
+      "description": "12 of 24 invariants dormant in 5.5 days. Violation rate 9.1% (target <2%). 8 concerning dormant invariants.",
+      "action": "Kernel squad: audit 8 dormant-concerning invariants for KE-7."
     }
   ],
   "resolvedSinceLastCycle": [
     {
+      "pr": 1424,
+      "title": "fix(aab): remove docker stop from destructive patterns — MERGED",
+      "note": "Fixes dogfood #1398."
+    },
+    {
+      "pr": 1423,
+      "title": "Marketing EM cycle report — MERGED"
+    },
+    {
+      "pr": 1422,
+      "title": "Prev HQ EM cycle report — MERGED"
+    },
+    {
+      "issue": 1410,
+      "title": "octi-pulpo policy pack — already shipped",
+      "note": "Closed this cycle. policies/octi-pulpo/ confirmed present."
+    },
+    {
       "issue": 1408,
       "title": "no-governance-self-modification false positive on agentguard.db reads",
-      "note": "PR #1418 merged by kernel squad. LOCKDOWN risk eliminated. Analytics agents can now query governance DB."
-    },
-    {
-      "sprint": "KE-6",
-      "title": "no-self-approve-pr invariant (#909)",
-      "note": "PR #1414 merged. Kernel squad KE-6 complete, KE-7 started."
-    },
-    {
-      "title": "octi-pulpo policy pack on main",
-      "note": "PR #1419 merged — policies/octi-pulpo/agentguard-pack.yaml now on main. Cloud-side fix still pending."
-    },
-    {
-      "pr": 1417,
-      "title": "Stale HQ EM cycle PR closed",
-      "note": "PR #1417 (conflicting, superseded) closed this cycle."
+      "note": "PR #1418 merged by kernel squad (KE-6). RESOLVED."
     }
   ],
   "escalations": [
     {
       "priority": "P0",
       "target": "human (jpleva91)",
-      "reason": "#1402: Worker pool dead — 5th cycle. Queue growing. CRITICAL: all scheduled agents frozen. Run: cd ~/agentguard-workspace && server/deploy.sh"
-    },
-    {
-      "priority": "P0",
-      "target": "kernel-sr",
-      "reason": "#1410: octi-pulpo cloud policy fix — policy pack on main, but agentguard-cloud/agentguard.yaml needs mcp.call:octi-pulpo allow rule. All MCP coordination blocked until this is done."
+      "cycleCount": 5,
+      "reason": "Worker pool dead on jared box. Queue frozen 8+ hours. All scheduled agents blocked. Requires: cd ~/agentguard-workspace && server/deploy.sh"
     },
     {
       "priority": "P1",
       "target": "cloud squad",
-      "reason": "agentguard-analytics at 2.7.3 (was misread as 2.10.2) — SEVERE version drift, 3 minor versions behind. Upgrade to 2.10.3 urgently."
+      "reason": "Analytics at 2.7.3 (SEVERE: 3 minor versions behind 2.10.3). Cloud at 2.10.1. Also needs octi-pulpo allow rule in agentguard-cloud/agentguard.yaml."
     },
     {
       "priority": "P1",
       "target": "studio squad",
-      "reason": "#1342: Copilot event pipeline 0 events — FINAL NOTICE, 4 cycles no update. Demo gap for May 6."
+      "reason": "#1342: Copilot event pipeline 0 events — conference demo gap (May 6). FINAL NOTICE — 4+ cycles no update."
     },
     {
       "priority": "P1",
       "target": "ops (human)",
-      "reason": "#1403: readybench QA swarm non-operational 5+ days. Will recover after #1402 + box routing fix."
+      "reason": "#1403: readybench QA swarm non-operational for 5+ days. Box-level routing fix required."
     },
     {
-      "priority": "P2",
-      "target": "cloud squad",
-      "reason": "agentguard-cloud at 2.10.1 — bundle upgrade to 2.10.3 with #1410 octi-pulpo rule in one PR"
+      "priority": "P1",
+      "target": "kernel squad",
+      "reason": "PR #1425 (cross-repo-blast-radius) failing CI due to broken vitest symlink. Fix symlink and repush."
     },
     {
       "priority": "P2",
       "target": "director",
-      "reason": "ShellForge initiative (#1362–#1367): 4 cycles, no squad owner. 6 issues unowned."
+      "reason": "ShellForge initiative (#1362–#1367): 6 issues filed, no squad owner assigned. 4th cycle unassigned."
     }
   ],
   "sprintStatus": {
     "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. Version sync. ShellForge coordination.",
-    "progress": "KE-6 shipped (no-self-approve-pr). KE-7 started (cross-repo-blast-radius + octi-pulpo cloud fix). Sprint velocity recovering as #1408 LOCKDOWN risk removed. Worker pool P0 continues to block all scheduled automation.",
+    "progress": "KE-6 DONE (#1408 fixed, no-self-approve-pr invariant). KE-7 started (cross-repo-blast-radius PR #1425, CI failing — worktree issue). Sprint goal (Go telemetry E2E) not blocked by HQ issues. Worker pool P0 freezes all swarm velocity.",
     "blockers": [
-      "#1402 P0 — Worker pool dead (human required: server/deploy.sh)",
-      "#1410 P0 — octi-pulpo cloud policy fix (kernel-sr PR pending)",
+      "#1402 P0 — Worker pool dead (human required: server/deploy.sh, 5+ cycles)",
       "#1335 P1 — Codex+Copilot circuit breakers OPEN (auto-resolves 2026-04-01)",
-      "#1342 P1 — Copilot event pipeline 0 events (studio squad, final notice)",
-      "Analytics severe drift (2.7.3) — cloud squad priority escalated to P1"
+      "#1342 P1 — Copilot event pipeline 0 events (studio squad, conference demo May 6)",
+      "#1403 P1 — readybench QA swarm non-operational 5+ days",
+      "Version drift SEVERE — analytics 2.7.3 vs 2.10.3 (cloud squad, urgent)"
     ]
   },
   "actionsThisCycle": [
     {
       "action": "MERGED_PR",
-      "pr": 1419,
-      "detail": "Merged kernel EM cycle: KE-6 done, #1408 fixed, octi-pulpo policy pack on main. All 4 checks green."
+      "pr": 1424,
+      "detail": "fix(aab): remove docker stop from destructive patterns. Fixes dogfood #1398. All checks green."
     },
     {
-      "action": "CLOSED_PR",
-      "pr": 1417,
-      "detail": "Closed stale conflicting HQ EM cycle PR (2026-03-29T23:00Z). Superseded by subsequent cycles."
+      "action": "MERGED_PR",
+      "pr": 1423,
+      "detail": "Marketing EM cycle report 2026-03-29T22:05Z. All checks green."
     },
     {
-      "action": "FLAGGED",
-      "detail": "Analytics version drift corrected: was tracked as 2.10.2, actual is 2.7.3. Severity escalated to P1."
+      "action": "MERGED_PR",
+      "pr": 1422,
+      "detail": "Prev HQ EM cycle report. All checks green."
     },
     {
-      "action": "DOGFOOD",
-      "detail": "Worktree node_modules missing turbo on startup — pnpm install required. Filed as P2 dogfood pattern."
+      "action": "FLAGGED_PR",
+      "pr": 1421,
+      "detail": "CONFLICTING site EM PR. Commented requesting rebase onto main."
+    },
+    {
+      "action": "COMMENTED_PR",
+      "pr": 1425,
+      "detail": "Noted broken vitest symlink as root cause of CI failure. Logic reviewed — sound. Kernel squad to fix and repush."
+    },
+    {
+      "action": "ESCALATED",
+      "issue": 1402,
+      "detail": "5th+ cycle escalation. Worker pool dead 8+ hours, swarm frozen. @jpleva91 notified with impact escalation note."
+    },
+    {
+      "action": "CLOSED_ISSUE",
+      "issue": 1410,
+      "detail": "octi-pulpo policy pack already shipped at policies/octi-pulpo/. Closed as resolved."
     }
   ]
 }
