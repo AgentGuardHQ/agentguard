@@ -1,34 +1,34 @@
 {
   "squad": "site",
   "sprint": {
-    "goal": "Automated site-stats enforcement shipped; Tests counter synced; next: CLI command audit (#1260 prep)",
+    "goal": "Extend check-site-stats.sh with --tests-count flag; assess #1260 landing page scope",
     "issues": [1260]
   },
   "assignments": {
     "site-builder": {
-      "task": "Assess #1260 scope — v2.10 feature content for landing page; consider extending check-site-stats.sh with --tests-count flag",
+      "task": "Add --tests-count <n> flag to scripts/check-site-stats.sh for CI integration; assess #1260 for v2.10 landing page content",
       "blockedBy": null
     },
     "site-docs-sync": {
-      "task": "Verify CLAUDE.md CLI command list matches current 35 top-level commands (#1260 documentation prep)",
+      "task": "CLAUDE.md CLI audit complete — 37 commands documented (35 file-based + 2 inline), no drift. Monitor for new commands as v2.10 work lands.",
       "blockedBy": null
     }
   },
   "blockers": [],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
     "mergeable": 0,
-    "prs": []
+    "prs": [
+      { "number": 1396, "title": "chore(kernel-em): cycle 2026-03-29T18:15Z", "owner": "kernel", "note": "Null checks" }
+    ]
   },
   "recentlyCompleted": [
-    { "pr": 1401, "title": "feat(site): add check-site-stats.sh to prevent recurring stat drift", "mergedAt": "2026-03-29T21:30:00.000Z", "note": "Closes #1395 — 3rd-cycle EM recommendation now resolved. 14 numeric claims automated." },
-    { "pr": 1397, "title": "chore(site-em): EM cycle 20:40Z (stale)", "closedAt": "2026-03-29T21:30:00.000Z", "note": "Closed: dirty due to #1393/#1394 already merged; superseded by this cycle" },
-    { "pr": 1394, "title": "fix(site): correct remaining stat drift — 24 invariants card, 93 patterns card, 35 CLI counter", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Landed prior cycle" },
-    { "pr": 1393, "title": "fix(site): sync stat bar counters and feature card headings", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Landed prior cycle" },
-    { "pr": 1390, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z — site stats sync", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Merged by site-em after verification" },
-    { "issue": 1395, "title": "feat(site): add site-stats-check script", "closedAt": "2026-03-29", "note": "Resolved by PR #1401" },
-    { "issue": 1267, "title": "CI mismatch — site PRs unmergeable", "closedAt": "2026-03-29", "note": "Fixed by PR #1296 (ci-skip-site.yml)" }
+    { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Marketing EM cycle — squash merged by site-em." },
+    { "pr": 1400, "title": "fix(bootstrap): add worktree binary probe", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Landed on remote main — already merged (not site squad)." },
+    { "pr": 1401, "title": "feat(site): add check-site-stats.sh", "mergedAt": "2026-03-29T21:30:00.000Z", "note": "14 automated stat checks." },
+    { "pr": 1394, "title": "fix(site): correct remaining stat drift", "mergedAt": "2026-03-29T20:40:00.000Z" },
+    { "pr": 1393, "title": "fix(site): sync stat bar counters and feature card headings", "mergedAt": "2026-03-29T20:40:00.000Z" }
   ],
-  "updatedAt": "2026-03-29T21:30:00.000Z"
+  "updatedAt": "2026-03-29T22:40:00.000Z"
 }
