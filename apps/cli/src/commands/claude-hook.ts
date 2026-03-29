@@ -15,7 +15,7 @@ import type { ClaudeCodeHookPayload, HookResponseOptions } from '@red-codes/adap
 import type { LoadedPolicy } from '@red-codes/policy';
 import { resolveMainRepoRoot } from '@red-codes/core';
 import type { CloudSinkBundle } from '@red-codes/telemetry';
-import { detectDriver, detectModel, VALID_ROLES } from '../identity.js';
+import { detectDriver, detectModel } from '../identity.js';
 import type { Driver } from '../identity.js';
 import { isBootstrapSafeAction, isModuleNotFoundError } from '../bootstrap.js';
 
@@ -239,35 +239,9 @@ function writeIdentityFile(name: string): void {
   }
 }
 
-/**
- * Build the identity wizard prompt shown when .agentguard-identity is missing.
- * Auto-detects driver/model and presents a structured prompt so the agent can
- * ask the user and write the identity file.
- */
-function buildIdentityWizardPrompt(driver: Driver, model: string, suggested: string): string {
-  const roles = VALID_ROLES.join(', ');
-  return [
-    'AgentGuard Identity Setup',
-    '═════════════════════════',
-    '',
-    'No agent identity found. Ask the user for their identity, then write it to .agentguard-identity in the project root.',
-    '',
-    'Auto-detected:',
-    `  Driver: ${driver}`,
-    `  Model:  ${model}`,
-    '',
-    `Suggested default: ${suggested}`,
-    '',
-    'Format: <driver>:<user-or-model>:<role>',
-    `  Roles: ${roles}`,
-    '  Examples: claude-code:opus:developer, human:jared:reviewer, ci:github-actions:ops',
-    '',
-    'Ask the user:',
-    `  "AgentGuard needs an identity for this session. I detected ${driver}:${model}. What identity should I use? (default: ${suggested})"`,
-    '',
-    'Then write their answer (or the default) to .agentguard-identity in the project root.',
-  ].join('\n');
-}
+// Identity wizard prompt removed — identity is now advisory with auto-default (#1357).
+// The old wizard hard-blocked all tool calls, creating deadlocks when Go fast-path
+// was unavailable. Now we auto-create a default identity and continue.
 
 /** Resolve the CLI command — use local bin.js if in the agentguard dev repo, else bare `agentguard`. */
 function resolveCliCommand(): string {
@@ -318,38 +292,19 @@ export async function claudeHook(hookType?: string, extraArgs: string[] = []): P
       // Fresh worktrees/clones won't have .agentguard-identity (gitignored).
       // We auto-detect what we can and prompt the agent to confirm via a wizard,
       // while allowing writes to the identity file so the agent can set it.
-      const agentIdentity = resolveAgentIdentity();
+      let agentIdentity = resolveAgentIdentity();
       if (!agentIdentity) {
-        // Allow writes targeting .agentguard-identity — the agent needs to set it.
-        const toolInput = (data.tool_input || {}) as Record<string, unknown>;
-        const isIdentityWrite =
-          ((data.tool_name === 'Write' || data.tool_name === 'Edit') &&
-            typeof toolInput.file_path === 'string' &&
-            toolInput.file_path.replace(/\\/g, '/').endsWith('.agentguard-identity')) ||
-          (data.tool_name === 'Bash' &&
-            typeof toolInput.command === 'string' &&
-            toolInput.command.includes('.agentguard-identity'));
-
-        if (isIdentityWrite) {
-          process.exit(0);
-          return;
-        }
-
-        // Auto-detect driver and model from environment
+        // No identity found — auto-create a default and continue (advisory, not blocking).
+        // Previously this hard-blocked every tool call, creating a deadlock when the Go
+        // fast-path was unavailable (Go doesn't check identity). See #1357.
         const detected: { driver: Driver; model: string } = {
           driver: detectDriver(),
           model: detectModel(),
         };
-        const suggestedDefault = `${detected.driver}:${detected.model}:developer`;
-
-        process.stdout.write(
-          JSON.stringify({
-            decision: 'block',
-            reason: buildIdentityWizardPrompt(detected.driver, detected.model, suggestedDefault),
-          })
-        );
-        process.exit(2);
-        return;
+        const defaultIdentity = `${detected.driver}:${detected.model}:developer`;
+        writeIdentityFile(defaultIdentity);
+        agentIdentity = defaultIdentity;
+        process.env.AGENTGUARD_AGENT_NAME = defaultIdentity;
       }
       if (process.env.AGENTGUARD_AGENT_NAME) {
         writeIdentityFile(agentIdentity);
