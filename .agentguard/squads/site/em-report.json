@@ -2,7 +2,7 @@
   "squad": "site",
   "timestamp": "2026-03-29T20:40:00.000Z",
   "health": "green",
-  "summary": "Clean cycle — P0 CI blocker resolved, all site stat drift fixed or in-flight. PR #1390 (marketing EM) merged: og:description, JSON-LD, hero, kernel card, policy bullet, event kinds text (49→48), CLI heading (29→35). New PR #1393 filed this cycle: stat bar counters (event kinds 47→48, CLI 36→35) and feature card headings (21→24 Safety Invariants, 87→93 Destructive Patterns, 21→24 Built-in Invariants). All sprint blockers resolved. Site squad unblocked for first time in multiple cycles.",
+  "summary": "Clean cycle — all site stat drift landed. PR #1390 (marketing EM, merged): og:description, JSON-LD, hero, kernel card, policy bullet, event kinds text (49→48), CLI heading (29→35). PR #1393 (site-em, merged): stat bar counters (event kinds 47→48, CLI 36→35) + feature card headings (21→24 Safety Invariants, 87→93 Destructive Patterns, 21→24 Built-in Invariants). Also filed #1395: site-stats-check automation script (3rd cycle recommendation now in backlog). Zero governance denials.",
   "siteBuild": {
     "status": "pass",
     "notes": "Static site — no build required. site/index.html, posts.html, shellforge.html, sitemap.xml, robots.txt, og-image.png all present. ci-skip-site.yml workflow in place (#1296, merged) — site-only PRs now get required checks satisfied without running full lint/test suite."
@@ -46,8 +46,8 @@
       {
         "pr": 1393,
         "title": "fix(site): sync stat bar counters and feature card headings — missed by #1390",
-        "checksStatus": "CI running",
-        "mergeStatus": "pending CI — should auto-clear via ci-skip-site.yml"
+        "checksStatus": "6/6 passed",
+        "mergeStatus": "MERGED"
       }
     ]
   },
@@ -65,7 +65,7 @@
   },
   "blockers": [],
   "escalations": [
-    "INFO: PR #1393 awaiting CI — should self-clear. No human action needed.",
+    "INFO: PR #1393 MERGED — all stat drift resolved on main.",
     "INFO: OWASP blog post at docs/blog/owasp-agentic-top10-agentguard.md still needs human to publish to LinkedIn (marketing squad escalation, not site).",
     "MEDIUM: site-stats automation script not yet filed as engineering issue — recurring EM recommendation now 3 cycles old. Should be filed as feat(site) issue for site-builder."
   ],
@@ -76,8 +76,7 @@
     "status": "clean — no governance issues this run. git checkout, git fetch, git merge, git add, git commit, git push, gh pr create, gh pr merge, gh pr view, gh issue view all executed without denial."
   },
   "nextActions": [
-    "Merge PR #1393 once CI passes (ci-skip-site.yml should satisfy all required checks)",
-    "site-builder: file feat(site) engineering issue — site-stats-check automation script (prevent recurring drift)",
+    "Engineering issue filed: #1395 (site-stats-check automation script) — assign to site-builder next cycle",
     "site-builder: assess whether to expand scope of #1260 work to include site landing page updates for v2.10 features",
     "site-docs-sync: verify CLAUDE.md CLI command list matches current 35 top-level commands (documentation sync)"
   ],

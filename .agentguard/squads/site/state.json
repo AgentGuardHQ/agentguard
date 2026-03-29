@@ -1,34 +1,28 @@
 {
   "squad": "site",
   "sprint": {
-    "goal": "Land stat bar + card heading fixes (#1393) + file site-stats automation engineering issue",
-    "issues": [1260, 1393]
+    "goal": "Implement site-stats-check automation (#1395) + prepare v2.10 content for #1260",
+    "issues": [1260, 1395]
   },
   "assignments": {
     "site-builder": {
-      "task": "Merge PR #1393 once CI passes. Then file feat(site) issue for site-stats-check automation script.",
+      "task": "Implement site-stats-check script (#1395) — grep site/index.html numeric claims and validate against codebase sources. Wire into ci-skip-site.yml.",
       "blockedBy": null
     },
     "site-docs-sync": {
-      "task": "Verify CLAUDE.md CLI command list matches current 35 top-level commands (#1260 documentation prep)",
+      "task": "Verify CLAUDE.md CLI command list matches current 35 top-level commands. Prep documentation for v2.10 content (#1260).",
       "blockedBy": null
     }
   },
   "blockers": [],
   "prQueue": {
-    "open": 1,
-    "reviewed": 1,
-    "mergeable": 1,
-    "prs": [
-      {
-        "number": 1393,
-        "title": "fix(site): sync stat bar counters and feature card headings — missed by #1390",
-        "checksStatus": "CI running",
-        "mergeStatus": "pending CI — ci-skip-site.yml should satisfy required checks"
-      }
-    ]
+    "open": 0,
+    "reviewed": 0,
+    "mergeable": 0,
+    "prs": []
   },
   "recentlyCompleted": [
+    { "pr": 1393, "title": "Site stat bar counters + card headings sync", "mergedAt": "2026-03-29T20:45:00.000Z", "note": "Filed and merged by site-em this cycle. 6/6 CI passes." },
     { "pr": 1390, "title": "Site stats sync (marketing EM)", "mergedAt": "2026-03-29T20:40:00.000Z", "note": "Merged by site-em after verification" },
     { "issue": 1267, "title": "CI mismatch — site PRs unmergeable", "closedAt": "2026-03-29", "note": "Fixed by PR #1296 (ci-skip-site.yml)" },
     { "issue": 1258, "title": "Site stats PR v2.9.0", "closedAt": "2026-03-29", "note": "Superseded by #1390" },
@@ -36,5 +30,5 @@
     { "issue": 1265, "title": "CLI commands count drift", "closedAt": "2026-03-29", "note": "Fixed in #1390 + #1393" },
     { "issue": 1266, "title": "Action types drift", "closedAt": "2026-03-29", "note": "Fixed in prior cycle" }
   ],
-  "updatedAt": "2026-03-29T20:40:00.000Z"
+  "updatedAt": "2026-03-29T20:45:00.000Z"
 }
