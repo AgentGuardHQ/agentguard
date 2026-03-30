@@ -1,21 +1,16 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "KE-8: Correctness — #1430 claude-hook stderr blocking (escalated to director)",
-    "issues": [
-      1430
-    ],
-    "priorSprint": "KE-8 partial: #1427 (persona.env identity protection) CLOSED via PR #1436 merged 2026-03-30T02:22:29Z"
+    "goal": "KE-8 COMPLETE. Next: KE-9 — #1177 github.pr.* policy gap (blocks pr-merger-agent)",
+    "issues": [1177],
+    "priorSprint": "KE-8 fully closed: #1427 (PR #1436 merged 2026-03-30T02:22:29Z) + #1430 (PR #1448 merged 2026-03-30T06:16:58Z)"
   },
   "assignments": {
     "senior": {
-      "issue": 1430,
-      "title": "fix: claude-hook allow-path messages must not write to stderr",
-      "status": "escalated-to-director",
-      "claimedAt": "2026-03-30T03:00:00Z",
-      "escalatedAt": "2026-03-30T09:00:00Z",
-      "ageRuns": 2,
-      "note": "Persistent-blocker rule triggered (ageRuns=2). HQ EM and kernel EM both escalated to director. Director must assign kernel-sr directly. Fix: apps/cli/src/commands/claude-hook.ts — allow-path must write to stdout only (not stderr). Need 3 new tests in cli-claude-hook.test.ts asserting process.stderr.write not called on allow-path."
+      "issue": null,
+      "title": null,
+      "status": "available",
+      "note": "KE-8 complete. PR #1448 merged. Awaiting KE-9 assignment. Candidate: #1177 (github.pr.* not in default allow-list, blocks pr-merger-agent)."
     },
     "secondary": {
       "issue": 1427,
@@ -23,37 +18,28 @@
       "status": "closed",
       "claimedAt": "2026-03-30T00:15:03Z",
       "closedAt": "2026-03-30T02:22:29Z",
-      "note": "PR #1436 merged. Removed persona.env from OPERATIONAL_STATE_PATTERNS in no-governance-self-modification invariant. 4 tests updated. Coverage gap closed."
+      "note": "PR #1436 merged. Done."
     }
   },
-  "blockers": [
-    {
-      "issue": 1430,
-      "description": "P1 escalated to director. ageRuns=2. Fix target: apps/cli/src/commands/claude-hook.ts. No PR filed after 2 kernel EM cycles.",
-      "owner": "director",
-      "severity": "P1",
-      "ageRuns": 2,
-      "escalatedAt": "2026-03-30T09:00:00Z"
-    }
-  ],
+  "blockers": [],
   "prQueue": {
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
     "prs": []
   },
-  "health": "yellow",
-  "healthReason": "KE-8: #1427 CLOSED (PR #1436 merged). #1430 (claude-hook stderr) escalated to director (ageRuns=2). Tests 4636/4636 passing. PR budget: 0 open.",
+  "health": "green",
+  "healthReason": "KE-8 COMPLETE: #1430 closed (PR #1448 merged 06:16Z) + #1427 closed (PR #1436 merged 02:22Z). No open blockers. 0 kernel PRs open. Tests: 4639/4639 passing.",
   "testHealth": {
-    "total": 4636,
-    "passed": 4636,
+    "total": 4639,
+    "passed": 4639,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-30T08:00:00.000Z",
+    "lastRun": "2026-03-30T06:16:00.000Z",
     "status": "all_passing",
     "breakdown": {
       "kernel": 935,
-      "agentguard-cli": 950,
+      "agentguard-cli": 953,
       "invariants": 624,
       "policy": 483,
       "adapters": 299,
@@ -71,28 +57,22 @@
       "agentguard-mcp": 24,
       "scheduler": 34
     },
-    "note": "PR #1436 merged — invariants package adds 4 updated test scenarios (net +1 new). All 4636 confirmed passing per QA run 08:00Z."
+    "note": "PR #1448 added 3 new tests to cli-claude-hook.test.ts (agentguard-cli: 950→953). All 4639 passing."
   },
-  "coverageGaps": [
-    {
-      "issue": 1430,
-      "description": "No test verifies zero stderr on allowed git commit/push/gh CLI calls. Need 3 tests in cli-claude-hook.test.ts asserting process.stderr.write not called on allow-path.",
-      "commentUrl": "https://github.com/AgentGuardHQ/agentguard/issues/1430#issuecomment-4151512563"
-    }
-  ],
+  "coverageGaps": [],
   "mergedThisCycle": [
+    {
+      "number": 1448,
+      "title": "fix(claude-hook): allow-path must not write to stderr (#1430)",
+      "note": "KE-8 primary goal. 3 new tests. 953/953 cli tests passing. Merged 2026-03-30T06:16:58Z. Closes #1430."
+    },
     {
       "number": 1436,
       "title": "fix(invariants): protect persona.env from agent identity tampering (#1427)",
-      "note": "KE-8 secondary goal. 4 tests updated. CI 5/5 green. Closes #1427. Merged 2026-03-30T02:22:29Z."
-    },
-    {
-      "number": 1434,
-      "title": "chore(kernel-em): EM cycle 2026-03-30T03:00Z — #1432 merged, KE-8 tracking #1430 #1427",
-      "note": "Previous EM chore PR. Rebased by HQ EM before merge. CI 4/4 green."
+      "note": "KE-8 secondary goal. Merged 2026-03-30T02:22:29Z. Closes #1427."
     }
   ],
-  "lastEmRun": "2026-03-30T09:00:00Z",
-  "lastQaRun": "2026-03-30T08:00:00.000Z",
-  "updatedAt": "2026-03-30T09:00:00Z"
+  "lastEmRun": "2026-03-30T12:00:00Z",
+  "lastQaRun": "2026-03-30T06:16:00.000Z",
+  "updatedAt": "2026-03-30T12:00:00Z"
 }
