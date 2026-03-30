@@ -18,7 +18,7 @@
       "issue": "workspace#1342-investigation",
       "status": "completed",
       "completedAt": "2026-03-30T00:00:00Z",
-      "summary": "Diagnosed #1342 (Copilot events = 0) — root cause is circuit breaker from quota exhaustion, not a code bug. Copilot agents fail over to claude-code driver, events emit under wrong tag. Closed #1342 as infra issue. Fixed verify-copilot-events.sh workspace detection (false negatives when run from worktree) — PR #265 opened."
+      "summary": "Diagnosed #1342 (Copilot events = 0) — root cause is circuit breaker from quota exhaustion, not a code bug. Copilot agents fail over to claude-code driver, events emit under wrong tag. Closed #1342 as infra issue. Fixed verify-copilot-events.sh workspace detection (false negatives when run from worktree) — PR #265 merged this cycle."
     }
   },
   "blockers": [
@@ -37,8 +37,8 @@
     {
       "id": "copilot-event-pipeline-final-warning",
       "severity": "resolved",
-      "description": "#1342 CLOSED — root cause: circuit breaker tripped on Copilot quota exhaustion. Copilot agents fail over to claude-code driver, emitting events under wrong tag. Auto-resolves April 1 on budget reset. verify-copilot-events.sh workspace detection fixed in PR #265.",
-      "resolvedAt": "2026-03-29T23:45:00Z",
+      "description": "#1342 CLOSED — root cause: circuit breaker tripped on Copilot quota exhaustion. Copilot agents fail over to claude-code driver, emitting events under wrong tag. Auto-resolves April 1 on budget reset. verify-copilot-events.sh workspace detection fixed in PR #265 (merged 2026-03-30).",
+      "resolvedAt": "2026-03-30T05:00:00Z",
       "action": "none — infra issue, auto-resolves April 1"
     }
   ],
@@ -46,7 +46,7 @@
     "open": 0,
     "reviewed": 2,
     "mergeable": 0,
-    "note": "PR #259 merged (quota metrics fix, closes #201). PR #260 closed as superseded by this cycle."
+    "note": "PR #265 merged (verify-copilot worktree fix, closes #1342). PR #262 merged (previous EM state). Queue clear."
   },
   "humanEscalations": [
     {
@@ -55,32 +55,32 @@
       "title": "Worker pool dead — MUST run server/deploy.sh before April 1 or risk thundering herd",
       "deadline": "2026-04-01",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 3,
+      "consecutiveCyclesUnassigned": 4,
       "action": "CRITICAL: Run `server/deploy.sh` on readybench before April 1. Circuit breakers (Codex+Copilot) auto-clear April 1 — dead pool + 60+ queued items = thundering herd."
     },
     {
       "issue": 1306,
       "repo": "AgentGuardHQ/agentguard",
-      "title": "feat(v3.0-gate): default-deny enforcement — 10TH CYCLE UNASSIGNED",
+      "title": "feat(v3.0-gate): default-deny enforcement — 11TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 10,
-      "note": "KE-7 is about #1415 + #1410, not #1306. This remains truly unassigned.",
-      "action": "CRITICAL: Manually assign kernel #1306. Conference demo depends on v3.0 gate. 10 consecutive cycles unassigned."
+      "consecutiveCyclesUnassigned": 11,
+      "note": "KE-7 addressed #1415 + #1410. KE-8 now active (dogfood correctness). #1306 remains truly unassigned.",
+      "action": "CRITICAL: Manually assign kernel #1306. Conference demo depends on v3.0 gate. 11 consecutive cycles unassigned. 5 days to deadline."
     },
     {
       "issue": 1410,
       "repo": "AgentGuardHQ/agentguard",
       "title": "octi-pulpo policy pack missing — ALL MCP coordination blocked in governed sessions",
       "priority": "P0",
-      "action": "KE-7 active sprint for this. Track kernel progress. All MCP coordination tools blocked until resolved."
+      "action": "KE-7 addressed this (#1415 + #1410). KE-8 now active. Verify resolution landed."
     },
     {
       "issues": [240, 241, 242, 243, 244],
       "repo": "AgentGuardHQ/agentguard-workspace",
       "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan — ALL UNOWNED",
       "priority": "P0",
-      "action": "Human-driven work. Review #240-244 and own each item personally. May 6 deadline — 37 days."
+      "action": "Human-driven work. Review #240-244 and own each item personally. May 6 deadline — 36 days."
     },
     {
       "issue": 228,
@@ -88,7 +88,7 @@
       "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (10+ cycles)",
       "deadline": "2026-05-06",
       "priority": "P0",
-      "action": "Assign #228 immediately — no owner still. April 1 last chance before conference crunch."
+      "action": "LAST CALL before April 1 — assign #228 today. No owner after 10+ cycles."
     },
     {
       "issue": 178,
@@ -102,7 +102,7 @@
       "title": "DPP dry run needs owner — April 10 deadline",
       "deadline": "2026-04-10",
       "priority": "P1",
-      "action": "Assign owner — 12 days remaining."
+      "action": "Assign owner — 11 days remaining."
     },
     {
       "issues": [245, 246, 247],
@@ -123,13 +123,10 @@
   ],
   "newIssuesTriaged": [],
   "mergedThisCycle": [
-    { "pr": 259, "title": "fix(swarm): real CLI quota metrics replacing subscription-cost tracking — closes #201" }
+    { "pr": 265, "title": "fix(verify-copilot): fallback workspace when run from worktree — closes #1342" },
+    { "pr": 262, "title": "chore(studio-em): EM cycle 2026-03-30T02:00Z — quota fix merged, April 1 queue loaded" }
   ],
-  "closedThisCycle": [
-    { "pr": 260, "reason": "superseded — state updated in full this cycle" }
-  ],
-  "openPRsThisCycle": [
-    { "pr": 265, "title": "fix(verify-copilot): fallback workspace when run from worktree — closes #1342", "repo": "agentguard-workspace" }
-  ],
-  "updatedAt": "2026-03-30T00:00:00Z"
+  "closedThisCycle": [],
+  "openPRsThisCycle": [],
+  "updatedAt": "2026-03-30T05:00:00Z"
 }
