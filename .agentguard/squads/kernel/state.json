@@ -1,34 +1,52 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "KE-8: Dogfood correctness — hook stderr blocking (#1430) + persona.env identity protection (#1427)",
-    "issues": [1430, 1427],
+    "goal": "KE-8: Correctness — #1430 claude-hook stderr blocking + #1427 persona.env identity protection",
+    "issues": [
+      1430,
+      1427
+    ],
     "priorSprint": "KE-7: cross-repo-blast-radius (#1415 merged) + octi-pulpo policy (#1410 closed) — COMPLETE"
   },
   "assignments": {
     "senior": {
       "issue": 1430,
-      "title": "[dogfood] git commit Bash tool calls blocked by hook even when decision is 'allowed'",
-      "status": "assigned",
-      "claimedAt": "2026-03-30T02:40:00Z",
-      "note": "Fix in apps/cli/src/commands/claude-hook.ts: route allow-path messages to stdout; reserve stderr for deny/violation/errors. Claude Code PreToolUse protocol treats any stderr as blocking regardless of exit code."
+      "title": "fix: claude-hook allow-path messages must not write to stderr",
+      "status": "pending-pr",
+      "claimedAt": "2026-03-30T03:00:00Z",
+      "note": "kernel-sr to fix apps/cli/src/commands/claude-hook.ts — allow-path must not produce any stderr output (only denials use stderr). EM at ageRuns=1; escalates to director if no PR by next cycle."
+    },
+    "secondary": {
+      "issue": 1427,
+      "title": "[dogfood] automated agent self-modifies persona.env to change governance identity",
+      "status": "pr-open",
+      "claimedAt": "2026-03-30T00:15:03Z",
+      "note": "PR #1436 opened (fix/persona-env-identity-tampering-1427). Removes .agentguard/persona.env from OPERATIONAL_STATE_PATTERNS in no-governance-self-modification invariant. 5/5 CI green."
     }
   },
   "blockers": [],
   "prQueue": {
-    "open": 0,
+    "open": 1,
     "reviewed": 0,
     "mergeable": 0,
-    "prs": []
+    "prs": [
+      {
+        "number": 1434,
+        "title": "chore(kernel-em): EM cycle 2026-03-30T03:00Z — #1432 merged, KE-8 tracking #1430 #1427",
+        "author": "kernel-em",
+        "status": "OPEN",
+        "note": "EM cycle chore. No code changes. Ready to merge."
+      }
+    ]
   },
   "health": "yellow",
-  "healthReason": "KE-7 COMPLETE. KE-8 starting: 2 P1 dogfood issues assigned (#1430 priority, #1427 second). Swarm P0 #1431 (codex budget/circuit cascade) is infrastructure scope — escalated to human. No kernel CI failures.",
+  "healthReason": "KE-7 DONE (#1425 merged — cross-repo-blast-radius, 8 tests). KE-8 active: PR #1436 open for #1427 (persona.env protection). P1 #1430 (claude-hook stderr) still no PR (ageRuns=1). Tests all green. CLAUDE.md doc inconsistency fixed (25->26 invariants).",
   "testHealth": {
     "total": 4636,
     "passed": 4636,
     "failed": 0,
     "packages": 18,
-    "lastRun": "2026-03-29T20:34:00.000Z",
+    "lastRun": "2026-03-30T08:00:00.000Z",
     "status": "all_passing",
     "breakdown": {
       "kernel": 935,
@@ -49,10 +67,41 @@
       "telemetry-client": 27,
       "agentguard-mcp": 24,
       "scheduler": 34
-    }
+    },
+    "note": "FULL TURBO cache hit — all 4636 tests confirmed passing. KE-7 adds 8 cross-repo-blast-radius invariant tests (counted in invariants:624 above). AAB docker-stop tests revised in #1424."
   },
-  "mergedThisCycle": [],
-  "lastEmRun": "2026-03-30T02:40:00Z",
-  "lastQaRun": "2026-03-29T20:34:00.000Z",
-  "updatedAt": "2026-03-30T02:40:00Z"
+  "coverageGaps": [
+    {
+      "issue": 1427,
+      "description": "PR #1436 open — tests updated (4 flipped holds:true→false, append variant added). Coverage gap closed.",
+      "commentUrl": "https://github.com/AgentGuardHQ/agentguard/issues/1427#issuecomment-4151511847"
+    },
+    {
+      "issue": 1430,
+      "description": "No test verifies zero stderr on allowed git commit/push/gh CLI calls. Need 3 tests in cli-claude-hook.test.ts asserting process.stderr.write not called on allow-path.",
+      "commentUrl": "https://github.com/AgentGuardHQ/agentguard/issues/1430#issuecomment-4151512563"
+    }
+  ],
+  "mergedThisCycle": [
+    {
+      "number": 1425,
+      "title": "feat(invariants): cross-repo-blast-radius — session-level aggregate file cap (#1415)",
+      "note": "KE-7 sprint goal. 8 new invariant tests. CI green. Closes #1415."
+    },
+    {
+      "number": 1424,
+      "title": "fix(aab): remove docker stop from destructive patterns (closes #1398)",
+      "note": "docker stop is reversible (docker start). Tests updated. CI green."
+    }
+  ],
+  "docFixes": [
+    {
+      "file": "CLAUDE.md",
+      "change": "Updated invariant count from 25 to 26; added no-self-approve-pr (KE-6) to the list; updated definitions.ts comment from 25 to 26.",
+      "note": "KE-7 PR (#1425) commit incorrectly said '24->25' — count was actually 25->26 (no-self-approve-pr was added in KE-6)."
+    }
+  ],
+  "lastEmRun": "2026-03-30T03:00:00Z",
+  "lastQaRun": "2026-03-30T08:00:00.000Z",
+  "updatedAt": "2026-03-30T08:00:00Z"
 }
