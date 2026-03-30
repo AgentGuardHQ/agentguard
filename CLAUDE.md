@@ -43,9 +43,9 @@ This is a **pnpm monorepo** orchestrated by **Turbo**. Workspace packages live i
 packages/
 ├── core/src/                   # @red-codes/core — Shared utilities
 │   ├── types.ts                # Shared TypeScript type definitions (includes RunManifest)
-│   ├── actions.ts              # 41 canonical action types across 10 classes
+│   ├── actions.ts              # 43 canonical action types across 10 classes
 │   ├── governance-data.ts      # Governance data loader (typed access to shared JSON data)
-│   ├── data/                   # JSON governance data (actions, blast-radius, destructive-patterns, escalation, git-action-patterns, invariant-patterns, tool-action-map)
+│   ├── data/                   # JSON governance data (actions, blast-radius, destructive-patterns, escalation, git-action-patterns, github-action-patterns, invariant-patterns, tool-action-map)
 │   ├── hash.ts                 # Content hashing utilities
 │   ├── crypto-hash.ts          # Cryptographic hashing (SHA-256)
 │   ├── rtk.ts                  # RTK token optimization integration
@@ -110,7 +110,9 @@ packages/
 │   ├── registry.ts             # Adapter registry (action class → handler)
 │   ├── file.ts, shell.ts, git.ts  # Action handlers
 │   ├── claude-code.ts          # Claude Code hook adapter
+│   ├── codex-cli.ts            # Codex CLI hook adapter
 │   ├── copilot-cli.ts          # Copilot CLI hook adapter
+│   ├── gemini-cli.ts           # Gemini CLI hook adapter
 │   └── hook-integrity.ts       # Hook integrity verification
 ├── plugins/src/                # @red-codes/plugins — Plugin ecosystem
 │   ├── discovery.ts            # Plugin discovery mechanism
@@ -229,7 +231,7 @@ The kernel loop is the core of AgentGuard. Every agent action passes through it:
 1. Agent proposes action (Claude Code tool call → `RawAgentAction`)
 2. AAB normalizes intent (tool → action type, detect git/destructive commands)
 3. Policy evaluator matches rules (deny/allow with scopes, branches, limits)
-4. Invariant checker verifies system state (25 defaults)
+4. Invariant checker verifies system state (26 defaults)
 5. If allowed: execute via adapter (file/shell/git handlers)
 6. Emit lifecycle events: `ACTION_REQUESTED` → `ACTION_ALLOWED/DENIED` → `ACTION_EXECUTED/FAILED`
 7. Sink all events to SQLite for audit trail
@@ -320,9 +322,10 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **Intent Drift**: `IntentDriftDetected`
 - **Capability Validation**: `CapabilityValidated`
 - **Environmental Enforcement**: `IdeSocketAccessBlocked`
+- **Command Audit**: `UnknownCommandWarn`
 
 ### Action Classes & Types
-41 canonical action types across 10 classes, defined in `packages/core/src/actions.ts`:
+43 canonical action types across 10 classes, defined in `packages/core/src/actions.ts`:
 - **file**: `file.read`, `file.write`, `file.delete`, `file.move`
 - **test**: `test.run`, `test.run.unit`, `test.run.integration`
 - **git**: `git.diff`, `git.commit`, `git.push`, `git.force-push`, `git.branch.create`, `git.branch.delete`, `git.checkout`, `git.reset`, `git.merge`, `git.worktree.add`, `git.worktree.remove`, `git.worktree.list`
@@ -331,7 +334,7 @@ The canonical event model is the architectural spine. Event kinds defined in `pa
 - **http**: `http.request`
 - **deploy**: `deploy.trigger`
 - **infra**: `infra.apply`, `infra.destroy`
-- **github**: `github.pr.list`, `github.pr.create`, `github.pr.merge`, `github.pr.close`, `github.pr.view`, `github.pr.checks`, `github.issue.list`, `github.issue.create`, `github.issue.close`, `github.release.create`, `github.run.list`, `github.run.view`, `github.api`
+- **github**: `github.pr.list`, `github.pr.create`, `github.pr.merge`, `github.pr.close`, `github.pr.view`, `github.pr.checks`, `github.pr.approve`, `github.pr.review`, `github.issue.list`, `github.issue.create`, `github.issue.close`, `github.release.create`, `github.run.list`, `github.run.view`, `github.api`
 - **mcp**: `mcp.call`
 
 ### Build & Module System

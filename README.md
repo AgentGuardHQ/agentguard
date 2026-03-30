@@ -17,7 +17,7 @@ Install in 30 seconds. Your agents can't break what matters.</p>
 
 ---
 
-AI coding agents (Claude Code, Codex CLI, GitHub Copilot CLI, Google Gemini CLI, OpenCode, Goose, and more) run autonomously — writing files, executing commands, pushing code. AgentGuard prevents them from doing catastrophic things: no accidental pushes to main, no credential leaks, no runaway destructive loops. 24 built-in safety checks, zero config required.
+AI coding agents (Claude Code, Codex CLI, GitHub Copilot CLI, Google Gemini CLI, OpenCode, Goose, and more) run autonomously — writing files, executing commands, pushing code. AgentGuard prevents them from doing catastrophic things: no accidental pushes to main, no credential leaks, no runaway destructive loops. 26 built-in safety checks, zero config required.
 
 **For individuals:** stop your AI from wrecking your machine or repo.
 **For teams:** run fleets of agents safely at scale, with audit trails that pass compliance.
@@ -57,7 +57,7 @@ The `claude-init` wizard walks you through setup interactively:
 
   Enable a policy pack?
     ❯ 1) essentials — secrets, force push, protected branches, credentials
-      2) strict — all 24 invariants enforced
+      2) strict — all 26 invariants enforced
       3) none — monitor only, configure later
 ```
 
@@ -117,7 +117,7 @@ Identity consists of a **role** (`developer`, `reviewer`, `ops`, `security`, `ci
 | Capability | Details |
 |------------|---------|
 | **Policy enforcement** | YAML rules with deny / allow / escalate — drop `agentguard.yaml` in your repo |
-| **24 built-in invariants** | Secret exposure, protected branches, blast radius, path traversal, CI/CD config, package script injection, and more |
+| **26 built-in invariants** | Secret exposure, protected branches, blast radius, path traversal, CI/CD config, package script injection, and more |
 | **48 event kinds** | Full lifecycle telemetry: `ActionRequested → ActionAllowed/Denied → ActionExecuted` |
 | **Real-time cloud dashboard** | Telemetry streams to your team dashboard; opt-in, anonymous by default |
 | **Multi-tenant** | Team workspaces, GitHub/Google OAuth, SSO-ready |
@@ -289,7 +289,7 @@ rules:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (41 types across 10 classes) |
+| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (43 types across 10 classes) |
 | `effect` | `string` | `deny` or `allow` |
 | `target` | `string` | Glob pattern for file paths or command patterns |
 | `branches` | `string[]` | Git branch names this rule applies to |
@@ -306,7 +306,7 @@ rules:
 
 ## Built-in Invariants
 
-24 safety invariants run on every action evaluation:
+26 safety invariants run on every action evaluation:
 
 | Invariant | Severity | What it blocks |
 |-----------|----------|----------------|
@@ -334,6 +334,8 @@ rules:
 | `recursive-operation-guard` | Low | `find -exec`, `xargs` with write/delete |
 | `lockfile-integrity` | Low | `package.json` changes without lockfile sync |
 | `no-verify-bypass` | High | `git push/commit --no-verify` — prevents skipping pre-push/pre-commit hooks |
+| `no-self-approve-pr` | Critical | Agents merging or approving PRs they authored — enforces separation of duties in multi-agent swarms |
+| `cross-repo-blast-radius` | High | Caps cumulative unique files written across all repos in a session (default: 50 files) |
 
 ## Architecture
 
@@ -344,7 +346,7 @@ Agent tool call
 AgentGuard Kernel
   1. Normalize   — map tool call to canonical action type
   2. Evaluate    — match policy rules (deny / allow / escalate)
-  3. Check       — run 24 built-in invariants
+  3. Check       — run 26 built-in invariants
   4. Execute     — run action via adapter (file, shell, git)
   5. Emit        — 48 event kinds → SQLite audit trail + cloud telemetry
 ```
@@ -388,7 +390,7 @@ For teams running agent fleets, governance becomes invisible. Agents get 8% more
 
 **Zero-dependency deployment** — the Go kernel is a single static binary. No `node_modules`, no `pnpm install`, no bootstrap deadlocks. Drop it in a worktree and it works. This is critical for CI/CD and fleet scenarios where agents spin up fresh environments.
 
-The Go kernel includes: action normalization with AST-based shell parsing, policy evaluation, 24 invariants, escalation state machine, blast radius engine, telemetry shipper (stdout/file/HTTP), and a control plane signals API. It ships automatically via `npm install` — a postinstall script downloads the prebuilt binary for your platform.
+The Go kernel includes: action normalization with AST-based shell parsing, policy evaluation, 26 invariants, escalation state machine, blast radius engine, telemetry shipper (stdout/file/HTTP), and a control plane signals API. It ships automatically via `npm install` — a postinstall script downloads the prebuilt binary for your platform.
 
 ## For Teams and Enterprise
 
@@ -489,7 +491,7 @@ extends:
 | `engineering-standards` | Balanced dev-friendly guardrails: test-before-push, format checks, safe deps |
 | `ci-safe` | Strict CI/CD pipeline protection |
 | `enterprise` | Full enterprise governance |
-| `strict` | Maximum restriction — all 24 invariants enforced |
+| `strict` | Maximum restriction — all 26 invariants enforced |
 | `open-source` | OSS contribution-friendly defaults |
 
 ## Community & Updates
