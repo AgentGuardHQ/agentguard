@@ -24,7 +24,7 @@ AgentGuard is the **Execution Control Plane for autonomous AI agents** — the i
 
 | Component | Status | Maturity |
 |-----------|--------|----------|
-| Governed action kernel (41 action types, 10 classes) | Implemented | Production |
+| Governed action kernel (43 action types, 10 classes) | Implemented | Production |
 | Action Authorization Boundary (AAB) | Implemented | Bypass vectors closed (3 fixed in v2.4.0) |
 | Policy evaluator (YAML/JSON, composition, packs) | Implemented | Production |
 | 26 built-in invariants | Implemented | Production |

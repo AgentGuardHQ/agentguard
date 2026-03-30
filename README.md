@@ -289,7 +289,7 @@ rules:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (41 types across 10 classes) |
+| `action` | `string \| string[]` | Action type(s): `file.read`, `git.push`, `shell.exec`, `mcp.call`, etc. (43 types across 10 classes) |
 | `effect` | `string` | `deny` or `allow` |
 | `target` | `string` | Glob pattern for file paths or command patterns |
 | `branches` | `string[]` | Git branch names this rule applies to |
@@ -334,6 +334,8 @@ rules:
 | `recursive-operation-guard` | Low | `find -exec`, `xargs` with write/delete |
 | `lockfile-integrity` | Low | `package.json` changes without lockfile sync |
 | `no-verify-bypass` | High | `git push/commit --no-verify` — prevents skipping pre-push/pre-commit hooks |
+| `no-self-approve-pr` | Critical | Agents merging or approving PRs they authored — enforces separation of duties in multi-agent swarms |
+| `cross-repo-blast-radius` | High | Caps cumulative unique files written across all repos in a session (default: 50 files) |
 
 ## Architecture
 
