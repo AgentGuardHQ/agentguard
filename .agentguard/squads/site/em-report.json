@@ -1,34 +1,35 @@
 {
   "squad": "site",
-  "timestamp": "2026-03-30T00:40:01.000Z",
+  "timestamp": "2026-03-30T06:09:00.000Z",
   "health": "green",
-  "summary": "8 stat drifts fixed (invariants 24→25, action types 41→43 across all occurrences). --tests-count flag added to check-site-stats.sh for CI integration. #1260 scope assessed — landing page content P2 for v2.10. check-site-stats.sh now 14/14 checks passing.",
+  "summary": "3 stat drifts fixed (invariants card 25→26, destructive patterns stat+card+text 93→92 across 6 locations). PR #1451 codex-cli tests merged, PR #1450 HQ EM merged. 14/14 checks passing. PR #1448 still DIRTY.",
   "siteBuild": {
     "status": "pass",
-    "notes": "Static site. check-site-stats.sh: 14/14 checks pass after drift fix. --tests-count 4614 also passes."
+    "notes": "check-site-stats.sh: 14/14 checks pass after drift fix."
   },
   "contentFreshness": {
     "status": "current",
     "resolvedThisCycle": [
-      "invariants 24→25: stat bar, meta description, og:description, JSON-LD, hero paragraph, feature card heading, architecture text, inline TUI displays",
-      "action types 41→43: stat bar, architecture detail text"
+      "invariants card heading 25→26: new invariant added to codebase since last cycle",
+      "destructive patterns 93→92: pattern removed from codebase since last cycle — fixed in stat bar (data-target), card heading, card comment, architecture text, TUI inline display (HTML), TUI inline display (JS animation)"
     ],
     "remainingDrift": [],
     "automatedChecks": { "script": "scripts/check-site-stats.sh", "checks": 14, "result": "all pass" },
     "verified": [
-      "invariants: 25", "destructive patterns: 93", "event kinds: 48",
-      "action types: 43", "CLI commands: 35 (file-based)",
-      "tests: 4614 — stat bar verified via --tests-count flag"
+      "invariants: 26", "destructive patterns: 92", "event kinds: 48",
+      "action types: 43", "CLI commands: 35 (file-based)"
     ]
   },
   "sprintDelivered": [
-    "fix(site): sync invariants 24→25 and action types 41→43 — 8 drift locations in site/index.html",
-    "feat(site): add --tests-count <n> flag to scripts/check-site-stats.sh for CI integration"
+    "fix(site): sync invariants card 25→26 and destructive patterns 93→92 — 6 locations in site/index.html"
   ],
   "prQueue": {
-    "mergedThisCycle": [],
+    "mergedThisCycle": [
+      { "pr": 1451, "title": "test(adapters): add tests for codex-cli adapter", "note": "44 tests for codex-cli adapter — clean, 4/4 checks, squash merged" },
+      { "pr": 1450, "title": "chore(hq-em): EM cycle 2026-03-30T12:00Z", "note": "HQ EM report — clean, 4/4 checks, squash merged" }
+    ],
     "open": [
-      { "pr": 1417, "title": "chore(hq-em): EM cycle 2026-03-29T23:00Z", "owner": "hq", "note": "CONFLICTING — merge conflict, cannot merge. HQ squad must rebase." }
+      { "pr": 1448, "title": "fix(claude-hook): allow-path must not write to stderr", "owner": "kernel", "note": "DIRTY — merge conflict, rebase required. Checks passing (4/4). Stuck since HQ cycle at 12:00Z." }
     ]
   },
   "issuesTracked": [
@@ -37,8 +38,8 @@
       "title": "v2.9.0 announcement content",
       "status": "open",
       "priority": "P2",
-      "assessment": "Current version is v2.10.3. CHANGELOG only goes to v2.8.1 — gap of ~2 major versions. Landing page scope: wildcard policy fix (v2.9) is security-critical and worth a hero callout; new adapters (Codex, Gemini) + team-report + SQLite primary are v2.10 highlights. LinkedIn/blog content is marketing squad scope. Site scope: hero copy update once CHANGELOG is current. Deferring to next sprint.",
-      "recommendation": "File focused site task for hero copy update once CHANGELOG.md is current through v2.10. CHANGELOG gap is P2 escalation for release process."
+      "assessment": "Still deferred — CHANGELOG gap (only goes to v2.8.1, CLI is v2.10.3) blocks accurate hero copy. Monitoring for CHANGELOG update.",
+      "recommendation": "File focused site task for hero copy update once CHANGELOG.md is current through v2.10."
     }
   ],
   "blockers": [],
@@ -47,18 +48,24 @@
       "issue": "CHANGELOG gap — CHANGELOG.md only goes to v2.8.1 but CLI is on v2.10.3",
       "priority": "P2",
       "owner": "kernel-squad or release process",
-      "note": "Blocks drafting accurate #1260 site content. Not urgent — flagging for awareness."
+      "note": "Blocks drafting accurate #1260 site content. Persisting from previous cycle."
+    },
+    {
+      "issue": "PR #1448 stuck DIRTY — fix for P1 #1430 (hook stderr blocking Claude Code users) is ready but needs rebase",
+      "priority": "P1",
+      "owner": "kernel-squad",
+      "note": "Checks are 4/4. Rebase needed. Stuck since HQ cycle at 12:00Z."
     }
   ],
   "dogfoodReport": {
     "governanceDenialsThisRun": 0,
     "unexpectedBlocks": [],
     "unexpectedAllows": [],
-    "status": "clean — git, bash operations executed without denial."
+    "status": "clean — git, bash, gh operations executed without denial."
   },
   "nextActions": [
     "site-builder: file GitHub issue for hero copy update (v2.10 features) once CHANGELOG is current",
-    "site-builder: monitor for new action types and invariants as v2.10 work continues",
+    "site-builder: monitor for new action types / invariants / destructive patterns as kernel work lands",
     "site-docs-sync: CLAUDE.md CLI audit still current — monitor for new commands"
   ],
   "agentIdentity": "claude-code:opus:site:em"

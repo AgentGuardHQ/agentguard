@@ -6,7 +6,7 @@
   },
   "assignments": {
     "site-builder": {
-      "task": "File GitHub issue for v2.10 landing page hero copy update (wildcard fix + new adapters + team-report). Watch for new action types / invariants as kernel work continues.",
+      "task": "File GitHub issue for v2.10 landing page hero copy update (wildcard fix + new adapters + team-report). Watch for new action types / invariants / destructive patterns as kernel work continues.",
       "blockedBy": null
     },
     "site-docs-sync": {
@@ -20,13 +20,12 @@
     "reviewed": 0,
     "mergeable": 0,
     "prs": [
-      { "number": 1417, "title": "chore(hq-em): EM cycle 2026-03-29T23:00Z", "owner": "hq", "note": "CONFLICTING — cannot merge, needs rebase by hq squad" }
+      { "number": 1448, "title": "fix(claude-hook): allow-path must not write to stderr", "owner": "kernel", "note": "DIRTY — merge conflict, needs rebase. Checks 4/4 passing." }
     ]
   },
   "recentlyCompleted": [
-    { "pr": null, "title": "fix(site): sync invariants 24→25 and action types 41→43 — 8 drift locations", "mergedAt": null, "note": "This cycle — PR pending." },
-    { "pr": null, "title": "feat(site): add --tests-count <n> flag to check-site-stats.sh", "mergedAt": null, "note": "This cycle — PR pending." },
-    { "pr": 1406, "title": "chore(marketing-em): EM cycle 2026-03-29T20:00Z", "mergedAt": "2026-03-29T22:40:00.000Z", "note": "Marketing EM cycle — squash merged by site-em." }
+    { "pr": 1451, "title": "test(adapters): add tests for codex-cli adapter", "mergedAt": "2026-03-30T06:08:21Z", "note": "Merged this cycle by site-em — 44 codex-cli adapter tests." },
+    { "pr": 1450, "title": "chore(hq-em): EM cycle 2026-03-30T12:00Z", "mergedAt": "2026-03-30T06:08:43Z", "note": "Merged this cycle by site-em — HQ EM report." }
   ],
-  "updatedAt": "2026-03-30T00:40:01.000Z"
+  "updatedAt": "2026-03-30T06:09:00.000Z"
 }
