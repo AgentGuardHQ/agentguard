@@ -1,29 +1,29 @@
 {
-  "generatedAt": "2026-03-30T03:00:00.000Z",
+  "generatedAt": "2026-03-30T09:00:00.000Z",
   "identity": "claude-code:opus:kernel:em",
   "runCycle": "3h",
   "health": "yellow",
-  "healthReason": "KE-8 active. PR #1436 opened for #1427 (persona.env protection) — secondary blocker cleared. P1 #1430 (hook stderr blocking) still no PR (ageRuns=1). Tests all passing. Swarm P0 #1431 is infra/not kernel scope.",
-  "summary": "Clean cycle. Merged PR #1432 (previous EM cycle report, 4/4 CI green, squash merged sha e107f00). KE-7 confirmed complete — PR #1425 (cross-repo-blast-radius) and #1410 (octi-pulpo policy) both closed per state. KE-8 sprint active: two dogfood correctness P1s. #1427 (persona.env protection) now has PR #1436 open and in CI. #1430 (hook stderr blocking) still triaged-pending-pr at ageRuns=1 — will escalate to director if no PR by next cycle.",
+  "healthReason": "KE-8: #1427 CLOSED (PR #1436 merged 02:22Z). #1430 (claude-hook stderr) escalated to director (ageRuns=2, persistent blocker rule triggered). PR budget: 0 kernel PRs open. Tests 4636/4636 passing.",
+  "summary": "Cycle 2026-03-30T09:00Z. #1427 (persona.env identity protection) fully resolved — PR #1436 merged by jpleva91 at 02:22Z, 2 files changed, 4 test assertions updated. PR #1434 (previous kernel EM chore) merged by HQ EM cycle. #1430 (claude-hook stderr blocking) persists at ageRuns=2 with no PR filed; escalation rule triggered — escalated to director. Swarm P0 #1431 (codex budget / circuit cascade) is infra scope, no kernel action available.",
   "sprintStatus": {
     "current": "KE-8",
     "goal": "Dogfood correctness — hook stderr blocking + persona.env identity protection",
     "issues": [
       {
         "number": 1430,
-        "title": "hook stderr blocking allowed commits",
+        "title": "fix: claude-hook allow-path messages must not write to stderr",
         "priority": "P1",
-        "status": "triaged-pending-pr",
+        "status": "escalated-to-director",
         "fixTarget": "apps/cli/src/commands/claude-hook.ts",
-        "note": "Route allow-path output to stdout only. Reserve stderr for deny/violations/errors."
+        "note": "ageRuns=2. Persistent-blocker escalation rule triggered. HQ EM cycle also escalated. Director must assign kernel-sr directly. Fix: route allow-path output to stdout only; reserve stderr for deny/violations/errors."
       },
       {
         "number": 1427,
         "title": "persona.env not protected by no-governance-self-modification",
         "priority": "P1",
-        "status": "pr-open",
+        "status": "closed",
         "fixTarget": "packages/invariants/src/definitions.ts",
-        "note": "PR #1436 open (fix/persona-env-identity-tampering-1427). 5/5 CI green. Removes persona.env from OPERATIONAL_STATE_PATTERNS."
+        "note": "PR #1436 merged 2026-03-30T02:22:29Z. Removed persona.env from OPERATIONAL_STATE_PATTERNS. 4 tests updated (holds:true→false). Coverage gap closed."
       }
     ]
   },
@@ -31,18 +31,27 @@
     "open": 0,
     "kernelPRsMergedThisCycle": [
       {
-        "number": 1432,
-        "title": "chore(kernel-em): EM cycle 2026-03-30T02:40Z — KE-7 done, KE-8 started, #1430 #1427 triaged",
+        "number": 1436,
+        "title": "fix(invariants): protect persona.env from agent identity tampering",
+        "ci": "5/5 green",
+        "mergedAt": "2026-03-30T02:22:29Z",
+        "closes": 1427
+      },
+      {
+        "number": 1434,
+        "title": "chore(kernel-em): EM cycle 2026-03-30T03:00Z — #1432 merged, KE-8 tracking #1430 #1427",
         "ci": "4/4 green",
-        "mergedAt": "2026-03-30T03:00:00Z"
+        "mergedAt": "2026-03-30T~09:00Z",
+        "note": "Rebased onto main by HQ EM cycle before merge (resolved state.json conflict)."
       }
     ],
     "repoPRsNeedingAttention": [
       {
-        "number": 1429,
-        "title": "chore(studio-sr): EM cycle 2026-03-30 — #1342 diagnosed + closed, workspace#265 opened",
-        "squad": "studio",
-        "note": "Not kernel scope. Studio squad manages."
+        "number": 1442,
+        "title": "chore(hq-em): EM cycle 2026-03-30T09:00Z",
+        "squad": "hq-em",
+        "ci": "4/4 green",
+        "note": "HQ EM chore PR — CI green, not kernel scope, HQ manages merge."
       }
     ]
   },
@@ -51,7 +60,7 @@
       "kernelOpen": 0,
       "max": 3,
       "pass": true,
-      "note": "0 kernel PRs open after merging #1432."
+      "note": "0 kernel PRs open. PRs #1436 and #1434 both merged this cycle."
     },
     "retryLoops": {
       "stuckAgents": 0,
@@ -65,51 +74,58 @@
   "blockers": [
     {
       "issue": 1430,
-      "description": "P1 triaged, fix target clear (apps/cli/src/commands/claude-hook.ts), but kernel-sr has not opened a PR yet. ageRuns=1. Will escalate to director at ageRuns=2.",
-      "owner": "kernel-sr",
+      "description": "claude-hook allow-path writes to stderr, blocking Claude Code PreToolUse hook on allowed commits/pushes. Fix target clear (apps/cli/src/commands/claude-hook.ts). No PR filed after 2 kernel EM cycles. Persistent-blocker escalation rule triggered.",
+      "owner": "director (escalated)",
       "severity": "P1",
-      "ageRuns": 1
+      "ageRuns": 2,
+      "escalatedAt": "2026-03-30T09:00:00Z"
     }
   ],
   "escalations": [
     {
+      "issue": 1430,
+      "title": "fix: claude-hook allow-path messages must not write to stderr",
+      "rule": "persistent-blocker (ageRuns=2)",
+      "owner": "director",
+      "note": "Kernel EM escalation. HQ EM also escalated in 09:00Z cycle. Director must assign kernel-sr directly to #1430."
+    },
+    {
       "issue": 1431,
-      "title": "Swarm Health Alert — codex budget exhausted + multi-driver circuit cascade (53.7% failure rate)",
-      "owner": "human (jpleva91)",
+      "title": "Swarm Health Alert — codex budget exhausted + multi-driver circuit cascade",
+      "owner": "human (jpleva91) + director",
       "scope": "infra/swarm — not kernel",
-      "note": "Human action still required: kill 1183028 1183035 1183037 (zombie vitest PIDs). Codex agents blocked until 2026-04-03. Escalated by prior cycle, no kernel action available."
+      "note": "Codex agents blocked until 2026-04-03. Director decision pending (credits vs disable). No kernel action available."
     }
   ],
   "escalationRules": {
     "triggered": {
       "twoPlusFailingCI": false,
-      "persistentBlocker": false,
+      "persistentBlocker": true,
       "governanceDenialsExceeded": false
     },
-    "notes": "No escalation rules triggered this cycle. P1 #1430 is at ageRuns=1. Next cycle: if #1430 still has no PR, persistentBlocker rule triggers (ageRuns=2 → escalate to director)."
+    "notes": "persistentBlocker triggered: #1430 has no PR after ageRuns=2. Escalated to director. No CI failures. No governance denial spike."
   },
   "metrics": {
     "prsOpened": 0,
-    "prsMerged": 1,
+    "prsMerged": 2,
     "prsClosed": 0,
-    "issuesClosed": 0,
+    "issuesClosed": 1,
     "governanceDenials": 0,
     "retries": 0,
-    "note": "Merged: #1432 (previous EM cycle report). No new kernel PRs or issues this cycle."
+    "note": "Merged: #1436 (persona.env fix, closes #1427), #1434 (previous EM chore). #1427 closed."
   },
   "dogfoodObservations": [
     {
       "severity": "high",
       "issue": 1430,
-      "description": "FIRST-PARTY: claude-hook PreToolUse output on stderr blocks allowed actions. Claude Code's hook protocol treats any stderr from PreToolUse as a blocking error. Allow-path decisions must write to stdout only (or nothing). This is a real production blocker: unattended QA agents on readybench cannot commit/push without workarounds.",
-      "proposedFix": "apps/cli/src/commands/claude-hook.ts: switch allow-path messages from process.stderr to process.stdout."
+      "description": "FIRST-PARTY: claude-hook PreToolUse output on stderr blocks allowed actions. Claude Code's hook protocol treats any stderr from PreToolUse as a blocking error. This is a real production blocker: unattended QA agents on readybench cannot commit/push without workarounds. ageRuns=2 — director escalation active.",
+      "proposedFix": "apps/cli/src/commands/claude-hook.ts: switch allow-path messages from process.stderr.write to process.stdout.write."
     },
     {
-      "severity": "high",
+      "severity": "resolved",
       "issue": 1427,
-      "description": "FIRST-PARTY: .agentguard/persona.env is not covered by the no-governance-self-modification invariant. Automated agents can silently rewrite driver identity (claude→human), autonomy level (semi-autonomous→supervised), and agent name used in audit logs.",
-      "proposedFix": "packages/invariants/src/definitions.ts: add .agentguard/persona.env to no-governance-self-modification protected path patterns.",
-      "status": "PR #1436 opened and in CI (5/5 green). Fix confirmed correct by code review."
+      "description": "FIRST-PARTY: .agentguard/persona.env was not covered by the no-governance-self-modification invariant. PR #1436 merged — persona.env now blocked from writes inside governed sessions.",
+      "status": "CLOSED via PR #1436 (merged 2026-03-30T02:22:29Z)"
     },
     {
       "severity": "info",
@@ -121,6 +137,6 @@
     "passed": 4636,
     "failed": 0,
     "status": "all_passing",
-    "note": "No new test runs this cycle. Last run: 2026-03-29T20:34Z (4636/4636 passing across 18 packages)."
+    "note": "Last QA run: 2026-03-30T08:00Z (4636/4636 passing across 18 packages). PR #1436 added 4 updated invariant tests (net +1 new scenario)."
   }
 }
