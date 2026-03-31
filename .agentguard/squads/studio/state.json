@@ -77,11 +77,11 @@
     "open": 4,
     "pendingMerge": [
       { "pr": "workspace#269", "title": "feat(swarm): add 5 new agents", "status": "CONFLICTING — needs rebase" },
-      { "pr": "workspace#278", "title": "feat: signal pipeline — LinkedIn content factory", "status": "open, needs review" },
+      { "pr": "workspace#278", "title": "feat: signal pipeline — LinkedIn content factory", "status": "CI FAILING — 1 check failed, do not merge" },
       { "pr": "workspace#279", "title": "feat: trigger dogfood run via RunPod GPU", "status": "open — blocked by Goose/RunPod failure" },
-      { "pr": "workspace#280", "title": "fix: remove outdated TODO check from SKILL.md", "status": "CONFLICTING after #282 merge — needs rebase" }
+      { "pr": "workspace#280", "title": "fix: remove outdated TODO check from SKILL.md", "status": "CONFLICTING after #284 merge — needs rebase" }
     ],
-    "note": "This cycle: merged #282 (studio-em EM cycle), closed #276 (stale, conflicting). cloud#532 confirmed merged 2026-03-30T11:58Z."
+    "note": "This cycle: merged #284 (studio-em EM cycle 06:06Z). PR #278 has CI failures — do not merge. PR #269 conflict state UNKNOWN (rebase needed). PR #283 (octi-pulpo run 8) — not studio's to merge."
   },
   "humanEscalations": [
     {
@@ -90,17 +90,17 @@
       "title": "Worker pool dead — MUST run server/deploy.sh before April 1 or risk thundering herd",
       "deadline": "2026-04-01",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 6,
-      "action": "CRITICAL: Run `server/deploy.sh` on readybench before April 1. Circuit breakers (Codex+Copilot) auto-clear April 1 — dead pool + 60+ queued items = thundering herd. HOURS REMAIN."
+      "consecutiveCyclesUnassigned": 7,
+      "action": "CRITICAL: Run `server/deploy.sh` on readybench IMMEDIATELY. Circuit breakers (Codex+Copilot) auto-clear April 1 — dead pool + 60+ queued items = thundering herd. FINAL HOURS — DO IT NOW."
     },
     {
       "issue": 1306,
       "repo": "AgentGuardHQ/agentguard",
-      "title": "feat(v3.0-gate): default-deny enforcement — 13TH CYCLE UNASSIGNED",
+      "title": "feat(v3.0-gate): default-deny enforcement — 14TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 13,
-      "action": "CRITICAL: Manually assign kernel #1306 TODAY. Conference demo depends on v3.0 gate. 4 days to deadline."
+      "consecutiveCyclesUnassigned": 14,
+      "action": "CRITICAL: Manually assign kernel #1306 TODAY. Conference demo depends on v3.0 gate. 4 days to deadline. April 1 is last practical dispatch window."
     },
     {
       "issue": 274,
@@ -128,10 +128,10 @@
     {
       "issue": 228,
       "repo": "AgentGuardHQ/agentguard-workspace",
-      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (11+ cycles)",
+      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (12+ cycles)",
       "deadline": "2026-05-06",
       "priority": "P0",
-      "action": "April 1 budget reset is the last dispatch window before conference crunch. Assign #228 TODAY."
+      "action": "LAST CHANCE: April 1 budget reset is tomorrow — final dispatch window. Assign #228 NOW or miss the window entirely."
     },
     {
       "issue": 178,
@@ -183,31 +183,30 @@
     }
   ],
   "mergedThisCycle": [
-    { "pr": 282, "repo": "AgentGuardHQ/agentguard-workspace", "title": "chore(studio-em): EM cycle 2026-03-31T04:37Z — cloud#532 merged, signal pipeline CI retriggered" }
+    { "pr": 284, "repo": "AgentGuardHQ/agentguard-workspace", "title": "chore(studio-em): EM cycle 2026-03-31T06:06Z — Codex quota, Goose circuit, #282 merged" }
   ],
   "issuesFiledThisCycle": [],
-  "closedThisCycle": [
-    { "pr": 276, "repo": "AgentGuardHQ/agentguard-workspace", "title": "chore(studio-em): EM cycle 2026-03-30T09:00Z — STALE", "reason": "CONFLICTING, superseded by #282" }
-  ],
+  "closedThisCycle": [],
   "openPRsThisCycle": [],
   "analyticsCoordination": {
-    "lastChecked": "2026-03-31T06:06:00Z",
-    "openIssues": 19,
+    "lastChecked": "2026-03-31T08:15:00Z",
+    "openIssues": 10,
     "conferenceBlockers": [
       { "issue": 38, "title": "Data request: production telemetry snapshot for May 6 conference" },
       { "issue": 36, "title": "Data request: Demonstration Factory evidence pack — conference" },
       { "issue": 39, "title": "Data request: per-agent API quota consumption" }
     ],
-    "note": "Daily reports stalled since 2026-03-28. analytics-pipeline (APScheduler #12) likely blocked. agentguard-analytics on v2.7.3 — version drift vs 2.10.3 flagged by director."
+    "note": "Daily reports stalled since 2026-03-28 — 4th day. analytics-pipeline (APScheduler #12) likely blocked on readybench worker outage (same root cause as #1402). agentguard-analytics on v2.7.3 — version drift vs 2.10.3 flagged by director. Unblocks with #1402."
   },
   "crossSquadObservations": {
-    "director": "3rd consecutive RED run. Cascade: #1402 worker pool dead → QA 0/18, studio blocked, cloud slow recovery.",
-    "hq": "9 PRs merged this cycle. 3 P0 human escalations persist (#1402, #1431, #1452).",
+    "director": "4th consecutive RED run. Single root cause: #1402 worker pool dead on readybench. Triggers cascade to QA, analytics, studio, Goose.",
+    "hq": "octi-pulpo PR #283 open (run 8, 2026-03-31). PR #278 (signal pipeline) has CI failures.",
     "kernel": "GREEN. KE-9 active, tests 4693/4693. 8 Dependabot PRs swept.",
-    "cloud": "cloud#532 MERGED 2026-03-30T11:58Z (fleet overview — conference P0 complete). State file 6 days stale.",
-    "qa": "RED day 5+. bench-devs-platform missing from jared box. Structural, unblocks only with #1402.",
-    "goose": "Circuit open (11 failures). RunPod pod not starting. shellforge-sr affected."
+    "cloud": "cloud#532 MERGED 2026-03-30T11:58Z (fleet overview — conference P0 complete). State file 7 days stale.",
+    "qa": "RED day 6. 0/18 agents operational. Structural: readybench worker down (#1402). April 1 QA EM retrigger queued.",
+    "goose": "Circuit open (11 failures). RunPod pod not starting. shellforge-sr and PR #279 blocked. ShellForge squad owns.",
+    "analytics": "Daily reports stalled 4 days. Same root cause as #1402. Conference data requests #36, #38, #39 aging."
   },
-  "lastEmRun": "2026-03-31T06:06:00.000Z",
-  "updatedAt": "2026-03-31T06:06:00.000Z"
+  "lastEmRun": "2026-03-31T08:15:00.000Z",
+  "updatedAt": "2026-03-31T08:15:00.000Z"
 }
