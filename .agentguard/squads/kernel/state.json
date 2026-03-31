@@ -1,33 +1,69 @@
 {
   "squad": "kernel",
   "sprint": {
-    "goal": "KE-9: Security maintenance + new governance invariant design (#1449 security deps, #1384 browser governance, #1385 irreversible action detection)",
-    "issues": [1449, 1384, 1385],
+    "goal": "KE-9: Browser governance + irreversible action detection design (#1384, #1385). Security maintenance complete (#1449 closed 2026-03-30T09:41Z).",
+    "issues": [1384, 1385],
     "priorSprint": "KE-8 COMPLETE: #1427 closed (PR #1436, 2026-03-30T02:22Z), #1430 closed (PR #1448, 2026-03-30T12:10Z)"
   },
   "assignments": {
     "senior": {
-      "issue": 1449,
-      "title": "chore: triage Dependabot security alerts (path-to-regexp x2, brace-expansion)",
-      "status": "implementing",
-      "note": "P2 security. path-to-regexp ReDoS HIGH (transitive via commander/express). brace-expansion DoS MEDIUM. Update transitive deps. Check if pnpm overrides or direct dep upgrades are needed."
+      "issue": 1385,
+      "title": "feat: irreversible action detection — human confirmation gates for one-way operations",
+      "status": "unassigned",
+      "note": "Sprint-labeled kernel feature. Design + prototype: add `irreversible` property to canonical action model, emit ConfirmationRequired event, kernel pause/resume integration. Extends existing blast radius infrastructure in kernel/src/blast-radius.ts. Open questions: boolean vs score, headless/cron timeout behavior, coord_signal integration."
     },
     "secondary": {
       "issue": 1384,
       "title": "feat: browser governance invariants — scope, state, and pacing for browser agents",
       "status": "unassigned",
-      "note": "Sprint-labeled feature. Design work: what invariant violations fire for browser agent over-reach (scope), stateful navigation (state), and timing (pacing). Coordinate with kernel architect."
+      "note": "Sprint-labeled feature. Design work: new invariant class for browser agents — tab/URL scope invariant, irreversible action gate, behavioral pacing invariant. Open questions: new action class (browser.navigate/click/submit) vs extending shell.exec? Coordinate with kernel architect on pacing + correction engine interaction."
+    },
+    "closed": {
+      "issue": 1449,
+      "title": "chore: triage Dependabot security alerts (path-to-regexp x2, brace-expansion)",
+      "status": "closed",
+      "closedAt": "2026-03-30T09:41:00Z",
+      "note": "CLOSED prior cycle. Security deps triaged. 8 Dependabot PRs now open (#1484–#1491) — not security-critical, standard dep bumps for HQ EM to manage."
     }
   },
   "blockers": [],
+  "escalations": [
+    {
+      "issue": 1452,
+      "title": "Swarm Health Alert — P0: 69.5% failure rate + 26 zombie vitest processes + 3 stuck worktrees",
+      "scope": "infrastructure/human",
+      "ageRuns": 2,
+      "requiresHuman": true,
+      "note": "Persists across 2+ cycles. Requires human to kill zombie vitest processes (~3.3GB RAM) and prune stuck worktrees. Not a kernel squad deliverable. Escalated to director/human."
+    },
+    {
+      "issue": 1431,
+      "title": "Swarm Health Alert — P0: Codex budget exhausted until April 3 + multi-driver circuit cascade",
+      "scope": "infrastructure/human",
+      "ageRuns": 2,
+      "requiresHuman": true,
+      "note": "Codex budget blocked until 2026-04-03T02:25Z. 25 codex-driver agents blocked. Not kernel deliverable. Flagged for ops/director."
+    }
+  ],
   "prQueue": {
     "open": 0,
     "reviewed": 0,
     "mergeable": 0,
-    "prs": []
+    "prs": [],
+    "dependabotOpen": [
+      { "number": 1491, "title": "bump @modelcontextprotocol/sdk 1.27.1→1.29.0" },
+      { "number": 1490, "title": "bump turbo 2.8.20→2.9.1" },
+      { "number": 1489, "title": "bump typescript-eslint 8.57.2→8.58.0" },
+      { "number": 1488, "title": "bump re2js 1.2.2→1.2.3" },
+      { "number": 1487, "title": "bump actions/setup-go 5→6" },
+      { "number": 1486, "title": "bump github/codeql-action 4.34.1→4.35.1" },
+      { "number": 1485, "title": "bump actions/deploy-pages 4.0.5→5.0.0" },
+      { "number": 1484, "title": "bump actions/checkout 4→6" }
+    ],
+    "note": "0 kernel squad PRs open. 8 Dependabot PRs open — not kernel scope, HQ EM manages."
   },
   "health": "green",
-  "healthReason": "KE-9 sprint. 0 open kernel PRs. 4693/4693 tests passing. +44 new tests vs prior baseline (adapters: 299→343 from #1451, invariants: 624→633 from #1436). No regressions. No escalations.",
+  "healthReason": "KE-9 sprint active. #1449 CLOSED. 0 open kernel PRs. Tests 4693/4693 passing (last QA 2026-03-30T18:52Z). No kernel CI failures. No governance denial storms. P0 swarm infra issues (#1431, #1452) escalated to human/director — outside kernel scope.",
   "testHealth": {
     "total": 4693,
     "passed": 4693,
@@ -55,22 +91,11 @@
       "agentguard-mcp": 24,
       "scheduler": 34
     },
-    "note": "Baseline count updated: adapters 299→343 (+44, from #1451 codex-cli adapter tests), invariants 624→633 (+9, from #1436 persona.env protection). node_modules/turbo symlink was broken (pointed to deleted worktree copilot-test-writer-oss-3125169) — repaired via pnpm install before run."
+    "note": "Baseline: adapters 299→343 (+44, #1451), invariants 624→633 (+9, #1436). No new tests this cycle."
   },
   "coverageGaps": [],
-  "mergedThisCycle": [
-    {
-      "number": 1448,
-      "title": "fix(claude-hook): allow-path must not write to stderr (#1430)",
-      "note": "KE-8 primary goal. 3 new tests. CI 4/4 green (post-rebase). Rebased by kernel EM — branch was 5 commits behind main. Closes #1430. Merged 2026-03-30T12:10Z."
-    },
-    {
-      "number": 1453,
-      "title": "docs: sync invariant count to 26 across all documentation",
-      "note": "Documentation only. 12 files updated. CI 4/4 green. Merged 2026-03-30T12:10Z."
-    }
-  ],
-  "lastEmRun": "2026-03-30T12:10:00Z",
+  "mergedThisCycle": [],
+  "lastEmRun": "2026-03-31T00:00:00.000Z",
   "lastQaRun": "2026-03-30T18:52:00.000Z",
-  "updatedAt": "2026-03-30T21:10:00.000Z"
+  "updatedAt": "2026-03-31T00:00:00.000Z"
 }
