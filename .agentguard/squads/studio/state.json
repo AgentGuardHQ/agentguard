@@ -10,7 +10,7 @@
       "Agent 365 Q&A brief #228 — UNOWNED, P0 human escalation"
     ],
     "blockedUntil": "2026-04-01",
-    "blockedReason": "Copilot budget reset April 1 — 5 items queued for dispatch"
+    "blockedReason": "Copilot budget reset April 1 — 5 items queued for dispatch. Codex also exhausted until Apr 3."
   },
   "assignments": {
     "senior": {
@@ -20,6 +20,12 @@
       "dispatchedAt": "2026-03-30T09:00:00Z",
       "completedAt": "2026-03-30T10:45:00Z",
       "summary": "Telemetry E2E verified 2026-03-30. Cloud pipeline HEALTHY (372k events, latest 10:28 UTC today). 3 bugs filed: agentguard#1476 (better-sqlite3 bindings broken — rebuilt), agentguard#1477 (telemetry.agentguard.dev unreachable default URL — P1), agentguard#1478 (Go fast-path skips cloud telemetry — P2). Dashboard API wired correctly. Deny events confirmed in cloud (10k denied, 209 PolicyDenied). Human action required: fix #1477 before new installs lose telemetry."
+    },
+    "junior": {
+      "agent": "copilot-cli:haiku:studio:junior",
+      "issue": "workspace#281-TODO-removal",
+      "status": "failed-codex-quota",
+      "note": "PR #280 opened by studio-jr (fix: remove outdated TODO check from SKILL.md) but Codex quota exhausted immediately (Apr 3 reset). PR #280 now CONFLICTING after #282 merge — needs rebase."
     }
   },
   "blockers": [
@@ -43,25 +49,39 @@
       "note": "Issue #1403 (agentguard kernel). Root fix: start readybench worker (human action agentguard#1402)."
     },
     {
-      "id": "cloud-pr-532-pending-review",
-      "severity": "P2",
-      "description": "cloud#532 (agent fleet overview page) awaiting human review. Build passes, all Vercel deployments green. No reviewers assigned.",
-      "autoResolves": "on-review"
+      "id": "codex-quota-exhausted",
+      "severity": "P1",
+      "description": "Codex quota exhausted — studio-jr hit limit on 2026-03-31T05:05Z run. Circuit breaker open (106 failures). Auto-resolves 2026-04-03T02:25Z.",
+      "autoResolves": "2026-04-03"
     },
     {
-      "id": "workspace-pr-269-awaiting-green",
+      "id": "workspace-pr-269-conflicting",
       "severity": "P2",
-      "description": "PR #269 (5 new agents) org chart fix pushed. CI rerunning. Needs manual merge when green (auto-merge disabled in repo).",
-      "autoResolves": "on-ci-green"
+      "description": "PR #269 (5 new agents) is CONFLICTING — needs rebase before merge.",
+      "autoResolves": "on-rebase"
+    },
+    {
+      "id": "workspace-pr-280-conflicting",
+      "severity": "P3",
+      "description": "PR #280 (studio-jr TODO fix) CONFLICTING after #282 merge. Low priority — needs rebase.",
+      "autoResolves": "on-rebase"
+    },
+    {
+      "id": "goose-circuit-open",
+      "severity": "P2",
+      "description": "Goose driver circuit open (11 failures). RunPod pod not starting. shellforge-sr and PR #279 (dogfood run) blocked.",
+      "note": "ShellForge squad owns investigation."
     }
   ],
   "prQueue": {
-    "open": 2,
+    "open": 4,
     "pendingMerge": [
-      { "pr": "cloud#532", "title": "feat(dashboard): agent fleet overview page", "status": "awaiting-human-review", "checks": "8/8 critical passed (5 governance checks skipping — expected, needs reviewer)" },
-      { "pr": "workspace#269", "title": "feat(swarm): add 5 new agents", "status": "org-chart-fix-pushed-ci-rerunning", "checks": "org-chart regenerated and pushed, awaiting CI green then manual merge" }
+      { "pr": "workspace#269", "title": "feat(swarm): add 5 new agents", "status": "CONFLICTING — needs rebase" },
+      { "pr": "workspace#278", "title": "feat: signal pipeline — LinkedIn content factory", "status": "open, needs review" },
+      { "pr": "workspace#279", "title": "feat: trigger dogfood run via RunPod GPU", "status": "open — blocked by Goose/RunPod failure" },
+      { "pr": "workspace#280", "title": "fix: remove outdated TODO check from SKILL.md", "status": "CONFLICTING after #282 merge — needs rebase" }
     ],
-    "note": "PRs #271 (shellforge EM) and #275 (QA ops report) merged this cycle."
+    "note": "This cycle: merged #282 (studio-em EM cycle), closed #276 (stale, conflicting). cloud#532 confirmed merged 2026-03-30T11:58Z."
   },
   "humanEscalations": [
     {
@@ -70,17 +90,17 @@
       "title": "Worker pool dead — MUST run server/deploy.sh before April 1 or risk thundering herd",
       "deadline": "2026-04-01",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 5,
+      "consecutiveCyclesUnassigned": 6,
       "action": "CRITICAL: Run `server/deploy.sh` on readybench before April 1. Circuit breakers (Codex+Copilot) auto-clear April 1 — dead pool + 60+ queued items = thundering herd. HOURS REMAIN."
     },
     {
       "issue": 1306,
       "repo": "AgentGuardHQ/agentguard",
-      "title": "feat(v3.0-gate): default-deny enforcement — 12TH CYCLE UNASSIGNED",
+      "title": "feat(v3.0-gate): default-deny enforcement — 13TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
-      "consecutiveCyclesUnassigned": 12,
-      "action": "CRITICAL: Manually assign kernel #1306 TODAY. Conference demo depends on v3.0 gate. 5 days to deadline."
+      "consecutiveCyclesUnassigned": 13,
+      "action": "CRITICAL: Manually assign kernel #1306 TODAY. Conference demo depends on v3.0 gate. 4 days to deadline."
     },
     {
       "issue": 274,
@@ -89,13 +109,6 @@
       "deadline": "2026-04-05",
       "priority": "P0",
       "action": "Option C (hybrid): Add PR template with manual smoke test sign-off for conference-labeled PRs (1h setup). Then parallelize root cause investigation. Issue #274 filed with full analysis."
-    },
-    {
-      "pr": 532,
-      "repo": "AgentGuardHQ/agentguard-cloud",
-      "title": "feat(dashboard): agent fleet overview page — needs human review",
-      "priority": "P0",
-      "action": "Review and merge cloud#532. Build passes, all 4 Vercel previews green. Last unmet success criterion for workspace#272 (conference gate)."
     },
     {
       "issue": 273,
@@ -115,7 +128,7 @@
     {
       "issue": 228,
       "repo": "AgentGuardHQ/agentguard-workspace",
-      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (10+ cycles)",
+      "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (11+ cycles)",
       "deadline": "2026-05-06",
       "priority": "P0",
       "action": "April 1 budget reset is the last dispatch window before conference crunch. Assign #228 TODAY."
@@ -132,7 +145,7 @@
       "title": "DPP dry run needs owner — April 10 deadline",
       "deadline": "2026-04-10",
       "priority": "P1",
-      "action": "Assign owner — 11 days remaining."
+      "action": "Assign owner — 10 days remaining."
     },
     {
       "issues": [245, 246, 247],
@@ -170,18 +183,31 @@
     }
   ],
   "mergedThisCycle": [
-    { "pr": 271, "title": "chore(squad): EM state update — shellforge run 7 (2026-03-30)" },
-    { "pr": 275, "title": "ops(qa-conductor): RED day 5 — swarm non-operational, 07:00 UTC" }
+    { "pr": 282, "repo": "AgentGuardHQ/agentguard-workspace", "title": "chore(studio-em): EM cycle 2026-03-31T04:37Z — cloud#532 merged, signal pipeline CI retriggered" }
   ],
-  "issuesFiledThisCycle": [
-    { "issue": 1476, "repo": "AgentGuardHQ/agentguard", "title": "bug(telemetry): better-sqlite3 native bindings missing from global pnpm install", "priority": "P1" },
-    { "issue": 1477, "repo": "AgentGuardHQ/agentguard", "title": "bug(telemetry): telemetry.agentguard.dev unreachable default URL — silent event loss", "priority": "P1" },
-    { "issue": 1478, "repo": "AgentGuardHQ/agentguard", "title": "feat(telemetry): Go fast-path skips cloud telemetry — allow decisions invisible", "priority": "P2" }
+  "issuesFiledThisCycle": [],
+  "closedThisCycle": [
+    { "pr": 276, "repo": "AgentGuardHQ/agentguard-workspace", "title": "chore(studio-em): EM cycle 2026-03-30T09:00Z — STALE", "reason": "CONFLICTING, superseded by #282" }
   ],
-  "closedThisCycle": [],
-  "openPRsThisCycle": [
-    { "pr": 532, "repo": "AgentGuardHQ/agentguard-cloud", "title": "feat(dashboard): agent fleet overview page — wires /v1/agents/performance", "closes": "workspace#272", "status": "awaiting-review" },
-    { "pr": 269, "repo": "AgentGuardHQ/agentguard-workspace", "title": "feat(swarm): add 5 new agents — rebaser, release-notes, dx-smoke, activation-monitor, onboarding-bot", "status": "org-chart-fix-pushed-awaiting-green" }
-  ],
-  "updatedAt": "2026-03-30T10:45:00Z"
+  "openPRsThisCycle": [],
+  "analyticsCoordination": {
+    "lastChecked": "2026-03-31T06:06:00Z",
+    "openIssues": 19,
+    "conferenceBlockers": [
+      { "issue": 38, "title": "Data request: production telemetry snapshot for May 6 conference" },
+      { "issue": 36, "title": "Data request: Demonstration Factory evidence pack — conference" },
+      { "issue": 39, "title": "Data request: per-agent API quota consumption" }
+    ],
+    "note": "Daily reports stalled since 2026-03-28. analytics-pipeline (APScheduler #12) likely blocked. agentguard-analytics on v2.7.3 — version drift vs 2.10.3 flagged by director."
+  },
+  "crossSquadObservations": {
+    "director": "3rd consecutive RED run. Cascade: #1402 worker pool dead → QA 0/18, studio blocked, cloud slow recovery.",
+    "hq": "9 PRs merged this cycle. 3 P0 human escalations persist (#1402, #1431, #1452).",
+    "kernel": "GREEN. KE-9 active, tests 4693/4693. 8 Dependabot PRs swept.",
+    "cloud": "cloud#532 MERGED 2026-03-30T11:58Z (fleet overview — conference P0 complete). State file 6 days stale.",
+    "qa": "RED day 5+. bench-devs-platform missing from jared box. Structural, unblocks only with #1402.",
+    "goose": "Circuit open (11 failures). RunPod pod not starting. shellforge-sr affected."
+  },
+  "lastEmRun": "2026-03-31T06:06:00.000Z",
+  "updatedAt": "2026-03-31T06:06:00.000Z"
 }
