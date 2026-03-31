@@ -26,6 +26,22 @@ AI coding agents (Claude Code, Codex CLI, GitHub Copilot CLI, Google Gemini CLI,
 > Every deny, every escalation, every code review — visible in real time.
 > **[Watch the live swarm &rarr;](https://agentguard-cloud-office-sim.vercel.app)**
 
+## What Problem Does AgentGuard Solve?
+
+AI coding agents can write files, execute shell commands, push code, and access sensitive repositories — all autonomously. Most agent frameworks focus on making agents more capable, but nothing governs what they actually do at runtime.
+
+**AgentGuard intercepts AI coding agent actions before they execute and enforces safety rules.** It acts like a firewall for AI agents — sitting between the agent and your system, evaluating every action against configurable policies before it happens.
+
+Without AgentGuard, a single hallucinated command can:
+- Force-push to main and wipe your production branch
+- Leak API keys by writing them to committed files
+- Delete critical infrastructure with a runaway `rm -rf`
+- Merge untested code by bypassing review gates
+
+AgentGuard prevents all of this with 26 built-in safety checks that work out of the box. No code changes required — install, configure your policy, and your agents are governed.
+
+**Works with every major AI coding agent:** Claude Code, Codex CLI, GitHub Copilot, Google Gemini CLI, Goose, and any MCP-compatible client.
+
 ## Early Access
 
 **Get notified about v3.0, security updates, and team features:**
