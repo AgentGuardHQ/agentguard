@@ -114,6 +114,15 @@ func handleClaudePreToolUse(input HookInput, workspace string) error {
 		time.Sleep(50 * time.Millisecond)
 	}
 
+	// --- Octi Pulpo bridge: denials feed swarm episodic memory ---
+	if response.Decision == "deny" {
+		bridge := NewOctiBridge()
+		if bridge != nil {
+			bridge.RecordDenial(input.Tool, response.Reason, identity)
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+
 	// --- Write response ---
 	return writeClaudeResponse(response)
 }
@@ -173,6 +182,15 @@ func handleClaudePostToolUse(input HookInput, workspace string) {
 func handleClaudeStop(input HookInput, workspace string) {
 	// Clean root session marker
 	CleanRootSession(input.SessionID, workspace)
+
+	// --- Octi Pulpo bridge: store session summary in swarm episodic memory ---
+	bridge := NewOctiBridge()
+	if bridge != nil {
+		identity := ResolveIdentity(workspace)
+		state := ReadSessionState(input.SessionID)
+		bridge.RecordSession(input.SessionID, identity, "claude-code", state)
+		time.Sleep(50 * time.Millisecond)
+	}
 
 	// Spawn session viewer generation
 	spawnSessionViewer(workspace)
