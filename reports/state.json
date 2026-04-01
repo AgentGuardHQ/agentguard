@@ -1,0 +1,181 @@
+{
+  "squad": "hq",
+  "sprint": {
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. KE-8 COMPLETE. Version sync. ShellForge coordination.",
+    "issues": [
+      1402,
+      1403,
+      1431,
+      1449,
+      1452,
+      1462,
+      1467,
+      1477,
+      1478
+    ]
+  },
+  "assignments": {
+    "human-jpleva91": {
+      "task": "P0 URGENT (cycle 12): (1) Fix toolchain: cd agent-guard && pnpm install --force — vitest/eslint/tsc/prettier/esbuild all broken (#1467). (2) Kill 26 zombie vitest processes (~3.3GB RAM per #1452): ps aux | grep 'cloud-qa-257589|cloud-sr-1428111|tier-c-copilot-implementer-1127453' | grep vitest | awk '{print $2}' | xargs kill. (3) Run server/deploy.sh on jared box (#1402 — 12th cycle). (4) Prune stuck worktrees: git worktree prune && rm -rf .worktrees/marketing-em-3815251 .worktrees/octi-pulpo-sr-3847600 .worktrees/octi-pulpo-qa-3847601. (5) Rebase PR #1455 (marketing-em) or close it.",
+      "priority": "P0"
+    },
+    "director": {
+      "task": "P0: #1431 codex budget exhausted until Apr 3 (cycle 7) — decide: purchase credits OR disable codex agents. P0: Cloud squad 74.3% systemic exit=1 failures (9th cycle 2.10.1 vs 2.10.3) — investigate agentguard-cloud policy/config. P2: ShellForge squad owner (#1362-#1367). P2: #1449 dependabot triage (1 high severity).",
+      "priority": "P0"
+    },
+    "cloud-squad": {
+      "task": "P0 (9th cycle — CRITICAL): Upgrade agentguard-cloud to 2.10.3 immediately. Add octi-pulpo allow rule to agentguard-cloud/agentguard.yaml. Version mismatch root cause of 74.3% exit=1 failures.",
+      "priority": "P0"
+    },
+    "kernel-squad": {
+      "task": "P1: (a) Fix gh CLI false positive in destructive command scanner — add allowlist or scope to bare shell. (b) Fix #1473 — add .agentguard/squads/** path exception to no-governance-self-modification invariant. (c) Fix #1476/#1463/#1471 better-sqlite3 crash cluster (graceful fallback gap in global installs + dry-run). (d) Fix #1477 telemetry default URL (unreachable telemetry.agentguard.dev). (e) Investigate no-secret-exposure sev5 dormancy. (f) Fix session-to-agent attribution join (team compliance 0/0). P2: Fix #1177 pr-merger-agent policy gap.",
+      "priority": "P1"
+    },
+    "hq-ops": {
+      "task": "P1: Add AGENTGUARD_AGENT_NAME export to scripts/write-persona.sh output and all agent schedule configs. 99.9% sessions lack identity — team observability completely dark (#1462).",
+      "priority": "P1"
+    },
+    "ops": {
+      "task": "#1403: readybench QA swarm non-operational 5+ days. Depends on #1402 resolution.",
+      "priority": "P1"
+    }
+  },
+  "resolved": {
+    "docker-stop-1398": {
+      "task": "docker stop/rm blocked for ephemeral test containers (#1398)",
+      "priority": "P2",
+      "resolvedAt": "2026-03-30T02:10:00.000Z",
+      "note": "PR #1424 merged."
+    },
+    "octi-pulpo-pack-1410": {
+      "task": "Octi Pulpo policy pack (issue #1410)",
+      "priority": "P0",
+      "resolvedAt": "2026-03-30T02:10:00.000Z",
+      "note": "PR #1419 merged. Cloud-side rule still pending cloud-squad."
+    },
+    "governance-db-read-1408": {
+      "task": "no-governance-self-modification blocks read-only SQLite analytics queries (#1408)",
+      "priority": "P1",
+      "resolvedAt": "2026-03-29T20:40:00.000Z",
+      "note": "PR #1418 merged (KE-6)."
+    },
+    "ke6-no-self-approve": {
+      "task": "KE-6: no-self-approve-pr invariant (#909)",
+      "priority": "P1",
+      "resolvedAt": "2026-03-29T22:40:00.000Z",
+      "note": "PR #1414 merged."
+    },
+    "copilot-event-pipeline-1342": {
+      "task": "Copilot event pipeline 0 events (#1342)",
+      "priority": "P1",
+      "resolvedAt": "2026-03-30T02:40:00.000Z",
+      "note": "PR #1429 merged (studio-sr)."
+    },
+    "cross-repo-blast-radius-1425": {
+      "task": "PR #1425 (cross-repo-blast-radius)",
+      "priority": "P1",
+      "resolvedAt": "2026-03-30T00:00:00.000Z",
+      "note": "PR #1425 merged."
+    },
+    "persona-env-protection-1427": {
+      "task": "#1427 — persona.env not protected by no-governance-self-modification",
+      "priority": "P1",
+      "resolvedAt": "2026-03-30T09:00:00.000Z",
+      "note": "PR #1436 merged. KE-8 item 1 of 2 complete."
+    },
+    "hook-stderr-1430": {
+      "task": "#1430 — claude-hook writes to stderr on ALLOW, blocks git commits on readybench",
+      "priority": "P1",
+      "resolvedAt": "2026-03-30T12:10:00.000Z",
+      "note": "PR #1448 merged. fix(claude-hook): allow-path must not write to stderr. KE-8 COMPLETE."
+    },
+    "stale-pr-1461": {
+      "task": "PR #1461 HQ EM 18:00Z cycle — CONFLICTING, superseded",
+      "priority": "P2",
+      "resolvedAt": "2026-03-30T21:00:00.000Z",
+      "note": "Closed by HQ EM 21:00Z cycle."
+    },
+    "hq-em-cycle-1504": {
+      "task": "PR #1504 HQ EM cycle 08:40Z",
+      "priority": "P2",
+      "resolvedAt": "2026-03-31T11:18:00.000Z",
+      "note": "Merged this cycle."
+    },
+    "docs-ecosystem-1507": {
+      "task": "PR #1507 docs: add ecosystem table to README",
+      "priority": "P2",
+      "resolvedAt": "2026-03-31T11:18:00.000Z",
+      "note": "Merged this cycle. All checks passing."
+    }
+  },
+  "blockers": [
+    {
+      "issue": 1467,
+      "description": "P0 (NEW CYCLE 1): 30 dangling node_modules symlinks — vitest/eslint/tsc/prettier/esbuild/turbo all broken. Toolchain is entirely relying on Turbo cache. Human must run pnpm install --force.",
+      "escalatedTo": "human (jpleva91)",
+      "firstSeen": "2026-03-30T09:12:00.000Z",
+      "escalatedAt": "2026-03-31T11:18:00.000Z",
+      "escalationCount": 1
+    },
+    {
+      "issue": 1402,
+      "description": "P0: Worker pool dead on jared box. 12+ cycles, swarm frozen. Human must run server/deploy.sh.",
+      "escalatedTo": "human (jpleva91)",
+      "firstSeen": "2026-03-29T19:00:00.000Z",
+      "escalatedAt": "2026-03-31T11:18:00.000Z",
+      "escalationCount": 12
+    },
+    {
+      "issue": 1431,
+      "description": "P0: Codex budget exhausted until Apr 3. 25+ agents offline. Director decision still pending. Auto-resolves 2026-04-03T02:25Z.",
+      "escalatedTo": "human + director",
+      "firstSeen": "2026-03-30T00:02:00.000Z",
+      "escalatedAt": "2026-03-31T11:18:00.000Z",
+      "escalationCount": 7
+    },
+    {
+      "issue": 1452,
+      "description": "P0 (cycle 3): 26 orphaned vitest processes (~3.3GB RAM), cloud-squad 74.3% exit=1 systemic failures (9th+ cycle), 3 stuck worktrees.",
+      "escalatedTo": "human (zombie kill + worktree prune) + director (cloud systemic) + cloud-squad (upgrade 2.10.3)",
+      "firstSeen": "2026-03-30T06:06:00.000Z",
+      "escalatedAt": "2026-03-31T11:18:00.000Z",
+      "escalationCount": 3
+    },
+    {
+      "issue": 1462,
+      "description": "P1: Governance report: agent identity 99.9% missing, gh CLI false positive, team compliance broken, no-secret-exposure dormant, policy gaps.",
+      "escalatedTo": "kernel-squad + hq-ops",
+      "firstSeen": "2026-03-30T21:00:00.000Z",
+      "escalationCount": 2
+    },
+    {
+      "issue": 1473,
+      "description": "P1 (12+ cycles): no-governance-self-modification blocks EM squad state writes to .agentguard/squads/. HQ EM using reports/ workaround. Kernel-squad has fix assignment.",
+      "escalatedTo": "kernel-squad",
+      "firstSeen": "2026-03-30T10:33:00.000Z",
+      "escalationCount": 2,
+      "dogfoodObservedThisCycle": true
+    },
+    {
+      "issue": 1403,
+      "description": "P1: readybench QA swarm non-operational 5+ days. Depends on #1402.",
+      "escalatedTo": "ops",
+      "firstSeen": "2026-03-25T00:00:00.000Z"
+    },
+    {
+      "issue": 1335,
+      "description": "P1: Codex + Copilot circuit breakers OPEN. Auto-resolves 2026-04-01.",
+      "escalatedTo": "none (auto-resolve)",
+      "firstSeen": "2026-03-29T00:00:00.000Z",
+      "expectedResolution": "2026-04-01T00:00:00.000Z"
+    }
+  ],
+  "prQueue": {
+    "open": 3,
+    "reviewed": 0,
+    "mergeable": 0,
+    "closedThisCycle": 2,
+    "notes": "Merged #1504 (HQ EM 08:40Z, stale), #1507 (docs ecosystem table, all checks passing). Open: #1505 (octi-pulpo-em, UNKNOWN), #1503 (studio-em, UNKNOWN), #1455 (marketing-em, CONFLICTING — 3rd rebase request)."
+  },
+  "updatedAt": "2026-03-31T11:18:00.000Z"
+}

@@ -57,7 +57,15 @@ func RunCopilotHook() error {
 	// 5. Evaluate
 	response := handler.Handle(input)
 
-	// 6. Output Copilot response format
+	// 6. Octi Pulpo bridge: denials feed swarm episodic memory
+	if response.Decision == "deny" {
+		bridge := NewOctiBridge()
+		if bridge != nil {
+			bridge.RecordDenial(input.Tool, response.Reason, "copilot:"+input.SessionID)
+		}
+	}
+
+	// 7. Output Copilot response format
 	return writeCopilotResponse(response)
 }
 
