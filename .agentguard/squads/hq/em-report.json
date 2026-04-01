@@ -1,297 +1,138 @@
 {
   "squad": "hq",
-  "generatedAt": "2026-03-30T21:00:00.000Z",
-  "identity": "claude-code:opus:hq:em",
+  "generatedAt": "2026-03-31T08:40:00.000Z",
+  "identity": "claude-code:unknown:planner (hq:em)",
   "runCycle": "3h",
   "health": "red",
-  "healthReason": "Three P0 blockers persist: worker pool dead (#1402, cycle 11), codex budget exhausted (#1431, cycle 6, auto-resolves Apr 3), swarm health crisis (#1452, cycle 2). New: governance report #1462 reveals 99.9% sessions lack agent identity and team compliance metric broken. Cloud version drift enters 9th cycle (2.10.1 vs 2.10.3).",
-  "summary": "Active cycle. Closed stale conflicting PR #1461 (18:00Z, superseded). PR #1455 (marketing-em) still CONFLICTING — 2nd rebase request. New governance report #1462 filed by governance-monitor-agent reveals 5 HIGH-priority systemic issues: agent identity 99.9% missing, `gh` CLI false positive, team compliance metric broken, `no-secret-exposure` sev5 dormancy suspicious, `no-governance-self-modification` firing 2,073 times at monitor mode. Sprint goal on track: Go kernel→Cloud telemetry E2E pipeline (due Apr 17). KE-2 shipped, KE-8 complete. Circuit breakers auto-resolve Apr 1 (2 days).",
+  "healthReason": "Four P0 blockers persist: toolchain broken (#1467, cycle 2 — 30 dangling symlinks), worker pool dead (#1402, cycle 13), codex budget exhausted (#1431, cycle 8 — auto-resolves 2026-04-03), swarm health crisis (#1452, cycle 4). All require human action or auto-resolution. Sprint at risk: #1477 + #1478 block Go→Cloud E2E validation (due Apr 17). agentguard-cloud 74.3% systemic failure rate unresolved (11th cycle).",
+  "summary": "Clean maintenance cycle (~1.5h window, 07:13Z → 08:40Z). Merged PR #1502 (previous HQ EM cycle — all checks passing). No new issues since last cycle. No stale PRs to close in any repo. agent-guard CI green. agentguard-cloud and agentguard-analytics have no open PRs. Sprint goal structurally on track but blocked at E2E validation layer by #1477 (telemetry URL unreachable) + #1478 (Go fast-path silent on cloud telemetry) — both kernel-squad assigned.",
   "sprintStatus": {
-    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. KE-8 COMPLETE. Version sync. ShellForge coordination.",
-    "issues": [
-      1402,
-      1403,
-      1431,
-      1449,
-      1452,
-      1462
-    ],
-    "resolvedThisSprint": [
-      1427,
-      1430
-    ],
-    "nearResolution": [
+    "goal": "Validate Go kernel→Cloud telemetry E2E pipeline (workspace #60, due Apr 17). KE-2 SHIPPED. KE-8 COMPLETE. KE-9 IN PROGRESS.",
+    "issues": [1402, 1403, 1431, 1452, 1462],
+    "sprintBlockers": [
       {
-        "issue": 1335,
-        "note": "Codex + Copilot circuit breakers auto-resolve 2026-04-01 (2 days)"
+        "issue": 1477,
+        "title": "Telemetry default URL unreachable — events silently dropped",
+        "priority": "P1",
+        "assignedTo": "kernel-squad",
+        "note": "Sprint-blocking: Go→Cloud E2E cannot be validated without reliable telemetry. Fix fallback URL or document required .env setup."
       },
       {
-        "issue": 1431,
-        "note": "Codex budget auto-resolves 2026-04-03 (4 days)"
+        "issue": 1478,
+        "title": "Go fast-path allow-decisions produce zero cloud telemetry",
+        "priority": "P2",
+        "assignedTo": "kernel-squad",
+        "note": "Sprint-relevant: dashboard underreports workload. Critical for E2E validation accuracy."
       }
-    ]
+    ],
+    "resolvedThisSprint": [1427, 1430, 1335, 1449, 1497, 1484, 1485, 1486, 1487, 1488, 1489, 1490, 1491, 1499, 1500, 1501, 1502]
   },
   "ciStatus": {
-    "agentGuard": "green",
-    "agentguardCloud": "green (CI passes; systemic exit=1 agent failures are runtime/policy, not CI)",
-    "agentguardAnalytics": "unknown",
-    "recentRuns": "agent-guard main: 4 CI green runs (latest 84050d5 kernel-qa). agentguard-cloud: 5 recent runs all green.",
+    "agentGuard": "green (CI passes; main-tree toolchain broken due to #1467 dangling symlinks — risk: fresh build will fail on cache miss)",
+    "agentguardCloud": "green (CI passes; systemic exit=1 agent failures are runtime/policy mismatch — 11th cycle)",
+    "agentguardAnalytics": "unknown (no recent runs visible)",
+    "recentMerges": "PR #1502 (HQ EM 07:13Z cycle). Merged this cycle.",
     "securityAlerts": {
-      "count": 3,
-      "breakdown": "1 high (path-to-regexp ReDoS), 2 moderate (path-to-regexp DoS, brace-expansion hang)",
-      "status": "Issue #1449 open — pending director triage and patch assignment"
+      "count": 0,
+      "status": "RESOLVED — PR #1469 patched path-to-regexp and brace-expansion (#1449 closed)."
     }
   },
   "versionMatrix": {
     "latest": "2.10.3",
     "agentGuard": "2.10.3",
-    "agentguardCloud": "2.10.1",
-    "agentguardAnalytics": "2.10.2",
+    "agentguardCloud": "uses agentguard binary via hook wrapper (no @red-codes/agentguard in package.json deps — version pinning unclear, runtime failures at 74%+ suggest mismatch)",
+    "agentguardAnalytics": "node_modules contains multiple versions (2.7.3–2.10.2) — active binary version unclear; hooks reference binary by name",
     "drift": {
-      "agentguardCloud": "2 patches behind (P0 — 9th consecutive cycle, CRITICAL. Cloud systemic failures likely related.)",
-      "agentguardAnalytics": "1 patch behind (P2)"
+      "agentguardCloud": "P0 — 11th consecutive cycle. Cloud-squad must investigate. Runtime failures almost certainly caused by policy/version mismatch.",
+      "agentguardAnalytics": "P1 investigation ongoing. Multiple node_modules versions suggest lockfile churn."
     }
   },
   "prQueue": {
     "agentGuard": {
-      "open": 1,
-      "closedThisCycle": [
-        {
-          "number": 1461,
-          "title": "chore(hq-em): EM cycle 2026-03-30T18:00Z",
-          "reason": "CONFLICTING, superseded by this cycle (21:00Z)"
-        }
-      ],
-      "awaitingRebase": [
-        {
-          "number": 1455,
-          "title": "chore(marketing-em): EM cycle 2026-03-30T20:00Z",
-          "status": "CONFLICTING — 2nd rebase request this run"
-        }
-      ]
+      "open": 0,
+      "mergedThisCycle": [1502],
+      "closedThisCycle": []
+    },
+    "agentguardCloud": {
+      "open": 0
+    },
+    "agentguardAnalytics": {
+      "open": 0
     }
   },
-  "dogfoodPatterns": [
+  "newIssuesTriaged": [],
+  "blockers": [
     {
-      "pattern": "Hook stderr false-blocks allowed decisions on Bash tool",
-      "issues": [1430],
-      "severity": "P1",
-      "status": "RESOLVED",
-      "resolvedBy": "PR #1448 merged 2026-03-30T12:10Z — fix(claude-hook): allow-path must not write to stderr. KE-8 COMPLETE."
+      "issue": 1467,
+      "description": "P0 (cycle 2): 30 dangling node_modules symlinks in main agent-guard tree — toolchain broken (vitest, eslint, typescript, prettier all broken). Root cause of better-sqlite3 cluster (#1463, #1471, #1476). Fix: cd /home/jared/agentguard-workspace/agent-guard && pnpm install --force.",
+      "escalatedTo": "human (jpleva91)",
+      "escalationCount": 2
     },
-    {
-      "pattern": "Automated agents can self-modify .agentguard/persona.env",
-      "issues": [1427],
-      "severity": "P1",
-      "status": "RESOLVED",
-      "resolvedBy": "PR #1436 — no-governance-self-modification invariant now blocks writes to persona.env."
-    },
-    {
-      "pattern": "`gh` CLI commands false-positive in destructive command scanner",
-      "issues": [1462],
-      "severity": "P1",
-      "status": "NEW",
-      "description": "From governance report #1462: `gh issue create` and similar `gh` CLI commands are being flagged by the destructive command scanner due to heredoc body content matching destructive patterns. Causes unnecessary denials for governance agent PR/issue creation.",
-      "recommendation": "Kernel squad: add `gh` CLI allowlist to command scanner, or scope destructive pattern detection to bare shell commands only."
-    },
-    {
-      "pattern": "99.9% of sessions lack agent identity (AGENTGUARD_AGENT_NAME not set)",
-      "issues": [1462],
-      "severity": "P1",
-      "status": "NEW",
-      "description": "Governance report #1462: 65,830 sessions analyzed, near-zero have agent identity set. scripts/write-persona.sh does not export AGENTGUARD_AGENT_NAME to environment. Agent schedule configs also missing identity.",
-      "recommendation": "HQ: add AGENTGUARD_AGENT_NAME export to write-persona.sh output and all agent schedule entries. New issue required."
-    },
-    {
-      "pattern": "Session-to-agent attribution join broken — team compliance metric shows 0/0",
-      "issues": [1462],
-      "severity": "P1",
-      "status": "NEW",
-      "description": "All named agents report 0/0 allowed/denied in team compliance metrics. Storage layer join broken.",
-      "recommendation": "Kernel/storage squad: investigate attribution join. New issue required."
-    },
-    {
-      "pattern": "no-secret-exposure (sev5) dormant across 65,830 sessions — suspicious",
-      "issues": [1462],
-      "severity": "P2",
-      "status": "NEW",
-      "description": "With an active .env-write deny rule and 65,830 sessions, the no-secret-exposure severity-5 invariant triggering zero times is anomalous. Possible wiring bug.",
-      "recommendation": "Kernel squad: verify no-secret-exposure is correctly wired for file.write against .env patterns. New issue required."
-    },
-    {
-      "pattern": "Cloud squad systemic exit=1 failures (74.3%) beyond codex budget",
-      "issues": [1452],
-      "severity": "P1",
-      "status": "ONGOING",
-      "description": "cloud-sr (96.2%), ci-triage-agent-cloud (86.7%), coder-agent-cloud (78.3%), cloud-em (73.7%) failing at exit=1. Version drift (2.10.1 vs 2.10.3) likely contributing.",
-      "recommendation": "Cloud-squad: upgrade to 2.10.3 immediately (9th cycle). Director: investigate policy/config root cause."
-    },
-    {
-      "pattern": "Orphaned vitest processes from deleted worktrees consuming RAM",
-      "issues": [1452],
-      "severity": "P2",
-      "status": "ONGOING",
-      "description": "26 vitest worker processes (~3.3GB RAM). Human kill command provided. Kernel squad: fix worktree cleanup to force-kill children.",
-      "recommendation": "Human: kill zombie processes (commands in humanActionsRequired). Kernel squad: implement child-process cleanup on worktree removal."
-    },
-    {
-      "pattern": "dogfood-reporting.md missing",
-      "severity": "P3",
-      "status": "KNOWN",
-      "recommendation": "Create claude/shared/dogfood-reporting.md."
-    }
-  ],
-  "crossCuttingIssues": [
     {
       "issue": 1402,
-      "title": "[P0] Worker pool dead — 11th cycle, swarm frozen",
-      "severity": "P0",
-      "cycleCount": 11,
-      "description": "All PIDs dead. 26 orphaned vitest processes also consuming ~3.3GB RAM. Every squad's scheduled agents blocked.",
-      "action": "HUMAN REQUIRED: cd ~/agentguard-workspace && server/deploy.sh; kill zombie vitests; git worktree prune"
+      "description": "P0: Worker pool dead on jared box. 13+ cycles, swarm frozen. Human must run server/deploy.sh.",
+      "escalatedTo": "human (jpleva91)",
+      "escalationCount": 13
     },
     {
       "issue": 1431,
-      "title": "[P0] Codex budget exhausted — cycle 6",
-      "severity": "P0",
-      "cycleCount": 6,
-      "description": "25+ codex-driver agents offline. Auto-resolves 2026-04-03T02:25Z (4 days). Director decision still pending.",
-      "action": "Director: decide credits purchase OR disable codex agents in schedule.json until 2026-04-03."
+      "description": "P0: Codex budget exhausted until Apr 3. 25+ agents offline. Auto-resolves 2026-04-03T02:25Z.",
+      "escalatedTo": "human + director",
+      "escalationCount": 8
     },
     {
       "issue": 1452,
-      "title": "[P0] 69.5% swarm failure + 26 zombie vitest + cloud systemic failures — cycle 2",
-      "severity": "P0",
-      "cycleCount": 2,
-      "description": "Human must kill zombie processes + prune stuck worktrees. Cloud squad systemic exit=1 failures ongoing.",
-      "action": "Human: kill zombie processes + prune stuck worktrees. Cloud-squad: upgrade to 2.10.3. Director: investigate cloud policy."
+      "description": "P0 (cycle 4): 69.5% agent failure rate, 26 orphaned vitest processes (~3.3GB RAM), cloud-squad 74.3% exit=1. Human must kill zombies + prune worktrees. Cloud-squad must upgrade to 2.10.3.",
+      "escalatedTo": "human (zombie kill + worktree prune) + director (cloud systemic) + cloud-squad (upgrade)",
+      "escalationCount": 4
     },
     {
       "issue": 1462,
-      "title": "[NEW] Governance & Policy Report — 5 HIGH-priority systemic issues",
-      "severity": "P1",
-      "description": "65,830 sessions analyzed. Key findings: 99.9% missing agent identity, gh CLI false positive, team compliance metric broken, no-secret-exposure dormancy, policy gaps (git.reset/npm.publish/github.pr.approve).",
-      "action": "HQ: file issues for agent identity enforcement and gh CLI false positive. Kernel squad: investigate no-secret-exposure and attribution join. Policy gaps assigned to kernel-squad."
+      "description": "P1 (cycle 3): Governance report — 5 HIGH systemic issues: agent identity 99.9% missing, gh CLI false positive, team compliance broken, no-secret-exposure dormant, policy gaps. Kernel-squad and hq-ops have assignments.",
+      "escalatedTo": "kernel-squad + hq-ops",
+      "escalationCount": 3
     },
     {
       "issue": 1403,
-      "title": "[P1] readybench QA swarm non-operational — 5+ days",
-      "severity": "P1",
-      "description": "All 19 readybench agents skipping. Depends on #1402.",
-      "action": "Ops: fix routing after #1402 resolved."
-    },
-    {
-      "issue": 1335,
-      "title": "Codex + Copilot circuit breakers OPEN — auto-resolves Apr 1",
-      "severity": "P1",
-      "action": "Wait. 2 days."
-    },
-    {
-      "title": "Version drift: cloud 2.10.1 vs 2.10.3 (9th cycle — P0 CRITICAL)",
-      "severity": "P0",
-      "description": "Cloud 2 patches behind. 9th consecutive cycle. Likely contributing to systemic exit=1 failures.",
-      "action": "Cloud squad: upgrade to 2.10.3 NOW."
-    },
-    {
-      "issue": 1177,
-      "title": "pr-merger-agent policy gap — github.pr.* not in default allow-list",
-      "severity": "P2",
-      "description": "234 lifetime failures.",
-      "action": "Kernel squad: add github.pr.* to default allow-list."
-    },
-    {
-      "issue": 1449,
-      "title": "Dependabot security alerts — 3 open",
-      "severity": "P2",
-      "action": "Director: assign patch work. 1 high severity (path-to-regexp ReDoS)."
-    },
-    {
-      "title": "ShellForge initiative (#1362-#1367) — 8th cycle unassigned",
-      "severity": "P2",
-      "action": "Director: assign ShellForge squad owner."
+      "description": "P1: readybench QA swarm non-operational 5+ days. Depends on #1402.",
+      "escalatedTo": "ops",
+      "firstSeen": "2026-03-25T00:00:00.000Z"
     }
   ],
-  "resolvedSinceLastCycle": [
-    {
-      "pr": 1461,
-      "title": "Stale HQ EM 18:00Z PR closed (CONFLICTING, superseded)",
-      "action": "CLOSED by HQ EM 21:00Z cycle"
+  "crossRepoCoordination": {
+    "versionSync": {
+      "agentguardCloud": "BLOCKED — 11th cycle. Cloud-squad must investigate runtime failure root cause. Agentguard binary version unclear from package.json inspection; likely installed globally or via npm-wrapper.",
+      "agentguardAnalytics": "P1 investigation ongoing. No open PRs. Multiple node_modules agentguard versions (2.7.3–2.10.2) suggest in-flight upgrades or stale lockfile."
     }
-  ],
-  "escalations": [
-    {
-      "priority": "P0",
-      "target": "human (jpleva91)",
-      "cycleCount": 11,
-      "reason": "#1402: Worker pool dead. Kill 26 zombie vitest processes, prune 3 stuck worktrees, run server/deploy.sh."
-    },
-    {
-      "priority": "P0",
-      "target": "director",
-      "cycleCount": 6,
-      "reason": "#1431: codex budget exhausted until Apr 3. Decision required. Auto-resolves in 4 days."
-    },
-    {
-      "priority": "P0",
-      "target": "director + cloud-squad",
-      "cycleCount": 2,
-      "reason": "#1452 + version drift: Cloud squad 74.3% exit=1 (9th cycle 2.10.1 vs 2.10.3). Upgrade immediately."
-    },
-    {
-      "priority": "P1",
-      "target": "kernel-squad",
-      "cycleCount": 1,
-      "reason": "#1462: File issues for gh CLI false positive (#1462-a), no-secret-exposure dormancy (#1462-b), attribution join broken (#1462-c). Policy gaps: add git.reset/npm.publish explicit rules."
-    },
-    {
-      "priority": "P1",
-      "target": "hq-ops",
-      "cycleCount": 1,
-      "reason": "#1462: Add AGENTGUARD_AGENT_NAME export to write-persona.sh and all agent schedule entries. 99.9% sessions lack identity."
-    },
-    {
-      "priority": "P2",
-      "target": "director",
-      "cycleCount": 8,
-      "reason": "ShellForge squad owner needed. #1449 dependabot triage (1 high). #1177 pr-merger-agent gap (234 failures)."
-    }
-  ],
-  "humanActionsRequired": [
-    "cd ~/agentguard-workspace && server/deploy.sh  # restart worker pool (#1402) — cycle 11",
-    "ps aux | grep 'cloud-qa-257589\\|cloud-sr-1428111\\|tier-c-copilot-implementer-1127453' | grep vitest | awk '{print $2}' | xargs kill  # kill 26 zombie vitest (~3.3GB RAM)",
-    "cd ~/agentguard-workspace/agent-guard && git worktree prune",
-    "rm -rf /home/jared/agentguard-workspace/.worktrees/marketing-em-3815251 /home/jared/agentguard-workspace/.worktrees/octi-pulpo-sr-3847600 /home/jared/agentguard-workspace/.worktrees/octi-pulpo-qa-3847601",
-    "Decision: purchase codex credits OR edit server/schedule.json to disable codex agents until 2026-04-03"
-  ],
-  "actionsThisCycle": [
-    {
-      "action": "CLOSED_PR",
-      "pr": 1461,
-      "detail": "18:00Z HQ EM cycle — CONFLICTING, superseded by 21:00Z cycle. Closed to keep PR queue clean."
-    },
-    {
-      "action": "PR_STATUS",
-      "pr": 1455,
-      "detail": "marketing-em still CONFLICTING. 2nd rebase request pending."
-    },
-    {
-      "action": "TRIAGE_ISSUE",
-      "issue": 1462,
-      "detail": "Governance & Policy Report analyzed. 5 HIGH items surfaced: agent identity, gh CLI false positive, compliance metric, no-secret-exposure dormancy, policy gaps. Escalated to kernel-squad and hq-ops."
-    },
-    {
-      "action": "VERSION_CHECK",
-      "detail": "agentguard-cloud confirmed 2.10.1 (package.json). agentguard-analytics confirmed 2.10.2. agent-guard CLI 2.10.3. Cloud drift enters 9th cycle."
-    },
-    {
-      "action": "ESCALATED_COUNT",
-      "issue": 1402,
-      "detail": "Cycle 11 escalation."
-    },
-    {
-      "action": "ESCALATED_COUNT",
-      "issue": 1431,
-      "detail": "Cycle 6 escalation. Auto-resolves Apr 3."
-    }
-  ]
+  },
+  "dogfoodReport": {
+    "governanceDenials": 0,
+    "openDogfoodIssues": [
+      {
+        "issue": 1473,
+        "title": "no-governance-self-modification blocks EM squad state writes to .agentguard/squads/",
+        "status": "OPEN (kernel-squad assigned, cycle 3)",
+        "impact": "Worktree isolation currently bypasses the block. Would affect main-tree runs."
+      },
+      {
+        "issue": 1474,
+        "title": "no-credential-file-creation false positive — grep -v on credential keywords blocked",
+        "status": "OPEN",
+        "impact": "Agents running grep -v on credential-adjacent filenames get false-positive denials."
+      },
+      {
+        "issue": 1476,
+        "title": "better-sqlite3 native bindings missing from global pnpm install",
+        "status": "OPEN (root cause: #1467 toolchain break)",
+        "impact": "agentguard inspect/events/analytics commands fail. SQLite storage backend unavailable globally."
+      },
+      {
+        "issue": 1482,
+        "title": "CLI not in PATH on bench-devs worktrees",
+        "status": "OPEN",
+        "impact": "start-governance-runtime skill fails silently in bench-devs-platform worktrees."
+      }
+    ],
+    "note": "No governance denials this cycle. Worktree isolation prevents #1473 from blocking EM state writes. Identity shows 'unknown' model field — hq-ops P1 (AGENTGUARD_AGENT_NAME in write-persona.sh) unresolved, cycle 3."
+  }
 }

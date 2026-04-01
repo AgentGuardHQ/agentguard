@@ -1,146 +1,153 @@
 {
-  "generatedAt": "2026-03-30T12:10:00.000Z",
+  "generatedAt": "2026-03-31T07:37:00.000Z",
   "identity": "claude-code:opus:kernel:em",
   "runCycle": "3h",
-  "health": "green",
-  "healthReason": "KE-8 COMPLETE: #1430 closed via PR #1448 (merged this cycle). #1427 closed (prior cycle). 0 kernel PRs open. Tests 4649/4649 passing. No escalations active.",
-  "summary": "Cycle 2026-03-30T12:10Z. KE-8 sprint complete. PR #1448 (fix: claude-hook allow-path must not write to stderr) was 5 commits behind main — rebased by kernel EM, CI re-triggered (4/4 green), merged. Closes #1430 (ageRuns was 2, director escalation cleared). PR #1453 (docs: sync invariant count to 26 across all documentation) also merged — CI was 4/4 green from earlier run. New P0 swarm health alert #1452 (69.5% failure rate, zombie vitest processes, stuck worktrees) is infra/human scope — no kernel action available. Security issue #1449 (path-to-regexp ReDoS HIGH, brace-expansion MEDIUM) triaged as P2 kernel maintenance for KE-9. #1177 (github.pr.* policy gap) confirmed CLOSED. Issue #1431 (codex budget) remains infra scope.",
+  "health": "yellow",
+  "healthReason": "#1384 and #1385 remain design-phase after 2 EM cycles with no implementation. #1473 (no-governance-self-modification blocks EM state writes) now at ageRuns=2 — escalation threshold met, escalated to director. 0 open PRs this cycle. Tests stable 4693/4693. Swarm P0 alerts (#1431, #1452) are not kernel-owned.",
+  "summary": "Cycle 2026-03-31T07:37Z. KE-9 sprint: #1384 (browser governance) and #1385 (irreversible action detection) remain in design phase — no implementation or PRs yet after 2 EM cycles. #1473 blocker (EM squad state writes blocked by no-governance-self-modification) reached ageRuns=2 and has been escalated to director. 0 kernel-authored PRs in flight. No open PRs returned by GitHub API this cycle — 8 Dependabot PRs tracked last cycle appear resolved. No new P0/P1 issues assigned to kernel. Swarm P0 health alerts (#1431, #1452) noted — owned by swarm-ops/human. Tests stable at 4693/4693.",
   "sprintStatus": {
-    "current": "KE-8",
-    "goal": "Dogfood correctness — hook stderr blocking + persona.env identity protection",
-    "status": "COMPLETE",
+    "current": "KE-9",
+    "goal": "New governance invariant design — browser agents + irreversible actions",
+    "status": "IN_PROGRESS",
+    "cyclesInDesignPhase": 2,
     "issues": [
-      {
-        "number": 1430,
-        "title": "[dogfood] git commit Bash tool calls blocked by hook even when decision is 'allowed'",
-        "priority": "P1",
-        "status": "closed",
-        "fixTarget": "apps/cli/src/commands/claude-hook.ts",
-        "closedVia": "PR #1448 merged 2026-03-30T12:10Z",
-        "note": "Rule: only denials use stderr. Allow paths produce zero stderr. 3 new tests added (git commit, git push, gh CLI allowed with no policy loaded — all assert process.stderr.write never called). Rebase by kernel EM (5 commits behind main, state.json conflict resolved by keeping main's version)."
-      },
-      {
-        "number": 1427,
-        "title": "persona.env not protected by no-governance-self-modification",
-        "priority": "P1",
-        "status": "closed",
-        "fixTarget": "packages/invariants/src/definitions.ts",
-        "closedVia": "PR #1436 merged 2026-03-30T02:22:29Z",
-        "note": "Prior cycle. Removed persona.env from OPERATIONAL_STATE_PATTERNS. 4 tests updated (holds:true→false). Coverage gap closed."
-      }
-    ]
-  },
-  "nextSprint": {
-    "proposed": "KE-9",
-    "goal": "Security maintenance + new governance invariant design",
-    "candidates": [
-      {
-        "number": 1449,
-        "title": "chore: triage Dependabot security alerts (path-to-regexp x2, brace-expansion)",
-        "priority": "P2",
-        "note": "path-to-regexp ReDoS HIGH (transitive via commander). brace-expansion DoS MEDIUM. Address within this sprint cycle."
-      },
       {
         "number": 1384,
         "title": "feat: browser governance invariants — scope, state, and pacing for browser agents",
         "priority": "sprint",
-        "note": "New invariant class for browser agents. Design work this cycle."
+        "status": "assigned",
+        "note": "Senior coder assigned. Design phase — 2nd EM cycle with no implementation. Open questions in issue: action class (browser.* vs shell.exec extension), pacing correction feedback, URL scope matching strategy. No PR filed."
       },
       {
         "number": 1385,
         "title": "feat: irreversible action detection — human confirmation gates for one-way operations",
         "priority": "sprint",
-        "note": "Kernel-scope feature. Design + prototype."
+        "status": "assigned",
+        "note": "Secondary agent assigned. 1 comment on issue. Design phase — 2nd EM cycle with no implementation. PauseRequested/PauseResolved schema already exists from Go kernel (packages/events/src/schema.ts). No PR filed."
       }
     ]
   },
   "prQueue": {
-    "open": 0,
-    "kernelPRsMergedThisCycle": [
-      {
-        "number": 1448,
-        "title": "fix(claude-hook): allow-path must not write to stderr (#1430)",
-        "ci": "4/4 green (post-rebase)",
-        "mergedAt": "2026-03-30T12:10Z",
-        "closes": 1430,
-        "note": "Rebased by kernel EM (branch was 5 commits behind main). State.json conflict from QA cycle commit resolved by keeping main version. CI re-ran and passed."
-      },
-      {
-        "number": 1453,
-        "title": "docs: sync invariant count to 26 across all documentation",
-        "ci": "4/4 green",
-        "mergedAt": "2026-03-30T12:10Z",
-        "closes": null,
-        "note": "Documentation-only. Synced invariant count from 24/25/6 (various stale values) to 26 (source of truth: definitions.ts). 12 files updated."
-      }
-    ],
-    "repoPRsNeedingAttention": [
-      {
-        "number": 1454,
-        "title": "chore(site-em): EM cycle 2026-03-30T06:09Z — 3 drifts fixed, #1451 #1450 merged",
-        "squad": "site-em",
-        "ci": "IN_PROGRESS at read time",
-        "note": "Site EM scope — not kernel. HQ EM manages merge."
-      }
-    ]
+    "kernelOpen": 0,
+    "kernelPRsMergedThisCycle": [],
+    "dependabotPRsNeedingAttention": [],
+    "note": "0 open PRs returned by GitHub API. 8 Dependabot PRs tracked last cycle (#1484-#1491) appear to have been merged or closed between cycles. PR budget 0/3."
   },
   "loopGuards": {
     "prBudget": {
       "kernelOpen": 0,
       "max": 3,
       "pass": true,
-      "note": "PRs #1448 and #1453 merged this cycle. 0 kernel PRs open."
+      "note": "0 kernel-authored PRs open."
     },
     "retryLoops": {
       "stuckAgents": 0,
-      "pass": true,
-      "note": "Previous escalation (#1430/director) cleared — PR was filed and merged."
+      "pass": true
     },
     "blastRadius": {
       "withinLimits": true,
       "pass": true
     }
   },
-  "blockers": [],
-  "escalations": [],
+  "blockers": [
+    {
+      "issue": 1473,
+      "title": "[dogfood] no-governance-self-modification blocks EM squad state writes to .agentguard/squads/",
+      "severity": "operational",
+      "ageRuns": 2,
+      "escalated": true,
+      "escalatedTo": "director",
+      "escalatedAt": "2026-03-31T07:37:00.000Z",
+      "recommendation": "Director attention needed. Kernel squad fix: narrow OPERATIONAL_STATE_PATTERNS in packages/invariants/src/definitions.ts to exclude .agentguard/squads/**. Same fix class as #1427 (persona.env exemption). Analytics-em reported 11+ consecutive blocked runs before filing issue. This affects all EM agents writing to .agentguard/squads/. Fix is low-risk and well-precedented."
+    }
+  ],
+  "escalations": [
+    {
+      "to": "director",
+      "reason": "Blocker #1473 persists across 2 EM runs (threshold: 2). Invariant too broad — .agentguard/squads/** is runtime coordination state, not governance config. Kernel squad owns fix.",
+      "triggeredAt": "2026-03-31T07:37:00.000Z",
+      "escalationRule": "If a blocker persists across 2 runs → escalate to director"
+    }
+  ],
   "escalationRules": {
     "triggered": {
       "twoPlusFailingCI": false,
-      "persistentBlocker": false,
+      "persistentBlocker": true,
       "governanceDenialsExceeded": false
     },
-    "notes": "All escalation rules clear. Prior persistentBlocker (#1430 ageRuns=2) resolved — PR merged. Director escalation cleared."
+    "notes": "#1473 at ageRuns=2 triggers persistent blocker escalation. No CI failures — 0 PRs in flight. 0 governance denials this cycle."
+  },
+  "swarmContext": {
+    "p0Alerts": [
+      {
+        "number": 1452,
+        "summary": "P0: 69.5% swarm failure rate, 26 zombie vitest processes, 3 stuck worktrees (2026-03-30 06:00 UTC)",
+        "kernelAction": "Note: #1452 mentions #1177 policy gap (github.pr.* not in default allow-list) blocks pr-merger-agent. Kernel squad should evaluate as a KE-9/10 backlog item.",
+        "owner": "swarm-ops + human"
+      },
+      {
+        "number": 1431,
+        "summary": "P0: Codex budget exhausted until 2026-04-03T02:25Z, multi-driver circuit cascade (53.7% failure rate)",
+        "kernelAction": "None — infrastructure issue, not kernel-owned.",
+        "owner": "swarm-ops + human"
+      }
+    ]
   },
   "metrics": {
     "prsOpened": 0,
-    "prsMerged": 2,
+    "prsMerged": 0,
     "prsClosed": 0,
-    "issuesClosed": 1,
+    "issuesClosed": 0,
     "governanceDenials": 0,
     "retries": 0,
-    "note": "Merged: #1448 (claude-hook stderr fix, closes #1430), #1453 (docs: invariant count sync). #1430 closed. #1177 confirmed already closed."
+    "note": "No changes this cycle. Sprint features in design phase. Blocker escalated. Tests stable."
   },
   "dogfoodObservations": [
     {
-      "severity": "resolved",
-      "issue": 1430,
-      "description": "FIRST-PARTY: claude-hook PreToolUse output on stderr blocked allowed actions in Claude Code. PR #1448 merged — allow paths now produce zero stderr. Rule enforced via 3 new test assertions.",
-      "status": "CLOSED via PR #1448 (merged 2026-03-30T12:10Z)"
+      "severity": "blocker",
+      "issue": 1473,
+      "description": "ESCALATED: no-governance-self-modification invariant fires on Write calls to .agentguard/squads/kernel/state.json and em-report.json. Analytics-em reported 11+ consecutive blocked runs before filing the issue. Fix is narrowing OPERATIONAL_STATE_PATTERNS in packages/invariants/src/definitions.ts to exclude .agentguard/squads/**. Write tool succeeds (shell-level hook intercepts Bash, not Write). Kernel squad owns fix — assign to senior coder as KE-9 maintenance item.",
+      "status": "OPEN — ESCALATED TO DIRECTOR (#1473)"
     },
     {
       "severity": "info",
-      "description": "PROCESS: PR #1448 branch had stale EM/QA state.json commits mixed with the code fix. This caused a rebase conflict when the branch fell 5 commits behind main. Consider having fix PRs contain only the code change — separate state management from fix commits."
+      "issue": 1474,
+      "description": "no-credential-file-creation false positive on grep -v (invert-match). Command checking absence of credential keywords triggers invariant incorrectly. Adjacent to #1475 (read-only exemption). Consider: grep -v patterns should not trigger credential creation checks.",
+      "status": "OPEN (#1474)"
     },
     {
       "severity": "info",
-      "description": "0 governance denials this cycle. No LOCKDOWN triggers. All governed operations clean."
+      "description": "0 governance denials this cycle. No LOCKDOWN triggers. All governed operations clean during this EM run."
     }
   ],
   "testHealth": {
-    "total": 4649,
-    "passed": 4649,
+    "total": 4693,
+    "passed": 4693,
     "failed": 0,
     "status": "all_passing",
-    "note": "4649/4649 passing across 18 packages (QA-verified on PR #1448 branch before merge). Includes 3 new zero-stderr assertions from #1448 fix. Count corrected this cycle from prior stale 4636 (breakdown always summed to 4649)."
-  }
+    "lastRun": "2026-03-30T18:52:00.000Z",
+    "note": "Stable — no kernel/invariants changes this cycle. Baseline from QA run 2026-03-30T18:52Z."
+  },
+  "nextActions": [
+    {
+      "priority": "HIGH",
+      "action": "Director: review escalation for #1473. Assign kernel senior coder to fix OPERATIONAL_STATE_PATTERNS in packages/invariants/src/definitions.ts to add .agentguard/squads/** exemption.",
+      "owner": "director + kernel-senior"
+    },
+    {
+      "priority": "HIGH",
+      "action": "Kernel senior: begin implementation on #1384 (browser governance invariants). Design phase has run 2 cycles without code. Start with action class decision (browser.* vs shell.exec extension) and stub definitions in packages/invariants/src/definitions.ts.",
+      "owner": "kernel-senior"
+    },
+    {
+      "priority": "HIGH",
+      "action": "Kernel secondary: begin prototype on #1385 (irreversible action detection). PauseRequested/PauseResolved schema already exists. Start with packages/kernel/src/decision.ts hook for irreversible action detection.",
+      "owner": "kernel-secondary"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Evaluate #1177 policy gap (github.pr.* not in default allow-list) — mentioned in swarm P0 alert #1452. Assess if this should be a KE-9 maintenance item or KE-10 backlog.",
+      "owner": "kernel-em + architect"
+    }
+  ]
 }
