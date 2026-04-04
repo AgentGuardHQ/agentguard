@@ -169,6 +169,49 @@
       "priority": "MEDIUM",
       "action": "Evaluate #1177 policy gap (github.pr.* not in default allow-list) for KE-10 backlog — mentioned in swarm P0 #1452. Affects pr-merger-agent chronic failures.",
       "owner": "kernel-em + architect"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Telemetry squad: investigate #1477 (default fallback URL unreachable — P1 silent data loss for fresh installs). Fix in apps/cli/src/commands/claude-hook.ts URL resolution.",
+      "owner": "telemetry-squad",
+      "issue": 1477
+    },
+    {
+      "priority": "LOW",
+      "action": "Plan KE-10 backlog: #1496 (risk-gated write lifecycle), #1495 (state witness / TOCTOU), #1493 (preflight integration), #1492 (preflight MCP enforcement). All kernel-owned, medium/low priority.",
+      "owner": "kernel-em + architect"
+    }
+  ],
+  "newIssuesTriaged": [
+    {
+      "number": 1496,
+      "title": "[kernel] Risk-gated write lifecycle — draft/review/execute for tool calls",
+      "priority": "medium",
+      "disposition": "backlog — KE-10 candidate. HQ EM confirmed kernel squad ownership 2026-03-31."
+    },
+    {
+      "number": 1495,
+      "title": "[kernel] State Witness — re-validate conditions at execution time",
+      "priority": "medium",
+      "disposition": "backlog — KE-10 candidate. TOCTOU gap closure."
+    },
+    {
+      "number": 1493,
+      "title": "[kernel] Integrate Preflight protocol into governance hooks",
+      "priority": "medium",
+      "disposition": "backlog — after Preflight v1 ships."
+    },
+    {
+      "number": 1492,
+      "title": "[kernel] MCP server enforcement layer for Preflight protocol",
+      "priority": "low",
+      "disposition": "backlog — nice-to-have post-v1."
+    },
+    {
+      "number": 1477,
+      "title": "bug(telemetry): default fallback URL unreachable — events silently dropped",
+      "priority": "high",
+      "disposition": "flagged to telemetry squad. P1 severity. Bug in apps/cli/src/commands/claude-hook.ts telemetry URL resolution — silent data loss for users without AGENTGUARD_TELEMETRY_URL env."
     }
   ]
 }

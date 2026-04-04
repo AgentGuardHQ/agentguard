@@ -81,6 +81,32 @@
     },
     "note": "No changes since last QA run. QA agent should re-run after #1473 fix PR lands."
   },
+  "backlog": [
+    {
+      "issue": 1496,
+      "title": "[kernel] Risk-gated write lifecycle — draft/review/execute for tool calls",
+      "priority": "medium",
+      "note": "HQ EM triage 2026-03-31: architecturally significant — replaces binary risk threshold with 3-stage lifecycle. KE-10 candidate."
+    },
+    {
+      "issue": 1495,
+      "title": "[kernel] State Witness — re-validate conditions at execution time",
+      "priority": "medium",
+      "note": "TOCTOU gap closure between Confirm and Execute phases. KE-10 candidate."
+    },
+    {
+      "issue": 1493,
+      "title": "[kernel] Integrate Preflight protocol into governance hooks",
+      "priority": "medium",
+      "note": "After Preflight v1 ships. KE-10 candidate."
+    },
+    {
+      "issue": 1492,
+      "title": "[kernel] MCP server enforcement layer for Preflight protocol",
+      "priority": "low",
+      "note": "Nice-to-have post-v1. Lower priority than #1493."
+    }
+  ],
   "coverageGaps": [],
   "mergedThisCycle": [],
   "lastEmRun": "2026-04-04T12:00:00.000Z",
