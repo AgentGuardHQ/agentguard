@@ -4,8 +4,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
-	"github.com/AgentGuardHQ/agentguard/go/internal/monitor"
+	"github.com/chitinhq/agentguard/go/pkg/event"
+	"github.com/chitinhq/agentguard/go/pkg/monitor"
 )
 
 // Aggregator reads from an event store and produces governance intelligence signals.

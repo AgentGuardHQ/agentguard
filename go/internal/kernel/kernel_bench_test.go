@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
-	"github.com/AgentGuardHQ/agentguard/go/internal/kernel"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/kernel"
 )
 
 // writeTempPolicyB writes a YAML policy to a temp file for benchmarks.

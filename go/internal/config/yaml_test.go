@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/config"
+	"github.com/chitinhq/agentguard/go/internal/config"
 )
 
 func TestLoadYamlPolicy(t *testing.T) {

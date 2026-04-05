@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/kernel"
+	"github.com/chitinhq/agentguard/go/internal/kernel"
 )
 
 func TestHealthSummary_JSON(t *testing.T) {

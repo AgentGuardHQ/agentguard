@@ -3,8 +3,8 @@ package confidence_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/confidence"
-	"github.com/AgentGuardHQ/agentguard/go/internal/monitor"
+	"github.com/chitinhq/agentguard/go/internal/confidence"
+	"github.com/chitinhq/agentguard/go/internal/monitor"
 )
 
 func TestComputeConfidence_HighConfidence(t *testing.T) {

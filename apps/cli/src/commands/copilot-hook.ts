@@ -165,7 +165,7 @@ export async function copilotHook(hookType?: string, extraArgs: string[] = []): 
       handlePostToolUse(data);
     }
   } catch (err) {
-    // BOOTSTRAP AWARENESS (AgentGuardHQ/agentguard#995):
+    // BOOTSTRAP AWARENESS (chitinhq/agentguard#995):
     // When kernel modules aren't built, warn instead of silently disabling governance.
     if (isModuleNotFoundError(err)) {
       const isSafe = data ? isBootstrapSafeAction(data) : true;

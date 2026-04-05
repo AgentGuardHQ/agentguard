@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/event"
 )
 
 // Shipper receives events from the EventBus and delivers them externally.

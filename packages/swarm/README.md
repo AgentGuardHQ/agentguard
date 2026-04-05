@@ -6,7 +6,7 @@ This is the same swarm that builds AgentGuard itself.
 
 ## What It Does
 
-The swarm scaffolds a complete autonomous development pipeline into any repository. Agents are scheduled via cron and coordinate through shared state. Every agent action passes through [AgentGuard](https://github.com/AgentGuardHQ/agent-guard) governance — policy evaluation, invariant checking, escalation tracking, and audit logging.
+The swarm scaffolds a complete autonomous development pipeline into any repository. Agents are scheduled via cron and coordinate through shared state. Every agent action passes through [AgentGuard](https://github.com/chitinhq/agent-guard) governance — policy evaluation, invariant checking, escalation tracking, and audit logging.
 
 ```
 ROADMAP.md (you write strategy)
@@ -27,7 +27,7 @@ ROADMAP.md (you write strategy)
 
 ```bash
 # Clone and build AgentGuard
-git clone https://github.com/AgentGuardHQ/agent-guard.git
+git clone https://github.com/chitinhq/agent-guard.git
 cd agent-guard
 pnpm install && pnpm build
 

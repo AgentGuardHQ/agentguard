@@ -125,7 +125,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "issue": 1402,
-      "repo": "AgentGuardHQ/agentguard",
+      "repo": "chitinhq/agentguard",
       "title": "Worker pool dead — run server/deploy.sh BEFORE April 1",
       "deadline": "2026-04-01",
       "hoursRemaining": "~15",
@@ -136,7 +136,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "issue": 1306,
-      "repo": "AgentGuardHQ/agentguard",
+      "repo": "chitinhq/agentguard",
       "title": "feat(v3.0-gate): default-deny enforcement — 12TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "daysRemaining": 5,
@@ -146,7 +146,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "issue": 274,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "QA conductor RED day 5+ — implement manual gate TODAY",
       "deadline": "2026-04-05",
       "action": "Add PR template requiring manual smoke test sign-off for conference-labeled PRs. Takes 1h. Every unreviewed PR merged before May 6 is a demo risk. Option C: manual gate now + root cause parallel."
@@ -155,7 +155,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "pr": 532,
-      "repo": "AgentGuardHQ/agentguard-cloud",
+      "repo": "chitinhq/agentguard-cloud",
       "title": "Review cloud#532 — agent fleet overview page (workspace#272 last unmet criterion)",
       "action": "All builds pass, 4 Vercel previews green. This closes workspace#272 (conference success gate). Needs 1 reviewer."
     },
@@ -163,7 +163,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "issues": [240, 241, 242, 243, 244],
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion — ALL UNOWNED",
       "daysToConference": 37,
       "action": "Review #240-244 and own each personally. 37 days to May 6."
@@ -172,7 +172,7 @@
       "to": "HUMAN",
       "urgency": "P0",
       "issue": 228,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED 10+ cycles",
       "deadline": "2026-05-06",
       "action": "April 1 is the last realistic dispatch window. Assign #228 TODAY."
@@ -181,7 +181,7 @@
       "to": "HUMAN",
       "urgency": "P1",
       "pr": 269,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "Merge PR #269 once CI green — 5 new agents ready",
       "action": "Org chart fix pushed. When check-org-chart turns green, merge PR #269. Auto-merge disabled in repo."
     },

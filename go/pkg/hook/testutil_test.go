@@ -1,6 +1,6 @@
 package hook
 
-import "github.com/AgentGuardHQ/agentguard/go/internal/action"
+import "github.com/chitinhq/agentguard/go/pkg/action"
 
 // allowResult returns an EvalResult that allows the action.
 func allowResult() action.EvalResult {

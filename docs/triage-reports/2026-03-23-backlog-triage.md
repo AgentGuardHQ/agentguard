@@ -1,7 +1,7 @@
 # Backlog Triage Report — 2026-03-23
 
 **Agent**: `claude-code:opus:planner` (backlog-hygiene--roadmap-triage-agent)
-**Scope**: All open issues in AgentGuardHQ/agent-guard
+**Scope**: All open issues in chitinhq/agent-guard
 **Before**: ~112 open issues | **After**: 90 open issues | **Net closed**: 22
 
 ---

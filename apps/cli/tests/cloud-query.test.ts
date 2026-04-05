@@ -102,7 +102,7 @@ describe('cloud signup', () => {
   it('shows discussions link', async () => {
     await cloud(['signup']);
     expect(process.stderr.write).toHaveBeenCalledWith(
-      expect.stringContaining('github.com/AgentGuardHQ/agentguard/discussions')
+      expect.stringContaining('github.com/chitinhq/agentguard/discussions')
     );
   });
 

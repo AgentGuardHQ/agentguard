@@ -151,7 +151,7 @@ if actionable findings exist.
   ✔ Policy → agentguard.yaml (essentials)
 
   ℹ Claude Desktop support coming soon.
-    Track: https://github.com/AgentGuardHQ/agentguard/issues/XXX
+    Track: https://github.com/chitinhq/agentguard/issues/XXX
 ```
 
 ### Phase 2: MCP Server Identity

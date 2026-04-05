@@ -7,7 +7,7 @@
 # Best for: autonomous CI agents, PR bots, automated refactoring pipelines.
 #
 # Scaffolded by: agentguard init --template ci-safe
-# Docs: https://github.com/AgentGuardHQ/agentguard#policy
+# Docs: https://github.com/chitinhq/agentguard#policy
 
 id: ci-safe-policy
 name: CI-Safe Safety Policy

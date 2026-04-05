@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/pkg/event"
 )
 
 // --- Helpers ---

@@ -3,8 +3,8 @@ package action_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/config"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/config"
 )
 
 // ---- ParseShellCommand tests ----

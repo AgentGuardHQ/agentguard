@@ -1032,7 +1032,7 @@ function scaffoldSimulator(id: string, name: string): ScaffoldFile[] {
 // 2. Returns a \`SimulationResult\` with predicted changes, blast radius, and risk
 // 3. Is registered with the SimulatorRegistry at startup
 //
-// See: https://github.com/AgentGuardHQ/agent-guard#simulators
+// See: https://github.com/chitinhq/agent-guard#simulators
 
 /** Normalized action intent passed to the simulator */
 export interface NormalizedIntent {

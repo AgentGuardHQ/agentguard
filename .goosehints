@@ -1,0 +1,47 @@
+# Preflight Protocol
+
+Before writing any code for a new task, you MUST complete these 5 phases in order. Do NOT create, modify, or delete any files until Phase 5.
+
+## Phase 1: Orient
+
+Read relevant files, docs, and recent changes to understand the current state before proposing anything.
+
+- Bug fix: read the failing code, related tests, recent commits to the area
+- New feature: read architecture docs, similar features, the module you'll modify
+- Refactor: read all code that will change and all dependent code
+
+State what you found before proceeding.
+
+## Phase 2: Clarify
+
+Ensure purpose, constraints, and success criteria are clear.
+
+- If working with a human: ask one question at a time until the task is unambiguous
+- If working from a ticket: verify all acceptance criteria are present. If underspecified, stop and request clarification — do not guess.
+
+State the understood requirements before proceeding.
+
+## Phase 3: Approach
+
+Propose 2-3 approaches with trade-offs and a recommendation. For trivial tasks, one approach with brief rationale is sufficient.
+
+State the chosen approach and reasoning before proceeding.
+
+## Phase 4: Confirm
+
+Present your plan (files to touch, changes to make, how to test) and get approval.
+
+- With a human: wait for explicit go-ahead
+- Autonomous: self-confirm against acceptance criteria and log the plan
+
+Do NOT proceed to code without confirmation.
+
+## Phase 5: Execute
+
+Now write the code. This is the first phase where files may be created or modified.
+
+## Rules
+
+1. Phases 1-4 produce zero code changes. Reading is encouraged, writing is not.
+2. Each new task triggers a fresh Preflight pass. Continuing the same task does not re-trigger.
+3. Even trivial tasks go through all 5 phases — each phase can be a single sentence.

@@ -8,9 +8,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
-	"github.com/AgentGuardHQ/agentguard/go/internal/kernel"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/kernel"
 )
 
 // captureEvents subscribes to a bus and collects all published events.

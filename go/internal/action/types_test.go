@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/action"
 	"gopkg.in/yaml.v3"
 )
 

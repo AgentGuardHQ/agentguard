@@ -8,8 +8,8 @@ package kernel
 import (
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/event"
 )
 
 // KernelConfig holds the configuration for a Kernel instance.

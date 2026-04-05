@@ -12,4 +12,4 @@ npx aguard status
 
 Both `npx aguard` and `npx @red-codes/agentguard` work identically.
 
-For full documentation, see the [AgentGuard repository](https://github.com/AgentGuardHQ/agentguard).
+For full documentation, see the [AgentGuard repository](https://github.com/chitinhq/agentguard).

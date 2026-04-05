@@ -7,7 +7,7 @@
 # Best for: SOC2/HIPAA-regulated environments, enterprise teams, production codebases.
 #
 # Scaffolded by: agentguard init --template enterprise
-# Docs: https://github.com/AgentGuardHQ/agentguard#policy
+# Docs: https://github.com/chitinhq/agentguard#policy
 
 id: enterprise-policy
 name: Enterprise Safety Policy

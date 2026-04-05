@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/kernel"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/kernel"
 )
 
 func TestPipelineAllowedRunsStages(t *testing.T) {

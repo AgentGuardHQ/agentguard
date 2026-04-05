@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/confidence"
-	"github.com/AgentGuardHQ/agentguard/go/internal/config"
-	"github.com/AgentGuardHQ/agentguard/go/internal/engine"
-	"github.com/AgentGuardHQ/agentguard/go/internal/invariant"
-	"github.com/AgentGuardHQ/agentguard/go/internal/monitor"
+	"github.com/chitinhq/agentguard/go/pkg/action"
+	"github.com/chitinhq/agentguard/go/pkg/confidence"
+	"github.com/chitinhq/agentguard/go/pkg/config"
+	"github.com/chitinhq/agentguard/go/pkg/engine"
+	"github.com/chitinhq/agentguard/go/pkg/invariant"
+	"github.com/chitinhq/agentguard/go/pkg/monitor"
 )
 
 // readOnlyTools are tools that cannot mutate state.

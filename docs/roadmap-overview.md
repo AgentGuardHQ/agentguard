@@ -4,7 +4,7 @@
 
 **Last updated**: 2026-03-23
 **License**: Apache 2.0
-**Repository**: [AgentGuardHQ/agent-guard](https://github.com/AgentGuardHQ/agent-guard)
+**Repository**: [chitinhq/agent-guard](https://github.com/chitinhq/agent-guard)
 
 ---
 

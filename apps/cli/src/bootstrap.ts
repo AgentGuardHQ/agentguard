@@ -1,4 +1,4 @@
-// Bootstrap detection for AgentGuard governance hooks (AgentGuardHQ/agentguard#995).
+// Bootstrap detection for AgentGuard governance hooks (chitinhq/agentguard#995).
 //
 // When the kernel packages haven't been built yet, dynamic imports will fail.
 // Instead of blocking all actions (Claude) or silently disabling governance

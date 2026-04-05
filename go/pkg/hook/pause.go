@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/confidence"
+	"github.com/chitinhq/agentguard/go/pkg/confidence"
 )
 
 // PausePrompt describes a paused action awaiting human resolution.

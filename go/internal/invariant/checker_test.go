@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/invariant"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/invariant"
 )
 
 // helper to build a minimal CheckContext for file-write scenarios.

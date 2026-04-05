@@ -672,7 +672,7 @@ function removeHook(settingsPath: string, settingsLabel: string): void {
 const STARTER_POLICY_TEMPLATE = (mode: EnforcementMode, pack?: string) => {
   const packLine = pack ? `pack: ${pack}` : '# pack: essentials';
   return `# AgentGuard policy — runtime protection for AI coding agents.
-# Docs: https://github.com/AgentGuardHQ/agent-guard
+# Docs: https://github.com/chitinhq/agent-guard
 
 id: default-policy
 name: Default Safety Policy

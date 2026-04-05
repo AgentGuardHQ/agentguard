@@ -107,4 +107,4 @@ Strong governance core covers 7 of 10 categories at 6+ score. The three gaps (sa
 
 *AgentGuard is open source. Read the invariant definitions: `packages/invariants/src/definitions.ts`. Read the OWASP coverage audit: `docs/owasp-agentic-top10-coverage.md`.*
 
-*[GitHub](https://github.com/AgentGuardHQ/agentguard) · `npx aguard claude-init`*
+*[GitHub](https://github.com/chitinhq/agentguard) · `npx aguard claude-init`*

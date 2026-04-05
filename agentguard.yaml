@@ -1,5 +1,5 @@
 # AgentGuard policy — runtime protection for AI coding agents.
-# Docs: https://github.com/AgentGuardHQ/agent-guard
+# Docs: https://github.com/chitinhq/agent-guard
 
 id: default-policy
 name: Default Safety Policy
@@ -10,7 +10,7 @@ description: Baseline safety rules for AI coding agents
 #   educate — allow actions but teach correct patterns
 #   guide   — block dangerous actions with corrective suggestions
 #   enforce — block dangerous actions, no suggestions
-mode: monitor
+mode: educate
 
 # Agent identity: defaults to .agentguard-identity file (created by claude-init).
 # For CI/cron agents, set AGENTGUARD_AGENT_NAME env var to override.

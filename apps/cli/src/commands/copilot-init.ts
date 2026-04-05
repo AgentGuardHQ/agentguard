@@ -206,7 +206,7 @@ const STARTER_POLICY_TEMPLATE = (
   mode: EnforcementMode
 ) => `# AgentGuard policy — safety rules for AI coding agents.
 # Customize this file to match your project's security requirements.
-# Docs: https://github.com/AgentGuardHQ/agent-guard
+# Docs: https://github.com/chitinhq/agent-guard
 
 id: default-policy
 name: Default Safety Policy

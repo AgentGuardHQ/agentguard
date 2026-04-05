@@ -204,7 +204,7 @@ export function claudeHookWrapper(
 
 # Probe the binary — in git worktrees, ${cliPrefix} exists but may crash at startup
 # with ERR_MODULE_NOT_FOUND because node_modules only lives in the main workspace.
-# Fall back to the main worktree binary if the probe fails (AgentGuardHQ/agentguard#1376).
+# Fall back to the main worktree binary if the probe fails (chitinhq/agentguard#1376).
 if ! \$AGENTGUARD_BIN --version >/dev/null 2>&1; then
   _MAIN_ROOT="\$(git worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')"
   if [ -n "\$_MAIN_ROOT" ] && [ -f "\$_MAIN_ROOT/apps/cli/dist/bin.js" ]; then
@@ -219,7 +219,7 @@ elif command -v agentguard &>/dev/null; then
   AGENTGUARD_BIN="agentguard"
 fi
 
-# BOOTSTRAP EXEMPTION (AgentGuardHQ/agentguard#995):
+# BOOTSTRAP EXEMPTION (chitinhq/agentguard#995):
 # When the kernel binary is missing, allow bootstrap commands (install/build)
 # and read-only tools through so the agent can self-bootstrap.
 # All other actions remain blocked (fail-closed).
@@ -265,7 +265,7 @@ fi`;
 # claude-hook-wrapper.sh — Sources persona identity before running governance hook
 # SECURITY: This script MUST fail closed for non-bootstrap actions.
 # Bootstrap exemption: install/build commands and read-only tools are allowed
-# when the kernel binary is not yet available (AgentGuardHQ/agentguard#995).
+# when the kernel binary is not yet available (chitinhq/agentguard#995).
 
 # Resolve project root (hook CWD may not match the project directory)
 AGENTGUARD_WORKSPACE="\$(git rev-parse --show-toplevel 2>/dev/null || pwd)"

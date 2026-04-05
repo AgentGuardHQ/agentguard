@@ -3,7 +3,7 @@
 **Run AI agents without fear.** Prevents catastrophic actions — no pushes to main, no credential leaks, no runaway loops. Full audit trail included.
 
 [![npm](https://img.shields.io/npm/v/@red-codes/agentguard.svg)](https://www.npmjs.com/package/@red-codes/agentguard)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/AgentGuardHQ/agentguard/blob/main/LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/chitinhq/agentguard/blob/main/LICENSE)
 
 ## Install
 
@@ -229,11 +229,11 @@ Agents handle implementation, code review, CI triage, security audits, planning,
 
 ## Links
 
-- [GitHub](https://github.com/AgentGuardHQ/agentguard)
+- [GitHub](https://github.com/chitinhq/agentguard)
 - [Documentation](https://agentguardhq.github.io/agentguard/)
-- [Architecture](https://github.com/AgentGuardHQ/agentguard/blob/main/docs/unified-architecture.md)
-- [Roadmap](https://github.com/AgentGuardHQ/agentguard/blob/main/ROADMAP.md)
+- [Architecture](https://github.com/chitinhq/agentguard/blob/main/docs/unified-architecture.md)
+- [Roadmap](https://github.com/chitinhq/agentguard/blob/main/ROADMAP.md)
 
 ## License
 
-[Apache 2.0](https://github.com/AgentGuardHQ/agentguard/blob/main/LICENSE)
+[Apache 2.0](https://github.com/chitinhq/agentguard/blob/main/LICENSE)

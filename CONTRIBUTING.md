@@ -5,7 +5,7 @@ Thanks for your interest in contributing to AgentGuard -- the safety layer for A
 ## Getting Started
 
 ```bash
-git clone https://github.com/AgentGuardHQ/agent-guard.git
+git clone https://github.com/chitinhq/agent-guard.git
 cd agent-guard
 pnpm install
 pnpm build

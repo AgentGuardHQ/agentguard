@@ -17,7 +17,7 @@ result=$(printf '{"tool":"Bash","input":{"command":"rm -rf /tmp/x"}}' | "$BIN" e
 echo "$result" | python3 -c "import sys,json; d=json.load(sys.stdin); assert not d['allowed'], 'expected denied'; print('allowed:', d['allowed'])"
 
 echo "=== Test 4: file.write pre-normalized ActionContext format (expect allowed) ==="
-# Regression test for: https://github.com/AgentGuardHQ/agent-guard/issues/957
+# Regression test for: https://github.com/chitinhq/agent-guard/issues/957
 # The evaluate command must accept pre-normalized {action,target} payloads in
 # addition to raw {tool,input} payloads.
 result=$(printf '{"action":"file.write","target":"foo.ts"}' | "$BIN" evaluate --policy "$POLICY" 2>&1) || true

@@ -158,7 +158,7 @@ export async function geminiHook(hookType?: string, extraArgs: string[] = []): P
       handleAfterTool(data);
     }
   } catch (err) {
-    // BOOTSTRAP AWARENESS (AgentGuardHQ/agentguard#995):
+    // BOOTSTRAP AWARENESS (chitinhq/agentguard#995):
     // When kernel modules aren't built, warn instead of silently disabling governance.
     if (isModuleNotFoundError(err)) {
       const isSafe = data ? isBootstrapSafeAction(data) : true;

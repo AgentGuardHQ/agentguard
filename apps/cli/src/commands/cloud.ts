@@ -567,7 +567,7 @@ async function cloudSummary(): Promise<number> {
 }
 
 const SIGNUP_URL = 'https://agentguard-cloud-dashboard.vercel.app/signup';
-const DISCUSSIONS_URL = 'https://github.com/AgentGuardHQ/agentguard/discussions';
+const DISCUSSIONS_URL = 'https://github.com/chitinhq/agentguard/discussions';
 
 function cloudSignup(): number {
   process.stderr.write('\n');

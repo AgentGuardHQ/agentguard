@@ -6,13 +6,13 @@
 Install in 30 seconds. Your agents can't break what matters.</p>
 
 <p align="center">
-  <a href="https://github.com/AgentGuardHQ/agentguard/stargazers"><img src="https://img.shields.io/github/stars/AgentGuardHQ/agentguard?style=social" alt="GitHub Stars"></a>
+  <a href="https://github.com/chitinhq/agentguard/stargazers"><img src="https://img.shields.io/github/stars/chitinhq/agentguard?style=social" alt="GitHub Stars"></a>
   <a href="https://www.npmjs.com/package/@red-codes/agentguard"><img src="https://img.shields.io/npm/v/@red-codes/agentguard.svg" alt="npm version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License: Apache 2.0"></a>
-  <img src="https://github.com/AgentGuardHQ/agentguard/actions/workflows/size-check.yml/badge.svg" alt="CI">
-  <a href="https://agentguardhq.github.io/agentguard/"><img src="https://img.shields.io/badge/Website-AgentGuardHQ.github.io-22C55E?style=flat&logo=github" alt="Website"></a>
+  <img src="https://github.com/chitinhq/agentguard/actions/workflows/size-check.yml/badge.svg" alt="CI">
+  <a href="https://agentguardhq.github.io/agentguard/"><img src="https://img.shields.io/badge/Website-chitinhq.github.io-22C55E?style=flat&logo=github" alt="Website"></a>
   <a href="https://agentguard-cloud-dashboard.vercel.app/onboarding"><img src="https://img.shields.io/badge/Cloud-Start%20Free-FF6B35?style=flat" alt="Start Free on Cloud"></a>
-  <a href="https://github.com/AgentGuardHQ/agentguard/discussions"><img src="https://img.shields.io/badge/Discussions-Ask%20%26%20Share-8A2BE2?style=flat&logo=github" alt="GitHub Discussions"></a>
+  <a href="https://github.com/chitinhq/agentguard/discussions"><img src="https://img.shields.io/badge/Discussions-Ask%20%26%20Share-8A2BE2?style=flat&logo=github" alt="GitHub Discussions"></a>
 </p>
 
 ---
@@ -31,7 +31,7 @@ AI coding agents (Claude Code, Codex CLI, GitHub Copilot CLI, Google Gemini CLI,
 **Get notified about v3.0, security updates, and team features:**
 
 > **[Join early access →](https://agentguard-cloud-dashboard.vercel.app/onboarding)** — Cloud waitlist, v3.0 announcements
-> **[GitHub Discussions →](https://github.com/AgentGuardHQ/agentguard/discussions)** — ask questions, share your setup
+> **[GitHub Discussions →](https://github.com/chitinhq/agentguard/discussions)** — ask questions, share your setup
 
 ## Get Started
 
@@ -51,7 +51,7 @@ npx @red-codes/agentguard claude-init
 ```
 
 **→ [Sign up for Cloud](https://agentguard-cloud-dashboard.vercel.app/onboarding)** — team governance, fleet dashboard, real-time telemetry
-**→ [Join GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions)** — ask questions, share your setup
+**→ [Join GitHub Discussions](https://github.com/chitinhq/agentguard/discussions)** — ask questions, share your setup
 
 The `claude-init` wizard walks you through setup interactively:
 
@@ -92,7 +92,7 @@ agentguard claude-init --mode monitor --pack essentials
 
 > **Ready for the cloud?** — team governance, fleet dashboard, real-time telemetry across all your agents:
 > **[agentguard-cloud-dashboard.vercel.app/onboarding](https://agentguard-cloud-dashboard.vercel.app/onboarding)**
-> · [GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions) — questions, setup help, community
+> · [GitHub Discussions](https://github.com/chitinhq/agentguard/discussions) — questions, setup help, community
 
 ## Cloud Dashboard & Live Office
 
@@ -578,8 +578,8 @@ extends:
 Stay in the loop and connect with other AgentGuard users:
 
 - **[Sign up for early access](https://agentguard-cloud-dashboard.vercel.app/onboarding)** — cloud dashboard, team governance, real-time telemetry
-- **[GitHub Discussions](https://github.com/AgentGuardHQ/agentguard/discussions)** — ask questions, share setups, give feedback
-- **[Issues](https://github.com/AgentGuardHQ/agentguard/issues)** — bug reports and feature requests
+- **[GitHub Discussions](https://github.com/chitinhq/agentguard/discussions)** — ask questions, share setups, give feedback
+- **[Issues](https://github.com/chitinhq/agentguard/issues)** — bug reports and feature requests
 
 From the CLI:
 
@@ -601,7 +601,7 @@ agentguard cloud login     # Connect after you have an API key
 | Event model | [docs/event-model.md](docs/event-model.md) |
 | Roadmap | [ROADMAP.md](ROADMAP.md) |
 | Contributing | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Issues | [github.com/AgentGuardHQ/agentguard/issues](https://github.com/AgentGuardHQ/agentguard/issues) |
+| Issues | [github.com/chitinhq/agentguard/issues](https://github.com/chitinhq/agentguard/issues) |
 
 ## License
 

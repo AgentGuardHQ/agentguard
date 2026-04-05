@@ -10,7 +10,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/action"
 )
 
 // Level constants for blast radius severity.

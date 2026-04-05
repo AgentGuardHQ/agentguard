@@ -74,7 +74,7 @@
   "files": ["dist/", "LICENSE", "README.md"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/AgentGuardHQ/agentguard",
+    "url": "https://github.com/chitinhq/agentguard",
     "directory": "packages/matchers"
   },
   "scripts": {

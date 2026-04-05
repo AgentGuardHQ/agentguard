@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/confidence"
-	"github.com/AgentGuardHQ/agentguard/go/internal/config"
-	"github.com/AgentGuardHQ/agentguard/go/internal/engine"
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/confidence"
+	"github.com/chitinhq/agentguard/go/internal/config"
+	"github.com/chitinhq/agentguard/go/internal/engine"
+	"github.com/chitinhq/agentguard/go/internal/event"
 )
 
 // Kernel is the governed action kernel — the central orchestrator.

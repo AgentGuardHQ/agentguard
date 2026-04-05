@@ -1,4 +1,4 @@
-// Tests for bootstrap detection logic (AgentGuardHQ/agentguard#995)
+// Tests for bootstrap detection logic (chitinhq/agentguard#995)
 // Verifies that install/build commands and read-only tools are allowed through
 // when the AgentGuard kernel binary is not yet available.
 // Tests cover all 4 driver payload formats and command-chaining prevention.
@@ -325,7 +325,7 @@ describe('claudeHookWrapper template', () => {
       expect(wrapper).toContain('BOOTSTRAP_SAFE=1');
       expect(wrapper).toContain('pnpm install');
       expect(wrapper).toContain('permissionDecision');
-      expect(wrapper).toContain('AgentGuardHQ/agentguard#995');
+      expect(wrapper).toContain('chitinhq/agentguard#995');
     });
 
     it('includes all bootstrap command patterns', () => {

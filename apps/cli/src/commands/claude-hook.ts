@@ -350,7 +350,7 @@ export async function claudeHook(hookType?: string, extraArgs: string[] = []): P
       } catch (preErr) {
         const errMsg = preErr instanceof Error ? preErr.message : String(preErr);
 
-        // BOOTSTRAP EXEMPTION (AgentGuardHQ/agentguard#995):
+        // BOOTSTRAP EXEMPTION (chitinhq/agentguard#995):
         // If the kernel hasn't been built yet (module not found), allow bootstrap
         // commands (install/build) and read-only tools through so the agent can
         // self-bootstrap. All other actions remain blocked (fail-closed).

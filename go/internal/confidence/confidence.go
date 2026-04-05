@@ -6,7 +6,7 @@ package confidence
 import (
 	"math"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/monitor"
+	"github.com/chitinhq/agentguard/go/internal/monitor"
 )
 
 // Signal weights — must sum to 1.0.

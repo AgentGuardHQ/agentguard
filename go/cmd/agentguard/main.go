@@ -9,11 +9,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/config"
-	"github.com/AgentGuardHQ/agentguard/go/internal/engine"
-	"github.com/AgentGuardHQ/agentguard/go/internal/kernel"
-	"github.com/AgentGuardHQ/agentguard/go/pkg/hook"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/config"
+	"github.com/chitinhq/agentguard/go/internal/engine"
+	"github.com/chitinhq/agentguard/go/internal/kernel"
+	"github.com/chitinhq/agentguard/go/pkg/hook"
 )
 
 func main() {

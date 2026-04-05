@@ -1472,7 +1472,7 @@ describe('no-governance-self-modification', () => {
   // files. Governance terminology in --body argument values must not trigger this invariant.
   it('holds when gh issue create --body contains agentguard.yaml as documentation', () => {
     const cmd =
-      'gh issue create --repo AgentGuardHQ/agent-guard --title "Invariant Report" ' +
+      'gh issue create --repo chitinhq/agent-guard --title "Invariant Report" ' +
       '--body "## Summary\\n\\nThe agentguard.yaml policy loaded correctly."';
     const result = inv.check({ currentCommand: cmd });
     expect(result.holds).toBe(true);
@@ -1480,7 +1480,7 @@ describe('no-governance-self-modification', () => {
 
   it('holds when gh issue create --body contains .agentguard/ path as documentation', () => {
     const cmd =
-      'gh issue create --repo AgentGuardHQ/agent-guard --title "Session Report" ' +
+      'gh issue create --repo chitinhq/agent-guard --title "Session Report" ' +
       '--body "Events stored in .agentguard/events/run-123.jsonl"';
     const result = inv.check({ currentCommand: cmd });
     expect(result.holds).toBe(true);

@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/event"
-	"github.com/AgentGuardHQ/agentguard/go/internal/shipper"
+	"github.com/chitinhq/agentguard/go/internal/event"
+	"github.com/chitinhq/agentguard/go/internal/shipper"
 )
 
 func testEvent(kind event.Kind) event.Event {

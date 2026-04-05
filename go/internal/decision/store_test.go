@@ -4,8 +4,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/AgentGuardHQ/agentguard/go/internal/action"
-	"github.com/AgentGuardHQ/agentguard/go/internal/decision"
+	"github.com/chitinhq/agentguard/go/internal/action"
+	"github.com/chitinhq/agentguard/go/internal/decision"
 )
 
 func makeDecision(dtype decision.DecisionType, sessionID string) decision.DecisionRecord {

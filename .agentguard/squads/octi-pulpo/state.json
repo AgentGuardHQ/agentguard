@@ -4,7 +4,7 @@
   "priority": "P0",
   "sprint": "Ship budget-aware dispatch + wire as workspace MCP server",
   "blockers": [],
-  "repo": "AgentGuardHQ/octi-pulpo",
+  "repo": "chitinhq/octi-pulpo",
   "updated": "2026-03-29",
   "notes": "PRIORITY SHIFT: Octi Pulpo is now the #1 platform deliverable. Today's 36.6% swarm pass rate proves coordination is the bottleneck. Budget-aware dispatch is the highest-leverage item."
 }

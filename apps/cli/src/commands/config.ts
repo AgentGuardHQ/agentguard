@@ -390,7 +390,7 @@ function parseYamlValue(raw: string): unknown {
 function serializeSimpleYaml(config: AgentGuardConfig): string {
   const lines: string[] = [
     '# AgentGuard configuration',
-    '# Docs: https://github.com/AgentGuardHQ/agent-guard',
+    '# Docs: https://github.com/chitinhq/agent-guard',
     '',
   ];
 

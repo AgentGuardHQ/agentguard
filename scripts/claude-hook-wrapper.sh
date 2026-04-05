@@ -2,7 +2,7 @@
 # claude-hook-wrapper.sh — Sources persona identity before running governance hook
 # SECURITY: This script MUST fail closed for non-bootstrap actions.
 # Bootstrap exemption: install/build commands and read-only tools are allowed
-# when the kernel binary is not yet available (AgentGuardHQ/agentguard#995).
+# when the kernel binary is not yet available (chitinhq/agentguard#995).
 
 # Resolve project root (hook CWD may not match the project directory)
 AGENTGUARD_WORKSPACE="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
@@ -37,7 +37,7 @@ if [ -n "$AGENTGUARD_BIN" ] && ! $AGENTGUARD_BIN --version >/dev/null 2>&1; then
   fi
 fi
 
-# BOOTSTRAP EXEMPTION (AgentGuardHQ/agentguard#995):
+# BOOTSTRAP EXEMPTION (chitinhq/agentguard#995):
 # When the kernel binary is missing, allow bootstrap commands (install/build)
 # and read-only tools through so the agent can self-bootstrap.
 # All other actions remain blocked (fail-closed).
@@ -49,7 +49,7 @@ if [ -z "$AGENTGUARD_BIN" ]; then
   # Normalize rtk-prefixed commands: global CLAUDE.md instructs agents to prefix
   # all commands with 'rtk', but the bootstrap allowlist uses bare command patterns.
   # Strip the leading 'rtk ' from the JSON "command" value before matching
-  # (AgentGuardHQ/agent-guard#1347).
+  # (chitinhq/agent-guard#1347).
   HOOK_PAYLOAD=$(echo "$HOOK_PAYLOAD" | sed 's/"command":"rtk /"command":"/g')
 
   # Check if this is a bootstrap-safe Bash command (install/build)
@@ -67,7 +67,7 @@ if [ -z "$AGENTGUARD_BIN" ]; then
     *'"command":"npx turbo build'* ) BOOTSTRAP_SAFE=1 ;;
     *'"command":"pnpm turbo build'* ) BOOTSTRAP_SAFE=1 ;;
     # pnpm install --force bypasses the interactive "remove modules?" prompt that
-    # appears when node_modules exists but the lockfile has changed (AgentGuardHQ/agent-guard#1331)
+    # appears when node_modules exists but the lockfile has changed (chitinhq/agent-guard#1331)
     *'"command":"pnpm install --force'* ) BOOTSTRAP_SAFE=1 ;;
   esac
 

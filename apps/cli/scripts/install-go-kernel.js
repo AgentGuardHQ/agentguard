@@ -4,7 +4,7 @@
  * Falls back gracefully to the TypeScript kernel if download fails.
  *
  * Binary naming: agentguard-{os}-{arch}[.exe]
- * Download source: GitHub releases for AgentGuardHQ/agentguard
+ * Download source: GitHub releases for chitinhq/agentguard
  */
 
 import { createWriteStream, chmodSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BIN_DIR = join(__dirname, '..', 'dist', 'go-bin');
-const REPO = 'AgentGuardHQ/agentguard';
+const REPO = 'chitinhq/agentguard';
 
 function getPlatformSuffix() {
   const platform = process.platform;

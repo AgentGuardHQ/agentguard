@@ -1,6 +1,6 @@
 # Provides required status checks for PRs that only touch site/**
 # so branch protection doesn't block site-only changes.
-# See: https://github.com/AgentGuardHQ/agentguard/issues/1267
+# See: https://github.com/chitinhq/agentguard/issues/1267
 name: CI
 
 on:

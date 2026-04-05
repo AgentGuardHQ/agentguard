@@ -65,7 +65,7 @@
   "humanEscalations": [
     {
       "issue": 1402,
-      "repo": "AgentGuardHQ/agentguard",
+      "repo": "chitinhq/agentguard",
       "title": "Worker pool dead — MUST run server/deploy.sh before April 1 or risk thundering herd",
       "deadline": "2026-04-01",
       "priority": "P0",
@@ -74,7 +74,7 @@
     },
     {
       "issue": 1306,
-      "repo": "AgentGuardHQ/agentguard",
+      "repo": "chitinhq/agentguard",
       "title": "feat(v3.0-gate): default-deny enforcement — 12TH CYCLE UNASSIGNED",
       "deadline": "2026-04-04",
       "priority": "P0",
@@ -83,7 +83,7 @@
     },
     {
       "issue": 274,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "[swarm] QA conductor RED day 5+ — implement manual gate for conference PRs",
       "deadline": "2026-04-05",
       "priority": "P0",
@@ -91,14 +91,14 @@
     },
     {
       "pr": 532,
-      "repo": "AgentGuardHQ/agentguard-cloud",
+      "repo": "chitinhq/agentguard-cloud",
       "title": "feat(dashboard): agent fleet overview page — needs human review",
       "priority": "P0",
       "action": "Review and merge cloud#532. Build passes, all 4 Vercel previews green. Last unmet success criterion for workspace#272 (conference gate)."
     },
     {
       "issue": 273,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "Telemetry E2E gate — verify live governance events April 10",
       "deadline": "2026-04-10",
       "priority": "P0",
@@ -106,14 +106,14 @@
     },
     {
       "issues": [240, 241, 242, 243, 244],
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "Fundraise cluster — pitch deck, seed targets, DPP conversion, conference prep, 5-week plan — ALL UNOWNED",
       "priority": "P0",
       "action": "Human-driven work. Review #240-244 and own each item personally. May 6 deadline — 37 days."
     },
     {
       "issue": 228,
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "[conference] Agent 365 vs AgentGuard Q&A brief — UNOWNED (10+ cycles)",
       "deadline": "2026-05-06",
       "priority": "P0",
@@ -135,7 +135,7 @@
     },
     {
       "issues": [245, 246, 247],
-      "repo": "AgentGuardHQ/agentguard-workspace",
+      "repo": "chitinhq/agentguard-workspace",
       "title": "Marketing cluster — YouTube video, conference abstracts (RSA/AI Engineer), LinkedIn calendar",
       "priority": "P1",
       "action": "Route to marketing-em. Human provides founder-voice narratives. RSA/AI Engineer submission deadlines unknown — check immediately."
@@ -174,8 +174,8 @@
   ],
   "closedThisCycle": [],
   "openPRsThisCycle": [
-    { "pr": 532, "repo": "AgentGuardHQ/agentguard-cloud", "title": "feat(dashboard): agent fleet overview page — wires /v1/agents/performance", "closes": "workspace#272", "status": "awaiting-review" },
-    { "pr": 269, "repo": "AgentGuardHQ/agentguard-workspace", "title": "feat(swarm): add 5 new agents — rebaser, release-notes, dx-smoke, activation-monitor, onboarding-bot", "status": "org-chart-fix-pushed-awaiting-green" }
+    { "pr": 532, "repo": "chitinhq/agentguard-cloud", "title": "feat(dashboard): agent fleet overview page — wires /v1/agents/performance", "closes": "workspace#272", "status": "awaiting-review" },
+    { "pr": 269, "repo": "chitinhq/agentguard-workspace", "title": "feat(swarm): add 5 new agents — rebaser, release-notes, dx-smoke, activation-monitor, onboarding-bot", "status": "org-chart-fix-pushed-awaiting-green" }
   ],
   "updatedAt": "2026-03-30T09:00:00Z"
 }

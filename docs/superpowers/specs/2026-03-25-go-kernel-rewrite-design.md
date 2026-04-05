@@ -28,7 +28,7 @@ The Go kernel lives in `go/` within the existing `agent-guard` repo. Single repo
 ```
 agent-guard/
 ├── go/
-│   ├── go.mod                          # github.com/AgentGuardHQ/agent-guard/go
+│   ├── go.mod                          # github.com/chitinhq/agent-guard/go
 │   ├── cmd/
 │   │   └── agentguard/
 │   │       └── main.go                 # Binary: daemon, normalize, evaluate, hook subcommands

@@ -25,7 +25,7 @@
 
 ```bash
 mkdir -p go/cmd/agentguard go/internal/action go/internal/engine go/internal/config go/internal/event go/pkg/hook go/data go/test/compliance go/test/testdata/policies go/test/testdata/payloads
-cd go && go mod init github.com/AgentGuardHQ/agent-guard/go
+cd go && go mod init github.com/chitinhq/agent-guard/go
 ```
 
 - [ ] **Step 2: Create minimal main.go**
@@ -89,7 +89,7 @@ package action_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/action"
 )
 
 func TestActionContextFields(t *testing.T) {
@@ -346,7 +346,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/config"
 )
 
 func TestToolActionMap(t *testing.T) {
@@ -494,7 +494,7 @@ package action_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/action"
 )
 
 func TestScanGitPush(t *testing.T) {
@@ -587,7 +587,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/config"
 )
 
 // ScanResult is returned by pattern scanning functions.
@@ -730,7 +730,7 @@ package action_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/action"
 )
 
 func TestNormalizeBashGitPush(t *testing.T) {
@@ -832,7 +832,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/config"
 )
 
 var scanner *Scanner
@@ -1020,8 +1020,8 @@ package config_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/config"
 )
 
 func TestLoadYamlPolicy(t *testing.T) {
@@ -1120,7 +1120,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/action"
 	"gopkg.in/yaml.v3"
 )
 
@@ -1243,8 +1243,8 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/engine"
+	"github.com/chitinhq/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/engine"
 )
 
 func testPolicy() *action.LoadedPolicy {
@@ -1360,7 +1360,7 @@ package engine
 import (
 	"strings"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/action"
 )
 
 // EvalOptions controls evaluation behavior.
@@ -1562,9 +1562,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/engine"
+	"github.com/chitinhq/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/engine"
 )
 
 func main() {
@@ -1735,9 +1735,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/AgentGuardHQ/agent-guard/go/internal/action"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/config"
-	"github.com/AgentGuardHQ/agent-guard/go/internal/engine"
+	"github.com/chitinhq/agent-guard/go/internal/action"
+	"github.com/chitinhq/agent-guard/go/internal/config"
+	"github.com/chitinhq/agent-guard/go/internal/engine"
 )
 
 func TestComplianceWithPolicy(t *testing.T) {
